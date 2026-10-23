@@ -1,0 +1,5 @@
+# Text files are stored and checked out with LF line endings on every
+# platform. Prettier expects LF, and a checkout on Windows with
+# core.autocrlf=true would otherwise turn every file into CRLF and fail
+# `pnpm format:check` without a single real formatting change.
+* text=auto eol=lf

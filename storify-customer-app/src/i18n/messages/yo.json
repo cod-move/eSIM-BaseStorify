@@ -1,0 +1,63 @@
+{
+  "common": {
+    "retry": "Gbiyegnjẹ sii",
+    "viewAll": "Wo Gbogbo"
+  },
+  "tabs": {
+    "home": "Ile",
+    "categories": "Awon eka",
+    "cart": "Kekere oja",
+    "account": "Akaunti"
+  },
+  "catalog": {
+    "empty": "Aisu oja",
+    "sponsored": "Ìgbọ́wọ́lé",
+    "outOfStock": "Laisi Stock",
+    "priceOnRequest": "Owó lórí ìbéèrè"
+  },
+  "product": {
+    "addToCart": "Fikun si Kaadi",
+    "addedToCart": "Ti ṣafikun sí kẹ̀kẹ́ rira",
+    "description": "Apejuwe",
+    "addToWishlist": "Fikun si ohun ti mo fẹ",
+    "removeFromWishlist": "Yo kuro ninu ohun ti mo fẹ"
+  },
+  "cart": {
+    "empty": "Kaadi re so poon",
+    "startShopping": "Berẹ Ra"
+  },
+  "auth": {
+    "signIn": "Woliode",
+    "email": "Imeeli",
+    "password": "Orọgbọsẹ",
+    "errors": {
+      "invalidCredentials": "Imeeli tabi ọrọ igbaniwọle kò tọ́.",
+      "invalidCredentialsWithAttempts": "Imeeli tabi ọrọ igbaniwọle kò tọ́. {count, plural, one {Ìgbìyànjú # ló kù} other {Ìgbìyànjú # ló kù}} kí a tó tì àkàǹtì yìí.",
+      "accountLocked": "Àwọn ìgbìyànjú wíwọlé tí kò yọrí pọ̀ jù. A ti tì àkàǹtì yìí fún {duration}.",
+      "accountLockedUnknown": "Àwọn ìgbìyànjú wíwọlé tí kò yọrí pọ̀ jù. A ti tì àkàǹtì yìí fún ìṣẹ́jú díẹ̀.",
+      "durationMinutes": "{count, plural, one {ìṣẹ́jú #} other {ìṣẹ́jú #}}",
+      "durationSeconds": "{count, plural, one {ìṣẹ́jú-àáyá #} other {ìṣẹ́jú-àáyá #}}",
+      "tooManyRequests": "Àwọn ìgbìyànjú pọ̀ jù láti ẹ̀rọ yìí. Dúró fún ìṣẹ́jú kan kí o tún gbìyànjú."
+    }
+  },
+  "account": {
+    "profile": "Aprofaịli"
+  },
+  "profile": {
+    "name": "Orúkọ"
+  },
+  "settings": {
+    "language": "Ede"
+  },
+  "notFound": {
+    "title": "Oju-iwe Ti A Ko Ri",
+    "home": "Padanu si Ile"
+  },
+  "errors": {
+    "generic": "Ohun ti o jo si me fun apapọ. Jọwọ gbiyegnjẹ sii.",
+    "network": "Jọwọ ṣayẹwo asopọ intanẹti rẹ ki o gbiyegnjẹ sii.",
+    "code": {
+      "RATE_LIMIT_EXCEEDED": "Àwọn ìbéèrè pọ̀ jù. Dúró díẹ̀ kí o tún gbìyànjú."
+    }
+  }
+}

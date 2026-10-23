@@ -1,0 +1,23 @@
+{
+  "common": {
+    "retry": "Mee ọzọ"
+  },
+  "auth": {
+    "errors": {
+      "invalidCredentials": "Ozi-e ma ọ bụ paswọọdụ ezighi ezi.",
+      "invalidCredentialsWithAttempts": "Ozi-e ma ọ bụ paswọọdụ ezighi ezi. {count, plural, one {Ọnwụnwa # fọdụrụ} other {Ọnwụnwa # fọdụrụ}} tupu akaụntụ a akpọchie.",
+      "accountLocked": "Ịnwale ịbanye jụrụ ọtụtụ ugboro. Akpọchiri akaụntụ a ruo {duration}.",
+      "accountLockedUnknown": "Ịnwale ịbanye jụrụ ọtụtụ ugboro. Akpọchiri akaụntụ a ruo nkeji ole na ole.",
+      "durationMinutes": "{count, plural, one {nkeji #} other {nkeji #}}",
+      "durationSeconds": "{count, plural, one {sekọnd #} other {sekọnd #}}",
+      "tooManyRequests": "Enwere ọtụtụ ịnwale site na ngwaọrụ a. Chere otu nkeji wee nwaa ọzọ."
+    }
+  },
+  "errors": {
+    "generic": "Ihe mberede mere. Mee ọzọ.",
+    "network": "Lelee netwọk gị ma mee ọzọ.",
+    "code": {
+      "RATE_LIMIT_EXCEEDED": "Arịrịọ dị ọtụtụ. Chere ntakịrị wee nwaa ọzọ."
+    }
+  }
+}

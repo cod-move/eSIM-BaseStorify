@@ -1,0 +1,56 @@
+{
+  "common": {
+    "retry": "फिर से कोशिश करें",
+    "viewAll": "सभी देखें"
+  },
+  "tabs": {
+    "home": "होम",
+    "categories": "श्रेणियाँ",
+    "cart": "कार्ट",
+    "account": "खाता"
+  },
+  "catalog": {
+    "empty": "कोई उत्पाद नहीं मिला",
+    "sponsored": "प्रायोजित",
+    "outOfStock": "स्टॉक खत्म",
+    "priceOnRequest": "कीमत अनुरोध पर"
+  },
+  "product": {
+    "addToCart": "कार्ट में जोड़ें",
+    "description": "विवरण"
+  },
+  "cart": {},
+  "auth": {
+    "signIn": "साइन इन",
+    "email": "ईमेल",
+    "password": "पासवर्ड",
+    "errors": {
+      "invalidCredentials": "ईमेल या पासवर्ड गलत है।",
+      "invalidCredentialsWithAttempts": "ईमेल या पासवर्ड गलत है। {count, plural, one {# कोशिश} other {# कोशिशें}} बाकी — इसके बाद खाता लॉक हो जाएगा।",
+      "accountLocked": "बहुत बार गलत कोशिश हुई। यह खाता {duration} के लिए लॉक है।",
+      "accountLockedUnknown": "बहुत बार गलत कोशिश हुई। यह खाता कुछ मिनटों के लिए लॉक है।",
+      "durationMinutes": "{count, plural, one {# मिनट} other {# मिनट}}",
+      "durationSeconds": "{count, plural, one {# सेकंड} other {# सेकंड}}",
+      "tooManyRequests": "इस डिवाइस से बहुत ज़्यादा कोशिशें हुईं। एक मिनट रुककर फिर कोशिश करें।"
+    }
+  },
+  "account": {
+    "profile": "प्रोफ़ाइल"
+  },
+  "profile": {
+    "name": "नाम"
+  },
+  "settings": {
+    "language": "भाषा"
+  },
+  "notFound": {
+    "title": "पेज नहीं मिला"
+  },
+  "errors": {
+    "generic": "हमारी तरफ कुछ गलत हो गया। कृपया बाद में पुनः प्रयास करें।",
+    "network": "कृपया अपना इंटरनेट कनेक्शन जांचें और फिर से प्रयास करें।",
+    "code": {
+      "RATE_LIMIT_EXCEEDED": "बहुत ज़्यादा अनुरोध हुए। थोड़ा रुककर फिर कोशिश करें।"
+    }
+  }
+}

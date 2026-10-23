@@ -1,0 +1,26 @@
+# pnpm settings for this project (pnpm 11 reads them from this file, not .npmrc).
+# This is a single app, not a workspace: there is no `packages` list.
+
+# A flat node_modules, as npm creates it. React Native's Android toolchain
+# (CMake, Ninja) fails on Windows when a path passes 260 characters, and the
+# default isolated layout nests every package under a long `.pnpm/...` folder.
+nodeLinker: hoisted
+
+# Lets a script set a variable in front of a command (`NAME=value command`) on
+# Windows as well.
+shellEmulator: true
+
+# pnpm holds back a version published less than a day ago, and writes a line
+# here when one is installed anyway. A line for a version that is no longer in
+# pnpm-lock.yaml can be deleted.
+minimumReleaseAgeExclude:
+  - '@expo/ui@57.0.21'
+  - expo-constants@57.0.20
+  - expo-modules-core@57.0.20
+  - expo-router@57.0.24
+  - expo@57.0.26
+  - expo-updates@57.0.24
+
+# Install scripts of dependencies do not run unless they are allowed here.
+allowBuilds:
+  unrs-resolver: false

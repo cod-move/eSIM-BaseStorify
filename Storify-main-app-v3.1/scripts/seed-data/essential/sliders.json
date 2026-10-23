@@ -1,0 +1,182 @@
+[
+  {
+    "_id": {
+      "$oid": "6a91d8671d871dff85a8872d"
+    },
+    "name": "New Slider",
+    "handle": "new-slider-1787943015045",
+    "isActive": true,
+    "transition": "slide",
+    "autoplaySeconds": 5,
+    "slides": [
+      {
+        "id": "slide-mu9mkyus",
+        "visible": true,
+        "elements": {
+          "heading": true,
+          "description": false,
+          "tagline": false,
+          "price": false,
+          "cta": false,
+          "cta2": false,
+          "countdown": false
+        },
+        "order": [
+          "tagline",
+          "heading",
+          "description",
+          "price",
+          "countdown",
+          "cta",
+          "cta2"
+        ],
+        "texts": {
+          "tagline": "",
+          "heading": "",
+          "description": "",
+          "cta": "",
+          "cta2": ""
+        },
+        "ctaVariant": "dark",
+        "cta2Variant": "outline",
+        "styles": {
+          "landscape": {}
+        },
+        "link": "",
+        "link2": "",
+        "productId": "",
+        "productImage": "",
+        "artInFront": false,
+        "countdownEndsAt": "",
+        "reveal": "fade",
+        "background": {
+          "type": "image",
+          "color": "#f1f1f1",
+          "gradient": {
+            "type": "linear",
+            "angle": 0,
+            "stops": [
+              {
+                "color": "#ef4444",
+                "at": 0
+              },
+              {
+                "color": "#ec4899",
+                "at": 100
+              }
+            ]
+          },
+          "image": "https://pub-49808a4ecaf04280b0561965cf5a40a4.r2.dev/uploads/2026/09/1789897343754-kyxcoe/63cf95c1-7f42-4b84-b344-403b3274f0da.png",
+          "hover": "brighten",
+          "focal": {
+            "x": 55.6,
+            "y": 31.4
+          },
+          "imageWidth": 1997
+        },
+        "layout": {
+          "landscape": {
+            "h": "left",
+            "v": "middle",
+            "gap": 12,
+            "scale": 120
+          }
+        },
+        "image": {
+          "landscape": {
+            "h": "right",
+            "v": "middle",
+            "scale": 40,
+            "rotation": 0,
+            "x": 0,
+            "y": 0
+          }
+        },
+        "alt": ""
+      },
+      {
+        "id": "slide-mu9msqqc",
+        "visible": true,
+        "elements": {
+          "heading": true,
+          "description": false,
+          "tagline": false,
+          "price": false,
+          "cta": true,
+          "cta2": false,
+          "countdown": false
+        },
+        "order": [
+          "tagline",
+          "heading",
+          "description",
+          "price",
+          "countdown",
+          "cta",
+          "cta2"
+        ],
+        "texts": {
+          "tagline": "",
+          "heading": "",
+          "description": "",
+          "cta": "",
+          "cta2": ""
+        },
+        "ctaVariant": "dark",
+        "cta2Variant": "outline",
+        "styles": {
+          "landscape": {}
+        },
+        "link": "",
+        "link2": "",
+        "productId": "",
+        "productImage": "",
+        "artInFront": false,
+        "countdownEndsAt": "",
+        "reveal": "fade",
+        "background": {
+          "type": "image",
+          "color": "#f1f1f1",
+          "image": "https://pub-49808a4ecaf04280b0561965cf5a40a4.r2.dev/uploads/2026/09/1789897575271-3qeovf/ChatGPT_Image_Sep_20__2026__03_45_56_PM.png",
+          "imageWidth": 2508
+        },
+        "layout": {
+          "landscape": {
+            "h": "left",
+            "v": "middle",
+            "gap": 12,
+            "scale": 100
+          }
+        },
+        "image": {
+          "landscape": {
+            "h": "right",
+            "v": "middle",
+            "scale": 40,
+            "rotation": 0,
+            "x": 0,
+            "y": 0
+          }
+        },
+        "alt": ""
+      }
+    ],
+    "createdAt": {
+      "$date": "2026-08-28T18:50:15.047Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-21T04:03:00.984Z"
+    },
+    "__v": 0,
+    "version": 2,
+    "controls": {
+      "arrows": "none",
+      "arrowsPosition": "sides",
+      "dots": "dots",
+      "dotsPosition": "end",
+      "pause": true
+    },
+    "history": [],
+    "publishedAt": "2026-09-21T04:03:00.983Z"
+  }
+]

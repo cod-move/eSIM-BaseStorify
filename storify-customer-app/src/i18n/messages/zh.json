@@ -1,0 +1,56 @@
+{
+  "common": {
+    "retry": "重试",
+    "viewAll": "查看全部"
+  },
+  "tabs": {
+    "home": "首页",
+    "categories": "类别",
+    "cart": "购物车",
+    "account": "账户"
+  },
+  "catalog": {
+    "empty": "未找到产品",
+    "sponsored": "赞助",
+    "outOfStock": "缺货",
+    "priceOnRequest": "价格面议"
+  },
+  "product": {
+    "addToCart": "加入购物车",
+    "description": "详情"
+  },
+  "cart": {},
+  "auth": {
+    "signIn": "登录",
+    "email": "邮箱",
+    "password": "密码",
+    "errors": {
+      "invalidCredentials": "邮箱或密码不正确。",
+      "invalidCredentialsWithAttempts": "邮箱或密码不正确。还剩 {count, plural, other {#}} 次尝试，之后账号将被锁定。",
+      "accountLocked": "登录失败次数过多。该账号已锁定 {duration}。",
+      "accountLockedUnknown": "登录失败次数过多。该账号已锁定几分钟。",
+      "durationMinutes": "{count, plural, other {# 分钟}}",
+      "durationSeconds": "{count, plural, other {# 秒}}",
+      "tooManyRequests": "此设备尝试次数过多，请等待一分钟后重试。"
+    }
+  },
+  "account": {
+    "profile": "个人资料"
+  },
+  "profile": {
+    "name": "姓名"
+  },
+  "settings": {
+    "language": "语言"
+  },
+  "notFound": {
+    "title": "页面未找到"
+  },
+  "errors": {
+    "generic": "我们这边出了点问题，请稍后再试。",
+    "network": "请检查网络连接并重试。",
+    "code": {
+      "RATE_LIMIT_EXCEEDED": "请求过多，请稍后重试。"
+    }
+  }
+}

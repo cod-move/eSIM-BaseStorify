@@ -1,0 +1,56 @@
+# Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
+
+# dependencies
+node_modules/
+.pnpm-store/
+
+# Expo
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+
+# Native
+.kotlin/
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+
+# Metro
+.metro-health-check*
+
+# debug
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# macOS
+.DS_Store
+*.pem
+
+# local env files
+.env*.local
+
+# typescript
+*.tsbuildinfo
+
+# tests
+coverage/
+
+# screenshots
+/screenshot/
+
+# generated native folders
+/ios
+/android
+
+# Git worktrees of this repository (`.worktrees/<id>`), each a whole copy of
+# the app, node_modules included.
+.worktrees/
+
+# A developer's own values: .env.local (README). A committed .env would ship one machine's store
+# address in the source, and its empty EAS_PROJECT_ID would reach cloud builds.
+.env

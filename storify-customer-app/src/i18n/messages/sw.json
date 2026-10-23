@@ -1,0 +1,35 @@
+{
+  "common": {
+    "retry": "Jaribu tena"
+  },
+  "catalog": {
+    "sponsored": "Imedhaminiwa",
+    "priceOnRequest": "Bei kwa ombi"
+  },
+  "product": {
+    "addedToCart": "Imeongezwa kwenye kikapu"
+  },
+  "cart": {},
+  "auth": {
+    "errors": {
+      "invalidCredentials": "Barua pepe au nenosiri si sahihi.",
+      "invalidCredentialsWithAttempts": "Barua pepe au nenosiri si sahihi. {count, plural, one {Umebakiza jaribio #} other {Umebakiza majaribio #}} kabla akaunti hii kufungwa.",
+      "accountLocked": "Majaribio mengi ya kuingia yameshindwa. Akaunti hii imefungwa kwa {duration}.",
+      "accountLockedUnknown": "Majaribio mengi ya kuingia yameshindwa. Akaunti hii imefungwa kwa dakika chache.",
+      "durationMinutes": "{count, plural, one {dakika #} other {dakika #}}",
+      "durationSeconds": "{count, plural, one {sekunde #} other {sekunde #}}",
+      "tooManyRequests": "Majaribio mengi kutoka kifaa hiki. Subiri dakika moja kisha ujaribu tena."
+    }
+  },
+  "profile": {
+    "name": "Jina"
+  },
+  "settings": {
+    "language": "Lugha"
+  },
+  "errors": {
+    "code": {
+      "RATE_LIMIT_EXCEEDED": "Maombi ni mengi mno. Subiri kidogo kisha ujaribu tena."
+    }
+  }
+}

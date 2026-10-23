@@ -1,0 +1,18 @@
+# Generated or not ours to format
+node_modules/
+.pnpm-store/
+.expo/
+dist/
+ios/
+android/
+coverage/
+pnpm-lock.yaml
+expo-env.d.ts
+src/uniwind-types.d.ts
+
+# A copy of the API's contract. It is formatted where it is written; formatting
+# it here would change the copy and fail `pnpm contracts:check`.
+src/contracts/
+
+# Other checkouts of this repository (whole copies of the app).
+.worktrees/

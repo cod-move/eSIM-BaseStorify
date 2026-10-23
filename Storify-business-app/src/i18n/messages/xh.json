@@ -1,0 +1,23 @@
+{
+  "common": {
+    "retry": "Zama futhi"
+  },
+  "auth": {
+    "errors": {
+      "invalidCredentials": "I-imeyile okanye iphasiwedi ayichanekanga.",
+      "invalidCredentialsWithAttempts": "I-imeyile okanye iphasiwedi ayichanekanga. {count, plural, one {Kusele ilinge #} other {Kusele amalinge #}} phambi kokuba le akhawunti itshixwe.",
+      "accountLocked": "Kukho iinzame ezininzi zokungena ezisilelayo. Le akhawunti itshixwe {duration}.",
+      "accountLockedUnknown": "Kukho iinzame ezininzi zokungena ezisilelayo. Le akhawunti itshixwe imizuzu embalwa.",
+      "durationMinutes": "{count, plural, one {umzuzu #} other {imizuzu #}}",
+      "durationSeconds": "{count, plural, one {umzuzwana #} other {imizuzwana #}}",
+      "tooManyRequests": "Kukho iinzame ezininzi kwesi sixhobo. Linda umzuzu uze uzame kwakhona."
+    }
+  },
+  "errors": {
+    "generic": "Kwenzekani ngaphandle kwanoma yintoni.",
+    "network": "Sicela uhlaziye i-inthanethi yakho futhi uzame.",
+    "code": {
+      "RATE_LIMIT_EXCEEDED": "Kukho izicelo ezininzi. Linda kancinci uze uzame kwakhona."
+    }
+  }
+}

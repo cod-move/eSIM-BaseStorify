@@ -1,0 +1,53 @@
+{
+  "common": {
+    "retry": "Réessayer",
+    "viewAll": "Tout voir"
+  },
+  "tabs": {
+    "home": "Accueil",
+    "categories": "Catégories",
+    "cart": "Panier",
+    "account": "Compte"
+  },
+  "catalog": {
+    "empty": "Aucun produit trouvé",
+    "sponsored": "Sponsorisé",
+    "outOfStock": "Rupture de stock",
+    "priceOnRequest": "Prix sur demande"
+  },
+  "product": {
+    "addToCart": "Ajouter au panier"
+  },
+  "cart": {},
+  "auth": {
+    "signIn": "Se connecter",
+    "password": "Mot de passe",
+    "errors": {
+      "invalidCredentials": "E-mail ou mot de passe incorrect.",
+      "invalidCredentialsWithAttempts": "E-mail ou mot de passe incorrect. {count, plural, one {Il reste # tentative} other {Il reste # tentatives}} avant le blocage du compte.",
+      "accountLocked": "Trop de tentatives échouées. Ce compte est bloqué pendant {duration}.",
+      "accountLockedUnknown": "Trop de tentatives échouées. Ce compte est bloqué quelques minutes.",
+      "durationSeconds": "{count, plural, one {# seconde} other {# secondes}}",
+      "tooManyRequests": "Trop de tentatives depuis cet appareil. Attendez une minute puis réessayez."
+    }
+  },
+  "account": {
+    "profile": "Profil"
+  },
+  "profile": {
+    "name": "Nom"
+  },
+  "settings": {
+    "language": "Langue"
+  },
+  "notFound": {
+    "title": "Page introuvable"
+  },
+  "errors": {
+    "generic": "Quelque chose s'est mal passé de notre côté. Veuillez réessayer plus tard.",
+    "network": "Veuillez vérifier votre connexion internet et réessayer.",
+    "code": {
+      "RATE_LIMIT_EXCEEDED": "Trop de requêtes. Attendez un instant puis réessayez."
+    }
+  }
+}

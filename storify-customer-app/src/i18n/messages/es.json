@@ -1,0 +1,56 @@
+{
+  "common": {
+    "retry": "Intentar de nuevo",
+    "viewAll": "Ver todo"
+  },
+  "tabs": {
+    "home": "Inicio",
+    "categories": "Categorías",
+    "cart": "Carrito",
+    "account": "Cuenta"
+  },
+  "catalog": {
+    "empty": "No se encontraron productos",
+    "sponsored": "Patrocinado",
+    "outOfStock": "Agotado",
+    "priceOnRequest": "Precio a consultar"
+  },
+  "product": {
+    "addToCart": "Añadir al carrito",
+    "description": "Descripción"
+  },
+  "cart": {},
+  "auth": {
+    "signIn": "Iniciar sesión",
+    "email": "Correo electrónico",
+    "password": "Contraseña",
+    "errors": {
+      "invalidCredentials": "Correo o contraseña incorrectos.",
+      "invalidCredentialsWithAttempts": "Correo o contraseña incorrectos. {count, plural, one {Queda # intento} other {Quedan # intentos}} antes de que la cuenta se bloquee.",
+      "accountLocked": "Demasiados intentos fallidos. Esta cuenta está bloqueada durante {duration}.",
+      "accountLockedUnknown": "Demasiados intentos fallidos. Esta cuenta está bloqueada unos minutos.",
+      "durationMinutes": "{count, plural, one {# minuto} other {# minutos}}",
+      "durationSeconds": "{count, plural, one {# segundo} other {# segundos}}",
+      "tooManyRequests": "Demasiados intentos desde este dispositivo. Espera un minuto e inténtalo de nuevo."
+    }
+  },
+  "account": {
+    "profile": "Perfil"
+  },
+  "profile": {
+    "name": "Nombre"
+  },
+  "settings": {
+    "language": "Idioma"
+  },
+  "notFound": {
+    "title": "Página no encontrada"
+  },
+  "errors": {
+    "generic": "Algo salió mal de nuestro lado. Inténtalo de nuevo más tarde.",
+    "network": "Comprueba tu conexión a internet e inténtalo de nuevo.",
+    "code": {
+      "RATE_LIMIT_EXCEEDED": "Demasiadas solicitudes. Espera un momento e inténtalo de nuevo."
+    }
+  }
+}

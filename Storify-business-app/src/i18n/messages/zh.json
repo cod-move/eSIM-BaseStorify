@@ -1,0 +1,23 @@
+{
+  "common": {
+    "retry": "重试"
+  },
+  "auth": {
+    "errors": {
+      "invalidCredentials": "邮箱或密码不正确。",
+      "invalidCredentialsWithAttempts": "邮箱或密码不正确。还剩 {count, plural, other {#}} 次尝试，之后账号将被锁定。",
+      "accountLocked": "登录失败次数过多。该账号已锁定 {duration}。",
+      "accountLockedUnknown": "登录失败次数过多。该账号已锁定几分钟。",
+      "durationMinutes": "{count, plural, other {# 分钟}}",
+      "durationSeconds": "{count, plural, other {# 秒}}",
+      "tooManyRequests": "此设备尝试次数过多，请等待一分钟后重试。"
+    }
+  },
+  "errors": {
+    "generic": "我们这边出了点问题，请稍后再试。",
+    "network": "请检查网络连接并重试。",
+    "code": {
+      "RATE_LIMIT_EXCEEDED": "请求过多，请稍后重试。"
+    }
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "common": {
+    "retry": "Tekrar deneyin",
+    "viewAll": "Tümünü Gör"
+  },
+  "tabs": {
+    "home": "Ana Sayfa",
+    "categories": "Kategoriler",
+    "cart": "Sepet",
+    "account": "Hesap"
+  },
+  "catalog": {
+    "empty": "Ürün bulunamadı",
+    "sponsored": "Sponsorlu",
+    "outOfStock": "Stokta Yok",
+    "priceOnRequest": "Fiyat için sorunuz"
+  },
+  "product": {
+    "addToCart": "Sepete Ekle",
+    "addedToCart": "Sepete eklendi",
+    "chooseOptions": "Seçenekleri belirle",
+    "description": "Açıklama",
+    "addToWishlist": "Favorilere ekle",
+    "removeFromWishlist": "Favorilerden çıkar"
+  },
+  "cart": {
+    "empty": "Sepetiniz boş",
+    "startShopping": "Alışverişe Başla"
+  },
+  "auth": {
+    "signIn": "Giriş Yap",
+    "email": "E-posta",
+    "password": "Şifre",
+    "errors": {
+      "invalidCredentials": "E-posta veya şifre hatalı.",
+      "invalidCredentialsWithAttempts": "E-posta veya şifre hatalı. Hesap kilitlenmeden önce {count, plural, one {# deneme} other {# deneme}} hakkınız kaldı.",
+      "accountLocked": "Çok fazla başarısız giriş denemesi. Bu hesap {duration} kilitli.",
+      "accountLockedUnknown": "Çok fazla başarısız giriş denemesi. Bu hesap birkaç dakika kilitli.",
+      "durationMinutes": "{count, plural, one {# dakika} other {# dakika}}",
+      "durationSeconds": "{count, plural, one {# saniye} other {# saniye}}",
+      "tooManyRequests": "Bu cihazdan çok fazla deneme yapıldı. Bir dakika bekleyip tekrar deneyin."
+    }
+  },
+  "account": {
+    "profile": "Profil"
+  },
+  "profile": {
+    "name": "Ad"
+  },
+  "settings": {
+    "language": "Dil"
+  },
+  "notFound": {
+    "title": "Sayfa Bulunamadı",
+    "home": "Ana Sayfaya Dön"
+  },
+  "errors": {
+    "generic": "Bizim tarafımızda bir şeyler ters gitti. Lütfen daha sonra tekrar deneyin.",
+    "network": "Lütfen internet bağlantınızı kontrol edip tekrar deneyin.",
+    "code": {
+      "RATE_LIMIT_EXCEEDED": "Çok fazla istek yapıldı. Biraz bekleyip tekrar deneyin."
+    }
+  }
+}

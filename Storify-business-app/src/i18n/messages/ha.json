@@ -1,0 +1,21 @@
+{
+  "common": {
+    "retry": "Sake gwadawa"
+  },
+  "auth": {
+    "errors": {
+      "invalidCredentials": "Imel ko kalmar sirri ba daidai ba ne.",
+      "invalidCredentialsWithAttempts": "Imel ko kalmar sirri ba daidai ba ne. {count, plural, one {Sauran gwaji #} other {Sauran gwaji #}} kafin a kulle wannan asusun.",
+      "accountLocked": "An yi ƙoƙarin shiga da yawa da suka gaza. An kulle wannan asusun na {duration}.",
+      "accountLockedUnknown": "An yi ƙoƙarin shiga da yawa da suka gaza. An kulle wannan asusun na 'yan mintuna.",
+      "durationMinutes": "{count, plural, one {minti #} other {minti #}}",
+      "durationSeconds": "{count, plural, one {daƙiƙa #} other {daƙiƙa #}}",
+      "tooManyRequests": "An yi ƙoƙari da yawa daga wannan na'urar. Jira minti ɗaya sannan ka sake gwadawa."
+    }
+  },
+  "errors": {
+    "code": {
+      "RATE_LIMIT_EXCEEDED": "Buƙatu sun yi yawa. Jira ɗan lokaci sannan ka sake gwadawa."
+    }
+  }
+}

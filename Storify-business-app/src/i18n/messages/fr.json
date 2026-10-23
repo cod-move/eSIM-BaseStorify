@@ -1,0 +1,22 @@
+{
+  "common": {
+    "retry": "Réessayer"
+  },
+  "auth": {
+    "errors": {
+      "invalidCredentials": "E-mail ou mot de passe incorrect.",
+      "invalidCredentialsWithAttempts": "E-mail ou mot de passe incorrect. {count, plural, one {Il reste # tentative} other {Il reste # tentatives}} avant le blocage du compte.",
+      "accountLocked": "Trop de tentatives échouées. Ce compte est bloqué pendant {duration}.",
+      "accountLockedUnknown": "Trop de tentatives échouées. Ce compte est bloqué quelques minutes.",
+      "durationSeconds": "{count, plural, one {# seconde} other {# secondes}}",
+      "tooManyRequests": "Trop de tentatives depuis cet appareil. Attendez une minute puis réessayez."
+    }
+  },
+  "errors": {
+    "generic": "Quelque chose s'est mal passé de notre côté. Veuillez réessayer plus tard.",
+    "network": "Veuillez vérifier votre connexion internet et réessayer.",
+    "code": {
+      "RATE_LIMIT_EXCEEDED": "Trop de requêtes. Attendez un instant puis réessayez."
+    }
+  }
+}

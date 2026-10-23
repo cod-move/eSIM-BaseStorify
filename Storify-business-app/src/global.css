@@ -1,0 +1,146 @@
+@import 'tailwindcss';
+@import 'uniwind';
+
+/*
+ * Design tokens.
+ *
+ * Every colour, radius and shadow in the app comes from this file: a screen
+ * never carries a hex value, and never one of Tailwind's own palette colours
+ * (`bg-red-500`), which ESLint refuses. When the design needs a colour that has
+ * no token yet, add the token here, in both themes, and to COLOR_TOKENS in
+ * src/theme/tokens.ts.
+ *
+ * The values are the shopper app's: the two apps are one family. The business
+ * app adds what a work tool needs: the status tones (`success`, `warning`,
+ * `danger`, `info`, each with its `-soft` fill).
+ */
+@theme {
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 16px;
+  --radius-sheet: 28px;
+
+  --shadow-float: 0 8px 24px rgb(0 0 0 / 0.1);
+  --shadow-bar: 0 -4px 16px rgb(0 0 0 / 0.06);
+  --shadow-button: 0 2px 8px rgb(0 0 0 / 0.12);
+  --shadow-card: 0 6px 16px rgb(0 0 0 / 0.08);
+}
+
+/*
+ * Colours, per theme. Each `--color-name` becomes the classes `bg-name`,
+ * `text-name`, `border-name` and `accent-name`. Both blocks must list the same
+ * names. They live in this layer, never in `@theme`: Uniwind reads them from
+ * here, and a `--color-*: initial` in `@theme` wipes the token classes.
+ *
+ * The store's theme replaces these at run time (src/theme/use-theme.ts): the
+ * brand colours (`primary`, `primary-foreground`) from `GET /config`.
+ *
+ * - background: the page and the body of a sheet.
+ * - surface: cards, lists, the tab bar, round buttons. In dark mode cards sit
+ *   lighter than the page, everywhere.
+ * - surface-alt: picture wells, inputs on a card, quiet fills.
+ * - primary: main buttons, selected chips, the active tab.
+ * - accent: the step that commits (save, confirm), radios and switches.
+ * - link: text links and count badges.
+ * - info, success, warning, danger: the status tones. Each is strong enough to
+ *   be text on `surface` and on `background` (4.5:1), and its `-soft` tint is
+ *   the fill of a status chip or a banner, under `foreground` text.
+ *   info: in progress. success: done. warning: waiting on the operator.
+ *   danger: failed, refused, destructive; `danger-foreground` is the label on
+ *   a `danger` fill.
+ * - logo-tile: white in both themes, under a store's or a seller's logo, which
+ *   is usually dark on transparent (the house's fixed-colour exception).
+ * - wash-*: the three colours of the gradient behind the Account tab and the
+ *   account screen, top to bottom (the shopper app's, unchanged); the dark
+ *   screens carry the same wash, much quieter.
+ */
+@layer theme {
+  :root {
+    @variant light {
+      --color-background: #f6f6f6;
+      --color-surface: #ffffff;
+      --color-surface-alt: #ebebeb;
+      --color-foreground: #252525;
+      --color-muted: #666666;
+      --color-border: #e0e0e0;
+      --color-primary: #252525;
+      --color-primary-foreground: #ffffff;
+      --color-secondary: #e4e4e4;
+      --color-secondary-foreground: #252525;
+      --color-accent: #1f5eff;
+      --color-accent-foreground: #ffffff;
+      --color-link: #5b57ff;
+      --color-info: #2563eb;
+      --color-info-soft: #e8eeff;
+      --color-success: #15803d;
+      --color-success-soft: #e2f3e8;
+      --color-warning: #b45309;
+      --color-warning-soft: #fbefd9;
+      --color-danger: #d42a30;
+      --color-danger-soft: #fbe5e6;
+      --color-danger-foreground: #ffffff;
+      --color-scrim: #000000;
+      --color-on-scrim: #ffffff;
+      --color-logo-tile: #ffffff;
+      --color-wash-account-top: #bcddf8;
+      --color-wash-account-middle: #dceff3;
+      --color-wash-account-bottom: #f4f8f8;
+      --color-wash-profile-top: #bcd8fa;
+      --color-wash-profile-middle: #dcddf7;
+      --color-wash-profile-bottom: #f1eef8;
+    }
+
+    @variant dark {
+      --color-background: #2f2f2f;
+      --color-surface: #4a4a4a;
+      --color-surface-alt: #3c3c3c;
+      --color-foreground: #ffffff;
+      --color-muted: #bdbdbd;
+      --color-border: #5a5a5a;
+      --color-primary: #1c1c1c;
+      --color-primary-foreground: #ffffff;
+      --color-secondary: #5c5c5c;
+      --color-secondary-foreground: #ffffff;
+      --color-accent: #2b6bff;
+      --color-accent-foreground: #ffffff;
+      --color-link: #8e8cff;
+      --color-info: #a3c2ff;
+      --color-info-soft: #4e586e;
+      --color-success: #3dd68c;
+      --color-success-soft: #456555;
+      --color-warning: #fbbf24;
+      --color-warning-soft: #6c5f40;
+      /* The shopper's #ff6b6e is 3.2:1 on a dark card: too faint for an error under a field. */
+      --color-danger: #ffa0a2;
+      --color-danger-soft: #654748;
+      --color-danger-foreground: #1f1f1f;
+      --color-scrim: #000000;
+      --color-on-scrim: #ffffff;
+      --color-logo-tile: #ffffff;
+      --color-wash-account-top: #242425;
+      --color-wash-account-middle: #2c2b2f;
+      --color-wash-account-bottom: #333136;
+      --color-wash-profile-top: #2b2a2e;
+      --color-wash-profile-middle: #322e3d;
+      --color-wash-profile-bottom: #333136;
+    }
+  }
+}
+
+/*
+ * The browser preview only (a phone never reads a rule like this one): a
+ * browser paints a field it fills in, such as a saved email and password, in
+ * its own pale blue over the field's token colour, and leaves the button
+ * beside it (show password) in the field's own. The fill is held off, so the
+ * field keeps its colour, and the text keeps `foreground`.
+ */
+@layer base {
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus {
+    -webkit-text-fill-color: var(--color-foreground);
+    caret-color: var(--color-foreground);
+    transition: background-color 600000s 0s;
+  }
+}

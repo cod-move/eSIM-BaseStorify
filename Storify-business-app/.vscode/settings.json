@@ -1,0 +1,30 @@
+{
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "explicit",
+    "source.organizeImports": "explicit"
+  },
+  "files.associations": {
+    "*.css": "tailwindcss"
+  },
+  "tailwindCSS.experimental.configFile": "src/global.css",
+  "tailwindCSS.classAttributes": [
+    "class",
+    "className",
+    "contentContainerClassName",
+    "columnWrapperClassName",
+    "colorClassName",
+    "tintColorClassName",
+    "placeholderTextColorClassName",
+    "selectionColorClassName",
+    "cursorColorClassName",
+    "thumbColorClassName",
+    "trackColorOnClassName",
+    "trackColorOffClassName",
+    "backdropColorClassName",
+    "ListHeaderComponentClassName",
+    "ListFooterComponentClassName"
+  ],
+  "tailwindCSS.classFunctions": ["cn"]
+}

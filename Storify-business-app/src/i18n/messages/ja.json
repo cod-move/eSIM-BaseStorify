@@ -1,0 +1,23 @@
+{
+  "common": {
+    "retry": "もう一度試してください"
+  },
+  "auth": {
+    "errors": {
+      "invalidCredentials": "メールアドレスまたはパスワードが正しくありません。",
+      "invalidCredentialsWithAttempts": "メールアドレスまたはパスワードが正しくありません。あと {count, plural, other {#}} 回失敗すると、このアカウントはロックされます。",
+      "accountLocked": "ログインの失敗が多すぎます。このアカウントは {duration} ロックされています。",
+      "accountLockedUnknown": "ログインの失敗が多すぎます。このアカウントは数分間ロックされています。",
+      "durationMinutes": "{count, plural, other {# 分間}}",
+      "durationSeconds": "{count, plural, other {# 秒間}}",
+      "tooManyRequests": "このデバイスからの試行が多すぎます。1 分ほど待ってからもう一度お試しください。"
+    }
+  },
+  "errors": {
+    "generic": "問題が発生しました。しばらくしてからもう一度お試しください。",
+    "network": "インターネット接続を確認して、もう一度お試しください。",
+    "code": {
+      "RATE_LIMIT_EXCEEDED": "リクエストが多すぎます。しばらく待ってからもう一度お試しください。"
+    }
+  }
+}

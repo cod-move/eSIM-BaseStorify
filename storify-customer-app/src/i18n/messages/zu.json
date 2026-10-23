@@ -1,0 +1,63 @@
+{
+  "common": {
+    "retry": "Zama futhi",
+    "viewAll": "Buka Konke"
+  },
+  "tabs": {
+    "home": "Ikhaya",
+    "categories": "Izigaba",
+    "cart": "Indwangu",
+    "account": "Akaunti"
+  },
+  "catalog": {
+    "empty": "Ayikabikho imikhiqizo",
+    "sponsored": "Kuxhasiwe",
+    "outOfStock": "Ayitholakali",
+    "priceOnRequest": "Intengo ngesicelo"
+  },
+  "product": {
+    "addToCart": "Faka Endwangu",
+    "addedToCart": "Ifakiwe endwangu",
+    "description": "Incazelo",
+    "addToWishlist": "Faka kuhlonzi",
+    "removeFromWishlist": "Susa kuhlonzi"
+  },
+  "cart": {
+    "empty": "Indwangu yakho ayinanto",
+    "startShopping": "Qala Ukuthenga"
+  },
+  "auth": {
+    "signIn": "Ngena ngemvume",
+    "email": "I-imeyili",
+    "password": "Iphasiwedi",
+    "errors": {
+      "invalidCredentials": "I-imeyili noma iphasiwedi ayilungile.",
+      "invalidCredentialsWithAttempts": "I-imeyili noma iphasiwedi ayilungile. {count, plural, one {Kusele umzamo #} other {Kusele imizamo #}} ngaphambi kokuba le akhawunti ikhiywe.",
+      "accountLocked": "Kunemizamo eminingi yokungena engaphumelelanga. Le akhawunti ikhiywe {duration}.",
+      "accountLockedUnknown": "Kunemizamo eminingi yokungena engaphumelelanga. Le akhawunti ikhiywe imizuzu embalwa.",
+      "durationMinutes": "{count, plural, one {umzuzu #} other {imizuzu #}}",
+      "durationSeconds": "{count, plural, one {umzuzwana #} other {imizuzwana #}}",
+      "tooManyRequests": "Kunemizamo eminingi kule divayisi. Linda umzuzu bese uzama futhi."
+    }
+  },
+  "account": {
+    "profile": "Iphrofayela"
+  },
+  "profile": {
+    "name": "Igama"
+  },
+  "settings": {
+    "language": "Ulimi"
+  },
+  "notFound": {
+    "title": "Ikhasi Ayitholakali",
+    "home": "Buyela Ekhaya"
+  },
+  "errors": {
+    "generic": "Kwenzekani ngaphandle kwanoma yini.",
+    "network": "Sicela uhlaziye i-inthanethi yakho futhi uzame.",
+    "code": {
+      "RATE_LIMIT_EXCEEDED": "Kunezicelo eziningi. Linda kancane bese uzama futhi."
+    }
+  }
+}

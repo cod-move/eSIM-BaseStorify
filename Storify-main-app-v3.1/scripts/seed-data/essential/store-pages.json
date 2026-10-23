@@ -1,0 +1,1329 @@
+[
+  {
+    "_id": {
+      "$oid": "6a84370852be40faf8595564"
+    },
+    "__v": 0,
+    "createdAt": {
+      "$date": "2026-08-18T10:42:16.161Z"
+    },
+    "draft": {
+      "sections": [
+        {
+          "id": "preset-essential-1",
+          "type": "slideshow",
+          "version": 2,
+          "visible": true,
+          "settings": {
+            "grid": "single",
+            "width": "fixed",
+            "height": "quarter",
+            "gap": 14,
+            "sidePadding": 16,
+            "corners": "custom",
+            "radius": 12
+          },
+          "blocks": [
+            {
+              "id": "preset-essential-1-cell-1",
+              "type": "cell",
+              "visible": true,
+              "settings": {
+                "kind": "slider",
+                "slider": "new-slider-1787943015045",
+                "image": "https://pub-49808a4ecaf04280b0561965cf5a40a4.r2.dev/uploads/2026/08/1785936992039-pbqkc4/Louis_STOR_COLECTION_Kaos_Oversize_Lengan_Pendek_Tshirt_Motif_Outside_The_Box_Bahan_Cotton-removebg-preview.webp",
+                "link": "",
+                "alt": ""
+              }
+            },
+            {
+              "id": "preset-essential-1-cell-2",
+              "type": "cell",
+              "visible": true,
+              "settings": {
+                "kind": "image",
+                "slider": "",
+                "image": "https://pub-49808a4ecaf04280b0561965cf5a40a4.r2.dev/uploads/2026/08/1785935831936-gojq6r/p1-removebg-preview.webp",
+                "link": "",
+                "alt": ""
+              }
+            },
+            {
+              "id": "preset-essential-1-cell-3",
+              "type": "cell",
+              "visible": true,
+              "settings": {
+                "kind": "image",
+                "slider": "",
+                "image": "https://pub-49808a4ecaf04280b0561965cf5a40a4.r2.dev/uploads/2026/08/1785933512254-ad741v/p2-removebg-preview.webp",
+                "link": "",
+                "alt": ""
+              }
+            },
+            {
+              "id": "preset-essential-1-cell-4",
+              "type": "cell",
+              "visible": true,
+              "settings": {
+                "kind": "image",
+                "slider": "",
+                "image": "https://pub-49808a4ecaf04280b0561965cf5a40a4.r2.dev/uploads/2026/08/1786024278969-m6lj5g/iPad-Air-M3---2025aa-6321-removebg-preview.webp",
+                "link": "",
+                "alt": ""
+              }
+            },
+            {
+              "id": "preset-essential-1-cell-5",
+              "type": "cell",
+              "visible": true,
+              "settings": {
+                "kind": "image",
+                "slider": "",
+                "image": "https://pub-49808a4ecaf04280b0561965cf5a40a4.r2.dev/uploads/2026/05/1779101099879-yrzkr5-haier-h55m80fux-55-inch-mini-led-4k-smart-google-tvaaa-9755-removebg-preview.png",
+                "link": "",
+                "alt": ""
+              }
+            }
+          ]
+        },
+        {
+          "id": "preset-essential-2",
+          "type": "category-list",
+          "version": 1,
+          "visible": true,
+          "settings": {
+            "title": "Featured Categories",
+            "source": "featured",
+            "limit": 8,
+            "categoryIds": [],
+            "style": "",
+            "variant": "cards",
+            "titleSize": "default"
+          },
+          "blocks": []
+        },
+        {
+          "id": "preset-essential-3",
+          "type": "product-grid",
+          "version": 1,
+          "visible": true,
+          "settings": {
+            "title": "Product on Sale",
+            "subtitle": "",
+            "source": "discounted",
+            "categoryId": "",
+            "brandId": "",
+            "collectionId": "",
+            "limit": 8,
+            "desktopColumns": 4,
+            "productIds": [],
+            "titleSize": "default"
+          },
+          "blocks": []
+        },
+        {
+          "id": "preset-essential-4",
+          "type": "sponsored-rail",
+          "version": 1,
+          "visible": true,
+          "settings": {
+            "limit": 8,
+            "desktopColumns": 4,
+            "titleSize": "default"
+          },
+          "blocks": []
+        },
+        {
+          "id": "preset-essential-5",
+          "type": "promotion-grid",
+          "version": 2,
+          "visible": true,
+          "settings": {
+            "grid": "feature",
+            "width": "fixed",
+            "height": "threeQuarters",
+            "gap": 14,
+            "sidePadding": 16,
+            "corners": "custom",
+            "radius": 12
+          },
+          "blocks": [
+            {
+              "id": "preset-essential-5-1",
+              "type": "cell",
+              "visible": true,
+              "settings": {
+                "kind": "image",
+                "slider": "",
+                "image": "https://pub-49808a4ecaf04280b0561965cf5a40a4.r2.dev/uploads/2026/09/1789963646179-pwtuvo/tile-tall-1.png",
+                "link": "/products/cmf-by-nothing-watch-pro-2-bt-calling-smart-watch",
+                "alt": ""
+              }
+            },
+            {
+              "id": "preset-essential-5-2",
+              "type": "cell",
+              "visible": true,
+              "settings": {
+                "kind": "image",
+                "slider": "",
+                "image": "https://pub-49808a4ecaf04280b0561965cf5a40a4.r2.dev/uploads/2026/09/1789963882776-6rx6k0/tile-small-1.png",
+                "link": "/products/men-s-nike-vomero-plus-running-shoes",
+                "alt": ""
+              }
+            },
+            {
+              "id": "preset-essential-5-3",
+              "type": "cell",
+              "visible": true,
+              "settings": {
+                "kind": "image",
+                "slider": "",
+                "image": "https://pub-49808a4ecaf04280b0561965cf5a40a4.r2.dev/uploads/2026/09/1789963892301-uof7ps/tile-small-2.png",
+                "link": "/products/men-s-nike-air-max-plus-vii-casual-shoes",
+                "alt": ""
+              }
+            },
+            {
+              "id": "preset-essential-5-4",
+              "type": "cell",
+              "visible": true,
+              "settings": {
+                "kind": "image",
+                "slider": "",
+                "image": "https://pub-49808a4ecaf04280b0561965cf5a40a4.r2.dev/uploads/2026/09/1789963872844-5o8sol/Group_249.webp",
+                "link": "/products/wmns-shox-z",
+                "alt": ""
+              }
+            },
+            {
+              "id": "preset-essential-5-5",
+              "type": "cell",
+              "visible": true,
+              "settings": {
+                "kind": "image",
+                "slider": "",
+                "image": "https://pub-49808a4ecaf04280b0561965cf5a40a4.r2.dev/uploads/2026/09/1789963902985-xpgat8/Group_526.webp",
+                "link": "/products/wmns-shox-z-hq7540-003",
+                "alt": ""
+              }
+            }
+          ]
+        },
+        {
+          "id": "preset-essential-6",
+          "type": "product-browser",
+          "version": 3,
+          "visible": true,
+          "settings": {
+            "title": "",
+            "source": "all",
+            "categoryId": "",
+            "brandId": "",
+            "collectionId": "",
+            "layout": "browser",
+            "endless": true,
+            "rows": 3,
+            "desktopColumns": 4,
+            "productIds": [],
+            "titleSize": "default"
+          },
+          "blocks": []
+        },
+        {
+          "id": "preset-essential-7",
+          "type": "vendor-list",
+          "version": 1,
+          "visible": true,
+          "settings": {
+            "title": "Top Vendors",
+            "subtitle": "",
+            "source": "topRated",
+            "vendorIds": [],
+            "limit": 8,
+            "ctaLabel": "",
+            "viewAllLabel": "",
+            "viewAllLink": "/vendors",
+            "layout": "carousel",
+            "desktopColumns": 4,
+            "cardStyle": "bordered",
+            "cardRadius": 16,
+            "buttonStyle": "solid",
+            "backgroundColor": "",
+            "buttonColor": "",
+            "showTagline": true,
+            "showRating": true,
+            "showSold": true,
+            "showPrice": true,
+            "showFollow": true,
+            "showButton": true,
+            "hideEmptyStores": false,
+            "titleSize": "default"
+          },
+          "blocks": []
+        },
+        {
+          "id": "preset-essential-8",
+          "type": "promotion-banner",
+          "version": 1,
+          "visible": true,
+          "settings": {
+            "slides": [
+              {
+                "id": "slide-muaprpdz",
+                "visible": true,
+                "elements": {
+                  "heading": true,
+                  "description": true,
+                  "tagline": false,
+                  "price": false,
+                  "cta": true,
+                  "cta2": false,
+                  "countdown": false
+                },
+                "order": [
+                  "tagline",
+                  "heading",
+                  "description",
+                  "price",
+                  "countdown",
+                  "cta",
+                  "cta2"
+                ],
+                "texts": {
+                  "tagline": "",
+                  "heading": "Start Selling With Us Today",
+                  "description": "Join our marketplace, manage products easily, accept secure payments, and grow your business faste",
+                  "cta": "Become a Vendor",
+                  "cta2": ""
+                },
+                "ctaVariant": "dark",
+                "cta2Variant": "outline",
+                "styles": {
+                  "landscape": {
+                    "description": {
+                      "weight": "300"
+                    },
+                    "cta": {
+                      "size": 15,
+                      "lineHeight": 135
+                    }
+                  }
+                },
+                "link": "/become-vendor",
+                "link2": "",
+                "productId": "",
+                "productImage": "https://pub-49808a4ecaf04280b0561965cf5a40a4.r2.dev/uploads/2026/09/1789963100309-0ok1mp/32cc1c68-9cf7-45cd-b4b3-acc3b011584c.png",
+                "artInFront": false,
+                "countdownEndsAt": "",
+                "reveal": "fade",
+                "background": {
+                  "type": "solid",
+                  "color": "#f1f1f1",
+                  "gradient": {
+                    "type": "linear",
+                    "angle": 0,
+                    "stops": [
+                      {
+                        "color": "#ef4444",
+                        "at": 0
+                      },
+                      {
+                        "color": "#ec4899",
+                        "at": 100
+                      }
+                    ]
+                  }
+                },
+                "layout": {
+                  "landscape": {
+                    "h": "left",
+                    "v": "middle",
+                    "gap": 16,
+                    "scale": 100,
+                    "padding": 57
+                  }
+                },
+                "image": {
+                  "landscape": {
+                    "h": "right",
+                    "v": "middle",
+                    "scale": 40,
+                    "rotation": 0,
+                    "x": -1.9417475728155342,
+                    "y": -0.8960702017048865
+                  }
+                },
+                "alt": ""
+              }
+            ],
+            "transition": "slide",
+            "autoplaySeconds": 5,
+            "fullWidth": false,
+            "image": "https://pub-49808a4ecaf04280b0561965cf5a40a4.r2.dev/uploads/2026/05/1779021764635-uk1o9w-galaxy-watch7--green-8018.png",
+            "heading": "Big Savings This Season",
+            "subheading": "Up to 40% off top picks across the store. Limited time only.",
+            "ctaLabel": "Shop the Sale",
+            "link": "/products",
+            "titleSize": "default"
+          },
+          "blocks": []
+        },
+        {
+          "id": "preset-essential-9",
+          "type": "blog-posts",
+          "version": 1,
+          "visible": true,
+          "settings": {
+            "title": "Top Articles",
+            "limit": 9,
+            "desktopColumns": 4,
+            "titleSize": "default"
+          },
+          "blocks": []
+        },
+        {
+          "id": "preset-essential-10",
+          "type": "image-gallery",
+          "version": 1,
+          "visible": true,
+          "settings": {
+            "title": "From Instagram",
+            "titleSize": "default"
+          },
+          "blocks": [
+            {
+              "id": "preset-essential-10-1",
+              "type": "image",
+              "visible": true,
+              "settings": {
+                "image": "https://pub-49808a4ecaf04280b0561965cf5a40a4.r2.dev/uploads/2026/05/1779020556151-ga0c1c-apple-watch-se-3-9687.png",
+                "link": "/products/apple-watch-se-3"
+              }
+            },
+            {
+              "id": "preset-essential-10-2",
+              "type": "image",
+              "visible": true,
+              "settings": {
+                "image": "https://pub-49808a4ecaf04280b0561965cf5a40a4.r2.dev/uploads/2026/05/1778946690683-kr95mn-dj5161_400_p1.png",
+                "link": "/products/men-s-nike-air-griffey-max-1-casual-shoes"
+              }
+            },
+            {
+              "id": "preset-essential-10-3",
+              "type": "image",
+              "visible": true,
+              "settings": {
+                "image": "https://pub-49808a4ecaf04280b0561965cf5a40a4.r2.dev/uploads/2026/05/1778945184371-2uxsdj-dji-osmo-pocket-3-action-camera-5577.png",
+                "link": "/products/dji-osmo-pocket-3-action-camera"
+              }
+            },
+            {
+              "id": "preset-essential-10-4",
+              "type": "image",
+              "visible": true,
+              "settings": {
+                "image": "https://pub-49808a4ecaf04280b0561965cf5a40a4.r2.dev/uploads/2026/05/1778944924281-n9u9k8-dji-osmo-nano-action-camera-8478.png",
+                "link": "/products/dji-osmo-nano-action-camera"
+              }
+            },
+            {
+              "id": "preset-essential-10-5",
+              "type": "image",
+              "visible": true,
+              "settings": {
+                "image": "https://pub-49808a4ecaf04280b0561965cf5a40a4.r2.dev/uploads/2026/05/1778944598338-x1zkyc-dji-osmo-action-6-adventure-combo-camerarr-3229.png",
+                "link": "/products/dji-osmo-action-6-adventure-combo-camera"
+              }
+            }
+          ]
+        }
+      ],
+      "updatedAt": {
+        "$date": "2026-10-11T09:04:41.660Z"
+      },
+      "updatedBy": null
+    },
+    "history": [],
+    "kind": "template",
+    "published": {
+      "sections": [
+        {
+          "id": "preset-essential-1",
+          "type": "slideshow",
+          "version": 2,
+          "visible": true,
+          "settings": {
+            "grid": "single",
+            "width": "fixed",
+            "height": "quarter",
+            "gap": 14,
+            "sidePadding": 16,
+            "corners": "custom",
+            "radius": 12
+          },
+          "blocks": [
+            {
+              "id": "preset-essential-1-cell-1",
+              "type": "cell",
+              "visible": true,
+              "settings": {
+                "kind": "slider",
+                "slider": "new-slider-1787943015045",
+                "image": "https://pub-49808a4ecaf04280b0561965cf5a40a4.r2.dev/uploads/2026/08/1785936992039-pbqkc4/Louis_STOR_COLECTION_Kaos_Oversize_Lengan_Pendek_Tshirt_Motif_Outside_The_Box_Bahan_Cotton-removebg-preview.webp",
+                "link": "",
+                "alt": ""
+              }
+            },
+            {
+              "id": "preset-essential-1-cell-2",
+              "type": "cell",
+              "visible": true,
+              "settings": {
+                "kind": "image",
+                "slider": "",
+                "image": "https://pub-49808a4ecaf04280b0561965cf5a40a4.r2.dev/uploads/2026/08/1785935831936-gojq6r/p1-removebg-preview.webp",
+                "link": "",
+                "alt": ""
+              }
+            },
+            {
+              "id": "preset-essential-1-cell-3",
+              "type": "cell",
+              "visible": true,
+              "settings": {
+                "kind": "image",
+                "slider": "",
+                "image": "https://pub-49808a4ecaf04280b0561965cf5a40a4.r2.dev/uploads/2026/08/1785933512254-ad741v/p2-removebg-preview.webp",
+                "link": "",
+                "alt": ""
+              }
+            },
+            {
+              "id": "preset-essential-1-cell-4",
+              "type": "cell",
+              "visible": true,
+              "settings": {
+                "kind": "image",
+                "slider": "",
+                "image": "https://pub-49808a4ecaf04280b0561965cf5a40a4.r2.dev/uploads/2026/08/1786024278969-m6lj5g/iPad-Air-M3---2025aa-6321-removebg-preview.webp",
+                "link": "",
+                "alt": ""
+              }
+            },
+            {
+              "id": "preset-essential-1-cell-5",
+              "type": "cell",
+              "visible": true,
+              "settings": {
+                "kind": "image",
+                "slider": "",
+                "image": "https://pub-49808a4ecaf04280b0561965cf5a40a4.r2.dev/uploads/2026/05/1779101099879-yrzkr5-haier-h55m80fux-55-inch-mini-led-4k-smart-google-tvaaa-9755-removebg-preview.png",
+                "link": "",
+                "alt": ""
+              }
+            }
+          ]
+        },
+        {
+          "id": "preset-essential-2",
+          "type": "category-list",
+          "version": 1,
+          "visible": true,
+          "settings": {
+            "title": "Featured Categories",
+            "source": "featured",
+            "limit": 8,
+            "categoryIds": [],
+            "style": "",
+            "variant": "cards",
+            "titleSize": "default"
+          },
+          "blocks": []
+        },
+        {
+          "id": "preset-essential-3",
+          "type": "product-grid",
+          "version": 1,
+          "visible": true,
+          "settings": {
+            "title": "Product on Sale",
+            "subtitle": "",
+            "source": "discounted",
+            "categoryId": "",
+            "brandId": "",
+            "collectionId": "",
+            "limit": 8,
+            "desktopColumns": 4,
+            "productIds": [],
+            "titleSize": "default"
+          },
+          "blocks": []
+        },
+        {
+          "id": "preset-essential-4",
+          "type": "sponsored-rail",
+          "version": 1,
+          "visible": true,
+          "settings": {
+            "limit": 8,
+            "desktopColumns": 4,
+            "titleSize": "default"
+          },
+          "blocks": []
+        },
+        {
+          "id": "preset-essential-5",
+          "type": "promotion-grid",
+          "version": 2,
+          "visible": true,
+          "settings": {
+            "grid": "feature",
+            "width": "fixed",
+            "height": "threeQuarters",
+            "gap": 14,
+            "sidePadding": 16,
+            "corners": "custom",
+            "radius": 12
+          },
+          "blocks": [
+            {
+              "id": "preset-essential-5-1",
+              "type": "cell",
+              "visible": true,
+              "settings": {
+                "kind": "image",
+                "slider": "",
+                "image": "https://pub-49808a4ecaf04280b0561965cf5a40a4.r2.dev/uploads/2026/09/1789963646179-pwtuvo/tile-tall-1.png",
+                "link": "/products/cmf-by-nothing-watch-pro-2-bt-calling-smart-watch",
+                "alt": ""
+              }
+            },
+            {
+              "id": "preset-essential-5-2",
+              "type": "cell",
+              "visible": true,
+              "settings": {
+                "kind": "image",
+                "slider": "",
+                "image": "https://pub-49808a4ecaf04280b0561965cf5a40a4.r2.dev/uploads/2026/09/1789963882776-6rx6k0/tile-small-1.png",
+                "link": "/products/men-s-nike-vomero-plus-running-shoes",
+                "alt": ""
+              }
+            },
+            {
+              "id": "preset-essential-5-3",
+              "type": "cell",
+              "visible": true,
+              "settings": {
+                "kind": "image",
+                "slider": "",
+                "image": "https://pub-49808a4ecaf04280b0561965cf5a40a4.r2.dev/uploads/2026/09/1789963892301-uof7ps/tile-small-2.png",
+                "link": "/products/men-s-nike-air-max-plus-vii-casual-shoes",
+                "alt": ""
+              }
+            },
+            {
+              "id": "preset-essential-5-4",
+              "type": "cell",
+              "visible": true,
+              "settings": {
+                "kind": "image",
+                "slider": "",
+                "image": "https://pub-49808a4ecaf04280b0561965cf5a40a4.r2.dev/uploads/2026/09/1789963872844-5o8sol/Group_249.webp",
+                "link": "/products/wmns-shox-z",
+                "alt": ""
+              }
+            },
+            {
+              "id": "preset-essential-5-5",
+              "type": "cell",
+              "visible": true,
+              "settings": {
+                "kind": "image",
+                "slider": "",
+                "image": "https://pub-49808a4ecaf04280b0561965cf5a40a4.r2.dev/uploads/2026/09/1789963902985-xpgat8/Group_526.webp",
+                "link": "/products/wmns-shox-z-hq7540-003",
+                "alt": ""
+              }
+            }
+          ]
+        },
+        {
+          "id": "preset-essential-6",
+          "type": "product-browser",
+          "version": 3,
+          "visible": true,
+          "settings": {
+            "title": "",
+            "source": "all",
+            "categoryId": "",
+            "brandId": "",
+            "collectionId": "",
+            "layout": "browser",
+            "endless": true,
+            "rows": 3,
+            "desktopColumns": 4,
+            "productIds": [],
+            "titleSize": "default"
+          },
+          "blocks": []
+        },
+        {
+          "id": "preset-essential-7",
+          "type": "vendor-list",
+          "version": 1,
+          "visible": true,
+          "settings": {
+            "title": "Top Vendors",
+            "subtitle": "",
+            "source": "topRated",
+            "vendorIds": [],
+            "limit": 8,
+            "ctaLabel": "",
+            "viewAllLabel": "",
+            "viewAllLink": "/vendors",
+            "layout": "carousel",
+            "desktopColumns": 4,
+            "cardStyle": "bordered",
+            "cardRadius": 16,
+            "buttonStyle": "solid",
+            "backgroundColor": "",
+            "buttonColor": "",
+            "showTagline": true,
+            "showRating": true,
+            "showSold": true,
+            "showPrice": true,
+            "showFollow": true,
+            "showButton": true,
+            "hideEmptyStores": false,
+            "titleSize": "default"
+          },
+          "blocks": []
+        },
+        {
+          "id": "preset-essential-8",
+          "type": "promotion-banner",
+          "version": 1,
+          "visible": true,
+          "settings": {
+            "slides": [
+              {
+                "id": "slide-muaprpdz",
+                "visible": true,
+                "elements": {
+                  "heading": true,
+                  "description": true,
+                  "tagline": false,
+                  "price": false,
+                  "cta": true,
+                  "cta2": false,
+                  "countdown": false
+                },
+                "order": [
+                  "tagline",
+                  "heading",
+                  "description",
+                  "price",
+                  "countdown",
+                  "cta",
+                  "cta2"
+                ],
+                "texts": {
+                  "tagline": "",
+                  "heading": "Start Selling With Us Today",
+                  "description": "Join our marketplace, manage products easily, accept secure payments, and grow your business faste",
+                  "cta": "Become a Vendor",
+                  "cta2": ""
+                },
+                "ctaVariant": "dark",
+                "cta2Variant": "outline",
+                "styles": {
+                  "landscape": {
+                    "description": {
+                      "weight": "300"
+                    },
+                    "cta": {
+                      "size": 15,
+                      "lineHeight": 135
+                    }
+                  }
+                },
+                "link": "/become-vendor",
+                "link2": "",
+                "productId": "",
+                "productImage": "https://pub-49808a4ecaf04280b0561965cf5a40a4.r2.dev/uploads/2026/09/1789963100309-0ok1mp/32cc1c68-9cf7-45cd-b4b3-acc3b011584c.png",
+                "artInFront": false,
+                "countdownEndsAt": "",
+                "reveal": "fade",
+                "background": {
+                  "type": "solid",
+                  "color": "#f1f1f1",
+                  "gradient": {
+                    "type": "linear",
+                    "angle": 0,
+                    "stops": [
+                      {
+                        "color": "#ef4444",
+                        "at": 0
+                      },
+                      {
+                        "color": "#ec4899",
+                        "at": 100
+                      }
+                    ]
+                  }
+                },
+                "layout": {
+                  "landscape": {
+                    "h": "left",
+                    "v": "middle",
+                    "gap": 16,
+                    "scale": 100,
+                    "padding": 57
+                  }
+                },
+                "image": {
+                  "landscape": {
+                    "h": "right",
+                    "v": "middle",
+                    "scale": 40,
+                    "rotation": 0,
+                    "x": -1.9417475728155342,
+                    "y": -0.8960702017048865
+                  }
+                },
+                "alt": ""
+              }
+            ],
+            "transition": "slide",
+            "autoplaySeconds": 5,
+            "fullWidth": false,
+            "image": "https://pub-49808a4ecaf04280b0561965cf5a40a4.r2.dev/uploads/2026/05/1779021764635-uk1o9w-galaxy-watch7--green-8018.png",
+            "heading": "Big Savings This Season",
+            "subheading": "Up to 40% off top picks across the store. Limited time only.",
+            "ctaLabel": "Shop the Sale",
+            "link": "/products",
+            "titleSize": "default"
+          },
+          "blocks": []
+        },
+        {
+          "id": "preset-essential-9",
+          "type": "blog-posts",
+          "version": 1,
+          "visible": true,
+          "settings": {
+            "title": "Top Articles",
+            "limit": 9,
+            "desktopColumns": 4,
+            "titleSize": "default"
+          },
+          "blocks": []
+        },
+        {
+          "id": "preset-essential-10",
+          "type": "image-gallery",
+          "version": 1,
+          "visible": true,
+          "settings": {
+            "title": "From Instagram",
+            "titleSize": "default"
+          },
+          "blocks": [
+            {
+              "id": "preset-essential-10-1",
+              "type": "image",
+              "visible": true,
+              "settings": {
+                "image": "https://pub-49808a4ecaf04280b0561965cf5a40a4.r2.dev/uploads/2026/05/1779020556151-ga0c1c-apple-watch-se-3-9687.png",
+                "link": "/products/apple-watch-se-3"
+              }
+            },
+            {
+              "id": "preset-essential-10-2",
+              "type": "image",
+              "visible": true,
+              "settings": {
+                "image": "https://pub-49808a4ecaf04280b0561965cf5a40a4.r2.dev/uploads/2026/05/1778946690683-kr95mn-dj5161_400_p1.png",
+                "link": "/products/men-s-nike-air-griffey-max-1-casual-shoes"
+              }
+            },
+            {
+              "id": "preset-essential-10-3",
+              "type": "image",
+              "visible": true,
+              "settings": {
+                "image": "https://pub-49808a4ecaf04280b0561965cf5a40a4.r2.dev/uploads/2026/05/1778945184371-2uxsdj-dji-osmo-pocket-3-action-camera-5577.png",
+                "link": "/products/dji-osmo-pocket-3-action-camera"
+              }
+            },
+            {
+              "id": "preset-essential-10-4",
+              "type": "image",
+              "visible": true,
+              "settings": {
+                "image": "https://pub-49808a4ecaf04280b0561965cf5a40a4.r2.dev/uploads/2026/05/1778944924281-n9u9k8-dji-osmo-nano-action-camera-8478.png",
+                "link": "/products/dji-osmo-nano-action-camera"
+              }
+            },
+            {
+              "id": "preset-essential-10-5",
+              "type": "image",
+              "visible": true,
+              "settings": {
+                "image": "https://pub-49808a4ecaf04280b0561965cf5a40a4.r2.dev/uploads/2026/05/1778944598338-x1zkyc-dji-osmo-action-6-adventure-combo-camerarr-3229.png",
+                "link": "/products/dji-osmo-action-6-adventure-combo-camera"
+              }
+            }
+          ]
+        }
+      ],
+      "publishedAt": {
+        "$date": "2026-10-11T09:04:49.465Z"
+      },
+      "publishedBy": null
+    },
+    "title": "Home",
+    "updatedAt": {
+      "$date": "2026-10-11T09:04:49.465Z"
+    },
+    "key": "template:home:default",
+    "templateType": "home"
+  },
+  {
+    "_id": {
+      "$oid": "6a85892252be40faf85956c8"
+    },
+    "key": "template:product:default",
+    "__v": 0,
+    "createdAt": {
+      "$date": "2026-08-19T10:44:50.442Z"
+    },
+    "draft": {
+      "sections": [
+        {
+          "id": "product-main",
+          "type": "product-main",
+          "version": 1,
+          "visible": true,
+          "settings": {
+            "galleryLayout": "bottom",
+            "rows": "[{\"id\":\"g1\",\"items\":[{\"id\":\"breadcrumb\",\"key\":\"breadcrumb\",\"on\":true},{\"id\":\"brand\",\"key\":\"brand\",\"on\":true},{\"id\":\"title\",\"key\":\"title\",\"on\":true},{\"id\":\"rating\",\"key\":\"rating\",\"on\":true},{\"id\":\"vendor\",\"key\":\"vendor\",\"on\":true}]},{\"id\":\"g2\",\"items\":[{\"id\":\"price\",\"key\":\"price\",\"on\":true}]},{\"id\":\"g3\",\"items\":[{\"id\":\"variants\",\"key\":\"variants\",\"on\":true}]},{\"id\":\"g4\",\"items\":[{\"id\":\"quantity-cart\",\"key\":\"quantity-cart\",\"on\":true}]},{\"id\":\"g5\",\"items\":[{\"id\":\"description\",\"key\":\"description\",\"on\":true},{\"id\":\"details\",\"key\":\"details\",\"on\":true},{\"id\":\"faq\",\"key\":\"faq\",\"on\":true}]},{\"id\":\"g6\",\"items\":[{\"id\":\"info-card\",\"key\":\"info-card\",\"on\":true},{\"id\":\"share\",\"key\":\"share\",\"on\":true}]}]",
+            "detailStyle": "{\"visibility\":{\"discountChip\":true,\"discountChipOnImage\":true,\"itemSold\":true,\"ratingCount\":true,\"ratingMinimized\":false,\"variantCount\":false,\"quantity\":true,\"zoom\":true,\"thumbnails\":true,\"accordionOpenFirst\":false},\"style\":{\"cardRadius\":12,\"cardPadding\":16,\"cardBackground\":\"\",\"cardBorder\":\"\",\"cardBorderWidth\":1,\"previewBackground\":\"\",\"previewHeight\":0,\"groupGap\":36,\"itemGap\":10,\"typography\":{},\"brandLogoHeight\":48,\"brandLogoMaxWidth\":224,\"galleryWidth\":50,\"stickyColumn\":true,\"contentMaxWidth\":0,\"galleryBleedLeft\":false,\"galleryBleedTop\":false,\"imageRadius\":8,\"imageGap\":16,\"imageFit\":\"contain\",\"imagePadding\":-1,\"thumbSize\":150,\"thumbRadius\":6,\"thumbActiveBorder\":\"\",\"actions\":\"both\",\"buttonHeight\":44,\"buttonLayout\":\"inline\",\"buttonCase\":\"theme\",\"cartLabel\":\"\",\"buyLabel\":\"\",\"cartBackground\":\"\",\"cartBorder\":\"\",\"cartBorderWidth\":0,\"cartRadius\":5,\"buyBackground\":\"\",\"buyBorder\":\"\",\"buyBorderWidth\":0,\"quantityBorder\":\"\",\"ratingColor\":\"\",\"stockBackground\":\"\",\"stockRadius\":8,\"inStockBackground\":\"\",\"inStockColor\":\"\",\"outOfStockBackground\":\"\",\"outOfStockColor\":\"\",\"preorderBackground\":\"\",\"preorderColor\":\"\",\"lowStockColor\":\"\",\"discountBackground\":\"\",\"discountColor\":\"\",\"discountRadius\":999,\"accordionIcon\":\"plus\",\"accordionDivider\":\"\",\"shareSize\":40,\"shareRadius\":8,\"shareBackground\":\"\",\"shareIconColor\":\"\",\"shareNetworks\":{\"facebook\":true,\"twitter\":true,\"whatsapp\":true,\"email\":true,\"copyLink\":true}}}"
+          },
+          "blocks": []
+        },
+        {
+          "id": "product-reviews",
+          "type": "product-reviews",
+          "version": 1,
+          "visible": true,
+          "settings": {},
+          "blocks": []
+        },
+        {
+          "id": "product-sponsored",
+          "type": "product-sponsored",
+          "version": 1,
+          "visible": true,
+          "settings": {},
+          "blocks": []
+        },
+        {
+          "id": "product-related",
+          "type": "product-related",
+          "version": 1,
+          "visible": true,
+          "settings": {
+            "title": "",
+            "variant": "classic",
+            "titleSize": "default"
+          },
+          "blocks": []
+        }
+      ],
+      "updatedAt": {
+        "$date": "2026-09-21T16:34:57.650Z"
+      },
+      "updatedBy": null
+    },
+    "history": [],
+    "kind": "template",
+    "published": {
+      "sections": [
+        {
+          "id": "product-main",
+          "type": "product-main",
+          "version": 1,
+          "visible": true,
+          "settings": {
+            "galleryLayout": "bottom",
+            "rows": "[{\"id\":\"g1\",\"items\":[{\"id\":\"breadcrumb\",\"key\":\"breadcrumb\",\"on\":true},{\"id\":\"brand\",\"key\":\"brand\",\"on\":true},{\"id\":\"title\",\"key\":\"title\",\"on\":true},{\"id\":\"rating\",\"key\":\"rating\",\"on\":true},{\"id\":\"vendor\",\"key\":\"vendor\",\"on\":true}]},{\"id\":\"g2\",\"items\":[{\"id\":\"price\",\"key\":\"price\",\"on\":true}]},{\"id\":\"g3\",\"items\":[{\"id\":\"variants\",\"key\":\"variants\",\"on\":true}]},{\"id\":\"g4\",\"items\":[{\"id\":\"quantity-cart\",\"key\":\"quantity-cart\",\"on\":true}]},{\"id\":\"g5\",\"items\":[{\"id\":\"description\",\"key\":\"description\",\"on\":true},{\"id\":\"details\",\"key\":\"details\",\"on\":true},{\"id\":\"faq\",\"key\":\"faq\",\"on\":true}]},{\"id\":\"g6\",\"items\":[{\"id\":\"info-card\",\"key\":\"info-card\",\"on\":true},{\"id\":\"share\",\"key\":\"share\",\"on\":true}]}]",
+            "detailStyle": "{\"visibility\":{\"discountChip\":true,\"discountChipOnImage\":true,\"itemSold\":true,\"ratingCount\":true,\"ratingMinimized\":false,\"variantCount\":false,\"quantity\":true,\"zoom\":true,\"thumbnails\":true,\"accordionOpenFirst\":false},\"style\":{\"cardRadius\":12,\"cardPadding\":16,\"cardBackground\":\"\",\"cardBorder\":\"\",\"cardBorderWidth\":1,\"previewBackground\":\"\",\"previewHeight\":0,\"groupGap\":36,\"itemGap\":10,\"typography\":{},\"brandLogoHeight\":48,\"brandLogoMaxWidth\":224,\"galleryWidth\":50,\"stickyColumn\":true,\"contentMaxWidth\":0,\"galleryBleedLeft\":false,\"galleryBleedTop\":false,\"imageRadius\":8,\"imageGap\":16,\"imageFit\":\"contain\",\"imagePadding\":-1,\"thumbSize\":150,\"thumbRadius\":6,\"thumbActiveBorder\":\"\",\"actions\":\"both\",\"buttonHeight\":44,\"buttonLayout\":\"inline\",\"buttonCase\":\"theme\",\"cartLabel\":\"\",\"buyLabel\":\"\",\"cartBackground\":\"\",\"cartBorder\":\"\",\"cartBorderWidth\":0,\"cartRadius\":5,\"buyBackground\":\"\",\"buyBorder\":\"\",\"buyBorderWidth\":0,\"quantityBorder\":\"\",\"ratingColor\":\"\",\"stockBackground\":\"\",\"stockRadius\":8,\"inStockBackground\":\"\",\"inStockColor\":\"\",\"outOfStockBackground\":\"\",\"outOfStockColor\":\"\",\"preorderBackground\":\"\",\"preorderColor\":\"\",\"lowStockColor\":\"\",\"discountBackground\":\"\",\"discountColor\":\"\",\"discountRadius\":999,\"accordionIcon\":\"plus\",\"accordionDivider\":\"\",\"shareSize\":40,\"shareRadius\":8,\"shareBackground\":\"\",\"shareIconColor\":\"\",\"shareNetworks\":{\"facebook\":true,\"twitter\":true,\"whatsapp\":true,\"email\":true,\"copyLink\":true}}}"
+          },
+          "blocks": []
+        },
+        {
+          "id": "product-reviews",
+          "type": "product-reviews",
+          "version": 1,
+          "visible": true,
+          "blocks": []
+        },
+        {
+          "id": "product-sponsored",
+          "type": "product-sponsored",
+          "version": 1,
+          "visible": true,
+          "blocks": []
+        },
+        {
+          "id": "product-related",
+          "type": "product-related",
+          "version": 1,
+          "visible": true,
+          "settings": {
+            "title": "",
+            "variant": "classic",
+            "titleSize": "default"
+          },
+          "blocks": []
+        }
+      ],
+      "publishedAt": {
+        "$date": "2026-09-21T16:34:59.876Z"
+      },
+      "publishedBy": null
+    },
+    "templateType": "product",
+    "title": "Product",
+    "updatedAt": {
+      "$date": "2026-09-21T16:34:59.876Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a8591a052be40faf85956d5"
+    },
+    "key": "template:products:default",
+    "__v": 0,
+    "createdAt": {
+      "$date": "2026-08-19T11:21:03.812Z"
+    },
+    "draft": {
+      "sections": [
+        {
+          "id": "products-main",
+          "type": "products-main",
+          "version": 1,
+          "visible": true,
+          "settings": {
+            "heading": ""
+          },
+          "blocks": []
+        }
+      ],
+      "updatedAt": {
+        "$date": "2026-08-19T11:21:03.811Z"
+      },
+      "updatedBy": null
+    },
+    "history": [],
+    "kind": "template",
+    "published": {
+      "sections": [
+        {
+          "id": "products-main",
+          "type": "products-main",
+          "version": 1,
+          "visible": true,
+          "settings": {
+            "heading": ""
+          },
+          "blocks": []
+        }
+      ],
+      "publishedAt": {
+        "$date": "2026-08-19T11:21:10.029Z"
+      },
+      "publishedBy": null
+    },
+    "templateType": "products",
+    "title": "Products",
+    "updatedAt": {
+      "$date": "2026-08-19T11:21:10.029Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a85a90c52be40faf85956f7"
+    },
+    "key": "group:header",
+    "__v": 0,
+    "createdAt": {
+      "$date": "2026-08-19T13:01:00.759Z"
+    },
+    "draft": {
+      "sections": [
+        {
+          "id": "preset-essential-header-1",
+          "type": "header-bar",
+          "version": 1,
+          "visible": true,
+          "settings": {},
+          "blocks": []
+        }
+      ],
+      "updatedAt": {
+        "$date": "2026-09-21T03:51:40.860Z"
+      },
+      "updatedBy": null
+    },
+    "group": "header",
+    "history": [],
+    "kind": "group",
+    "published": {
+      "sections": [
+        {
+          "id": "preset-essential-header-1",
+          "type": "header-bar",
+          "version": 1,
+          "visible": true,
+          "blocks": []
+        }
+      ],
+      "publishedAt": {
+        "$date": "2026-09-21T03:51:40.860Z"
+      },
+      "publishedBy": null
+    },
+    "title": "Header",
+    "updatedAt": {
+      "$date": "2026-09-21T03:51:41.373Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a85c58052be40faf8595715"
+    },
+    "key": "template:category:default",
+    "__v": 0,
+    "createdAt": {
+      "$date": "2026-08-19T15:02:23.932Z"
+    },
+    "draft": {
+      "sections": [
+        {
+          "id": "category-header",
+          "type": "category-header",
+          "version": 1,
+          "visible": true,
+          "settings": {},
+          "blocks": []
+        },
+        {
+          "id": "category-main",
+          "type": "category-main",
+          "version": 1,
+          "visible": true,
+          "settings": {},
+          "blocks": []
+        }
+      ],
+      "updatedAt": {
+        "$date": "2026-08-19T15:02:23.931Z"
+      },
+      "updatedBy": null
+    },
+    "history": [],
+    "kind": "template",
+    "published": {
+      "sections": [
+        {
+          "id": "category-header",
+          "type": "category-header",
+          "version": 1,
+          "visible": true,
+          "blocks": []
+        },
+        {
+          "id": "category-main",
+          "type": "category-main",
+          "version": 1,
+          "visible": true,
+          "blocks": []
+        }
+      ],
+      "publishedAt": {
+        "$date": "2026-08-19T15:02:26.979Z"
+      },
+      "publishedBy": null
+    },
+    "templateType": "category",
+    "title": "Category",
+    "updatedAt": {
+      "$date": "2026-08-19T15:02:26.979Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a85c58352be40faf8595716"
+    },
+    "key": "template:collection:default",
+    "__v": 0,
+    "createdAt": {
+      "$date": "2026-08-19T15:02:27.577Z"
+    },
+    "draft": {
+      "sections": [
+        {
+          "id": "collection-header",
+          "type": "collection-header",
+          "version": 1,
+          "visible": true,
+          "settings": {},
+          "blocks": []
+        },
+        {
+          "id": "collection-main",
+          "type": "collection-main",
+          "version": 1,
+          "visible": true,
+          "settings": {},
+          "blocks": []
+        }
+      ],
+      "updatedAt": {
+        "$date": "2026-08-19T15:02:27.576Z"
+      },
+      "updatedBy": null
+    },
+    "history": [],
+    "kind": "template",
+    "published": {
+      "sections": [
+        {
+          "id": "collection-header",
+          "type": "collection-header",
+          "version": 1,
+          "visible": true,
+          "blocks": []
+        },
+        {
+          "id": "collection-main",
+          "type": "collection-main",
+          "version": 1,
+          "visible": true,
+          "blocks": []
+        }
+      ],
+      "publishedAt": {
+        "$date": "2026-08-19T15:02:28.107Z"
+      },
+      "publishedBy": null
+    },
+    "templateType": "collection",
+    "title": "Collection",
+    "updatedAt": {
+      "$date": "2026-08-19T15:02:28.107Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a85c58452be40faf8595717"
+    },
+    "key": "template:cart:default",
+    "__v": 0,
+    "createdAt": {
+      "$date": "2026-08-19T15:02:28.632Z"
+    },
+    "draft": {
+      "sections": [
+        {
+          "id": "cart-main",
+          "type": "cart-main",
+          "version": 1,
+          "visible": true,
+          "settings": {},
+          "blocks": []
+        }
+      ],
+      "updatedAt": {
+        "$date": "2026-08-19T15:02:28.632Z"
+      },
+      "updatedBy": null
+    },
+    "history": [],
+    "kind": "template",
+    "published": {
+      "sections": [
+        {
+          "id": "cart-main",
+          "type": "cart-main",
+          "version": 1,
+          "visible": true,
+          "blocks": []
+        }
+      ],
+      "publishedAt": {
+        "$date": "2026-08-19T15:02:29.158Z"
+      },
+      "publishedBy": null
+    },
+    "templateType": "cart",
+    "title": "Cart",
+    "updatedAt": {
+      "$date": "2026-08-19T15:02:29.158Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a85c59552be40faf8595718"
+    },
+    "key": "group:footer",
+    "__v": 0,
+    "createdAt": {
+      "$date": "2026-08-19T15:02:45.691Z"
+    },
+    "draft": {
+      "sections": [
+        {
+          "id": "preset-essential-footer-1",
+          "type": "footer-bar",
+          "version": 1,
+          "visible": true,
+          "settings": {},
+          "blocks": []
+        }
+      ],
+      "updatedAt": {
+        "$date": "2026-09-21T03:51:41.546Z"
+      },
+      "updatedBy": null
+    },
+    "group": "footer",
+    "history": [],
+    "kind": "group",
+    "published": {
+      "sections": [
+        {
+          "id": "preset-essential-footer-1",
+          "type": "footer-bar",
+          "version": 1,
+          "visible": true,
+          "blocks": []
+        }
+      ],
+      "publishedAt": {
+        "$date": "2026-09-21T03:51:41.546Z"
+      },
+      "publishedBy": null
+    },
+    "title": "Footer",
+    "updatedAt": {
+      "$date": "2026-09-21T03:51:42.053Z"
+    }
+  }
+]

@@ -1,0 +1,23 @@
+{
+  "common": {
+    "retry": "Probeer weer"
+  },
+  "auth": {
+    "errors": {
+      "invalidCredentials": "E-pos of wagwoord is verkeerd.",
+      "invalidCredentialsWithAttempts": "E-pos of wagwoord is verkeerd. {count, plural, one {Nog # poging} other {Nog # pogings}} voordat hierdie rekening gesluit word.",
+      "accountLocked": "Te veel mislukte aanmeldpogings. Hierdie rekening is vir {duration} gesluit.",
+      "accountLockedUnknown": "Te veel mislukte aanmeldpogings. Hierdie rekening is vir 'n paar minute gesluit.",
+      "durationMinutes": "{count, plural, one {# minuut} other {# minute}}",
+      "durationSeconds": "{count, plural, one {# sekonde} other {# sekondes}}",
+      "tooManyRequests": "Te veel pogings vanaf hierdie toestel. Wag 'n minuut en probeer weer."
+    }
+  },
+  "errors": {
+    "generic": "Kwenzekani ngaphandle kwanoma yintoni.",
+    "network": "Sicela uhlaziye i-inthanethi yakho futhi uzame.",
+    "code": {
+      "RATE_LIMIT_EXCEEDED": "Te veel versoeke. Wag 'n oomblik en probeer weer."
+    }
+  }
+}

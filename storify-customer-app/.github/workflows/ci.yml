@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      # The version comes from `packageManager` in package.json.
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # Types, lint, formatting, tests, and the contract copy: the same command
+      # a developer runs before opening a pull request.
+      - run: pnpm check
+
+      # The app has to bundle for both platforms, on mock data and against a store.
+      - name: Bundle on mock data
+        run: pnpm exec expo export --platform ios --platform android --output-dir dist-mock
+        env:
+          EXPO_PUBLIC_API_MOCK: '1'
+
+      - name: Bundle against a store
+        run: pnpm exec expo export --platform ios --platform android --no-bytecode --output-dir dist
+        env:
+          EXPO_PUBLIC_API_URL: https://shop.example.com
+
+      # The mock store and its data must not be in a build that talks to a real store.
+      - name: No mock data in the store bundle
+        run: |
+          if grep -rlE "Canvas weekender bag|mock\.storify\.invalid" dist/_expo/static/js; then
+            echo "Mock data found in a bundle that is not in mock mode" && exit 1
+          fi

@@ -1,0 +1,18 @@
+# The shortest path through the app, on the mock store: open, browse, add to
+# cart. Run it against a development or preview build made with
+# EXPO_PUBLIC_API_MOCK=1:
+#
+#   maestro test -e APP_ID=com.storify.shop .maestro/smoke.yaml
+#
+# APP_ID is the bundle identifier (iOS) or the package (Android) from app.json.
+appId: ${APP_ID}
+---
+- launchApp:
+    clearState: true
+- assertVisible: 'Shop by category'
+- tapOn: 'Cart'
+- assertVisible: 'Your cart is empty'
+- tapOn: 'Start Shopping'
+- tapOn: 'Leather card holder'
+- tapOn: 'Add to Cart'
+- assertVisible: 'Added to cart'

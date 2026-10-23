@@ -1,0 +1,23 @@
+{
+  "common": {
+    "retry": "Intentar de nuevo"
+  },
+  "auth": {
+    "errors": {
+      "invalidCredentials": "Correo o contraseña incorrectos.",
+      "invalidCredentialsWithAttempts": "Correo o contraseña incorrectos. {count, plural, one {Queda # intento} other {Quedan # intentos}} antes de que la cuenta se bloquee.",
+      "accountLocked": "Demasiados intentos fallidos. Esta cuenta está bloqueada durante {duration}.",
+      "accountLockedUnknown": "Demasiados intentos fallidos. Esta cuenta está bloqueada unos minutos.",
+      "durationMinutes": "{count, plural, one {# minuto} other {# minutos}}",
+      "durationSeconds": "{count, plural, one {# segundo} other {# segundos}}",
+      "tooManyRequests": "Demasiados intentos desde este dispositivo. Espera un minuto e inténtalo de nuevo."
+    }
+  },
+  "errors": {
+    "generic": "Algo salió mal de nuestro lado. Inténtalo de nuevo más tarde.",
+    "network": "Comprueba tu conexión a internet e inténtalo de nuevo.",
+    "code": {
+      "RATE_LIMIT_EXCEEDED": "Demasiadas solicitudes. Espera un momento e inténtalo de nuevo."
+    }
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "common": {
+    "retry": "Opnieuw proberen",
+    "viewAll": "Alles bekijken"
+  },
+  "tabs": {
+    "home": "Startpagina",
+    "categories": "Categorieën",
+    "cart": "Winkelwagen"
+  },
+  "catalog": {
+    "empty": "Geen producten gevonden",
+    "sponsored": "Gesponsord",
+    "outOfStock": "Niet op voorraad",
+    "priceOnRequest": "Prijs op aanvraag"
+  },
+  "product": {
+    "addToCart": "In winkelwagen",
+    "addedToCart": "Toegevoegd aan winkelwagen",
+    "description": "Beschrijving"
+  },
+  "cart": {},
+  "auth": {
+    "signIn": "Inloggen",
+    "email": "E-mail",
+    "password": "Wachtwoord",
+    "errors": {
+      "invalidCredentials": "E-mailadres of wachtwoord is onjuist.",
+      "invalidCredentialsWithAttempts": "E-mailadres of wachtwoord is onjuist. {count, plural, one {Nog # poging} other {Nog # pogingen}} voordat dit account wordt vergrendeld.",
+      "accountLocked": "Te veel mislukte aanmeldpogingen. Dit account is {duration} vergrendeld.",
+      "accountLockedUnknown": "Te veel mislukte aanmeldpogingen. Dit account is enkele minuten vergrendeld.",
+      "durationMinutes": "{count, plural, one {# minuut} other {# minuten}}",
+      "durationSeconds": "{count, plural, one {# seconde} other {# seconden}}",
+      "tooManyRequests": "Te veel pogingen vanaf dit apparaat. Wacht een minuut en probeer het opnieuw."
+    }
+  },
+  "profile": {
+    "name": "Naam"
+  },
+  "settings": {
+    "language": "Taal"
+  },
+  "notFound": {
+    "title": "Pagina niet gevonden"
+  },
+  "errors": {
+    "generic": "Er is iets misgegaan aan onze kant. Probeer het later opnieuw.",
+    "network": "Controleer je internetverbinding en probeer het opnieuw.",
+    "code": {
+      "RATE_LIMIT_EXCEEDED": "Te veel verzoeken. Wacht even en probeer het opnieuw."
+    }
+  }
+}

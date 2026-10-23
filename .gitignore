@@ -1,0 +1,4 @@
+# macOS metadata and archive artifacts (all directories)
+.DS_Store
+__MACOSX/
+._*

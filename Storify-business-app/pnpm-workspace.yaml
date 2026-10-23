@@ -1,0 +1,46 @@
+# pnpm settings for this project (pnpm 11 reads them from this file, not .npmrc).
+# This is a single app, not a workspace: there is no `packages` list.
+
+# A flat node_modules, as npm creates it. React Native's Android toolchain
+# (CMake, Ninja) fails on Windows when a path passes 260 characters, and the
+# default isolated layout nests every package under a long `.pnpm/...` folder.
+nodeLinker: hoisted
+
+# Checks must report stale dependencies instead of reinstalling them implicitly.
+# Install deliberately with `pnpm install` before running them.
+verifyDepsBeforeRun: error
+
+# Lets a script set a variable in front of a command (`NAME=value command`) on
+# Windows as well.
+shellEmulator: true
+
+# pnpm holds back a version published less than a day ago, and writes a line
+# here when one is installed anyway. A line for a version that is no longer in
+# pnpm-lock.yaml can be deleted.
+minimumReleaseAgeExclude:
+  - '@expo/ui@57.0.22'
+  - '@expo/cli@57.0.28'
+  - '@expo/config-plugins@57.0.10'
+  - '@expo/config@57.0.10'
+  - '@expo/image-utils@0.11.6'
+  - '@expo/metro-config@57.0.13'
+  - '@expo/metro-file-map@57.0.4'
+  - '@expo/prebuild-config@57.0.17'
+  - '@expo/require-utils@57.0.6'
+  - '@expo/router-server@57.0.12'
+  - babel-preset-expo@57.0.14
+  - expo-asset@57.0.19
+  - expo-constants@57.0.21
+  - expo-modules-autolinking@57.0.14
+  - expo-modules-core@57.0.21
+  - expo-eas-client@57.0.5
+  - expo-linking@57.0.12
+  - expo-notifications@57.0.22
+  - expo-router@57.0.25
+  - expo-sqlite@57.0.4
+  - expo-updates@57.0.25
+  - expo@57.0.27
+
+# Install scripts of dependencies do not run unless they are allowed here.
+allowBuilds:
+  unrs-resolver: false

@@ -1,0 +1,118 @@
+@import 'tailwindcss';
+@import 'uniwind';
+
+/*
+ * Design tokens.
+ *
+ * Every colour, radius and shadow in the app comes from this file: a screen
+ * never carries a hex value, and never one of Tailwind's own palette colours
+ * (`bg-red-500`), which ESLint refuses. When the design needs a colour that has
+ * no token yet, add the token here, in both themes.
+ */
+@theme {
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 16px;
+  --radius-sheet: 28px;
+
+  --shadow-float: 0 8px 24px rgb(0 0 0 / 0.1);
+  --shadow-bar: 0 -4px 16px rgb(0 0 0 / 0.06);
+  --shadow-button: 0 2px 8px rgb(0 0 0 / 0.12);
+  --shadow-card: 0 6px 16px rgb(0 0 0 / 0.08);
+}
+
+/*
+ * Colours, per theme. Each `--color-name` becomes the classes `bg-name`,
+ * `text-name`, `border-name` and `accent-name`. Both blocks must list the same
+ * names.
+ *
+ * The store's theme replaces these at run time (src/theme/use-theme.ts):
+ * the brand colours always, the rest once the store sends its full theme.
+ *
+ * - background: the page and the body of a sheet.
+ * - surface: cards, lists, the tab bar, round buttons. In dark mode cards sit
+ *   lighter than the page, everywhere.
+ * - surface-alt: picture wells, inputs on a card, quiet fills.
+ * - primary: main buttons, selected chips, the active tab.
+ * - neutral-strong: a dark slate button beside a coloured one, as "Add to Cart"
+ *   beside "Buy Now". Lighter in dark mode so it stands off the page and still
+ *   carries white text.
+ * - accent: the step that commits (pay, buy now, sign in, save), radios and switches.
+ * - link: "View All" and other text links, the cart's count badge.
+ * - wash-*: the three colours of the gradient behind the account and the
+ *   profile screens, top to bottom (`useWash`): "Ocean", a deep azure easing
+ *   to a near-page tint, the wash a shopper sees until they pick an accent
+ *   colour (src/theme/accents.ts). Text sits straight on it in `foreground`,
+ *   so every stop keeps 4.5:1 with `foreground` in its theme (a test holds
+ *   it); in dark mode the wash is a quiet navy.
+ */
+@layer theme {
+  :root {
+    @variant light {
+      --color-background: #f6f6f6;
+      --color-surface: #ffffff;
+      --color-surface-alt: #ebebeb;
+      --color-foreground: #252525;
+      --color-muted: #666666;
+      --color-border: #e0e0e0;
+      --color-primary: #252525;
+      --color-primary-foreground: #ffffff;
+      --color-secondary: #e4e4e4;
+      --color-secondary-foreground: #252525;
+      --color-neutral-strong: #374151;
+      --color-neutral-strong-foreground: #ffffff;
+      --color-accent: #1f5eff;
+      --color-accent-foreground: #ffffff;
+      --color-link: #5b57ff;
+      --color-rating: #ffa159;
+      --color-sale: #d42a30;
+      --color-promo: #ffbf97;
+      --color-danger: #d42a30;
+      --color-success: #15803d;
+      --color-warning: #b45309;
+      --color-scrim: #000000;
+      --color-on-scrim: #ffffff;
+      --color-logo-tile: #ffffff;
+      --color-wash-account-top: #59a3ed;
+      --color-wash-account-middle: #aad0f6;
+      --color-wash-account-bottom: #e8f1f9;
+      --color-wash-profile-top: #769deb;
+      --color-wash-profile-middle: #c6c9f2;
+      --color-wash-profile-bottom: #f1eff9;
+    }
+
+    @variant dark {
+      --color-background: #2f2f2f;
+      --color-surface: #4a4a4a;
+      --color-surface-alt: #3c3c3c;
+      --color-foreground: #ffffff;
+      --color-muted: #bdbdbd;
+      --color-border: #5a5a5a;
+      --color-primary: #1c1c1c;
+      --color-primary-foreground: #ffffff;
+      --color-secondary: #5c5c5c;
+      --color-secondary-foreground: #ffffff;
+      --color-neutral-strong: #6b7280;
+      --color-neutral-strong-foreground: #ffffff;
+      --color-accent: #2b6bff;
+      --color-accent-foreground: #ffffff;
+      --color-link: #8e8cff;
+      --color-rating: #ffa159;
+      --color-sale: #ff6b6e;
+      --color-promo: #8a5a3c;
+      --color-danger: #ff6b6e;
+      --color-success: #3dd68c;
+      --color-warning: #fbbf24;
+      --color-scrim: #000000;
+      --color-on-scrim: #ffffff;
+      --color-logo-tile: #ffffff;
+      --color-wash-account-top: #1d314d;
+      --color-wash-account-middle: #242f40;
+      --color-wash-account-bottom: #2c3138;
+      --color-wash-profile-top: #232f52;
+      --color-wash-profile-middle: #2f2b49;
+      --color-wash-profile-bottom: #322f38;
+    }
+  }
+}

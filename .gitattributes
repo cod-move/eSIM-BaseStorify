@@ -1,0 +1,2 @@
+# Android installation packages are stored with Git LFS.
+*.apk filter=lfs diff=lfs merge=lfs -text

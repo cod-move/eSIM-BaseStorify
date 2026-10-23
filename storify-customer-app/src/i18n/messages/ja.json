@@ -1,0 +1,56 @@
+{
+  "common": {
+    "retry": "もう一度試してください",
+    "viewAll": "すべて見る"
+  },
+  "tabs": {
+    "home": "ホーム",
+    "categories": "カテゴリー",
+    "cart": "カート",
+    "account": "アカウント"
+  },
+  "catalog": {
+    "empty": "商品が見つかりません",
+    "sponsored": "スポンサー",
+    "outOfStock": "在庫切れ",
+    "priceOnRequest": "価格はお問い合わせください"
+  },
+  "product": {
+    "addToCart": "カートに追加",
+    "description": "説明"
+  },
+  "cart": {},
+  "auth": {
+    "signIn": "ログイン",
+    "email": "メールアドレス",
+    "password": "パスワード",
+    "errors": {
+      "invalidCredentials": "メールアドレスまたはパスワードが正しくありません。",
+      "invalidCredentialsWithAttempts": "メールアドレスまたはパスワードが正しくありません。あと {count, plural, other {#}} 回失敗すると、このアカウントはロックされます。",
+      "accountLocked": "ログインの失敗が多すぎます。このアカウントは {duration} ロックされています。",
+      "accountLockedUnknown": "ログインの失敗が多すぎます。このアカウントは数分間ロックされています。",
+      "durationMinutes": "{count, plural, other {# 分間}}",
+      "durationSeconds": "{count, plural, other {# 秒間}}",
+      "tooManyRequests": "このデバイスからの試行が多すぎます。1 分ほど待ってからもう一度お試しください。"
+    }
+  },
+  "account": {
+    "profile": "プロフィール"
+  },
+  "profile": {
+    "name": "お名前"
+  },
+  "settings": {
+    "language": "言語"
+  },
+  "notFound": {
+    "title": "ページが見つかりません"
+  },
+  "errors": {
+    "generic": "問題が発生しました。しばらくしてからもう一度お試しください。",
+    "network": "インターネット接続を確認して、もう一度お試しください。",
+    "code": {
+      "RATE_LIMIT_EXCEEDED": "リクエストが多すぎます。しばらく待ってからもう一度お試しください。"
+    }
+  }
+}

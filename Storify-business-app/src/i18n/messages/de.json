@@ -1,0 +1,23 @@
+{
+  "common": {
+    "retry": "Erneut versuchen"
+  },
+  "auth": {
+    "errors": {
+      "invalidCredentials": "E-Mail oder Passwort ist falsch.",
+      "invalidCredentialsWithAttempts": "E-Mail oder Passwort ist falsch. {count, plural, one {Noch # Versuch} other {Noch # Versuche}}, bevor dieses Konto gesperrt wird.",
+      "accountLocked": "Zu viele fehlgeschlagene Anmeldeversuche. Dieses Konto ist für {duration} gesperrt.",
+      "accountLockedUnknown": "Zu viele fehlgeschlagene Anmeldeversuche. Dieses Konto ist für einige Minuten gesperrt.",
+      "durationMinutes": "{count, plural, one {# Minute} other {# Minuten}}",
+      "durationSeconds": "{count, plural, one {# Sekunde} other {# Sekunden}}",
+      "tooManyRequests": "Zu viele Versuche von diesem Gerät. Warten Sie eine Minute und versuchen Sie es erneut."
+    }
+  },
+  "errors": {
+    "generic": "Auf unserer Seite ist etwas schiefgelaufen. Bitte versuche es später erneut.",
+    "network": "Bitte überprüfe deine Internetverbindung und versuche es erneut.",
+    "code": {
+      "RATE_LIMIT_EXCEEDED": "Zu viele Anfragen. Warte einen Moment und versuche es erneut."
+    }
+  }
+}

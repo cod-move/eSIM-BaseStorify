@@ -1,0 +1,63 @@
+{
+  "common": {
+    "retry": "Zama futhi",
+    "viewAll": "Buka Konke"
+  },
+  "tabs": {
+    "home": "Ikhaya",
+    "categories": "Iikati",
+    "cart": "Indwangu",
+    "account": "Akaunti"
+  },
+  "catalog": {
+    "empty": "Ayikabikho iimveliso",
+    "sponsored": "Ixhaswe",
+    "outOfStock": "Ayitholakali",
+    "priceOnRequest": "Ixabiso ngesicelo"
+  },
+  "product": {
+    "addToCart": "Faka Endwangu",
+    "addedToCart": "Ifakiwe endwangu",
+    "description": "Incazelo",
+    "addToWishlist": "Faka kuhlonzi",
+    "removeFromWishlist": "Susa kuhlonzi"
+  },
+  "cart": {
+    "empty": "Indwangu yakho ayinanto",
+    "startShopping": "Qala Ukuthenga"
+  },
+  "auth": {
+    "signIn": "Ngena ngemvume",
+    "email": "I-imeyili",
+    "password": "Iphasiwedi",
+    "errors": {
+      "invalidCredentials": "I-imeyile okanye iphasiwedi ayichanekanga.",
+      "invalidCredentialsWithAttempts": "I-imeyile okanye iphasiwedi ayichanekanga. {count, plural, one {Kusele ilinge #} other {Kusele amalinge #}} phambi kokuba le akhawunti itshixwe.",
+      "accountLocked": "Kukho iinzame ezininzi zokungena ezisilelayo. Le akhawunti itshixwe {duration}.",
+      "accountLockedUnknown": "Kukho iinzame ezininzi zokungena ezisilelayo. Le akhawunti itshixwe imizuzu embalwa.",
+      "durationMinutes": "{count, plural, one {umzuzu #} other {imizuzu #}}",
+      "durationSeconds": "{count, plural, one {umzuzwana #} other {imizuzwana #}}",
+      "tooManyRequests": "Kukho iinzame ezininzi kwesi sixhobo. Linda umzuzu uze uzame kwakhona."
+    }
+  },
+  "account": {
+    "profile": "Iphrofayela"
+  },
+  "profile": {
+    "name": "Igama"
+  },
+  "settings": {
+    "language": "Ulimi"
+  },
+  "notFound": {
+    "title": "Ikhasi Ayitholakali",
+    "home": "Buyela Ekhaya"
+  },
+  "errors": {
+    "generic": "Kwenzekani ngaphandle kwanoma yintoni.",
+    "network": "Sicela uhlaziye i-inthanethi yakho futhi uzame.",
+    "code": {
+      "RATE_LIMIT_EXCEEDED": "Kukho izicelo ezininzi. Linda kancinci uze uzame kwakhona."
+    }
+  }
+}
