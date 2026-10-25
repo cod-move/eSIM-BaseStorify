@@ -9,6 +9,7 @@ import {
   Package,
   Settings2,
   Shield,
+  Smartphone, // [esim-patch] P11
   User,
 } from "lucide-react";
 import type { LoyaltyTier } from "@/types";
@@ -46,6 +47,13 @@ export const dashboardLinks: AccountNavLink[] = [
     href: "/account/orders",
     icon: Package,
     countKey: "ordersCount",
+  },
+  // [esim-patch] P11 "My eSIMs" in the account navigation.
+  {
+    labelKey: "esim.account.title",
+    labelFallback: "My eSIMs",
+    href: "/account/esims",
+    icon: Smartphone,
   },
   {
     labelKey: "common.notifications",

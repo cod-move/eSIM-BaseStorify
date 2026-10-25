@@ -37,7 +37,7 @@
 | P8 | 计划 | `storify-customer-app/src/features/home/blocks/index.ts` | 区块渲染映射 | 注册 eSIM 区块组件 | App 首页渲染 eSIM 区块；老版本 App 忽略未知区块不崩溃 |
 | P9 | 计划 | `Storify-main-app/lib/i18n/request.ts` | 加载 locale 消息处 | 合并 `locales/esim/<locale>.json`，不改官方 `locales/*.json` | 切换中英文 eSIM 文案正常 |
 | P10 | 计划 | `Storify-main-app/models/cart.model.ts`、`Storify-main-app/models/order.model.ts`（及加购/下单时复制行的位置，待定） | 购物车行、订单行 schema | 加通用 `lineAttributes` 对象（可选天数、充值目标 ICCID、激活日期），内容由 eSIM 模块校验；属性不同的同一规格分成两行 | 官方是否改动行 schema；加购 → 结账 → 订单的整条复制链路里 `lineAttributes` 没有丢 |
-| P11 | 计划 | 账户中心导航（Web + 顾客 App，位置待定） | 账户菜单 | 加「我的 eSIM」「钱包」「推荐」入口 | 菜单结构是否变化 |
+| P11 | 已改（Web 的「我的 eSIM」） | `Storify-main-app/components/account/account-nav-links.ts`（App 端位置待定） | `dashboardLinks` 数组「订单」项之后；lucide 导入里加 `Smartphone` | 加「我的 eSIM」入口（`/account/esims`，labelKey `esim.account.title`，兜底 "My eSIMs"）；「钱包」「推荐」入口待做 | 侧栏/手机端菜单仍显示该入口；`AccountNavLink` 结构是否变化 |
 | P12 | 计划 | `Storify-main-app/models/store-credit.model.ts` | `STORE_CREDIT_SOURCES` | 加「充值」「推荐佣金」来源 | 枚举及读取它的报表是否变化 |
 | P13 | 计划 | 订单详情页（顾客端 + 后台，位置待定） | 订单行展示处 | 显示开卡状态和 eSIM 入口 | 页面结构是否变化 |
 | P14 | 计划 | 注册流程（`Storify-main-app/lib/auth/` 下，位置待定） | 创建用户后 | 记录推荐人 | 注册接口和社交登录注册都能记到推荐人 |
