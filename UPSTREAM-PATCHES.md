@@ -36,7 +36,13 @@
 | P7 | 计划 | `Storify-main-app/contracts/mobile/shop/v1/home.ts` | `HOME_BLOCKS` 映射与 `HomeBlock` 联合类型 | 注册 eSIM 首页区块 schema | 修改后需在顾客 App 执行 `pnpm contracts:sync` |
 | P8 | 计划 | `storify-customer-app/src/features/home/blocks/index.ts` | 区块渲染映射 | 注册 eSIM 区块组件 | App 首页渲染 eSIM 区块；老版本 App 忽略未知区块不崩溃 |
 | P9 | 计划 | `Storify-main-app/lib/i18n/request.ts` | 加载 locale 消息处 | 合并 `locales/esim/<locale>.json`，不改官方 `locales/*.json` | 切换中英文 eSIM 文案正常 |
-| P10 | 计划 | 订单行 / 购物车行模型（`Storify-main-app/models/cart.model.ts`、`Storify-main-app/models/order.model.ts`，待定） | 行项目 schema | **仅当**充值必须在行上记录 ICCID 时才改；优先用旁路集合避免此项 | 若已改：官方是否改动行 schema，合并时重点人工核对 |
+| P10 | 计划 | `Storify-main-app/models/cart.model.ts`、`Storify-main-app/models/order.model.ts`（及加购/下单时复制行的位置，待定） | 购物车行、订单行 schema | 加通用 `lineAttributes` 对象（可选天数、充值目标 ICCID、激活日期），内容由 eSIM 模块校验；属性不同的同一规格分成两行 | 官方是否改动行 schema；加购 → 结账 → 订单的整条复制链路里 `lineAttributes` 没有丢 |
+| P11 | 计划 | 账户中心导航（Web + 顾客 App，位置待定） | 账户菜单 | 加「我的 eSIM」「钱包」「推荐」入口 | 菜单结构是否变化 |
+| P12 | 计划 | `Storify-main-app/models/store-credit.model.ts` | `STORE_CREDIT_SOURCES` | 加「充值」「推荐佣金」来源 | 枚举及读取它的报表是否变化 |
+| P13 | 计划 | 订单详情页（顾客端 + 后台，位置待定） | 订单行展示处 | 显示开卡状态和 eSIM 入口 | 页面结构是否变化 |
+| P14 | 计划 | 注册流程（`Storify-main-app/lib/auth/` 下，位置待定） | 创建用户后 | 记录推荐人 | 注册接口和社交登录注册都能记到推荐人 |
+| P15 | 计划 | `Storify-main-app/lib/payments/checkout-gateways.ts` 的 `CHECKOUT_GATEWAY_IDS`，以及引用网关枚举的约 30 个文件 | 网关枚举 | 一次性加入通用「扩展支付」网关，后面挂 eSIM 的网关插件 | 官方新增或改名网关时逐个核对引用点；用扩展支付各下一单、各退一单 |
+| P16 | 计划 | `Storify-main-app/lib/auth/auth.ts` | 邮箱密码登录的密码校验 | 新方式校验失败且是 bcrypt 格式时用 bcrypt 校验，通过后按新方式重新加密 | 旧系统导入的用户能登录，登录后哈希已换成新格式 |
 
 > 新增插入点时按编号往后加；某项最终没改，就把状态改为 `取消` 并保留记录。
 
