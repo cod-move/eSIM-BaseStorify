@@ -113,6 +113,7 @@ import {
   checkoutQuoteHash,
   CheckoutQuoteChangedError,
 } from "@/lib/checkout/checkout-quote";
+import { esimLinePrices } from "@/lib/esim/cart"; // [esim-patch] P10
 
 type StockCheckVariant = {
   _id: { toString: () => string };
@@ -532,6 +533,8 @@ async function runCheckout(
   // The price each line was stored with, so the re-pricing below writes back
   // only the lines whose price actually moved.
   const storedLinePrice = new Map(items.map((item) => [item, item.price]));
+  // [esim-patch] P10 day-priced eSIM lines: per day × the line's days.
+  const esimPrices = await esimLinePrices(items);
 
   for (const item of items) {
     const product = stockCheckProductById.get(String(item.productId._id));
@@ -647,11 +650,12 @@ async function runCheckout(
           )?.find((v) => v._id.toString() === String(item.variantId))
         : undefined;
       const livePrice =
-        liveVariant && typeof liveVariant.price === "number"
+        esimPrices.get(item) ?? // [esim-patch] P10
+        (liveVariant && typeof liveVariant.price === "number"
           ? liveVariant.price
           : typeof (product as { price?: number }).price === "number"
             ? (product as { price?: number }).price
-            : item.price;
+            : item.price);
       if (typeof livePrice === "number") {
         if (cartLinePriceChanged(item.price, livePrice)) {
           priceChanges.push({

@@ -173,6 +173,13 @@ function useProductPurchaseState({
   const [lastPicked, setLastPicked] = useState<{ index: number; value: string } | null>(null);
   const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
   const [isQuoteOpen, setIsQuoteOpen] = useState(false);
+  // [esim-patch] P10 the line's options and the price they give (an eSIM's
+  // days), set by an extension control in the buy box; the cart re-prices.
+  const [lineOptions, setLineOptions] = useState<{
+    variantId: string;
+    attributes: Record<string, unknown>;
+    price: number;
+  } | null>(null);
   const hasMounted = useHydrated();
   const now = useRenderNow();
 
@@ -367,8 +374,11 @@ function useProductPurchaseState({
   // compare-at that belongs to it. `product.comparePrice` is the HIGHEST of
   // the range, so pairing it with the lowest price would advertise a discount
   // no single variant actually offers.
+  // [esim-patch] P10 options set for the selected variant price the line.
+  const activeLineOptions =
+    lineOptions && lineOptions.variantId === selectedVariant?._id ? lineOptions : null;
   const displayedPrice =
-    selectedVariant?.price ?? getProductPriceRange(product).min;
+    activeLineOptions?.price ?? selectedVariant?.price ?? getProductPriceRange(product).min;
   const displayedComparePrice = selectedVariant
     ? selectedVariant.comparePrice
     : (getProductCompareAtPrice(product) ?? undefined);
@@ -518,7 +528,8 @@ function useProductPurchaseState({
     name: selectedVariant
       ? `${product.name} - ${selectedVariant.name}`
       : product.name,
-    price: quoteOffer?.unitPrice ?? selectedVariant?.price ?? product.price,
+    price: quoteOffer?.unitPrice ?? activeLineOptions?.price ?? selectedVariant?.price ?? product.price,
+    lineAttributes: activeLineOptions?.attributes, // [esim-patch] P10
     image:
       product.media[selectedImage]?.type === "image"
         ? product.media[selectedImage].url
@@ -727,6 +738,9 @@ function useProductPurchaseState({
     setIsSizeGuideOpen,
     isQuoteOpen,
     setIsQuoteOpen,
+
+    lineOptions: activeLineOptions, // [esim-patch] P10
+    setLineOptions,
   };
 }
 

@@ -46,6 +46,7 @@ import {
   type OrderLineProductSource,
   type OrderLineVariantSource,
 } from "@/lib/orders/order-line-variant";
+import { withLineDays } from "@/lib/esim/cart/line-attributes"; // [esim-patch] P10
 import {
   buildOrderItemCustomsSnapshot,
   type ProductShippingData,
@@ -100,6 +101,7 @@ export interface CheckoutCartItem {
    * account on every checkout rather than trusted off the cart document.
    */
   quoteId?: string;
+  lineAttributes?: Record<string, unknown>; // [esim-patch] P10
   purchaseType?: string;
   preorderReleaseDate?: Date;
   preorderMessage?: string;
@@ -350,7 +352,8 @@ export async function buildOrderDocument(params: {
   // The variant as the shopper bought it, on the order line and its
   // consignment's line alike.
   const variantSnapshotByLine = new Map(
-    items.map((item) => [item, orderLineVariantSnapshot(item.productId, item.variantId)]),
+    // [esim-patch] P10 withLineDays: a day-priced eSIM line names its days.
+    items.map((item) => [item, withLineDays(item, orderLineVariantSnapshot(item.productId, item.variantId))]),
   );
 
   const vendorContext = await resolveOrderVendorContext({
@@ -545,6 +548,7 @@ export async function buildOrderDocument(params: {
           ruleCollections.get(String(item.productId._id)),
         ),
         quoteId: item.quoteId,
+        lineAttributes: item.lineAttributes, // [esim-patch] P10
         cost: resolveOrderItemCost({
           product: item.productId,
           variantId: item.variantId,

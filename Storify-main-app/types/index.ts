@@ -1089,6 +1089,8 @@ export interface CartItem {
    * still re-read from the quote at checkout, never trusted from here.
    */
   quoteId?: Types.ObjectId | string;
+  // [esim-patch] P10 options the eSIM module reads (days of a day-priced plan).
+  lineAttributes?: Record<string, unknown>;
   /**
    * Who sells this line. Attached by `GET /api/cart` from the product, never
    * stored on the cart: a cart can outlive a store rename by weeks, and the
@@ -1217,6 +1219,8 @@ export interface OrderItem {
   preorderTermsRevision?: number;
   /** The quote whose offer priced this line, when it came from one. */
   quoteId?: Types.ObjectId;
+  // [esim-patch] P10 options the eSIM module reads (days of a day-priced plan).
+  lineAttributes?: Record<string, unknown>;
   /**
    * Sold as final sale, so the shopper cannot return it. Copied from the
    * product when the order was placed; absent on older orders, which stay

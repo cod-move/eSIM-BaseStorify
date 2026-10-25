@@ -14,6 +14,8 @@ import { adapterFor } from "@/lib/esim/provider-service";
 import { withProviderLog } from "@/lib/esim/provider-log";
 import { decide, idempotencyKey, type Outcome } from "@/lib/esim/fulfillment/policy";
 import { ProviderError, type ProviderEsim, type PurchaseResult } from "@/lib/esim/providers/types";
+import { lineDays } from "@/lib/esim/cart/line-attributes";
+import type { PerDayPricing } from "@/lib/esim/catalog/variants";
 
 /**
  * Paid order → one supplier purchase per eSIM unit (ORD-05..09).
@@ -24,7 +26,7 @@ import { ProviderError, type ProviderEsim, type PurchaseResult } from "@/lib/esi
  */
 
 const LEASE_MS = 5 * 60_000;
-type Line = { productId?: unknown; variantId?: unknown; vendorId?: unknown; quantity?: number };
+type Line = { productId?: unknown; variantId?: unknown; vendorId?: unknown; quantity?: number; lineAttributes?: unknown };
 type Consignment = { vendorId?: unknown; status?: string };
 
 /**
@@ -51,9 +53,11 @@ export async function enqueueOrderFulfillment(orderId: unknown): Promise<number>
   const links = await EsimProductLink.find({ "variants.variantId": { $in: variantIds } })
     .select({ variants: 1 })
     .lean();
-  const candidatesByVariant = new Map<string, mongoose.Types.ObjectId[]>();
+  const candidatesByVariant = new Map<string, { candidates: mongoose.Types.ObjectId[]; perDay: PerDayPricing | null }>();
   for (const link of links) {
-    for (const variant of link.variants) candidatesByVariant.set(String(variant.variantId), variant.candidates);
+    for (const variant of link.variants) {
+      candidatesByVariant.set(String(variant.variantId), { candidates: variant.candidates, perDay: variant.perDay ?? null });
+    }
   }
   const cancelledSellers = new Set(
     (order.subOrders ?? [])
@@ -63,7 +67,10 @@ export async function enqueueOrderFulfillment(orderId: unknown): Promise<number>
 
   const now = new Date();
   const writes = order.items.flatMap((item, lineIndex) => {
-    const candidates = candidatesByVariant.get(String(item.variantId ?? ""));
+    const published = candidatesByVariant.get(String(item.variantId ?? ""));
+    const candidates = published?.candidates;
+    // A day-priced line is bought for the days it was charged for (P10).
+    const durationDays = published?.perDay ? lineDays(item.lineAttributes, published.perDay) : null;
     if (!candidates?.length || cancelledSellers.has(String(item.vendorId ?? ""))) return [];
     return Array.from({ length: Math.max(1, item.quantity ?? 1) }, (_, offset) => ({
       updateOne: {
@@ -76,6 +83,7 @@ export async function enqueueOrderFulfillment(orderId: unknown): Promise<number>
             unit: offset + 1,
             variantId: item.variantId as mongoose.Types.ObjectId,
             candidates,
+            durationDays,
             state: "queued" as const,
             nextAttemptAt: now,
             history: [{ at: now, event: "queued" }],
@@ -158,6 +166,7 @@ async function recordEsim(job: IEsimFulfillment, plan: IEsimPlan, result: Purcha
     customerLink: esim.customerLink,
     bundles: esim.bundles.map((bundle) => ({ ...bundle, expiresAt: toDate(bundle.expiresAt) })),
     fulfilledAt: toDate(esim.fulfilledAt) ?? purchasedAt,
+    durationDays: plan.duration.configurable ? job.durationDays : null,
     expiresAt,
     ...deadlines(plan, expiresAt),
     activationDeadline: plan.activation.preInstallDays
@@ -179,7 +188,7 @@ async function recordEsim(job: IEsimFulfillment, plan: IEsimPlan, result: Purcha
         kind: "base",
         dataTotalBytes: plan.data.type === "total" ? plan.data.megabytes * 1024 * 1024 : null,
         dataRemainingBytes: plan.data.type === "total" ? plan.data.megabytes * 1024 * 1024 : null,
-        validityDays: plan.validityDays,
+        validityDays: (plan.duration.configurable ? job.durationDays : null) ?? plan.validityDays,
         expiresAt,
         status: "new",
       },
@@ -205,6 +214,8 @@ async function processOne(job: IEsimFulfillment, owner: string): Promise<IEsimFu
       { $set: { state: "purchasing", providerCode: plan.providerCode }, $inc: { attempts: 1 } },
     );
     const pendingOrder = job.state === "provider_pending" ? job.providerOrderId : null;
+    // A day-priced plan is bought for the days the line was charged for.
+    const durationDays = plan.duration.configurable ? (job.durationDays ?? plan.duration.defaultDays) : null;
     try {
       const adapter = adapterFor(provider);
       result = await withProviderLog(
@@ -213,14 +224,14 @@ async function processOne(job: IEsimFulfillment, owner: string): Promise<IEsimFu
           providerCode: provider.code,
           operation: pendingOrder ? "purchase.query" : "purchase",
           refs: { orderId: String(job.order), planId: String(plan._id) },
-          request: pendingOrder ? { providerOrderId: pendingOrder } : { providerPlanId: plan.providerPlanId },
+          request: pendingOrder ? { providerOrderId: pendingOrder } : { providerPlanId: plan.providerPlanId, durationDays },
         },
         () =>
           pendingOrder
             ? adapter.queryPurchase(pendingOrder)
             : adapter.purchase({
                 providerPlanId: plan.providerPlanId,
-                durationDays: null,
+                durationDays,
                 idempotencyKey: idempotencyKey(String(job._id), String(plan._id)),
               }),
         (value) => ({ status: value.status, providerOrderId: value.providerOrderId, charged: value.charged }),

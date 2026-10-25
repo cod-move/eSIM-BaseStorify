@@ -8,7 +8,7 @@ import { EsimProfile, type IEsimProfile } from "@/models/esim-profile.model";
 import { EsimProvider } from "@/models/esim-provider.model";
 import { adapterFor } from "@/lib/esim/provider-service";
 import { withProviderLog } from "@/lib/esim/provider-log";
-import { displayOf, type Display } from "@/lib/esim/account/display";
+import { displayOf, planTitle, type Display } from "@/lib/esim/account/display";
 import { ProviderError, type ProviderEsim, type ProviderUsage } from "@/lib/esim/providers/types";
 
 /**
@@ -60,12 +60,12 @@ function view(profile: IEsimProfile, plan: IEsimPlan | undefined): EsimView {
   return {
     id: String(profile._id),
     orderNumber: profile.orderNumber,
-    planName: plan?.name ?? "eSIM",
+    planName: planTitle(plan?.name ?? "eSIM", profile.durationDays),
     destination: plan?.destination ?? "",
     emoji: plan?.emoji ?? null,
     dataLabel: plan?.data.label ?? "",
     dataType: plan?.data.type ?? "total",
-    validityDays: plan?.validityDays ?? 0,
+    validityDays: profile.durationDays ?? plan?.validityDays ?? 0,
     providerCode: profile.providerCode,
     iccid: profile.iccid,
     display: displayOf({

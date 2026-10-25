@@ -199,6 +199,7 @@ export function CartProvider({
             productId: item.productId.toString(),
             variantId: item.variantId?.toString(),
             quantity: item.quantity,
+            lineAttributes: item.lineAttributes, // [esim-patch] P10
           },
         );
         const nextItems = data?.items;

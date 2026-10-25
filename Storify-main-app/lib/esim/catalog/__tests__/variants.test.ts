@@ -13,6 +13,9 @@ const base: VariantPlan = {
   dataLabel: "5GB",
   validityDays: 30,
   dayPriced: false,
+  minDays: 30,
+  maxDays: 30,
+  defaultDays: 30,
   retailPriceMinor: 999,
   costUsdMinor: 500,
   highSpeedGbPerDay: null,
@@ -45,9 +48,36 @@ describe("planProducts", () => {
     );
   });
 
-  it("keeps day-priced plans out until order lines carry days", () => {
-    const products = planProducts([{ ...base, id: "daily", dayPriced: true }]);
-    assert.equal(products.length, 0);
+  it("makes a day-priced plan one variant priced per day, sold from its fewest days", () => {
+    const daily = {
+      ...base,
+      dataType: "unlimited" as const,
+      megabytes: 0,
+      dataLabel: "",
+      validityDays: 1,
+      dayPriced: true,
+      minDays: 1,
+      maxDays: 365,
+      defaultDays: 1,
+      retailPriceMinor: 299,
+      costUsdMinor: 140,
+    };
+    const [product] = planProducts([
+      { ...base, id: "fixed", dataType: "unlimited", megabytes: 0, dataLabel: "", validityDays: 7 },
+      { ...daily, id: "stl" },
+      { ...daily, id: "cheap", retailPriceMinor: 249, minDays: 2, maxDays: 30, defaultDays: 3 },
+    ]);
+    assert.deepEqual(product.variants.map((variant) => variant.name), ["Unlimited / 7 days", "Unlimited / 2–30 days"]);
+    const perDay = product.variants[1];
+    assert.equal(perDay.key, "unlimited|0|perday");
+    assert.deepEqual(perDay.perDay, { priceMinor: 249, minDays: 2, maxDays: 30, defaultDays: 3 });
+    assert.equal(perDay.priceMinor, 498);
+    assert.deepEqual(perDay.candidates, ["cheap", "stl"]);
+    assert.equal(product.variants[0].perDay, null);
+  });
+
+  it("skips a day-priced plan with no valid range", () => {
+    assert.equal(planProducts([{ ...base, dayPriced: true, minDays: 5, maxDays: 2 }]).length, 0);
   });
 
   it("merges bundles that would read the same to the shopper", () => {

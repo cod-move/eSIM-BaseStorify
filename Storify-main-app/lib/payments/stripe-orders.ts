@@ -59,6 +59,7 @@ import {
   type OrderLineProductSource,
   type OrderLineVariantSource,
 } from "@/lib/orders/order-line-variant";
+import { withLineDays } from "@/lib/esim/cart/line-attributes"; // [esim-patch] P10
 import {
   settleCapturedOrder,
   type PendingOrderDocument,
@@ -125,6 +126,7 @@ type StripeOrderCartItem = {
    * only carried through to the order — it is not re-resolved here.
    */
   quoteId?: string;
+  lineAttributes?: Record<string, unknown>; // [esim-patch] P10
   purchaseType?: string;
   preorderReleaseDate?: Date;
   preorderMessage?: string;
@@ -811,7 +813,7 @@ async function createStripeOrderFromCart(
     getPreorderSupplierEta: (item) => item.preorderSupplierEta,
     getPreorderBatchName: (item) => item.preorderBatchName,
     getCouponDiscount: (item) => couponShareByLine.get(item),
-    getVariantSnapshot: (item) => orderLineVariantSnapshot(item.productId, item.variantId),
+    getVariantSnapshot: (item) => withLineDays(item, orderLineVariantSnapshot(item.productId, item.variantId)), // [esim-patch] P10
     getCustoms: (item) => buildOrderItemCustomsSnapshot({
       productShipping: item.productId.shipping,
       variantShipping: item.variantId
@@ -929,6 +931,7 @@ async function createStripeOrderFromCart(
         quantity: item.quantity,
         price: item.price,
         quoteId: item.quoteId,
+        lineAttributes: item.lineAttributes, // [esim-patch] P10
         cost: resolveOrderItemCost({
           product: item.productId,
           variantId: item.variantId,
@@ -961,7 +964,7 @@ async function createStripeOrderFromCart(
               )
             : undefined,
         }),
-        ...orderLineVariantSnapshot(item.productId, item.variantId),
+        ...withLineDays(item, orderLineVariantSnapshot(item.productId, item.variantId)), // [esim-patch] P10
       })),
       subOrders,
       fulfillment: pickupFulfillment,

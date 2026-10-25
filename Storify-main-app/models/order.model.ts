@@ -135,6 +135,10 @@ const OrderItemSchema = new Schema<OrderItem>(
       type: Schema.Types.ObjectId,
       ref: "QuoteRequest",
     },
+    // [esim-patch] P10 options the eSIM module reads (days of a day-priced plan).
+    lineAttributes: {
+      type: Schema.Types.Mixed,
+    },
     // Sold as final sale: the shopper cannot return it. Written when the order
     // is placed (see `stampFinalSaleLines`) and deliberately without a
     // default — an older line has none and stays returnable.

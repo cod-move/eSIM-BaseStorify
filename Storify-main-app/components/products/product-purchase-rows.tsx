@@ -31,6 +31,7 @@ import type {
 } from "@/lib/products/purchase-product";
 import { ProductImageGallery } from "./product-image-gallery";
 import { OptionValueSelector } from "./option-value-selector";
+import { EsimDayPicker } from "@/components/esim/esim-day-picker"; // [esim-patch] P10
 import {
   isSizeOptionName,
   normalizeOptionLabel,
@@ -372,6 +373,8 @@ export function PurchaseVariantsRow() {
           />
         </div>
       ))}
+      {/* [esim-patch] P10 the days of a day-priced eSIM; nothing otherwise. */}
+      <EsimDayPicker />
       {variantChoicePrompt ? (
         <div className="pt-3">
           <p

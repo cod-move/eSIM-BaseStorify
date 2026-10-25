@@ -96,3 +96,13 @@ export function remainingPercent(total: number | null | undefined, remaining: nu
   if (!total || total <= 0 || remaining === null || remaining === undefined) return null;
   return Math.max(0, Math.min(100, Math.round((remaining / total) * 100)));
 }
+
+/**
+ * A plan's name as sold. A day-priced plan is named for its shortest buy
+ * ("Japan eSIM Unlimited - 1 day"); the eSIM shows the days bought instead.
+ */
+export function planTitle(name: string, durationDays: number | null | undefined): string {
+  if (!durationDays) return name;
+  const base = name.replace(/\s*[-–]\s*\d+\s*days?\s*$/i, "").trim() || name;
+  return `${base} · ${durationDays === 1 ? "1 day" : `${durationDays} days`}`;
+}

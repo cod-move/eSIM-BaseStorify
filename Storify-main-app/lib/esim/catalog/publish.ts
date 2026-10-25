@@ -72,7 +72,11 @@ async function eligiblePlans(productSlugs?: string[]): Promise<VariantPlan[]> {
       cost: 1, retailPriceMinor: 1, pricing: 1, fairUse: 1,
     })
     .lean<IEsimPlan[]>();
-  return plans.map((plan) => ({
+  // A plan whose days can be picked but that is not priced per day (or the
+  // other way round) has no price we could put on a chosen number of days.
+  const dayPriced = (plan: IEsimPlan) => plan.duration.configurable && plan.cost.billingUnit === "day";
+  const sellable = plans.filter((plan) => plan.duration.configurable === (plan.cost.billingUnit === "day"));
+  return sellable.map((plan) => ({
     id: String(plan._id),
     providerCode: plan.providerCode,
     providerPriority: priority.get(plan.providerCode) ?? 100,
@@ -82,7 +86,10 @@ async function eligiblePlans(productSlugs?: string[]): Promise<VariantPlan[]> {
     megabytes: plan.data.megabytes,
     dataLabel: plan.data.label,
     validityDays: plan.validityDays,
-    dayPriced: plan.duration.configurable || plan.cost.billingUnit === "day",
+    dayPriced: dayPriced(plan),
+    minDays: plan.duration.minDays,
+    maxDays: plan.duration.maxDays,
+    defaultDays: plan.duration.defaultDays,
     retailPriceMinor: plan.retailPriceMinor ?? 0,
     costUsdMinor: plan.pricing?.costUsdMinor ?? 0,
     highSpeedGbPerDay: plan.fairUse?.highSpeedGbPerDay ?? null,
@@ -162,6 +169,7 @@ function optionsAndVariants(planned: PlannedProduct, existing: IEsimProductLink 
     key: variant.key,
     candidates: variant.candidates,
     priceMinor: variant.priceMinor,
+    perDay: variant.perDay,
     doc: {
       _id: known.get(variant.key) ?? new mongoose.Types.ObjectId(),
       name: variant.name,
@@ -217,6 +225,7 @@ async function writeLink(planned: PlannedProduct, productId: mongoose.Types.Obje
           variantId: variant.doc._id,
           name: variant.doc.name,
           priceMinor: variant.priceMinor,
+          perDay: variant.perDay,
           candidates: variant.candidates.map((id) => new mongoose.Types.ObjectId(id)),
         })),
       },

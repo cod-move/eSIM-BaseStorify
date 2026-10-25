@@ -28,6 +28,7 @@ import {
   type AdmitCartLine,
 } from "@/lib/cart/cart-item-quantity";
 import { CartRefusal, insufficientStock } from "@/lib/cart/cart-refusal";
+import { esimCartLine } from "@/lib/esim/cart"; // [esim-patch] P10
 import {
   anySellerOffersPickup,
   cartLineKey,
@@ -81,6 +82,8 @@ type CartLineInput = {
   productId: string;
   variantId?: string;
   quantity: number;
+  // [esim-patch] P10 checked and priced by the eSIM module.
+  lineAttributes?: Record<string, unknown>;
 };
 
 /** A stored cart line, as the read and the merge see it. */
@@ -104,6 +107,7 @@ type MutableCartItem = StoredCartItem & {
   variantName?: string;
   image?: string;
   quoteId?: unknown;
+  lineAttributes?: Record<string, unknown>; // [esim-patch] P10
   preorderReleaseDate?: Date;
   preorderMessage?: string;
   preorderPaymentMode?: string;
@@ -288,13 +292,18 @@ async function putLine(
   if (!purchase) throw insufficientStock(product, variantId);
   options.admit?.({ product, variantId, purchaseType: purchase.purchaseType });
 
-  const price = quoteOffer
+  // [esim-patch] P10 a day-priced eSIM line: its days, its price for them and
+  // a variant name that says them. Refuses options the variant does not take.
+  const esimLine = await esimCartLine(line);
+  const price = esimLine
+    ? esimLine.price
+    : quoteOffer
     ? quoteOffer.unitPrice
     : selectedVariant
       ? selectedVariant.price
       : product.price;
   const name = product.name;
-  const variantName = selectedVariant?.name;
+  const variantName = esimLine?.variantName ?? selectedVariant?.name; // [esim-patch] P10
   const image =
     (selectedVariant && selectedVariant.image) ||
     (selectedVariant?.mediaId
@@ -344,7 +353,10 @@ async function putLine(
     // stop resolving at checkout — the shopper would watch their price
     // vanish for having clicked twice.
     const existing = cart.items[existingItemIndex];
-    const newQuantity = quoteOffer ? quantity : existing.quantity + quantity;
+    // [esim-patch] P10 other days for a line already in the cart replace it:
+    // the shopper changed their mind, they did not ask for one more.
+    const esimReplaced = Boolean(esimLine) && existing.lineAttributes?.days !== esimLine?.lineAttributes.days;
+    const newQuantity = quoteOffer || esimReplaced ? quantity : existing.quantity + quantity;
     const nextPurchase = resolvePurchaseType({
       product,
       variantId,
@@ -366,6 +378,7 @@ async function putLine(
     existing.quantity = newQuantity;
     existing.price = price;
     existing.quoteId = quoteOffer?.quoteId;
+    existing.lineAttributes = esimLine?.lineAttributes; // [esim-patch] P10
     existing.name = name;
     existing.variantName = variantName;
     existing.image = image;
@@ -397,6 +410,7 @@ async function putLine(
       quantity,
       price,
       quoteId: quoteOffer?.quoteId,
+      lineAttributes: esimLine?.lineAttributes, // [esim-patch] P10
       name,
       variantName,
       image,

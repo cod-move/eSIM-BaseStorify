@@ -27,8 +27,13 @@ Everything eSIM-specific lives here and in the files named below; official Stori
 | `app/api/cron/esim-fulfillment` | Every minute: due retries and polls, plus paid orders never queued |
 | `providers/fake.ts` | Testing supplier (fulfil / pending / reject / uncertain), only with `ESIM_ENABLE_FAKE_PROVIDER=true` |
 | `scripts/esim-dev-fulfilment.ts` | End-to-end fulfilment check with fake suppliers; cleans up after itself |
-
 | `fulfillment/refund.ts`, `fulfillment/refund-amount.ts` | eSIMs every supplier failed → store credit, following the admin route's refund steps |
+| `cart/line-attributes.ts` | A line's `lineAttributes` (patch P10): parse, check against the variant, price per day, name the days (pure) |
+| `cart/index.ts` | What Storify's cart and checkout call: `esimCartLine` (add), `esimLinePrices` (checkout re-pricing), `withLineDays` (order line variant) |
+| `components/esim/esim-day-picker.tsx`, `app/api/esim/catalog/products/[id]/day-pricing` | Days picker in the product page's buy box, for a day-priced variant only |
+| `scripts/esim-dev-days.ts` | End-to-end check of a day-priced plan: publish → cart → re-price → order → fulfil; cleans up and reports leftovers |
+
+Day-priced plans (Stellar's "pick the days" plans) are one variant per allowance, sold per day for the days the shopper picks. A cart holds one line per variant: adding the same variant with other days replaces the line.
 
 Not automatic: refunding a guest order (needs the gateway refund flow) — admins are told the exact amount.
 

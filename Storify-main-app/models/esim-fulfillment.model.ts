@@ -25,6 +25,8 @@ export interface IEsimFulfillment extends mongoose.Document {
   unit: number;
   variantId: mongoose.Types.ObjectId;
   candidates: mongoose.Types.ObjectId[];
+  /** The days a day-priced line was charged for; null for a fixed plan. */
+  durationDays: number | null;
   candidateIndex: number;
   state: FulfillmentState;
   attempts: number;
@@ -63,6 +65,7 @@ const EsimFulfillmentSchema = new Schema<IEsimFulfillment>(
     unit: { type: Number, required: true, min: 1 },
     variantId: { type: Schema.Types.ObjectId, required: true },
     candidates: { type: [Schema.Types.ObjectId], ref: "EsimPlan", required: true },
+    durationDays: { type: Number, default: null, min: 1 },
     candidateIndex: { type: Number, default: 0 },
     state: {
       type: String,

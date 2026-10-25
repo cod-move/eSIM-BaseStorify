@@ -9,8 +9,10 @@ import type { DataType } from "@/lib/esim/providers/types";
  *   supplier plans that can fulfil it, primary first: lowest selling price,
  *   then lowest USD cost, then lower supplier priority number (decided
  *   2026-10-25). The variant sells at the primary's price.
- * - Day-priced plans (buyer picks the number of days) are left out until order
- *   lines can carry the chosen days (patch point P10).
+ * - Day-priced plans (the buyer picks the number of days, priced per day) are
+ *   one variant per (data type, allowance). It sells at the primary's price
+ *   for its fewest days; the cart line carries the chosen days in
+ *   `lineAttributes` (patch point P10) and is priced per day × days.
  */
 
 export interface VariantPlan {
@@ -23,7 +25,12 @@ export interface VariantPlan {
   megabytes: number;
   dataLabel: string;
   validityDays: number;
+  /** Priced per day for the days the buyer picks; `retailPriceMinor` is then per day. */
   dayPriced: boolean;
+  /** The days a day-priced plan can be bought for. */
+  minDays: number;
+  maxDays: number;
+  defaultDays: number;
   retailPriceMinor: number;
   costUsdMinor: number;
   highSpeedGbPerDay: number | null;
@@ -36,9 +43,18 @@ export interface PlannedVariant {
   validityValue: string;
   priceMinor: number;
   costUsdMinor: number;
+  /** Set on a day-priced variant: the primary's price per day and its range. */
+  perDay: PerDayPricing | null;
   /** Plan ids, primary first. */
   candidates: string[];
   sortKey: [number, number, number];
+}
+
+export interface PerDayPricing {
+  priceMinor: number;
+  minDays: number;
+  maxDays: number;
+  defaultDays: number;
 }
 
 export interface PlannedProduct {
@@ -56,7 +72,7 @@ const TYPE_ORDER: Record<DataType, number> = {
 };
 
 export function variantKey(plan: VariantPlan): string {
-  return `${plan.dataType}|${plan.megabytes}|${plan.validityDays}`;
+  return `${plan.dataType}|${plan.megabytes}|${plan.dayPriced ? "perday" : plan.validityDays}`;
 }
 
 export function dataValue(plan: VariantPlan): string {
@@ -78,11 +94,22 @@ export function validityValue(days: number): string {
   return days === 1 ? "1 day" : `${days} days`;
 }
 
+/** The Validity value of a day-priced variant: the range the buyer picks from. */
+export function dayRangeValue(minDays: number, maxDays: number): string {
+  return minDays === maxDays ? validityValue(minDays) : `${minDays}–${maxDays} days`;
+}
+
+/** Days clamped to the range; a missing or broken value is the default. */
+export function clampDays(days: unknown, range: Omit<PerDayPricing, "priceMinor">): number {
+  const value = typeof days === "number" && Number.isInteger(days) ? days : range.defaultDays;
+  return Math.min(range.maxDays, Math.max(range.minDays, value));
+}
+
 export function planProducts(plans: VariantPlan[]): PlannedProduct[] {
   const products = new Map<string, Map<string, VariantPlan[]>>();
   const destinations = new Map<string, string>();
   for (const plan of plans) {
-    if (plan.dayPriced || plan.validityDays < 1) continue;
+    if (plan.dayPriced ? plan.minDays < 1 || plan.maxDays < plan.minDays : plan.validityDays < 1) continue;
     const variants = products.get(plan.productSlug) ?? new Map<string, VariantPlan[]>();
     const key = variantKey(plan);
     variants.set(key, [...(variants.get(key) ?? []), plan]);
@@ -104,16 +131,26 @@ export function planProducts(plans: VariantPlan[]): PlannedProduct[] {
         );
         const primary = ordered[0];
         const data = dataValue(primary);
-        const validity = validityValue(primary.validityDays);
+        const perDay: PerDayPricing | null = primary.dayPriced
+          ? {
+              priceMinor: primary.retailPriceMinor,
+              minDays: primary.minDays,
+              maxDays: primary.maxDays,
+              defaultDays: clampDays(primary.defaultDays, { ...primary, defaultDays: primary.minDays }),
+            }
+          : null;
+        const validity = perDay ? dayRangeValue(perDay.minDays, perDay.maxDays) : validityValue(primary.validityDays);
         return {
           key,
           name: `${data} / ${validity}`,
           dataValue: data,
           validityValue: validity,
-          priceMinor: primary.retailPriceMinor,
-          costUsdMinor: primary.costUsdMinor,
+          priceMinor: perDay ? perDay.priceMinor * perDay.minDays : primary.retailPriceMinor,
+          costUsdMinor: perDay ? primary.costUsdMinor * perDay.minDays : primary.costUsdMinor,
+          perDay,
           candidates: ordered.map((plan) => plan.id),
-          sortKey: [TYPE_ORDER[primary.dataType], primary.megabytes, primary.validityDays],
+          // A day-priced variant after the fixed ones of the same allowance.
+          sortKey: [TYPE_ORDER[primary.dataType], primary.megabytes, perDay ? Number.MAX_SAFE_INTEGER : primary.validityDays],
         };
       })
       .sort((a, b) => a.sortKey[0] - b.sortKey[0] || a.sortKey[1] - b.sortKey[1] || a.sortKey[2] - b.sortKey[2])),

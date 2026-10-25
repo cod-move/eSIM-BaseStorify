@@ -47,6 +47,10 @@ const CartItemSchema = new Schema<CartItem>({
     type: Schema.Types.ObjectId,
     ref: "QuoteRequest",
   },
+  // [esim-patch] P10 options the eSIM module reads (days of a day-priced plan).
+  lineAttributes: {
+    type: Schema.Types.Mixed,
+  },
   preorderReleaseDate: {
     type: Date,
   },

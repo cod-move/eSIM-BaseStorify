@@ -1306,6 +1306,8 @@ export const CartAddByIdSchema = z.object({
     .min(1)
     .max(100)
     .default(1),
+  // [esim-patch] P10 checked by the eSIM module (lib/esim/cart).
+  lineAttributes: z.record(z.string(), z.unknown()).optional(),
 });
 
 // ============================================

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { displayOf, formatBytes, remainingPercent } from "../display";
+import { displayOf, formatBytes, planTitle, remainingPercent } from "../display";
 
 const base = { status: "fulfilled" as const, lifecycle: null, topupSupported: true, topupWindow: "before_expiry" as const };
 
@@ -40,5 +40,13 @@ describe("formatting", () => {
     assert.equal(formatBytes(null), "—");
     assert.equal(remainingPercent(1000, 250), 25);
     assert.equal(remainingPercent(0, 10), null);
+  });
+});
+
+describe("planTitle", () => {
+  it("names a day-priced eSIM by the days bought", () => {
+    assert.equal(planTitle("Japan eSIM Unlimited - 1 day", 7), "Japan eSIM Unlimited · 7 days");
+    assert.equal(planTitle("Japan 5GB 30Days", null), "Japan 5GB 30Days");
+    assert.equal(planTitle("Unlimited", 1), "Unlimited · 1 day");
   });
 });

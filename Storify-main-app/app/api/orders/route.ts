@@ -83,6 +83,7 @@ import {
   type OrderLineProductSource,
   type OrderLineVariantSource,
 } from "@/lib/orders/order-line-variant";
+import { esimLinePrices, withLineDays } from "@/lib/esim/cart"; // [esim-patch] P10
 
 function isDuplicateKeyError(err: unknown): boolean {
   return (
@@ -244,6 +245,7 @@ export async function POST(request: NextRequest) {
       variantId?: string;
       name?: string;
       purchaseType?: string;
+      lineAttributes?: Record<string, unknown>; // [esim-patch] P10
     }>;
 
     // This endpoint knows nothing about pre-order reservations: it decrements
@@ -307,12 +309,16 @@ export async function POST(request: NextRequest) {
     // mirror), so it must never be used for a specific variant line. Using one
     // resolver for subtotal, shipping subtotal, line items and commission keeps
     // order.total === Σ(items.price × qty) and prevents mispriced variant orders.
+    // [esim-patch] P10 day-priced eSIM lines: per day × the line's days.
+    const esimPrices = await esimLinePrices(cartItems);
     const resolveCurrentItemPrice = (item: (typeof cartItems)[number]): number => {
       const product = item.productId;
       if (!product) return item.price ?? 0;
       // A quoted line is priced by the merchant's offer, not by the catalogue.
       const offer = offerForItem(item);
       if (offer) return offer.unitPrice;
+      const esimPrice = esimPrices.get(item); // [esim-patch] P10
+      if (esimPrice !== undefined) return esimPrice;
       if (item.variantId && Array.isArray(product.variants)) {
         const variant = product.variants.find(
           (candidate) => candidate._id.toString() === String(item.variantId),
@@ -594,7 +600,7 @@ export async function POST(request: NextRequest) {
                 : undefined,
             })
           : undefined,
-      getVariantSnapshot: (item) => orderLineVariantSnapshot(item.productId, item.variantId),
+      getVariantSnapshot: (item) => withLineDays(item, orderLineVariantSnapshot(item.productId, item.variantId)), // [esim-patch] P10
       fallbackCommissionPercent:
         settings.orders?.commission?.vendorRate ?? DEFAULT_VENDOR_COMMISSION_RATE,
       status: "pending",
@@ -629,6 +635,7 @@ export async function POST(request: NextRequest) {
         // Ties the sale back to the negotiation that produced it, and is what
         // settling the payment reads to close the quote out.
         quoteId: offerForItem(item)?.quoteId,
+        lineAttributes: item.lineAttributes, // [esim-patch] P10
         // The tax this line carried, as its consignment line records it — a
         // return of the line reads it from here.
         taxRate: taxGetters.getTaxRate?.(item),
@@ -645,7 +652,7 @@ export async function POST(request: NextRequest) {
                 : undefined,
             })
           : undefined,
-        ...orderLineVariantSnapshot(item.productId, item.variantId),
+        ...withLineDays(item, orderLineVariantSnapshot(item.productId, item.variantId)), // [esim-patch] P10
       })),
       subOrders,
       shippingAddress,

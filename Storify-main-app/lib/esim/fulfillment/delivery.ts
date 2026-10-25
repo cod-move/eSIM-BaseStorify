@@ -20,6 +20,7 @@ import { createSystemAuditContext } from "@/lib/audit";
 import { auditOrderStatus } from "@/lib/orders/audit-order";
 import { installLinks } from "@/lib/esim/fulfillment/install-links";
 import { refundFailedEsims, type EsimRefundResult } from "@/lib/esim/fulfillment/refund";
+import { planTitle } from "@/lib/esim/account/display";
 
 /**
  * What happens to an order once its eSIM jobs settle (ORD-09/10, NTF-01/02).
@@ -85,7 +86,7 @@ async function sendDelivery(order: OrderView, profiles: IEsimProfile[], dedupeKe
     if (profile.installation.activationCode) {
       attachments.push({ filename: name, content: await qrPng(profile.installation.activationCode), contentType: "image/png" });
     }
-    blocks.push(esimBlock(profile, plans.get(String(profile.plan)) ?? "eSIM", index + 1, name));
+    blocks.push(esimBlock(profile, planTitle(plans.get(String(profile.plan)) ?? "eSIM", profile.durationDays), index + 1, name));
   }
   const html = `
     <div style="font-family:Arial,Helvetica,sans-serif;max-width:640px;margin:0 auto;color:#222">
