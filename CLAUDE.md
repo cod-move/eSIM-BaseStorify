@@ -24,6 +24,8 @@
 - **保留多商户**：eSIM 由平台自营；实体卡等附加产品由子商户上架。开卡和 Top-up 只处理平台自营的订单行。
 - 首批供应商（P1）：eSIM Access、Stellar、RoamWifi，以及 TopConnect 号码卡的核心功能（NUM-01~09）。P2：BNESIM、MobiMatter。P3：MobIOT（等对方提供文档）。
 - 数据模型对齐 Stellar 的接口结构：`productSlug` 相同的套餐归为一个商品，套餐作为规格。Top-up 用 `mode`（stack 叠加 / addon 独立包）和 `window`（before_expiry 到期前才能续 / while_profile_exists 随时可买）两个字段描述。
+- eSIM Access 的 `_Daily` 套餐按固定 1 天套餐卖（与旧系统一致），不做天数可选；天数可选只用于 Stellar 这类按天计价的套餐。
+- 同一规格有多家供应商时，主供应商按低价选：售价最低者优先，售价相同比换算成本（USD），再相同才看供应商优先级。
 - 购物车行和订单行加通用字段 `lineAttributes`（插入点 P10，必须改），记录可选天数、充值目标 ICCID、激活日期。
 - 开卡最终失败时默认退到余额；没有账号的游客订单原路退款。
 - 游客只能买流量 eSIM，号码卡必须登录后购买。

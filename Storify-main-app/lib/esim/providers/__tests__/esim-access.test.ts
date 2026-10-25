@@ -60,6 +60,13 @@ describe("eSIM Access plan mapping", () => {
     assert.equal(mapPlan(JAPAN_3GB, names).fairUse, null);
   });
 
+  it("sells _Daily packages as fixed one-day plans", () => {
+    const plan = mapPlan({ ...JAPAN_3GB, slug: "JP_1_Daily", duration: 1, dataType: 2, fupPolicy: "512 Kbps" }, names);
+    assert.deepEqual(plan.duration, { configurable: false, defaultDays: 1, minDays: 1, maxDays: 1 });
+    assert.equal(plan.validityDays, 1);
+    assert.equal(plan.cost.billingUnit, "plan");
+  });
+
   it("groups multi-country packages under their region", () => {
     const plan = mapPlan(
       {
@@ -113,6 +120,7 @@ describe("eSIM Access calls", () => {
     assert.equal(JSON.parse(sent[0].body ?? "{}").transactionId, "ord1line2u1");
     assert.equal(result.status, "processing");
     assert.equal(result.providerOrderId, "B1");
+    assert.deepEqual(JSON.parse(sent[0].body ?? "{}").packageInfoList, [{ packageCode: "CKH491", count: 1 }]);
   });
 
   it("surfaces a refusal with the provider's code", async () => {

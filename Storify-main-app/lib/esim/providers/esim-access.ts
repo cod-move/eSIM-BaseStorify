@@ -50,6 +50,9 @@ import {
 const DEFAULT_BASE_URL = "https://api.esimaccess.com/api/v1/open";
 const PROFILE_PENDING_ERROR = "200010";
 const BYTES_PER_MB = 1024 * 1024;
+// "_Daily" packages (e.g. "JP_1_Daily") are sold as fixed one-day plans, as
+// the live esim_php system does — not as a chosen number of days (decided
+// 2026-10-25).
 
 export interface EsimAccessOptions {
   accessCode: string;

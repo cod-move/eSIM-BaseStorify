@@ -1,0 +1,121 @@
+import "server-only";
+
+import type { AnyBulkWriteOperation, Types } from "mongoose";
+import { EsimPlan, type IEsimPlan } from "@/models/esim-plan.model";
+import { EsimPricingRule, getEsimSettings } from "@/models/esim-pricing.model";
+import { currentRates } from "@/lib/esim/pricing/fx-service";
+import { priceOf, type PricingRule, type PricingSettings } from "@/lib/esim/pricing/price";
+
+/**
+ * Re-prices stored plans from their cost, the current rates and the rules.
+ *
+ * Plans an admin priced by hand are left alone. With `onlyIfFxMoved`, a plan
+ * is re-priced only when its currency moved more than the configured
+ * threshold since it was last priced — the daily FX refresh uses this so
+ * prices do not twitch with every cent of the market. Rule or settings
+ * changes call it without the flag, re-pricing everything.
+ */
+
+const BATCH_SIZE = 500;
+
+export interface RepriceResult {
+  considered: number;
+  changed: number;
+  /** Currencies with no stored rate; their plans keep their old price. */
+  missingRates: string[];
+}
+
+export async function repricePlans(options: { onlyIfFxMoved?: boolean; providerCode?: string } = {}) {
+  const settingsDoc = await getEsimSettings();
+  const settings: PricingSettings = {
+    fxBufferPercent: settingsDoc.fxBufferPercent,
+    defaultMarkupPercent: settingsDoc.defaultMarkupPercent,
+    minMarginPercent: settingsDoc.minMarginPercent,
+    rounding: settingsDoc.rounding,
+  };
+  const rules: PricingRule[] = (await EsimPricingRule.find({ enabled: true }).lean()).map((rule) => ({
+    id: String(rule._id),
+    providerCode: rule.providerCode,
+    countryCode: rule.countryCode,
+    scope: rule.scope,
+    markupPercent: rule.markupPercent,
+    fixedMarkupMinor: rule.fixedMarkupMinor,
+    priority: rule.priority,
+  }));
+
+  const filter = {
+    retailPriceManual: { $ne: true },
+    ...(options.providerCode ? { providerCode: options.providerCode } : {}),
+  };
+  const rates = await currentRates(await EsimPlan.distinct("cost.currency", filter));
+  const threshold = settingsDoc.repriceThresholdPercent / 100;
+  const result: RepriceResult = { considered: 0, changed: 0, missingRates: [] };
+  const missing = new Set<string>();
+  const pricedAt = new Date();
+  let writes: AnyBulkWriteOperation<IEsimPlan>[] = [];
+
+  const flush = async () => {
+    if (!writes.length) return;
+    const outcome = await EsimPlan.bulkWrite(writes, { ordered: false });
+    result.changed += outcome.modifiedCount;
+    writes = [];
+  };
+
+  const cursor = EsimPlan.find(filter)
+    .select({ providerCode: 1, coverage: 1, cost: 1, retailPriceMinor: 1, pricing: 1 })
+    .lean<IEsimPlan[]>()
+    .cursor();
+  for await (const plan of cursor) {
+    result.considered += 1;
+    const rate = rates.get(plan.cost.currency);
+    if (!rate) {
+      missing.add(plan.cost.currency);
+      continue;
+    }
+    if (options.onlyIfFxMoved && plan.pricing) {
+      const moved = Math.abs(rate.usdPerUnit - plan.pricing.usdPerUnit) / plan.pricing.usdPerUnit;
+      if (moved <= threshold) continue;
+    }
+    const price = priceOf(
+      {
+        providerCode: plan.providerCode,
+        scope: plan.coverage.scope,
+        countryCodes: plan.coverage.countries.map((country) => country.code),
+        costMinor: plan.cost.amountMinor,
+        usdPerUnit: rate.usdPerUnit,
+      },
+      rules,
+      settings,
+    );
+    const ruleId = price.ruleId as unknown as Types.ObjectId | null;
+    if (
+      plan.retailPriceMinor === price.retailMinor &&
+      plan.pricing?.usdPerUnit === rate.usdPerUnit &&
+      String(plan.pricing?.ruleId ?? null) === String(ruleId)
+    ) {
+      continue;
+    }
+    writes.push({
+      updateOne: {
+        filter: { _id: plan._id, retailPriceManual: { $ne: true } },
+        update: {
+          $set: {
+            retailPriceMinor: price.retailMinor,
+            pricing: {
+              costUsdMinor: price.costUsdMinor,
+              usdPerUnit: rate.usdPerUnit,
+              ruleId,
+              markupPercent: price.markupPercent,
+              marginFloorApplied: price.marginFloorApplied,
+              pricedAt,
+            },
+          },
+        },
+      },
+    });
+    if (writes.length >= BATCH_SIZE) await flush();
+  }
+  await flush();
+  result.missingRates = [...missing];
+  return result;
+}

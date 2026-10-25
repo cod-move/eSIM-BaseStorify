@@ -13,6 +13,13 @@ Everything eSIM-specific lives here and in the files named below; official Stori
 | `models/esim-*.model.ts` | `EsimProvider`, `EsimPlan`, `EsimProviderLog` |
 | `app/api/cron/esim-catalog` | Scheduled catalogue sync (CRON_SECRET) |
 | `scripts/esim-provider.ts` | CLI: set / probe / sync suppliers until the admin pages exist |
+| `pricing/fx.ts`, `pricing/fx-service.ts` | ECB daily rates crossed to USD, manual overrides, history (CAT-08) |
+| `pricing/price.ts`, `pricing/reprice.ts` | Cost → USD selling price: buffer, layered markup rules, margin floor, rounding (CAT-07) |
+| `catalog/variants.ts`, `catalog/publish.ts` | Plans → one Storify product per destination, one variant per bundle with primary/fallback suppliers (CAT-05/06) |
+| `models/esim-{fx-rate,pricing,product-link}.model.ts` | Rates, pricing rules + settings, product/variant ↔ plan links |
+| `scripts/esim-catalog.ts` | CLI: fx, settings, rules, reprice, plans activate, publish |
+
+Requires MongoDB as a replica set (Storify's product writes run in transactions); locally a single-node `--replSet rs0` is enough.
 
 ## Environment
 
@@ -28,6 +35,12 @@ pnpm exec tsx --test "lib/esim/**/*.test.ts"
 pnpm exec tsx --env-file-if-exists=.env --require ./scripts/lib/finance-cli.cjs scripts/esim-provider.ts set stellar --status active --cred apiKey=$STELLAR_API_KEY
 pnpm exec tsx --env-file-if-exists=.env --require ./scripts/lib/finance-cli.cjs scripts/esim-provider.ts probe stellar
 pnpm exec tsx --env-file-if-exists=.env --require ./scripts/lib/finance-cli.cjs scripts/esim-provider.ts sync stellar
+
+# price and publish (new products are drafts until --status active)
+pnpm exec tsx --env-file-if-exists=.env --require ./scripts/lib/finance-cli.cjs scripts/esim-catalog.ts fx refresh
+pnpm exec tsx --env-file-if-exists=.env --require ./scripts/lib/finance-cli.cjs scripts/esim-catalog.ts reprice
+pnpm exec tsx --env-file-if-exists=.env --require ./scripts/lib/finance-cli.cjs scripts/esim-catalog.ts plans activate --product japan-esim
+pnpm exec tsx --env-file-if-exists=.env --require ./scripts/lib/finance-cli.cjs scripts/esim-catalog.ts publish --product japan-esim
 ```
 
 ## Adding a supplier

@@ -128,6 +128,8 @@ export async function syncProviderCatalog(provider: IEsimProvider): Promise<Sync
               $setOnInsert: {
                 status: "disabled",
                 retailPriceMinor: null,
+                retailPriceManual: false,
+                pricing: null,
                 kycRequired: null,
                 productId: null,
                 variantId: null,

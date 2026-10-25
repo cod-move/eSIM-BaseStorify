@@ -57,6 +57,16 @@ export interface IEsimPlan extends mongoose.Document {
   status: "active" | "disabled";
   /** Selling price in the store currency (USD), minor units; null = not priced yet. */
   retailPriceMinor: number | null;
+  /** An admin set retailPriceMinor by hand; re-pricing leaves it alone. */
+  retailPriceManual: boolean;
+  pricing: {
+    costUsdMinor: number;
+    usdPerUnit: number;
+    ruleId: mongoose.Types.ObjectId | null;
+    markupPercent: number;
+    marginFloorApplied: boolean;
+    pricedAt: Date;
+  } | null;
   /** null = follow the provider's default. */
   kycRequired: boolean | null;
   productId: mongoose.Types.ObjectId | null;
@@ -156,6 +166,21 @@ const EsimPlanSchema = new Schema<IEsimPlan>(
 
     status: { type: String, enum: ["active", "disabled"], default: "disabled" },
     retailPriceMinor: { type: Number, default: null, min: 0 },
+    retailPriceManual: { type: Boolean, default: false },
+    pricing: {
+      type: new Schema(
+        {
+          costUsdMinor: { type: Number, required: true },
+          usdPerUnit: { type: Number, required: true },
+          ruleId: { type: Schema.Types.ObjectId, ref: "EsimPricingRule", default: null },
+          markupPercent: { type: Number, required: true },
+          marginFloorApplied: { type: Boolean, default: false },
+          pricedAt: { type: Date, required: true },
+        },
+        { _id: false },
+      ),
+      default: null,
+    },
     kycRequired: { type: Boolean, default: null },
     productId: { type: Schema.Types.ObjectId, ref: "Product", default: null },
     variantId: { type: Schema.Types.ObjectId, default: null },
