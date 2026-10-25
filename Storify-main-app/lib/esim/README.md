@@ -28,7 +28,9 @@ Everything eSIM-specific lives here and in the files named below; official Stori
 | `providers/fake.ts` | Testing supplier (fulfil / pending / reject / uncertain), only with `ESIM_ENABLE_FAKE_PROVIDER=true` |
 | `scripts/esim-dev-fulfilment.ts` | End-to-end fulfilment check with fake suppliers; cleans up after itself |
 
-Not yet automatic: refunding the shopper when every supplier fails (admins are alerted instead).
+| `fulfillment/refund.ts`, `fulfillment/refund-amount.ts` | eSIMs every supplier failed → store credit, following the admin route's refund steps |
+
+Not automatic: refunding a guest order (needs the gateway refund flow) — admins are told the exact amount.
 
 Requires MongoDB as a replica set (Storify's product writes run in transactions); locally a single-node `--replSet rs0` is enough.
 

@@ -12,7 +12,7 @@
  */
 import assert from "node:assert/strict";
 import { connectDB, disconnectDB, mongoose } from "@/lib/db";
-import { Order } from "@/models";
+import { Order, User } from "@/models";
 import { EsimFulfillment } from "@/models/esim-fulfillment.model";
 import { EsimPackage } from "@/models/esim-package.model";
 import { EsimPlan } from "@/models/esim-plan.model";
@@ -24,7 +24,7 @@ import { EsimProviderLog } from "@/models/esim-provider-log.model";
 const { ObjectId } = mongoose.Types;
 const tag = `e2e-${Date.now()}`;
 type Id = mongoose.Types.ObjectId;
-const created = { providers: [] as Id[], plans: [] as Id[], orders: [] as Id[], links: [] as Id[] };
+const created = { providers: [] as Id[], plans: [] as Id[], orders: [] as Id[], links: [] as Id[], users: [] as Id[] };
 
 async function fakeProvider(mode: string) {
   const code = `fake-${mode}`;
@@ -67,22 +67,52 @@ async function fakePlan(providerId: Id, providerCode: string, window: "before_ex
 }
 
 async function paidOrder(variantId: Id, quantity = 1) {
+  return paidOrderOf([{ variantId, quantity, price: 1.99 }], { guest: true });
+}
+
+/** A paid order; `total` below the line sum stands for a coupon. */
+async function paidOrderOf(
+  lines: Array<{ variantId: Id; quantity: number; price: number }>,
+  options: { guest: boolean; customerId?: Id; total?: number },
+) {
   const vendorId = new ObjectId();
+  const subtotal = lines.reduce((sum, line) => sum + line.price * line.quantity, 0);
   const { insertedId } = await Order.collection.insertOne({
     orderNumber: `${tag}-${created.orders.length + 1}`,
-    customerId: new ObjectId(),
-    guestEmail: "guest@esim.test",
+    customerId: options.customerId ?? new ObjectId(),
+    ...(options.guest ? { guestEmail: "guest@esim.test" } : {}),
     status: "processing",
     paymentStatus: "paid",
+    paymentMethod: "stripe",
+    channel: "online",
     currency: "USD",
-    total: 1.99 * quantity,
-    items: [{ productId: new ObjectId(), variantId, vendorId, name: "Test eSIM", sku: "TEST", price: 1.99, quantity }],
+    subtotal,
+    discount: Math.round((subtotal - (options.total ?? subtotal)) * 100) / 100,
+    tax: 0,
+    shippingCost: 0,
+    total: options.total ?? subtotal,
+    items: lines.map((line) => ({
+      productId: new ObjectId(), variantId: line.variantId, vendorId, name: "Test eSIM", sku: "TEST", price: line.price, quantity: line.quantity,
+    })),
     subOrders: [{ _id: new ObjectId(), vendorId, status: "processing", items: [] }],
     createdAt: new Date(),
     updatedAt: new Date(),
   });
   created.orders.push(insertedId as Id);
   return String(insertedId);
+}
+
+async function testCustomer() {
+  const { insertedId } = await User.collection.insertOne({
+    email: `${tag}@esim.test`,
+    name: "E2E Shopper",
+    role: "customer",
+    emailVerified: true,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  });
+  created.users.push(insertedId as Id);
+  return insertedId as Id;
 }
 
 async function link(candidates: Id[]) {
@@ -160,15 +190,55 @@ async function main() {
   assert.ok(job3!.nextAttemptAt.getTime() > Date.now() + 20_000, "backed off");
   console.log("   ok — retry scheduled on the same supplier");
 
-  console.log("4. every supplier refusing fails the job and the order is not delivered");
+  console.log("4. every supplier refusing a guest order: failed, refund left to a person");
   const order4 = await paidOrder(await link([rejectPlan._id]));
   await fulfilment.esimQueueOrder(order4);
   await fulfilment.esimFulfilOrder(order4);
   const job4 = await EsimFulfillment.findOne({ order: order4 }).lean();
   assert.equal(job4?.state, "failed");
+  assert.equal(job4?.refund?.state, "manual", "guests are refunded by hand");
+  assert.equal(job4?.refund?.amount, 1.99);
   assert.equal(await settleOrderDelivery(order4), "failed");
-  assert.equal((await Order.findById(order4).lean<{ status: string }>())?.status, "processing");
-  console.log("   ok — failed, order left for a person");
+  assert.equal((await Order.findById(order4).lean<{ status: string; paymentStatus: string }>())?.paymentStatus, "paid");
+  console.log("   ok — failed, guest refund handed to admins");
+
+  console.log("6. a registered shopper's order half fails: the issued eSIM is delivered, the failed one credited");
+  const shopper = await testCustomer();
+  const okVariant = await link([okPlan._id]);
+  const badVariant = await link([rejectPlan._id]);
+  // 4.99 + 9.99 = 14.98, a coupon makes it 11.98: the failed line's share is 7.98.
+  const order6 = await paidOrderOf(
+    [{ variantId: okVariant, quantity: 1, price: 4.99 }, { variantId: badVariant, quantity: 1, price: 9.99 }],
+    { guest: false, customerId: shopper, total: 11.98 },
+  );
+  await fulfilment.esimQueueOrder(order6);
+  await fulfilment.esimFulfilOrder(order6);
+  const jobs6 = await EsimFulfillment.find({ order: order6 }).sort({ lineIndex: 1 }).lean();
+  assert.equal(jobs6[0].state, "fulfilled");
+  assert.ok(jobs6[0].deliveredAt, "the issued eSIM went out despite the other failing");
+  assert.equal(jobs6[1].state, "failed");
+  assert.equal(jobs6[1].refund?.state, "done");
+  assert.equal(jobs6[1].refund?.amount, 7.98);
+  const order6Doc = await Order.findById(order6).lean<{ status: string; paymentStatus: string; refundedTotal: number; refundInFlightAt?: Date }>();
+  assert.equal(order6Doc?.paymentStatus, "partially_refunded");
+  assert.equal(order6Doc?.refundedTotal, 7.98);
+  assert.equal(order6Doc?.refundInFlightAt, undefined, "in-flight stamp cleared");
+  assert.equal(order6Doc?.status, "processing", "a partly failed order is not marked delivered");
+  const { storeCreditSummary } = await import("@/lib/store-credit/store-credit");
+  const balance = await storeCreditSummary(String(shopper));
+  assert.equal(JSON.stringify(balance).includes("7.98"), true, `store credit shows 7.98: ${JSON.stringify(balance)}`);
+  assert.equal(await settleOrderDelivery(order6), "partial");
+  assert.equal((await Order.findById(order6).lean<{ refundedTotal: number }>())?.refundedTotal, 7.98, "settling again refunds nothing more");
+  console.log("   ok — delivered one, credited 7.98, no double refund");
+
+  console.log("7. a registered shopper's order fails completely: full refund to store credit");
+  const order7 = await paidOrderOf([{ variantId: badVariant, quantity: 2, price: 4.99 }], { guest: false, customerId: shopper });
+  await fulfilment.esimQueueOrder(order7);
+  await fulfilment.esimFulfilOrder(order7);
+  const order7Doc = await Order.findById(order7).lean<{ paymentStatus: string; refundedTotal: number }>();
+  assert.equal(order7Doc?.paymentStatus, "refunded");
+  assert.equal(order7Doc?.refundedTotal, 9.98);
+  console.log("   ok — refunded 9.98 in full");
 
   console.log("5. the cron sweep queues a paid order that was never queued");
   const order5 = await paidOrder(await link([okPlan._id]));
@@ -189,6 +259,22 @@ async function cleanup() {
   await EsimPackage.deleteMany({ esim: { $in: profiles.map((profile) => profile._id) } });
   await EsimProfile.deleteMany({ order: { $in: orders } });
   await EsimFulfillment.deleteMany({ order: { $in: orders } });
+  // What the store-credit refunds wrote, keyed by the test orders and shopper.
+  const db = mongoose.connection.db!;
+  const byTag = new RegExp(tag);
+  for (const name of ["paymenttransactions", "ledgerentries", "financeoperations"]) {
+    await db.collection(name).deleteMany({ $or: [{ orderId: { $in: orders } }, { "metadata.orderId": { $in: orders.map(String) } }] }).catch(() => undefined);
+  }
+  for (const name of ["storecreditaccounts", "storecredittransactions"]) {
+    await db.collection(name).deleteMany({ customerId: { $in: created.users } }).catch(() => undefined);
+  }
+  await db.collection("audit_logs").deleteMany({ $or: [{ resourceName: byTag }, { resourceId: { $in: orders.map(String) } }] }).catch(() => undefined);
+  // Shopper notifications store the user id as a string.
+  await db.collection("notifications").deleteMany({
+    $or: [{ message: byTag }, { title: byTag }, { userId: { $in: [...created.users, ...created.users.map(String)] } }],
+  }).catch(() => undefined);
+  await db.collection("emailjobs").deleteMany({ $or: [{ subject: byTag }, { to: byTag }] }).catch(() => undefined);
+  await User.collection.deleteMany({ _id: { $in: created.users } });
   await Order.collection.deleteMany({ _id: { $in: orders } });
   await EsimProductLink.deleteMany({ _id: { $in: created.links } });
   await EsimPlan.deleteMany({ _id: { $in: created.plans } });

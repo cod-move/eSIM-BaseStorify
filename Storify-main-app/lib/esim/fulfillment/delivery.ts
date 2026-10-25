@@ -1,5 +1,6 @@
 import "server-only";
 
+import { createHash } from "node:crypto";
 import QRCode from "qrcode";
 import { mongoose } from "@/lib/db";
 import { ORDER_STATUS } from "@/config/app.config";
@@ -18,17 +19,19 @@ import { notifyAdminsPaymentAnomaly, notifyOrderStatus } from "@/lib/notificatio
 import { createSystemAuditContext } from "@/lib/audit";
 import { auditOrderStatus } from "@/lib/orders/audit-order";
 import { installLinks } from "@/lib/esim/fulfillment/install-links";
+import { refundFailedEsims, type EsimRefundResult } from "@/lib/esim/fulfillment/refund";
 
 /**
  * What happens to an order once its eSIM jobs settle (ORD-09/10, NTF-01/02).
  *
- * - All fulfilled: one delivery email with every eSIM (QR attached, manual
- *   install details, one-tap links), then — for an order made only of eSIMs —
- *   the order moves to delivered, the same way a carrier scan moves it
- *   (lib/shipping/tracking-cascade.ts). An order with physical goods keeps its
- *   status for the seller to ship.
- * - Some failed and none still running: admins are told, and the shopper gets
- *   a "we are on it" email. The refund is not automatic yet.
+ * - Issued eSIMs are emailed (QR attached, manual install details, one-tap
+ *   links) as soon as nothing is still running, whether or not others failed.
+ * - Failed ones are refunded to store credit (lib/esim/fulfillment/refund.ts);
+ *   a guest order, or a credit that could not be given, goes to the admins to
+ *   refund by hand. The shopper is told which happened.
+ * - An order made only of eSIMs, all issued, moves to delivered the same way a
+ *   carrier scan moves it (lib/shipping/tracking-cascade.ts). An order with
+ *   physical goods keeps its status for the seller to ship.
  *
  * Every email carries a dedupe key, so a cron re-run cannot send it twice.
  */
@@ -66,7 +69,7 @@ function esimBlock(profile: IEsimProfile, planName: string, index: number, attac
     </div>`;
 }
 
-async function sendDelivery(order: OrderView, profiles: IEsimProfile[]) {
+async function sendDelivery(order: OrderView, profiles: IEsimProfile[], dedupeKey: string) {
   const to = await orderContactEmail(order);
   if (!to) return false;
   const settings = await getSettings();
@@ -98,7 +101,7 @@ async function sendDelivery(order: OrderView, profiles: IEsimProfile[]) {
     html,
     attachments,
     category: "esim-delivery",
-    dedupeKey: `esim-delivery:${order._id}`,
+    dedupeKey,
     settings,
   });
 }
@@ -129,6 +132,28 @@ async function markDelivered(order: OrderView) {
   }).catch(console.error);
 }
 
+async function sendFailureNotice(order: OrderView, failedCount: number, total: number, refund: EsimRefundResult) {
+  const to = await orderContactEmail(order);
+  if (!to) return;
+  const which = failedCount === total ? "your eSIM" : `${failedCount} of your ${total} eSIMs`;
+  const body =
+    refund.state === "refunded"
+      ? `We could not issue ${which} for order <b>${escapeHtml(order.orderNumber)}</b>, so we have refunded <b>${escapeHtml(refund.amount.toFixed(2))} ${escapeHtml(refund.currency)}</b> to your account balance. You can use it on your next purchase.`
+      : `We could not issue ${which} for order <b>${escapeHtml(order.orderNumber)}</b> right away. Our team has been alerted and will issue it or refund you shortly — there is nothing you need to do.`;
+  await sendEmail({
+    to,
+    subject: refund.state === "refunded" ? `Refund for order ${order.orderNumber}` : `Your eSIM for order ${order.orderNumber} is delayed`,
+    html: `<div style="font-family:Arial,Helvetica,sans-serif;max-width:640px;margin:0 auto"><p>${body}</p></div>`,
+    category: "esim-delivery",
+    dedupeKey: `esim-failed:${order._id}:${refund.state}`,
+  }).catch(console.error);
+}
+
+/**
+ * Once no job is still running: deliver whatever was issued, refund whatever
+ * failed, and close an all-eSIM order that was fully issued. Safe to call
+ * again — each step only touches what it has not done yet.
+ */
 export async function settleOrderDelivery(orderId: string) {
   const jobs = await EsimFulfillment.find({ order: orderId }).lean();
   if (!jobs.length || jobs.some((job) => job.state !== "fulfilled" && job.state !== "failed")) return "running";
@@ -137,39 +162,39 @@ export async function settleOrderDelivery(orderId: string) {
     .lean<OrderView | null>();
   if (!order) return "missing";
 
+  const fulfilled = jobs.filter((job) => job.state === "fulfilled");
   const failed = jobs.filter((job) => job.state === "failed");
-  if (failed.length) {
-    await notifyAdminsPaymentAnomaly({
-      title: "eSIM could not be delivered",
-      message: `Order ${order.orderNumber}: ${failed.length} of ${jobs.length} eSIM(s) failed — ${failed
-        .map((job) => job.lastError?.message)
-        .filter(Boolean)
-        .join("; ")
-        .slice(0, 400)}. Retry with another supplier or refund the shopper.`,
-      dedupeKey: `esim-failed:${orderId}`,
-    }).catch(console.error);
-    const to = await orderContactEmail(order);
-    if (to) {
-      await sendEmail({
-        to,
-        subject: `Your eSIM for order ${order.orderNumber} is delayed`,
-        html: `<div style="font-family:Arial,Helvetica,sans-serif;max-width:640px;margin:0 auto"><p>We could not issue ${failed.length === jobs.length ? "your eSIM" : `${failed.length} of your ${jobs.length} eSIMs`} for order <b>${escapeHtml(order.orderNumber)}</b> right away. Our team has been alerted and will issue it or refund you shortly — there is nothing you need to do.</p></div>`,
-        category: "esim-delivery",
-        dedupeKey: `esim-delayed:${orderId}`,
-      }).catch(console.error);
-    }
-    return "failed";
+
+  // Issued eSIMs go out whatever happened to the rest of the order.
+  const undelivered = fulfilled.filter((job) => !job.deliveredAt);
+  if (undelivered.length) {
+    const profiles = await EsimProfile.find({ _id: { $in: undelivered.map((job) => job.profile) } })
+      .sort({ lineIndex: 1, unit: 1 });
+    const batch = createHash("sha1").update(undelivered.map((job) => String(job._id)).sort().join(",")).digest("hex").slice(0, 12);
+    await sendDelivery(order, profiles, `esim-delivery:${orderId}:${batch}`);
+    await EsimFulfillment.updateMany({ _id: { $in: undelivered.map((job) => job._id) } }, { $set: { deliveredAt: new Date() } });
   }
 
-  if (jobs.every((job) => job.deliveredAt)) return "delivered";
-  const profiles = await EsimProfile.find({ _id: { $in: jobs.map((job) => job.profile) } })
-    .sort({ lineIndex: 1, unit: 1 });
-  const sent = await sendDelivery(order, profiles);
-  await EsimFulfillment.updateMany({ order: orderId }, { $set: { deliveredAt: new Date() } });
+  if (failed.some((job) => !job.refund)) {
+    const refund = await refundFailedEsims(orderId);
+    if (refund.state !== "nothing") {
+      await notifyAdminsPaymentAnomaly({
+        title: refund.state === "refunded" ? "eSIM failed and was refunded to store credit" : "eSIM failed: refund by hand",
+        message: `Order ${order.orderNumber}: ${failed.length} of ${jobs.length} eSIM(s) failed — ${failed
+          .map((job) => job.lastError?.message)
+          .filter(Boolean)
+          .join("; ")
+          .slice(0, 300)}. ${refund.state === "refunded" ? `${refund.amount.toFixed(2)} ${refund.currency} credited to the shopper.` : `Refund ${refund.amount.toFixed(2)} ${refund.currency} by hand.`}`,
+        dedupeKey: `esim-failed:${orderId}:${refund.state}`,
+      }).catch(console.error);
+      await sendFailureNotice(order, failed.length, jobs.length, refund);
+    }
+  }
 
+  if (failed.length) return fulfilled.length ? "partial" : "failed";
   const esimVariants = new Set(jobs.map((job) => String(job.variantId)));
   if (order.items.every((item) => esimVariants.has(String(item.variantId ?? "")))) {
     await markDelivered(order);
   }
-  return sent ? "delivered" : "delivered_no_email";
+  return "delivered";
 }
