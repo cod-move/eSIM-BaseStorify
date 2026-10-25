@@ -29,7 +29,7 @@
 |---|---|---|---|---|---|
 | P1 | 计划 | `Storify-main-app/lib/storefront/sections/registry.ts` | `DEFINITIONS` 数组 | import 并加入 eSIM 区块定义 | 数组是否仍存在、区块类型契约 `SectionDefinition`（`sections/types.ts`）是否有破坏性变化；后台「添加区块」里能看到 eSIM 区块 |
 | P2 | 计划 | `Storify-main-app/lib/storefront/themes/registry.ts` | `THEME_MANIFESTS` 数组 | 加入 eSIM 主题 manifest | `ThemeManifest`（`themes/types.ts`）、`ThemeTokenOverrides`（`themes/tokens.ts`）字段是否变化；后台主题列表可切换到 eSIM 主题 |
-| P3 | 计划 | `Storify-main-app/lib/payments/finalize-order.ts` | `settleCapturedOrder` 末尾（`runAfterResponse(notifyShopper)` 附近） | 支付入账后异步调用 `esimOnOrderPaid(order)`（幂等） | 函数是否改名/拆分、所有网关是否仍汇合到这里；用每个已启用的网关各下一单测试开卡 |
+| P3 | 已改 | `Storify-main-app/lib/payments/finalize-order.ts` | `settleCapturedOrder` 末尾，紧跟 `await runAfterResponse(notifyShopper);` 之后 | 动态 import `@/lib/esim/fulfillment`：`esimQueueOrder` 同步写开卡任务（只写库、幂等），有任务时用 `runAfterResponse` 调 `esimFulfilOrder` 购卡；整段 try/catch，绝不影响已入账的支付 | 函数是否改名/拆分、所有网关是否仍汇合到这里；用每个已启用的网关各下一单测试开卡 |
 | P4 | 计划 | `Storify-main-app/lib/orders/order-refund.ts`（及取消流程，待定） | 退款/取消成功后 | 调用 `esimOnOrderRefunded(order)` 回收或作废 eSIM | 退款、取消、售罄自动退款三条路径都触发 |
 | P5 | 计划 | `Storify-main-app/components/layout/dashboard-sidebar.tsx` | 管理后台菜单配置 | 加「eSIM」菜单组 | 菜单结构/权限键是否变化 |
 | P6 | 计划 | `Storify-main-app/config/permissions.config.ts` | 权限定义 | 加 eSIM 管理权限 | 员工角色里能分配 eSIM 权限 |

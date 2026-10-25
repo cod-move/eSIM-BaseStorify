@@ -1,4 +1,5 @@
 import { EsimAccessAdapter } from "./esim-access";
+import { FakeAdapter, type FakeMode } from "./fake";
 import { RoamWifiAdapter } from "./roamwifi";
 import { StellarAdapter } from "./stellar";
 import { ProviderError, type EsimProviderAdapter } from "./types";
@@ -73,11 +74,24 @@ export function isProviderCode(code: string): code is ProviderCode {
   return Object.hasOwn(PROVIDER_DEFINITIONS, code);
 }
 
+/** The testing supplier exists only where a developer switched it on. */
+function fakeEnabled() {
+  return process.env.ESIM_ENABLE_FAKE_PROVIDER === "true";
+}
+
+const FAKE_MODES: readonly FakeMode[] = ["fulfil", "pending", "reject", "uncertain"];
+
 export function createAdapter(
   code: string,
   credentials: ProviderCredentials,
   settlementCurrency: string,
 ): EsimProviderAdapter {
+  // "fake", "fake-reject", … so a test can line up suppliers that behave differently.
+  if (/^fake(-[a-z0-9]+)?$/.test(code) && fakeEnabled()) {
+    const mode = (credentials.mode ?? "fulfil") as FakeMode;
+    if (!FAKE_MODES.includes(mode)) throw new ProviderError("credentials_missing", `Fake mode "${mode}" is unknown`);
+    return new FakeAdapter({ mode });
+  }
   if (!isProviderCode(code)) {
     throw new ProviderError("unsupported", `No adapter for provider "${code}"`);
   }

@@ -1077,6 +1077,17 @@ export async function settleCapturedOrder(
   };
   await runAfterResponse(notifyShopper);
 
+  // [esim-patch] P3 eSIM fulfilment: queue the order's eSIMs now (writes only),
+  // buy them once the response is sent. Never fails the captured payment.
+  try {
+    const esim = await import("@/lib/esim/fulfillment");
+    if (await esim.esimQueueOrder(String(order._id))) {
+      await runAfterResponse(() => esim.esimFulfilOrder(String(order._id)).then(() => undefined, (err) => console.error("eSIM fulfilment failed:", err)));
+    }
+  } catch (err) {
+    console.error("Failed to queue eSIM fulfilment:", err);
+  }
+
   return { ok: true };
 }
 
