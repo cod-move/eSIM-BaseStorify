@@ -7,8 +7,11 @@ export const ESIM_ADMIN_NAV = {
   href: "/admin/esim/plans",
   icon: "Globe",
   items: [
+    { label: "admin.sidebar.esimEsims", href: "/admin/esim/esims", icon: "ListOrdered" },
+    { label: "admin.sidebar.esimProblems", href: "/admin/esim/problems", icon: "ShieldCheck" },
     { label: "admin.sidebar.esimPlans", href: "/admin/esim/plans", icon: "ListTree" },
     { label: "admin.sidebar.esimPricing", href: "/admin/esim/pricing", icon: "Percent" },
     { label: "admin.sidebar.esimProviders", href: "/admin/esim/providers", icon: "Landmark" },
+    { label: "admin.sidebar.esimLogs", href: "/admin/esim/logs", icon: "History" },
   ],
 };

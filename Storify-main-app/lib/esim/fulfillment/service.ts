@@ -356,3 +356,131 @@ export async function processFulfillmentJobs(
   result.orders = [...touched];
   return result;
 }
+
+// ---------------------------------------------------------------------------
+// Admin actions on a job (ADM-08). Each says why it refuses; the caller runs
+// the order's fulfilment or settlement afterwards.
+// ---------------------------------------------------------------------------
+
+export class JobActionError extends Error {}
+
+async function adminJob(jobId: string) {
+  if (!mongoose.isValidObjectId(jobId)) throw new JobActionError("Unknown job");
+  const job = await EsimFulfillment.findById(jobId);
+  if (!job) throw new JobActionError("Unknown job");
+  if (job.state === "fulfilled") throw new JobActionError("This eSIM was already issued");
+  if (job.refund && job.refund.state !== "manual") {
+    throw new JobActionError("This eSIM was already refunded; place a new order instead");
+  }
+  return job;
+}
+
+/**
+ * Tries the job again now — on its current supplier, or on another of its
+ * candidates. Switching is refused while a supplier order may still complete
+ * (pending, or an uncertain answer), so the shopper is never sold two eSIMs.
+ * A refund waiting for a person is called off: the eSIM is being issued.
+ */
+export async function adminRetryJob(jobId: string, options: { candidateIndex?: number; actor?: string } = {}) {
+  const job = await adminJob(jobId);
+  const switching = options.candidateIndex !== undefined && options.candidateIndex !== job.candidateIndex;
+  if (switching) {
+    if (options.candidateIndex! < 0 || options.candidateIndex! >= job.candidates.length) throw new JobActionError("No such supplier for this eSIM");
+    if (job.providerOrderId || job.state === "provider_pending" || job.lastError?.code === "uncertain") {
+      throw new JobActionError("The current supplier may still deliver this eSIM; retry it there, or wait");
+    }
+  }
+  const now = new Date();
+  await EsimFulfillment.updateOne(
+    { _id: job._id },
+    {
+      $set: {
+        state: job.providerOrderId && !switching ? "provider_pending" : "queued",
+        candidateIndex: switching ? options.candidateIndex : job.candidateIndex,
+        candidateAttempts: 0,
+        nextAttemptAt: now,
+        lease: null,
+        ...(switching ? { providerOrderId: null, pendingSince: null } : job.pendingSince ? { pendingSince: now } : {}),
+      },
+      $unset: { refund: "" },
+      $push: { history: { at: now, event: switching ? "admin_switch" : "admin_retry", detail: options.actor } },
+    },
+  );
+  return { orderId: String(job.order) };
+}
+
+/**
+ * Stops trying and marks the job failed, so the order's settlement refunds
+ * it (store credit, or a refund by hand for a guest).
+ */
+export async function adminFailJob(jobId: string, actor?: string) {
+  const job = await adminJob(jobId);
+  if (job.state === "failed") return { orderId: String(job.order) };
+  const now = new Date();
+  await EsimFulfillment.updateOne(
+    { _id: job._id },
+    {
+      $set: { state: "failed", lease: null, lastError: { code: "admin", message: "Stopped by an admin", at: now } },
+      $push: { history: { at: now, event: "admin_fail", detail: actor } },
+    },
+  );
+  return { orderId: String(job.order) };
+}
+
+/** A refund a person made outside the store (a guest's gateway refund), recorded on the job. */
+export async function adminMarkRefunded(jobId: string, note: string, actor?: string) {
+  if (!mongoose.isValidObjectId(jobId)) throw new JobActionError("Unknown job");
+  const job = await EsimFulfillment.findById(jobId);
+  if (!job || job.state !== "failed") throw new JobActionError("Only a failed eSIM can be marked refunded");
+  if (job.refund?.state === "done") throw new JobActionError("Already refunded");
+  const now = new Date();
+  await EsimFulfillment.updateOne(
+    { _id: job._id },
+    {
+      $set: { refund: { state: "done", amount: job.refund?.amount ?? 0, at: now, note: note.slice(0, 200) || "Refunded by hand" } },
+      $push: { history: { at: now, event: "admin_refunded", detail: actor } },
+    },
+  );
+  return { orderId: String(job.order) };
+}
+
+/**
+ * Binds an eSIM obtained outside the automatic purchase (bought by hand on
+ * the supplier's portal) to the job: reads it from the supplier by ICCID and
+ * records it as if the purchase had returned it.
+ */
+export async function adminBindEsim(jobId: string, input: { candidateIndex: number; iccid: string; actor?: string }) {
+  const job = await adminJob(jobId);
+  const planId = job.candidates[input.candidateIndex];
+  const plan = planId ? await EsimPlan.findById(planId) : null;
+  if (!plan) throw new JobActionError("No such supplier for this eSIM");
+  const provider = await EsimProvider.findOne({ code: plan.providerCode }).select("+secretCredentials");
+  if (!provider) throw new JobActionError("Supplier is not set up");
+  const iccid = input.iccid.replace(/\s+/g, "");
+  if (!/^\d{18,22}F?$/i.test(iccid)) throw new JobActionError("That is not an ICCID");
+  if (await EsimProfile.exists({ iccid })) throw new JobActionError("That eSIM is already bound to an order");
+  const ref = { providerEsimId: null, simId: null, iccid };
+  const esim = await withProviderLog(
+    { provider: provider._id as mongoose.Types.ObjectId, providerCode: provider.code, operation: "esim.bind", refs: { orderId: String(job.order), planId: String(plan._id) }, request: { iccid } },
+    () => adapterFor(provider).getEsim(ref),
+    (value) => ({ status: value.status, iccid: value.iccid }),
+  );
+  if (esim.iccid && esim.iccid.replace(/F$/i, "") !== iccid.replace(/F$/i, "")) {
+    throw new JobActionError("The supplier returned a different eSIM for that ICCID");
+  }
+  if (!esim.installation.activationCode && !esim.installation.smdpAddress) {
+    throw new JobActionError("The supplier returned no installation details for that ICCID");
+  }
+  const result: PurchaseResult = { status: "fulfilled", providerOrderId: `manual:${iccid}`, charged: null, esim, raw: { manual: true } };
+  const profile = await recordEsim(job, plan, result, { ...esim, iccid: esim.iccid ?? iccid });
+  const now = new Date();
+  await EsimFulfillment.updateOne(
+    { _id: job._id },
+    {
+      $set: { state: "fulfilled", profile: profile._id, providerCode: plan.providerCode, providerOrderId: result.providerOrderId, candidateIndex: input.candidateIndex, lease: null, lastError: null },
+      $unset: { refund: "" },
+      $push: { history: { at: now, event: "admin_bind", detail: `${plan.providerCode} ${iccid}${input.actor ? ` by ${input.actor}` : ""}` } },
+    },
+  );
+  return { orderId: String(job.order), profileId: String(profile._id) };
+}

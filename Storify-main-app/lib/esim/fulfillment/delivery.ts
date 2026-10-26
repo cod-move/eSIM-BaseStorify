@@ -199,3 +199,17 @@ export async function settleOrderDelivery(orderId: string) {
   }
   return "delivered";
 }
+
+/**
+ * Sends one issued eSIM's delivery email again (admin, ADM-07), to the order's
+ * contact address. A fresh dedupe key, so it is not taken for the original.
+ */
+export async function resendEsimDelivery(profileId: string): Promise<boolean> {
+  const profile = await EsimProfile.findById(profileId);
+  if (!profile || profile.status !== "fulfilled") return false;
+  const order = await Order.findById(profile.order)
+    .select({ orderNumber: 1, status: 1, items: 1, guestEmail: 1, customerId: 1 })
+    .lean<OrderView | null>();
+  if (!order) return false;
+  return sendDelivery(order, [profile], `esim-delivery-resend:${profileId}:${Date.now()}`);
+}

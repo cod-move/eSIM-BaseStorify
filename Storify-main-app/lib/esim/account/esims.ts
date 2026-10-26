@@ -143,6 +143,17 @@ export async function refreshCustomerEsim(
     error,
   });
   if (Date.now() - last < REFRESH_EVERY_MS) return done(false, "Updated less than a minute ago");
+  const { refreshed, error } = await refreshEsimProfile(profile);
+  return done(refreshed, error);
+}
+
+/**
+ * Reads the eSIM's usage and lifecycle from its supplier into the profile
+ * and its base package — for the shopper's refresh and the admin's alike.
+ * A failed call keeps the stored snapshot and says why.
+ */
+export async function refreshEsimProfile(profile: IEsimProfile): Promise<{ refreshed: boolean; error?: string }> {
+  const done = async (refreshed: boolean, error?: string) => ({ refreshed, error });
   if (profile.status !== "fulfilled") return done(false, "This eSIM has not been issued");
 
   const provider = await EsimProvider.findOne({ code: profile.providerCode }).select("+secretCredentials");

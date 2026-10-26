@@ -109,7 +109,9 @@ export class FakeAdapter implements EsimProviderAdapter {
   }
 
   async getEsim(ref: EsimRef) {
-    return fakeEsim(ref.providerEsimId ?? "unknown");
+    const esim = fakeEsim(ref.providerEsimId ?? ref.iccid ?? "unknown");
+    // Looked up by ICCID (an admin binding a hand-bought eSIM): that eSIM.
+    return ref.iccid && !ref.providerEsimId ? { ...esim, iccid: ref.iccid } : esim;
   }
 
   async getUsage(): Promise<ProviderUsage> {

@@ -46,6 +46,10 @@ Everything eSIM-specific lives here and in the files named below; official Stori
 | `admin/{providers,plans,pricing}.ts` | Admin services: suppliers (credentials, test, sync), plan library (filters, bulk on/off, hand-set price, publish), pricing settings/rules with preview, exchange rates |
 | `app/[locale]/admin/esim/`, `app/api/esim/admin/` | Admin pages Plans, Pricing, Suppliers and their API; access via the team permissions `view_esim` / `manage_esim` (patch P6), menu via patch P5; every change is audit-logged as a "settings" change with an `esim:` id |
 
+| `admin/{esims,queue,logs}.ts` | Admin operations: eSIM list and detail (refresh usage, resend email, cancel at supplier), the problem queue, supplier call logs |
+| `fulfillment/service.ts` (`adminRetryJob`, `adminFailJob`, `adminMarkRefunded`, `adminBindEsim`) | Queue actions: retry or another supplier (refused while the current one may still deliver), give up and refund, a guest refund made by hand, bind an eSIM bought by hand by its ICCID |
+| `scripts/esim-dev-ops.ts` | End-to-end check of the queue actions with fake suppliers; cleans up and reports leftovers |
+
 Day-priced plans (Stellar's "pick the days" plans) are one variant per allowance, sold per day for the days the shopper picks. A cart holds one line per variant: adding the same variant with other days replaces the line.
 
 Not automatic: refunding a guest order (needs the gateway refund flow) — admins are told the exact amount.
