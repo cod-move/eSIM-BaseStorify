@@ -43,6 +43,9 @@ Everything eSIM-specific lives here and in the files named below; official Stori
 | `storefront/devices.ts` | Built-in eSIM phone list for the device check, until the admin's device table exists |
 | `i18n/messages.ts`, `locales/esim/{en,zh}.json` | eSIM texts, block names and field labels, merged under Storify's messages by patch P9 |
 
+| `admin/{providers,plans,pricing}.ts` | Admin services: suppliers (credentials, test, sync), plan library (filters, bulk on/off, hand-set price, publish), pricing settings/rules with preview, exchange rates |
+| `app/[locale]/admin/esim/`, `app/api/esim/admin/` | Admin pages Plans, Pricing, Suppliers and their API; access via the team permissions `view_esim` / `manage_esim` (patch P6), menu via patch P5; every change is audit-logged as a "settings" change with an `esim:` id |
+
 Day-priced plans (Stellar's "pick the days" plans) are one variant per allowance, sold per day for the days the shopper picks. A cart holds one line per variant: adding the same variant with other days replaces the line.
 
 Not automatic: refunding a guest order (needs the gateway refund flow) — admins are told the exact amount.

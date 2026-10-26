@@ -25,14 +25,9 @@ export interface RepriceResult {
   missingRates: string[];
 }
 
-export async function repricePlans(options: { onlyIfFxMoved?: boolean; providerCode?: string } = {}) {
+/** The settings and enabled rules prices are computed from — re-pricing and the admin preview alike. */
+export async function loadPricing(): Promise<{ settings: PricingSettings; rules: PricingRule[]; repriceThresholdPercent: number }> {
   const settingsDoc = await getEsimSettings();
-  const settings: PricingSettings = {
-    fxBufferPercent: settingsDoc.fxBufferPercent,
-    defaultMarkupPercent: settingsDoc.defaultMarkupPercent,
-    minMarginPercent: settingsDoc.minMarginPercent,
-    rounding: settingsDoc.rounding,
-  };
   const rules: PricingRule[] = (await EsimPricingRule.find({ enabled: true }).lean()).map((rule) => ({
     id: String(rule._id),
     providerCode: rule.providerCode,
@@ -42,13 +37,27 @@ export async function repricePlans(options: { onlyIfFxMoved?: boolean; providerC
     fixedMarkupMinor: rule.fixedMarkupMinor,
     priority: rule.priority,
   }));
+  return {
+    settings: {
+      fxBufferPercent: settingsDoc.fxBufferPercent,
+      defaultMarkupPercent: settingsDoc.defaultMarkupPercent,
+      minMarginPercent: settingsDoc.minMarginPercent,
+      rounding: settingsDoc.rounding,
+    },
+    rules,
+    repriceThresholdPercent: settingsDoc.repriceThresholdPercent,
+  };
+}
+
+export async function repricePlans(options: { onlyIfFxMoved?: boolean; providerCode?: string } = {}) {
+  const { settings, rules, repriceThresholdPercent } = await loadPricing();
 
   const filter = {
     retailPriceManual: { $ne: true },
     ...(options.providerCode ? { providerCode: options.providerCode } : {}),
   };
   const rates = await currentRates(await EsimPlan.distinct("cost.currency", filter));
-  const threshold = settingsDoc.repriceThresholdPercent / 100;
+  const threshold = repriceThresholdPercent / 100;
   const result: RepriceResult = { considered: 0, changed: 0, missingRates: [] };
   const missing = new Set<string>();
   const pricedAt = new Date();

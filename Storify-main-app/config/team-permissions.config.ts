@@ -30,6 +30,7 @@ import {
   STAFF_PERMISSIONS,
   type StaffPermission,
 } from "@/config/permissions.config";
+import { ESIM_ADMIN_AREA_PERMISSIONS } from "@/lib/esim/admin/permissions"; // [esim-patch] P6
 
 /** The admin-only areas: one pair each, View opens the screens and Manage changes them. */
 export const ADMIN_AREA_PERMISSIONS = {
@@ -94,6 +95,9 @@ export const ADMIN_AREA_PERMISSIONS = {
   EDIT_MEMBER_PERMISSIONS: "edit_member_permissions",
   /** Create, change and delete roles. */
   MANAGE_ROLES: "manage_roles",
+
+  // [esim-patch] P6 VIEW_ESIM / MANAGE_ESIM (lib/esim/admin/permissions.ts).
+  ...ESIM_ADMIN_AREA_PERMISSIONS,
 } as const;
 
 export type AdminAreaPermission =

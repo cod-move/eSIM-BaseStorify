@@ -143,6 +143,11 @@ export const TEAM_PERMISSION_GROUPS: readonly PermissionGroup[] = [
         view: A.VIEW_QUOTES,
         manage: A.MANAGE_QUOTES,
       }),
+      // [esim-patch] P6 the eSIM area: suppliers, plans, prices.
+      area("esim", "eSIM", "Suppliers, plans and selling prices", {
+        view: A.VIEW_ESIM,
+        manage: A.MANAGE_ESIM,
+      }),
       {
         key: "abandoned_checkouts",
         label: "Abandoned checkouts",

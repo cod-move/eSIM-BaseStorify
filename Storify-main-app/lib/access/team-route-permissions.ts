@@ -183,6 +183,8 @@ export const TEAM_PAGE_RULES: readonly { prefix: string; anyOf: readonly string[
   { prefix: "/admin/orders", anyOf: ANY.orders },
   { prefix: "/admin/preorders", anyOf: ANY.orders },
   { prefix: "/admin/quotes", anyOf: areas.quotes.read },
+  // [esim-patch] P6 the eSIM admin pages; their API routes name the same permissions.
+  { prefix: "/admin/esim", anyOf: view(A.VIEW_ESIM, A.MANAGE_ESIM) },
   { prefix: "/admin/returns", anyOf: areas.returns.read },
   { prefix: "/admin/abandoned-checkouts", anyOf: ANY.abandoned },
   { prefix: "/admin/abandoned-carts", anyOf: ANY.abandoned },

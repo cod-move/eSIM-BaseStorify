@@ -2,6 +2,7 @@
 
 import { apparentSidebarIsDark, apparentSidebarStyle } from "@/lib/theme-colors/apparent-sidebar";
 import { teamPageRequirement } from "@/lib/access/team-route-permissions";
+import { ESIM_ADMIN_NAV } from "@/lib/esim/admin/nav"; // [esim-patch] P5
 import Link from "@/components/language/link";
 import * as React from "react";
 import { useTranslations } from "next-intl";
@@ -376,6 +377,8 @@ const adminNavGroups: {
           // },
         ],
       },
+      // [esim-patch] P5 the eSIM group (lib/esim/admin/nav.ts).
+      ESIM_ADMIN_NAV,
       {
         label: "admin.sidebar.aiStudio",
         href: "/admin/ai-studio",
