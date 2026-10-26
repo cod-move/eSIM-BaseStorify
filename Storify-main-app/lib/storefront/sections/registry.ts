@@ -54,6 +54,7 @@ import {
   headerBar,
   topTags,
 } from "./definitions/header-group";
+import { ESIM_SECTIONS } from "@/lib/esim/storefront/sections"; // [esim-patch] P1
 
 /**
  * The section catalog. Server-only on purpose: definitions carry async
@@ -88,6 +89,8 @@ const DEFINITIONS: SectionDefinition[] = [
   faq,
   vendorList,
   becomeVendor,
+  // [esim-patch] P1 the eSIM blocks (lib/esim/storefront/sections).
+  ...ESIM_SECTIONS,
   // Vendor landing pages only (`vendorOnly`) — absent from the admin's
   // catalogue, refused by its write gate.
   reviewHighlights,

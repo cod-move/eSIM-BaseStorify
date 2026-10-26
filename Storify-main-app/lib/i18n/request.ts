@@ -25,6 +25,7 @@ import haMessages from "@/locales/ha.json";
 import yoMessages from "@/locales/yo.json";
 import igMessages from "@/locales/ig.json";
 import { isRecord } from "@/lib/utils";
+import { withEsimMessages } from "@/lib/esim/i18n/messages"; // [esim-patch] P9
 
 type MessageValue = Record<string, unknown>;
 
@@ -78,6 +79,7 @@ export default getRequestConfig(async ({ locale: explicitLocale, requestLocale }
 
   return {
     locale,
-    messages: messages[locale],
+    // [esim-patch] P9 the eSIM module's messages (locales/esim/*.json) under Storify's.
+    messages: withEsimMessages(locale, messages[locale]),
   };
 });

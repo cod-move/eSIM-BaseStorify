@@ -21,6 +21,7 @@ import {
 } from "./tokens";
 import { readCustomCss } from "./custom-css";
 import type { ThemeManifest } from "./types";
+import { esimTheme } from "@/lib/esim/storefront/theme"; // [esim-patch] P2
 
 /**
  * Per-theme token defaults. Only what differs from the engine base
@@ -313,6 +314,9 @@ export const THEME_MANIFESTS: ThemeManifest[] = [
   womenFashionTheme,
   furnitureTheme,
   essentialTheme,
+  // [esim-patch] P2 the eSIM Travel theme (lib/esim/storefront/theme.ts). Last,
+  // so `THEME_MANIFESTS[0]` (a fallback in themes/key-colors.ts) stays official.
+  esimTheme,
 ];
 
 /**

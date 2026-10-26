@@ -217,6 +217,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     pushAll("/vendors", entities.vendors, "weekly", 0.6);
   }
 
+  // [esim-patch] P17 the eSIM destination pages: /esim, countries, regions, global.
+  try {
+    const { destinationSitemap } = await import("@/lib/esim/storefront/catalog");
+    push("/esim", { changeFrequency: "daily", priority: 0.9 });
+    for (const row of await destinationSitemap()) {
+      push(row.path, { lastModified: row.updatedAt, changeFrequency: "daily", priority: 0.8 });
+    }
+  } catch (error) {
+    console.warn("[sitemap] eSIM destinations unavailable", error);
+  }
+
   return entries;
 }
 

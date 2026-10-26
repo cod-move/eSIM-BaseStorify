@@ -27,15 +27,15 @@
 
 | 编号 | 状态 | 文件 | 位置 | 改动内容 | 升级后检查 |
 |---|---|---|---|---|---|
-| P1 | 计划 | `Storify-main-app/lib/storefront/sections/registry.ts` | `DEFINITIONS` 数组 | import 并加入 eSIM 区块定义 | 数组是否仍存在、区块类型契约 `SectionDefinition`（`sections/types.ts`）是否有破坏性变化；后台「添加区块」里能看到 eSIM 区块 |
-| P2 | 计划 | `Storify-main-app/lib/storefront/themes/registry.ts` | `THEME_MANIFESTS` 数组 | 加入 eSIM 主题 manifest | `ThemeManifest`（`themes/types.ts`）、`ThemeTokenOverrides`（`themes/tokens.ts`）字段是否变化；后台主题列表可切换到 eSIM 主题 |
+| P1 | 已改 | `Storify-main-app/lib/storefront/sections/registry.ts` | 导入区；`DEFINITIONS` 数组里 `becomeVendor` 之后 | 导入 `ESIM_SECTIONS`（`lib/esim/storefront/sections`），在数组里展开：7 个 `esim-*` 区块（目的地搜索、热门目的地、国家/地区/全球、套餐选择器、使用流程、安装指引、机型检查） | 数组是否仍存在、区块类型契约 `SectionDefinition`（`sections/types.ts`）是否有破坏性变化；后台「添加区块」里能看到 eSIM 区块 |
+| P2 | 已改 | `Storify-main-app/lib/storefront/themes/registry.ts` | 导入区；`THEME_MANIFESTS` 数组最后一项（不放第一项：`themes/key-colors.ts` 用 `THEME_MANIFESTS[0]` 兜底） | 导入并加入 `esimTheme`（`lib/esim/storefront/theme.ts`，id `esim-travel`）：设计变量 + 用 eSIM 区块搭的首页预设，商品页和页头页脚沿用 Classic 的预设 | `ThemeManifest`（`themes/types.ts`）、`ThemeTokenOverrides`（`themes/tokens.ts`）字段是否变化；后台主题列表可切换到 eSIM 主题 |
 | P3 | 已改 | `Storify-main-app/lib/payments/finalize-order.ts` | `settleCapturedOrder` 末尾，紧跟 `await runAfterResponse(notifyShopper);` 之后 | 动态 import `@/lib/esim/fulfillment`：`esimQueueOrder` 同步写开卡任务（只写库、幂等），有任务时用 `runAfterResponse` 调 `esimFulfilOrder` 购卡；整段 try/catch，绝不影响已入账的支付 | 函数是否改名/拆分、所有网关是否仍汇合到这里；用每个已启用的网关各下一单测试开卡 |
 | P4 | 计划 | `Storify-main-app/lib/orders/order-refund.ts`（及取消流程，待定） | 退款/取消成功后 | 调用 `esimOnOrderRefunded(order)` 回收或作废 eSIM | 退款、取消、售罄自动退款三条路径都触发 |
 | P5 | 计划 | `Storify-main-app/components/layout/dashboard-sidebar.tsx` | 管理后台菜单配置 | 加「eSIM」菜单组 | 菜单结构/权限键是否变化 |
 | P6 | 计划 | `Storify-main-app/config/permissions.config.ts` | 权限定义 | 加 eSIM 管理权限 | 员工角色里能分配 eSIM 权限 |
 | P7 | 计划 | `Storify-main-app/contracts/mobile/shop/v1/home.ts` | `HOME_BLOCKS` 映射与 `HomeBlock` 联合类型 | 注册 eSIM 首页区块 schema | 修改后需在顾客 App 执行 `pnpm contracts:sync` |
 | P8 | 计划 | `storify-customer-app/src/features/home/blocks/index.ts` | 区块渲染映射 | 注册 eSIM 区块组件 | App 首页渲染 eSIM 区块；老版本 App 忽略未知区块不崩溃 |
-| P9 | 计划 | `Storify-main-app/lib/i18n/request.ts` | 加载 locale 消息处 | 合并 `locales/esim/<locale>.json`，不改官方 `locales/*.json` | 切换中英文 eSIM 文案正常 |
+| P9 | 已改 | `Storify-main-app/lib/i18n/request.ts` | 导入区；`getRequestConfig` 返回的 `messages` | 用 `withEsimMessages(locale, messages[locale])`（`lib/esim/i18n/messages.ts`）合并 `locales/esim/<locale>.json`（目前 en、zh）；同名键以官方为准，不改官方 `locales/*.json` | `getRequestConfig` 返回结构是否变化、是否有别处绕过它直接读 locale 文件；切换中英文时 eSIM 页面和后台区块名称正常 |
 | P10 | 已改（天数；充值 ICCID、激活日期待 Top-up） | 见下方「P10 明细」，共 13 个文件 | 购物车行、订单行 schema，加购、结账定价、建单复制、商品页 | 加通用 `lineAttributes` 对象，内容由 eSIM 模块（`lib/esim/cart`）校验、定价；目前只收 `days`（按天计价套餐的天数）。**同一规格只占一行**：同一规格换了天数再加购，就替换这一行的天数和数量（因为官方购物车、App、`productId-variantId` 的行 id 都只按商品 + 规格区分行） | 见「P10 明细」每行的检查项；整条链路：商品页选天数 → 加购 → 购物车显示「· N days」→ 三种结账（跳转网关、Stripe 卡、`POST /api/orders`）→ 订单行有 `lineAttributes` 且规格名是所选天数 → 开卡按天数购买 |
 | P11 | 已改（Web 的「我的 eSIM」） | `Storify-main-app/components/account/account-nav-links.ts`（App 端位置待定） | `dashboardLinks` 数组「订单」项之后；lucide 导入里加 `Smartphone` | 加「我的 eSIM」入口（`/account/esims`，labelKey `esim.account.title`，兜底 "My eSIMs"）；「钱包」「推荐」入口待做 | 侧栏/手机端菜单仍显示该入口；`AccountNavLink` 结构是否变化 |
 | P12 | 计划 | `Storify-main-app/models/store-credit.model.ts` | `STORE_CREDIT_SOURCES` | 加「充值」「推荐佣金」来源 | 枚举及读取它的报表是否变化 |
@@ -43,6 +43,7 @@
 | P14 | 计划 | 注册流程（`Storify-main-app/lib/auth/` 下，位置待定） | 创建用户后 | 记录推荐人 | 注册接口和社交登录注册都能记到推荐人 |
 | P15 | 计划 | `Storify-main-app/lib/payments/checkout-gateways.ts` 的 `CHECKOUT_GATEWAY_IDS`，以及引用网关枚举的约 30 个文件 | 网关枚举 | 一次性加入通用「扩展支付」网关，后面挂 eSIM 的网关插件 | 官方新增或改名网关时逐个核对引用点；用扩展支付各下一单、各退一单 |
 | P16 | 计划 | `Storify-main-app/lib/auth/auth.ts` | 邮箱密码登录的密码校验 | 新方式校验失败且是 bcrypt 格式时用 bcrypt 校验，通过后按新方式重新加密 | 旧系统导入的用户能登录，登录后哈希已换成新格式 |
+| P17 | 已改 | `Storify-main-app/app/sitemap.ts` | `sitemap()` 末尾，`return entries;` 之前 | 动态 import `@/lib/esim/storefront/catalog`，用同一个 `push` 加入 `/esim` 和每个在售目的地页（国家 `/esim/<slug>`、地区 `/esim/region/<slug>`、全球 `/esim/global`），沿用官方的多语言 hreflang；整段 try/catch，读不到 eSIM 目录不影响其余站点地图 | `push` 和 `entries` 是否改名；站点地图是否改成 `generateSitemaps()` 分文件（那时这段要挪进相应的文件）；`/sitemap.xml` 里能看到 eSIM 页面 |
 
 > 新增插入点时按编号往后加；某项最终没改，就把状态改为 `取消` 并保留记录。
 

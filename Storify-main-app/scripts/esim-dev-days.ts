@@ -129,7 +129,11 @@ async function run() {
   console.log("✓ cart: 7 days = 20.93, again = qty 2, 10 days replaces (29.90), 31 days and unknown options refused");
 
   // 3. Checkout re-pricing and the order line's variant.
-  const lines = [{ ...stored }, { ...stored, lineAttributes: { days: 99 } }, { variantId: new mongoose.Types.ObjectId() }];
+  const lines: Array<{ variantId?: unknown; lineAttributes?: unknown }> = [
+    { ...stored },
+    { ...stored, lineAttributes: { days: 99 } },
+    { variantId: new mongoose.Types.ObjectId() },
+  ];
   const prices = await esimLinePrices(lines);
   assert.equal(prices.get(lines[0]), 29.9);
   assert.equal(prices.get(lines[1]), 89.7, "days beyond the range are charged at its end");

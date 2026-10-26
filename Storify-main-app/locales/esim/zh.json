@@ -1,0 +1,210 @@
+{
+  "esim": {
+    "status": {
+      "issuing": "开卡中",
+      "failed": "开卡失败",
+      "ready_to_install": "待安装",
+      "installed": "已安装，未使用",
+      "in_use": "使用中",
+      "data_used_up": "流量已用完",
+      "expired": "已过期",
+      "no_active_package": "无有效套餐",
+      "cancelled": "已取消"
+    },
+    "account": {
+      "title": "我的 eSIM",
+      "description": "安装 eSIM、查看剩余流量、充值。",
+      "empty": "你还没有 eSIM。",
+      "browse": "为你的旅行挑选 eSIM",
+      "back": "我的 eSIM",
+      "order": "订单 {number}",
+      "orderNumber": "订单",
+      "expires": "{date} 到期",
+      "expiresAt": "有效期至",
+      "issuedAt": "开卡时间",
+      "installBefore": "最晚安装时间",
+      "topupBefore": "最晚充值时间",
+      "updatedAt": "最近更新",
+      "usage": "流量",
+      "left": "剩余 {amount}",
+      "ofTotal": "共 {amount}",
+      "noUsageYet": "eSIM 开始使用后才会显示用量，可点「刷新用量」查看。",
+      "unlimitedUsage": "不限量套餐，没有总量可扣。",
+      "stale": "运营商上报用量可能有延迟。",
+      "refresh": "刷新用量",
+      "refreshed": "用量已更新",
+      "refreshFailed": "用量更新失败",
+      "notRefreshed": "显示的是上次获取的用量",
+      "install": "安装",
+      "installHint": "请在出发前、有 Wi-Fi 时安装。用另一块屏幕扫二维码，或在要使用 eSIM 的手机上点一键安装链接。",
+      "installIos": "在 iPhone 上安装",
+      "installAndroid": "在安卓手机上安装",
+      "installPage": "打开供应商的安装页面",
+      "alreadyInstalled": "这张 eSIM 看起来已经安装过了。二维码通常只能安装一次。",
+      "qrAlt": "eSIM 二维码",
+      "smdp": "SM-DP+ 地址",
+      "activationCode": "激活码",
+      "copy": "复制",
+      "copied": "已复制",
+      "details": "详情",
+      "plan": "套餐",
+      "days": "{count} 天",
+      "vpn": "含 VPN",
+      "remark": "名称",
+      "addRemark": "添加名称，例如「日本旅行」",
+      "remarkFailed": "名称保存失败"
+    },
+    "browse": {
+      "title": "eSIM 目的地",
+      "description": "选择你要去的地方：单个国家、整个地区，或全球通用。",
+      "seoTitle": "覆盖 190+ 国家的旅行 eSIM",
+      "seoDescription": "国家、地区和全球通用的预付费 eSIM 流量套餐，几分钟即可安装。",
+      "search": "你要去哪里？",
+      "noMatch": "没有找到与「{query}」匹配的目的地。",
+      "local": "国家",
+      "regional": "地区",
+      "global": "全球",
+      "countries": "{count} 个国家",
+      "viewAll": "查看全部目的地",
+      "empty": "目前还没有在售的目的地。"
+    },
+    "continent": {
+      "europe": "欧洲",
+      "asia": "亚洲",
+      "middle_east": "中东",
+      "north_america": "北美洲",
+      "south_america": "南美洲",
+      "oceania": "大洋洲",
+      "africa": "非洲",
+      "other": "其他"
+    },
+    "page": {
+      "title": "{name} eSIM",
+      "seoTitle": "{name} eSIM — 旅行流量套餐",
+      "seoDescription": "{name} 预付费 eSIM 流量套餐，几分钟即可安装，不产生漫游费。",
+      "seoDescriptionPrice": "{name} 预付费 eSIM 流量套餐，{price} 起。几分钟即可安装，不产生漫游费。{store}",
+      "subtitleLocal": "旅行专用预付费流量——出发前装好。",
+      "subtitleMulti": "一张 eSIM 通用 {count} 个国家。",
+      "coverage": "覆盖国家",
+      "networks": "运营商网络",
+      "how": "使用流程",
+      "faq": "常见问题",
+      "allPlans": "查看 {name} 的全部套餐"
+    },
+    "how": {
+      "pick": "选套餐",
+      "pickText": "选好天数和流量，安全支付。",
+      "install": "扫码安装",
+      "installText": "我们会立即把二维码发到你的邮箱，扫码或点一键安装链接即可。",
+      "land": "落地即用",
+      "landText": "到达后把移动数据切换到这张 eSIM，不产生漫游费。"
+    },
+    "faq": {
+      "compatibleQ": "我的手机能用吗？",
+      "compatibleA": "手机需要支持 eSIM，并且没有网络锁。iPhone XS 及以后、Google Pixel 3 及以后，以及较新的三星 Galaxy 机型大多支持。",
+      "whenQ": "什么时候安装？",
+      "whenA": "建议出发前、有 Wi-Fi 时安装。除非套餐另有说明，套餐在到达目的地首次联网时才开始计时。",
+      "numberQ": "我原来的手机号还能用吗？",
+      "numberA": "可以。eSIM 只用来上网，原来的 SIM 卡继续留在手机里接打电话、收短信。",
+      "topupQ": "流量不够可以加吗？",
+      "topupA": "标有「可叠加充值」或「可加购套餐」的套餐，可以在「我的 eSIM」里充值。"
+    },
+    "selector": {
+      "days": "旅行多少天？",
+      "data": "需要多少流量？",
+      "topup": "充值方式",
+      "breakout": "IP 地址",
+      "chooseDays": "自选天数",
+      "oneDay": "1 天",
+      "nDays": "{days} 天",
+      "numberOfDays": "天数",
+      "from": "{price} 起",
+      "topupStack": "可叠加充值",
+      "topupAddon": "可加购套餐",
+      "topupNone": "不可充值",
+      "ipLocal": "本地 IP",
+      "ipUnknown": "标准",
+      "buyNow": "立即购买",
+      "added": "已加入购物车",
+      "addFailed": "加入购物车失败",
+      "none": "这个目的地目前没有在售套餐。"
+    },
+    "product": {
+      "days": "天数",
+      "oneDay": "1 天",
+      "nDays": "{days} 天",
+      "fewerDays": "减少一天",
+      "moreDays": "增加一天",
+      "perDay": "每天 {price} · 可选 {min}–{max} 天"
+    },
+    "devices": {
+      "search": "输入机型，例如 iPhone 15",
+      "notFound": "列表里没有这个机型，但它仍可能支持 eSIM，请在手机设置里确认。",
+      "howToCheck": "确认方法：iPhone 打开「设置 → 通用 → 关于本机」，看有没有「数字 SIM」或「可用的 SIM」；安卓手机拨 *#06#，看有没有 EID。手机还必须没有网络锁。"
+    }
+  },
+  "admin": {
+    "onlineStoreThemePage": {
+      "themes": {
+        "esim-travel": {
+          "name": "eSIM 旅行",
+          "description": "旅行 eSIM 商店：目的地搜索、热门国家、套餐选择器、安装指引和机型检查。"
+        }
+      }
+    },
+    "storeBuilder": {
+      "sections": {
+        "esim-hero": { "name": "eSIM：目的地搜索", "description": "大搜索框搜国家和地区，附热门快捷入口" },
+        "esim-popular": { "name": "eSIM：热门目的地", "description": "按销量自动排列或手动挑选，显示起售价" },
+        "esim-destination-tabs": { "name": "eSIM：国家 / 地区 / 全球", "description": "三个标签页展示目的地" },
+        "esim-plan-selector": { "name": "eSIM：套餐选择器", "description": "选一个目的地的天数、流量和价格，直接加入购物车" },
+        "esim-steps": { "name": "eSIM：使用流程", "description": "选套餐、扫码安装、落地即用" },
+        "esim-install-guide": { "name": "eSIM：安装指引", "description": "iPhone 和安卓分步安装说明" },
+        "esim-device-check": { "name": "eSIM：机型检查", "description": "搜索手机型号，看是否支持 eSIM" }
+      },
+      "blocks": {
+        "destination": "目的地",
+        "step": "步骤"
+      },
+      "fields": {
+        "placeholder": "搜索框提示文字",
+        "popularCount": "快捷入口数量",
+        "scope": "目的地范围",
+        "showPrice": "显示价格",
+        "localTitle": "国家标签名",
+        "regionalTitle": "地区标签名",
+        "globalTitle": "全球标签名",
+        "destination": "目的地",
+        "icon": "图标",
+        "text": "说明文字",
+        "platform": "手机系统"
+      },
+      "options": {
+        "local": "国家",
+        "regional": "地区",
+        "global": "全球",
+        "cart": "购物车",
+        "qr": "二维码",
+        "wifi": "信号",
+        "plane": "飞机",
+        "phone": "手机",
+        "globe": "地球",
+        "ios": "iPhone / iPad",
+        "android": "安卓"
+      },
+      "fieldHints": {
+        "esim-hero": {
+          "popularCount": "没有在下面添加目的地时，搜索框下按销量显示的快捷入口数量。",
+          "destination": "目的地页面地址中 /esim/ 后面的部分，例如 japan 或 europe-35-areas。"
+        },
+        "esim-popular": {
+          "source": "自动：近 90 天销量最高的目的地。手动：下面添加的目的地。",
+          "destination": "目的地页面地址中 /esim/ 后面的部分，例如 japan 或 europe-35-areas。"
+        },
+        "esim-plan-selector": {
+          "destination": "目的地页面地址中 /esim/ 后面的部分，例如 japan、europe-35-areas 或 global。"
+        }
+      }
+    }
+  }
+}

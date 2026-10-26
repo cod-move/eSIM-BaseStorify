@@ -1,0 +1,210 @@
+{
+  "esim": {
+    "status": {
+      "issuing": "Being issued",
+      "failed": "Could not be issued",
+      "ready_to_install": "Ready to install",
+      "installed": "Installed, not used yet",
+      "in_use": "In use",
+      "data_used_up": "Data used up",
+      "expired": "Expired",
+      "no_active_package": "No active plan",
+      "cancelled": "Cancelled"
+    },
+    "account": {
+      "title": "My eSIMs",
+      "description": "Install, check remaining data and top up your eSIMs.",
+      "empty": "You have no eSIMs yet.",
+      "browse": "Find an eSIM for your trip",
+      "back": "My eSIMs",
+      "order": "Order {number}",
+      "orderNumber": "Order",
+      "expires": "Expires {date}",
+      "expiresAt": "Valid until",
+      "issuedAt": "Issued",
+      "installBefore": "Install before",
+      "topupBefore": "Top up before",
+      "updatedAt": "Last updated",
+      "usage": "Data",
+      "left": "{amount} left",
+      "ofTotal": "of {amount}",
+      "noUsageYet": "Usage appears once the eSIM is used. Refresh to check.",
+      "unlimitedUsage": "Unlimited plan — no total to count down.",
+      "stale": "The network may report usage with a delay.",
+      "refresh": "Refresh usage",
+      "refreshed": "Usage updated",
+      "refreshFailed": "Could not update usage",
+      "notRefreshed": "Showing the last known usage",
+      "install": "Install",
+      "installHint": "Install before you travel while you have Wi-Fi. Scan the QR code from another screen, or tap the link on the phone that will use the eSIM.",
+      "installIos": "Install on iPhone",
+      "installAndroid": "Install on Android",
+      "installPage": "Open the supplier's installation page",
+      "alreadyInstalled": "This eSIM appears to be installed already. A QR code can usually be installed only once.",
+      "qrAlt": "eSIM QR code",
+      "smdp": "SM-DP+ address",
+      "activationCode": "Activation code",
+      "copy": "Copy",
+      "copied": "Copied",
+      "details": "Details",
+      "plan": "Plan",
+      "days": "{count} days",
+      "vpn": "VPN included",
+      "remark": "Name",
+      "addRemark": "Add a name, e.g. \"Japan trip\"",
+      "remarkFailed": "Could not save the name"
+    },
+    "browse": {
+      "title": "eSIM destinations",
+      "description": "Pick where you are going. Plans for a single country, a whole region, or the world.",
+      "seoTitle": "Travel eSIM for 190+ countries",
+      "seoDescription": "Prepaid eSIM data plans for countries, regions and the whole world. Install in minutes.",
+      "search": "Where are you going?",
+      "noMatch": "No destination matches \"{query}\".",
+      "local": "Countries",
+      "regional": "Regions",
+      "global": "Global",
+      "countries": "{count} countries",
+      "viewAll": "View all destinations",
+      "empty": "No destinations are on sale yet."
+    },
+    "continent": {
+      "europe": "Europe",
+      "asia": "Asia",
+      "middle_east": "Middle East",
+      "north_america": "North America",
+      "south_america": "South America",
+      "oceania": "Oceania",
+      "africa": "Africa",
+      "other": "Other"
+    },
+    "page": {
+      "title": "{name} eSIM",
+      "seoTitle": "{name} eSIM — data plans for travel",
+      "seoDescription": "Prepaid {name} eSIM data plans. Install in minutes, no roaming charges.",
+      "seoDescriptionPrice": "Prepaid {name} eSIM data plans from {price}. Install in minutes, no roaming charges. {store}",
+      "subtitleLocal": "Prepaid data for your trip — install before you fly.",
+      "subtitleMulti": "One eSIM for {count} countries.",
+      "coverage": "Countries covered",
+      "networks": "Networks",
+      "how": "How it works",
+      "faq": "Questions",
+      "allPlans": "See every plan for {name}"
+    },
+    "how": {
+      "pick": "Pick a plan",
+      "pickText": "Choose your days and data, pay securely.",
+      "install": "Scan to install",
+      "installText": "We email a QR code at once. Scan it, or tap the one-tap link.",
+      "land": "Land and connect",
+      "landText": "Switch data to the eSIM when you arrive. No roaming bills."
+    },
+    "faq": {
+      "compatibleQ": "Will it work on my phone?",
+      "compatibleA": "Your phone must support eSIM and be carrier-unlocked. Most iPhones since the XS, Google Pixel 3 and later, and recent Samsung Galaxy models do.",
+      "whenQ": "When should I install it?",
+      "whenA": "Install it before you leave, while you have Wi-Fi. The plan starts when it first connects at your destination, unless the plan says otherwise.",
+      "numberQ": "Do I keep my phone number?",
+      "numberA": "Yes. The eSIM is for data; your usual SIM stays in the phone for calls and texts.",
+      "topupQ": "Can I add more data?",
+      "topupA": "Plans marked \"Top up this plan\" or \"Add more packages\" can be topped up from My eSIMs."
+    },
+    "selector": {
+      "days": "How long is your trip?",
+      "data": "How much data?",
+      "topup": "Top-up",
+      "breakout": "IP address",
+      "chooseDays": "Choose days",
+      "oneDay": "1 day",
+      "nDays": "{days} days",
+      "numberOfDays": "Number of days",
+      "from": "from {price}",
+      "topupStack": "Top up this plan",
+      "topupAddon": "Add more packages",
+      "topupNone": "No top-up",
+      "ipLocal": "Local IP",
+      "ipUnknown": "Standard",
+      "buyNow": "Buy now",
+      "added": "Added to cart",
+      "addFailed": "Could not add to cart",
+      "none": "No plans are on sale for this destination right now."
+    },
+    "product": {
+      "days": "Days",
+      "oneDay": "1 day",
+      "nDays": "{days} days",
+      "fewerDays": "One day fewer",
+      "moreDays": "One day more",
+      "perDay": "{price} per day · {min}–{max} days"
+    },
+    "devices": {
+      "search": "Type your model, e.g. iPhone 15",
+      "notFound": "That model is not on our list. It may still take an eSIM — check your phone's settings.",
+      "howToCheck": "To be sure: on iPhone open Settings → General → About and look for \"Digital SIM\" or \"Available SIM\"; on Android dial *#06# and look for an EID. The phone must also be carrier-unlocked."
+    }
+  },
+  "admin": {
+    "onlineStoreThemePage": {
+      "themes": {
+        "esim-travel": {
+          "name": "eSIM Travel",
+          "description": "A travel eSIM store: destination search, popular countries, plan picker, install help and device check."
+        }
+      }
+    },
+    "storeBuilder": {
+      "sections": {
+        "esim-hero": { "name": "eSIM: Destination search", "description": "Big search box for countries and regions, with quick links" },
+        "esim-popular": { "name": "eSIM: Popular destinations", "description": "Best sellers or your own picks, with prices" },
+        "esim-destination-tabs": { "name": "eSIM: Countries / regions / global", "description": "Destinations in three tabs" },
+        "esim-plan-selector": { "name": "eSIM: Plan selector", "description": "Days, data and price for one destination, straight to the cart" },
+        "esim-steps": { "name": "eSIM: How it works", "description": "Pick a plan, scan to install, land and connect" },
+        "esim-install-guide": { "name": "eSIM: Install guide", "description": "Step-by-step setup for iPhone and Android" },
+        "esim-device-check": { "name": "eSIM: Device check", "description": "Search a phone model to see if it supports eSIM" }
+      },
+      "blocks": {
+        "destination": "Destination",
+        "step": "Step"
+      },
+      "fields": {
+        "placeholder": "Search box text",
+        "popularCount": "Quick links",
+        "scope": "Destinations",
+        "showPrice": "Show price",
+        "localTitle": "Countries tab",
+        "regionalTitle": "Regions tab",
+        "globalTitle": "Global tab",
+        "destination": "Destination",
+        "icon": "Icon",
+        "text": "Text",
+        "platform": "Phone"
+      },
+      "options": {
+        "local": "Countries",
+        "regional": "Regions",
+        "global": "Global",
+        "cart": "Cart",
+        "qr": "QR code",
+        "wifi": "Signal",
+        "plane": "Plane",
+        "phone": "Phone",
+        "globe": "Globe",
+        "ios": "iPhone / iPad",
+        "android": "Android"
+      },
+      "fieldHints": {
+        "esim-hero": {
+          "popularCount": "Quick links under the search when none are picked as blocks: the best sellers.",
+          "destination": "The destination's address after /esim/, e.g. japan or europe-35-areas."
+        },
+        "esim-popular": {
+          "source": "Auto: best sellers of the last 90 days. Manual: the destinations added as blocks.",
+          "destination": "The destination's address after /esim/, e.g. japan or europe-35-areas."
+        },
+        "esim-plan-selector": {
+          "destination": "The destination's address after /esim/, e.g. japan, europe-35-areas or global."
+        }
+      }
+    }
+  }
+}

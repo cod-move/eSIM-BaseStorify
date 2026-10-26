@@ -13,11 +13,15 @@ import { productSlugBase, uniqueProductSlug } from "@/lib/products/product-slug"
 import { assignProductLookupCodes } from "@/lib/products/barcode-normalization";
 import { runProductAfterSave, type ProductSaveSide } from "@/lib/products/product-after-save";
 import { syncProductCategory } from "@/lib/catalog/categories";
+import { revalidateTag } from "next/cache";
 import { revalidateProductContent } from "@/lib/cache-invalidation";
 import { markProductsForCatalogSync } from "@/lib/meta-catalog/sync-marks";
 import { withInventoryWrite } from "@/lib/inventory/finance-context";
 import { slugify } from "@/lib/esim/providers/json";
 import { planProducts, type PlannedProduct, type VariantPlan } from "@/lib/esim/catalog/variants";
+
+/** The destination pages' cache tag (lib/esim/storefront/catalog.ts). */
+const STOREFRONT_TAG = "esim-storefront";
 
 /**
  * Publishes priced, active plans as Storify products (CAT-05/06).
@@ -361,6 +365,12 @@ export async function publishProducts(options: { productSlugs?: string[]; status
       result.drafted.push(link.productSlug);
       revalidateProductContent({});
     }
+  }
+  // The destination pages read the catalogue through their own cache.
+  try {
+    revalidateTag(STOREFRONT_TAG, { expire: 0 });
+  } catch {
+    // Outside a Next.js request (the CLI); that cache lapses within minutes anyway.
   }
   return result;
 }

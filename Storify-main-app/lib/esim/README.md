@@ -33,6 +33,16 @@ Everything eSIM-specific lives here and in the files named below; official Stori
 | `components/esim/esim-day-picker.tsx`, `app/api/esim/catalog/products/[id]/day-pricing` | Days picker in the product page's buy box, for a day-priced variant only |
 | `scripts/esim-dev-days.ts` | End-to-end check of a day-priced plan: publish → cart → re-price → order → fulfil; cleans up and reports leftovers |
 
+| `storefront/catalog.ts` | Published, active destinations with their variants for the destination pages; 5-minute cache tagged `esim-storefront` (publishing clears it) |
+| `storefront/selector.ts`, `storefront/continents.ts` | Plan selector steps (days → data → top-up → exit IP) and continent grouping (pure) |
+| `app/[locale]/(store)/esim/` | `/esim` overview, `/esim/<country>`, `/esim/region/<slug>`, `/esim/global`; in the sitemap via patch P17 |
+| `components/esim/{destination-browser,destination-page,plan-selector}.tsx` | Overview search and tabs; a destination's page; the selector that adds straight to the cart |
+
+| `storefront/sections/` | Page-builder blocks `esim-*` (search hero, popular, tabs, plan selector, steps, install guide, device check); registered by patch P1 |
+| `storefront/theme.ts` | The "eSIM Travel" theme (id `esim-travel`): tokens and a home page of eSIM blocks; registered by patch P2 |
+| `storefront/devices.ts` | Built-in eSIM phone list for the device check, until the admin's device table exists |
+| `i18n/messages.ts`, `locales/esim/{en,zh}.json` | eSIM texts, block names and field labels, merged under Storify's messages by patch P9 |
+
 Day-priced plans (Stellar's "pick the days" plans) are one variant per allowance, sold per day for the days the shopper picks. A cart holds one line per variant: adding the same variant with other days replaces the line.
 
 Not automatic: refunding a guest order (needs the gateway refund flow) — admins are told the exact amount.
