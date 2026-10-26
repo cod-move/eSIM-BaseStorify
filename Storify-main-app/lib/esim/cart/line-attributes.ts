@@ -4,8 +4,10 @@ import { clampDays, validityValue, type PerDayPricing } from "@/lib/esim/catalog
  * What a cart or order line carries in its generic `lineAttributes` field
  * (patch point P10). Pure.
  *
- * Only `days` is accepted so far: the number of days of a day-priced plan.
- * The top-up target ICCID and the activation date join it with Top-up.
+ * - `days`: the number of days of a day-priced plan.
+ * - `topup`: the top-up quote a top-up line is for (lib/esim/topup). The
+ *   server adds `iccid` (the eSIM topped up) and `label` (the line's name)
+ *   from the quote; whatever a request sends for those two is ignored.
  *
  * A cart holds one line per variant, as Storify's cart does. Adding the same
  * variant again with other days replaces the days (the shopper changed their
@@ -15,6 +17,9 @@ import { clampDays, validityValue, type PerDayPricing } from "@/lib/esim/catalog
  */
 export interface EsimLineAttributes {
   days?: number;
+  topup?: string;
+  iccid?: string | null;
+  label?: string;
 }
 
 export class LineAttributesError extends Error {
@@ -34,13 +39,23 @@ export function parseLineAttributes(input: unknown): EsimLineAttributes | null {
   if (entries.length === 0) return null;
   const parsed: EsimLineAttributes = {};
   for (const [key, value] of entries) {
-    if (key !== "days") throw new LineAttributesError(`Unknown line option "${key}"`);
-    if (typeof value !== "number" || !Number.isInteger(value) || value < 1 || value > 3650) {
-      throw new LineAttributesError("The number of days must be a whole number");
+    if (key === "iccid" || key === "label") continue;
+    if (key === "days") {
+      if (typeof value !== "number" || !Number.isInteger(value) || value < 1 || value > 3650) {
+        throw new LineAttributesError("The number of days must be a whole number");
+      }
+      parsed.days = value;
+    } else if (key === "topup") {
+      if (typeof value !== "string" || !/^[a-f0-9]{24}$/i.test(value)) throw new LineAttributesError("Unknown top-up");
+      parsed.topup = value;
+    } else {
+      throw new LineAttributesError(`Unknown line option "${key}"`);
     }
-    parsed.days = value;
   }
-  return parsed;
+  if (parsed.days !== undefined && parsed.topup !== undefined) {
+    throw new LineAttributesError("A top-up takes no number of days");
+  }
+  return Object.keys(parsed).length ? parsed : null;
 }
 
 /**
@@ -88,13 +103,25 @@ type VariantSnapshot = { variantLabel?: string; variantOptions?: Array<{ name: s
 
 /**
  * An order line's frozen variant (`orderLineVariantSnapshot`) as bought: the
- * catalogue's "1–365 days" replaced by the days the line carries, so the
- * order page, invoice and emails say what was sold.
+ * catalogue's "1–365 days" replaced by the days the line carries, and a
+ * top-up's "Data top-up" by the top-up and its eSIM, so the order page,
+ * invoice and emails say what was sold.
  */
 export function withLineDays<S extends VariantSnapshot>(line: { lineAttributes?: unknown }, snapshot: S): S {
-  const days = line.lineAttributes && typeof line.lineAttributes === "object"
-    ? (line.lineAttributes as EsimLineAttributes).days
+  const attributes = line.lineAttributes && typeof line.lineAttributes === "object"
+    ? (line.lineAttributes as EsimLineAttributes)
     : undefined;
+  const label = attributes?.topup && typeof attributes.label === "string" ? attributes.label : null;
+  if (label) {
+    return {
+      ...snapshot,
+      ...(snapshot.variantLabel ? { variantLabel: label } : {}),
+      ...(snapshot.variantOptions
+        ? { variantOptions: snapshot.variantOptions.map((option, index) => (index === 0 ? { ...option, value: label } : option)) }
+        : {}),
+    };
+  }
+  const days = attributes?.days;
   if (typeof days !== "number") return snapshot;
   return {
     ...snapshot,

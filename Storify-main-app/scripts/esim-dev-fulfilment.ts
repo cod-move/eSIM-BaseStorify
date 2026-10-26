@@ -28,7 +28,9 @@ const created = { providers: [] as Id[], plans: [] as Id[], orders: [] as Id[], 
 
 async function fakeProvider(mode: string) {
   const code = `fake-${mode}`;
-  await EsimProvider.deleteOne({ code });
+  // Another dev tool's supplier of this code (the seed's) is used, never replaced: deleting it would orphan its eSIMs.
+  const existing = await EsimProvider.findOne({ code });
+  if (existing) return existing;
   const provider = await EsimProvider.create({
     code,
     name: `Fake ${mode}`,
@@ -278,7 +280,7 @@ async function cleanup() {
   await Order.collection.deleteMany({ _id: { $in: orders } });
   await EsimProductLink.deleteMany({ _id: { $in: created.links } });
   await EsimPlan.deleteMany({ _id: { $in: created.plans } });
-  await EsimProviderLog.deleteMany({ provider: { $in: created.providers } });
+  await EsimProviderLog.deleteMany({ $or: [{ provider: { $in: created.providers } }, { "refs.orderId": { $in: orders.map(String) } }] });
   await EsimProvider.deleteMany({ _id: { $in: created.providers } });
 }
 

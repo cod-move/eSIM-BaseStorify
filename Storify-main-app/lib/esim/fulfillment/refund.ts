@@ -5,6 +5,7 @@ import { PAYMENT_STATUS } from "@/config/app.config";
 import { Order } from "@/models";
 import { PaymentTransaction } from "@/models/payment-transaction.model";
 import { EsimFulfillment } from "@/models/esim-fulfillment.model";
+import { EsimTopup } from "@/models/esim-topup.model";
 import { getOrderRefundCeiling } from "@/lib/orders/preorder-cancel-refund";
 import { releaseRefundInFlightWrite, logRefundInFlightReleaseError, REFUND_IN_FLIGHT_WINDOW_MS } from "@/lib/orders/refund-in-flight";
 import { settleRefundedPaymentStatus } from "@/lib/orders/refund-payment-status";
@@ -22,7 +23,8 @@ import { refundAmount } from "@/lib/esim/fulfillment/refund-amount";
  * through `refundToStoreCredit` (refund row, credit lot, ledger), then settle
  * the payment status and clear the stamp — rolling the reservation back on any
  * failure. Each failed job is claimed before the money moves, so a cron re-run
- * cannot refund it twice.
+ * cannot refund it twice. Failed top-ups (TOP-07) are refunded the same way,
+ * in the same refund as the order's failed eSIMs.
  *
  * Not automatic: guest orders (no account to credit; the decision is to send
  * the money back the way it came, which needs the gateway refund flow) and
@@ -59,14 +61,23 @@ async function alreadyRefunded(orderId: mongoose.Types.ObjectId) {
   return Number(summary?.total || 0);
 }
 
+/** Both kinds of job refunded here share the fields this file reads and writes. */
+const JOB_MODELS = [EsimFulfillment, EsimTopup] as unknown as Array<typeof EsimFulfillment>;
+
+async function updateJobs(filter: Record<string, unknown>, update: Record<string, unknown>) {
+  for (const model of JOB_MODELS) await model.updateMany(filter, update);
+}
+
+async function findJobs(filter: Record<string, unknown>) {
+  const found = await Promise.all(JOB_MODELS.map((model) => model.find(filter).select({ _id: 1, lineIndex: 1 }).lean()));
+  return found.flat();
+}
+
 async function markManual(jobIds: mongoose.Types.ObjectId[], amount: number, note: string, order: OrderDoc, currency: string) {
-  await EsimFulfillment.updateMany(
-    { _id: { $in: jobIds } },
-    { $set: { refund: { state: "manual", amount, at: new Date(), note } } },
-  );
+  await updateJobs({ _id: { $in: jobIds } }, { $set: { refund: { state: "manual", amount, at: new Date(), note } } });
   await notifyAdminsPaymentAnomaly({
     title: "Refund an eSIM by hand",
-    message: `Order ${order.orderNumber}: ${jobIds.length} eSIM(s) could not be issued. Refund ${amount.toFixed(2)} ${currency} to the shopper — ${note}`,
+    message: `Order ${order.orderNumber}: ${jobIds.length} eSIM(s) or top-up(s) could not be made. Refund ${amount.toFixed(2)} ${currency} to the shopper — ${note}`,
     dedupeKey: `esim-refund-manual:${order._id}`,
   }).catch(console.error);
 }
@@ -78,17 +89,13 @@ export async function refundFailedEsims(orderId: string): Promise<EsimRefundResu
 
   // Claim the failed jobs nobody has refunded yet.
   const stamp = new Date();
-  const candidates = await EsimFulfillment.find({ order: order._id, state: "failed", refund: null })
-    .select({ _id: 1, lineIndex: 1 })
-    .lean();
+  const candidates = await findJobs({ order: order._id, state: "failed", refund: null });
   if (!candidates.length) return { state: "nothing", amount: 0, currency };
-  await EsimFulfillment.updateMany(
+  await updateJobs(
     { _id: { $in: candidates.map((job) => job._id) }, refund: null },
     { $set: { refund: { state: "pending", amount: 0, at: stamp } } },
   );
-  const claimed = await EsimFulfillment.find({ order: order._id, state: "failed", "refund.state": "pending", "refund.at": stamp })
-    .select({ _id: 1, lineIndex: 1 })
-    .lean();
+  const claimed = await findJobs({ order: order._id, state: "failed", "refund.state": "pending", "refund.at": stamp });
   if (!claimed.length) return { state: "nothing", amount: 0, currency };
   const jobIds = claimed.map((job) => job._id);
 
@@ -101,7 +108,7 @@ export async function refundFailedEsims(orderId: string): Promise<EsimRefundResu
     refundable: Math.max(0, ceiling - refunded),
   });
   if (!(amount > 0)) {
-    await EsimFulfillment.updateMany({ _id: { $in: jobIds } }, { $set: { refund: { state: "done", amount: 0, at: stamp, note: "nothing left to refund" } } });
+    await updateJobs({ _id: { $in: jobIds } }, { $set: { refund: { state: "done", amount: 0, at: stamp, note: "nothing left to refund" } } });
     return { state: "nothing", amount: 0, currency };
   }
 
@@ -130,7 +137,7 @@ export async function refundFailedEsims(orderId: string): Promise<EsimRefundResu
   ).lean<{ refundedTotal?: number } | null>();
   if (!reservation) {
     // Another refund is being recorded, or the room is gone: hand the jobs back for the next run.
-    await EsimFulfillment.updateMany({ _id: { $in: jobIds }, "refund.at": stamp }, { $set: { refund: null } });
+    await updateJobs({ _id: { $in: jobIds }, "refund.at": stamp }, { $set: { refund: null } });
     return { state: "nothing", amount: 0, currency, reason: "order busy or nothing refundable" };
   }
 
@@ -154,7 +161,7 @@ export async function refundFailedEsims(orderId: string): Promise<EsimRefundResu
       },
     );
     await settleRefundedPaymentStatus({ orderId: order._id, ceiling });
-    await EsimFulfillment.updateMany({ _id: { $in: jobIds } }, { $set: { refund: { state: "done", amount, at: new Date() } } });
+    await updateJobs({ _id: { $in: jobIds } }, { $set: { refund: { state: "done", amount, at: new Date() } } });
 
     const { notifyStoreCreditIssued } = await import("@/lib/store-credit/store-credit-notify");
     await notifyStoreCreditIssued({

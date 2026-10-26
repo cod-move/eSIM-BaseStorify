@@ -9,6 +9,7 @@ export type CartFingerprintLine = {
   preorderPaymentMode?: string;
   preorderDepositAmount?: number;
   preorderOutstandingAmount?: number;
+  lineAttributes?: unknown; // [esim-patch] P10
 };
 
 const lineKey = (item: CartFingerprintLine): string =>
@@ -21,6 +22,9 @@ const lineKey = (item: CartFingerprintLine): string =>
     item.preorderPaymentMode || "",
     Number(item.preorderDepositAmount || 0),
     Number(item.preorderOutstandingAmount || 0),
+    // [esim-patch] P10 the eSIM a top-up is for, the days of a day-priced plan;
+    // only lines that carry options, so every other fingerprint is unchanged.
+    ...(item.lineAttributes ? [item.lineAttributes] : []),
   ]);
 
 /**

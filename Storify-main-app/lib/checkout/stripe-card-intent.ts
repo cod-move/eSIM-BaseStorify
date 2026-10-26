@@ -500,8 +500,8 @@ export async function createStripeCardIntent(
       productIds: items.map((item) => String(item.productId._id)),
     }),
   );
-  // [esim-patch] P10 day-priced eSIM lines: per day × the line's days.
-  const esimPrices = await esimLinePrices(items);
+  // [esim-patch] P10 day-priced eSIM lines: per day × the line's days; top-ups from their quote.
+  const esimPrices = await esimLinePrices(items, { userId: user?.id });
   for (const item of items) {
     const product = stockCheckProductById.get(String(item.productId._id));
     if (!product) {

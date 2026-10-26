@@ -53,6 +53,8 @@ export interface IEsimSettings extends mongoose.Document {
   repriceThresholdPercent: number;
   /** The storefront category eSIM products are filed under. */
   categoryId: mongoose.Types.ObjectId | null;
+  /** The hidden store product top-ups are sold as (lib/esim/topup/product.ts). */
+  topupProductId: mongoose.Types.ObjectId | null;
   updatedAt: Date;
 }
 
@@ -65,6 +67,7 @@ const EsimSettingsSchema = new Schema<IEsimSettings>(
     rounding: { type: String, enum: ["none", "99", "49_99"], default: "99" },
     repriceThresholdPercent: { type: Number, default: 2, min: 0, max: 50 },
     categoryId: { type: Schema.Types.ObjectId, ref: "Category", default: null },
+    topupProductId: { type: Schema.Types.ObjectId, ref: "Product", default: null },
   },
   { timestamps: true },
 );

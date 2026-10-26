@@ -309,8 +309,8 @@ export async function POST(request: NextRequest) {
     // mirror), so it must never be used for a specific variant line. Using one
     // resolver for subtotal, shipping subtotal, line items and commission keeps
     // order.total === Σ(items.price × qty) and prevents mispriced variant orders.
-    // [esim-patch] P10 day-priced eSIM lines: per day × the line's days.
-    const esimPrices = await esimLinePrices(cartItems);
+    // [esim-patch] P10 day-priced eSIM lines: per day × the line's days; top-ups from their quote.
+    const esimPrices = await esimLinePrices(cartItems, { userId: session.user.id });
     const resolveCurrentItemPrice = (item: (typeof cartItems)[number]): number => {
       const product = item.productId;
       if (!product) return item.price ?? 0;

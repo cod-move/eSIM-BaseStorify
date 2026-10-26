@@ -10,6 +10,7 @@ import {
   type ProviderUsage,
   type PurchaseInput,
   type PurchaseResult,
+  type TopupInput,
   type TopupResult,
 } from "./types";
 
@@ -19,7 +20,8 @@ import {
  * ESIM_ENABLE_FAKE_PROVIDER=true (see registry.ts) — never in production.
  *
  * `mode` picks the behaviour: fulfil (instant), pending (processing first,
- * delivered on the next query), reject (refuses), uncertain (times out).
+ * delivered on the next query), reject (refuses), uncertain (times out) —
+ * for purchases and top-ups alike.
  * The same idempotency key always yields the same eSIM, like a real supplier.
  */
 
@@ -68,7 +70,7 @@ function fakeEsim(key: string): ProviderEsim {
 export class FakeAdapter implements EsimProviderAdapter {
   readonly code = "fake";
   readonly displayName = "Fake supplier (testing)";
-  readonly capabilities = { listPlans: true, purchase: true, usage: true, topup: false, cancel: true } as const;
+  readonly capabilities = { listPlans: true, purchase: true, usage: true, topup: true, cancel: true } as const;
 
   constructor(private readonly options: FakeOptions) {}
 
@@ -118,12 +120,32 @@ export class FakeAdapter implements EsimProviderAdapter {
     return { totalBytes: 0, usedBytes: 0, remainingBytes: 0, lifecycleStatus: "not_installed", expiresAt: null, syncedAt: null, stale: null, raw: {} };
   }
 
+  /** Two top-ups for any eSIM: 1 GB / 7 days and 3 GB / 30 days, priced in EUR like Stellar. */
   async listTopupPlans(): Promise<ProviderTopupPlan[]> {
-    return [];
+    return [
+      { topupPlanId: "fake-topup-1gb", name: "Top-up 1GB 7Days", megabytes: 1024, validityDays: 7, cost: { currency: "EUR", amountMinor: 150 }, raw: { fake: true } },
+      { topupPlanId: "fake-topup-3gb", name: "Top-up 3GB 30Days", megabytes: 3072, validityDays: 30, cost: { currency: "EUR", amountMinor: 400 }, raw: { fake: true } },
+    ];
   }
 
-  async topup(): Promise<TopupResult> {
-    throw new ProviderError("unsupported", "Fake supplier has no top-ups");
+  async topup(input: TopupInput): Promise<TopupResult> {
+    if (!(await this.listTopupPlans()).some((plan) => plan.topupPlanId === input.topupPlanId)) {
+      throw new ProviderError("not_found", "Fake supplier has no such top-up");
+    }
+    switch (this.options.mode) {
+      case "reject":
+        throw new ProviderError("rejected", "Fake supplier refuses every top-up");
+      case "uncertain":
+        throw new ProviderError("uncertain", "Fake supplier timed out");
+      case "pending":
+        return { status: "processing", providerTopupId: `ft-${input.idempotencyKey}`, raw: { fake: true } };
+      default:
+        return { status: "completed", providerTopupId: `ft-${input.idempotencyKey}`, raw: { fake: true } };
+    }
+  }
+
+  async queryTopup(providerTopupId: string): Promise<TopupResult> {
+    return { status: "completed", providerTopupId, raw: { fake: true } };
   }
 
   async cancel(): Promise<CancelResult> {

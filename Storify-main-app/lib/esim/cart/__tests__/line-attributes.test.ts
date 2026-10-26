@@ -27,7 +27,7 @@ describe("parseLineAttributes", () => {
   });
 
   it("refuses keys it does not know", () => {
-    assert.throws(() => parseLineAttributes({ iccid: "8988" }), /Unknown line option "iccid"/);
+    assert.throws(() => parseLineAttributes({ activationDate: "2026-11-01" }), /Unknown line option "activationDate"/);
     assert.throws(() => parseLineAttributes([1]), LineAttributesError);
   });
 });

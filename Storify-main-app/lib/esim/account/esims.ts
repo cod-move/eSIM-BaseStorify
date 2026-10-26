@@ -100,20 +100,21 @@ export async function listCustomerEsims(userId: string): Promise<EsimView[]> {
   return profiles.map((profile) => view(profile, plans.get(String(profile.plan))));
 }
 
-async function findOwned(userId: string, esimId: string) {
+/** The eSIM if this account owns it (see the ownership rule above), else null. */
+export async function findOwnedEsim(userId: string, esimId: string) {
   if (!mongoose.isValidObjectId(esimId)) return null;
   return EsimProfile.findOne({ _id: esimId, ...(await ownerFilter(userId)) });
 }
 
 export async function getCustomerEsim(userId: string, esimId: string): Promise<EsimView | null> {
-  const profile = await findOwned(userId, esimId);
+  const profile = await findOwnedEsim(userId, esimId);
   if (!profile) return null;
   const plans = await plansFor([profile]);
   return view(profile, plans.get(String(profile.plan)));
 }
 
 export async function updateRemark(userId: string, esimId: string, remark: string): Promise<boolean> {
-  const profile = await findOwned(userId, esimId);
+  const profile = await findOwnedEsim(userId, esimId);
   if (!profile) return false;
   profile.remark = remark.trim().slice(0, 100) || null;
   await profile.save();
@@ -134,7 +135,7 @@ export async function refreshCustomerEsim(
   userId: string,
   esimId: string,
 ): Promise<{ view: EsimView | null; refreshed: boolean; error?: string }> {
-  const profile = await findOwned(userId, esimId);
+  const profile = await findOwnedEsim(userId, esimId);
   if (!profile) return { view: null, refreshed: false };
   const last = profile.lifecycle?.lastUsageUpdateAt?.getTime() ?? 0;
   const done = async (refreshed: boolean, error?: string) => ({

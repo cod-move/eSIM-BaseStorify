@@ -533,8 +533,8 @@ async function runCheckout(
   // The price each line was stored with, so the re-pricing below writes back
   // only the lines whose price actually moved.
   const storedLinePrice = new Map(items.map((item) => [item, item.price]));
-  // [esim-patch] P10 day-priced eSIM lines: per day × the line's days.
-  const esimPrices = await esimLinePrices(items);
+  // [esim-patch] P10 day-priced eSIM lines: per day × the line's days; top-ups from their quote.
+  const esimPrices = await esimLinePrices(items, { userId: user?.id });
 
   for (const item of items) {
     const product = stockCheckProductById.get(String(item.productId._id));

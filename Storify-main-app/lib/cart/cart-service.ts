@@ -294,7 +294,7 @@ async function putLine(
 
   // [esim-patch] P10 a day-priced eSIM line: its days, its price for them and
   // a variant name that says them. Refuses options the variant does not take.
-  const esimLine = await esimCartLine(line);
+  const esimLine = await esimCartLine(line, { userId });
   const price = esimLine
     ? esimLine.price
     : quoteOffer
@@ -354,8 +354,9 @@ async function putLine(
     // vanish for having clicked twice.
     const existing = cart.items[existingItemIndex];
     // [esim-patch] P10 other days for a line already in the cart replace it:
-    // the shopper changed their mind, they did not ask for one more.
-    const esimReplaced = Boolean(esimLine) && existing.lineAttributes?.days !== esimLine?.lineAttributes.days;
+    // the shopper changed their mind, they did not ask for one more. A
+    // top-up is always one unit: adding one again replaces the line.
+    const esimReplaced = Boolean(esimLine) && (Boolean(esimLine?.singleUnit) || existing.lineAttributes?.days !== esimLine?.lineAttributes.days);
     const newQuantity = quoteOffer || esimReplaced ? quantity : existing.quantity + quantity;
     const nextPurchase = resolvePurchaseType({
       product,

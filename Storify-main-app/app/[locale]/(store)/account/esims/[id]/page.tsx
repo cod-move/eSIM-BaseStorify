@@ -11,14 +11,19 @@ import { formatBytes, remainingPercent } from "@/lib/esim/account/display";
 import { installLinks } from "@/lib/esim/fulfillment/install-links";
 import { EsimStatusBadge, UsageBar } from "@/components/esim/esim-status-badge";
 import { CopyValue, RefreshUsageButton, RemarkEditor } from "@/components/esim/esim-actions";
+import { buttonVariants } from "@/components/ui/button";
+import { esimTopupStatus } from "@/lib/esim/topup/offers";
+import { REFUSAL_TEXT } from "@/lib/esim/topup/eligibility";
+import { TOPUP_STATUS_TEXT, listEsimTopups } from "@/lib/esim/topup/history";
+import { formatStorePrice } from "@/lib/esim/topup/format";
 
 interface PageProps {
   params: Promise<{ locale: string; id: string }>;
 }
 
 /**
- * One eSIM (USR-02/03/04): how much is left, how to install it, and its
- * details. The QR code is drawn here on the server from the activation code;
+ * One eSIM (USR-02/03/04, TOP-06): how much is left, how to install it, its
+ * details, and topping it up with the top-ups bought so far. The QR code is drawn here on the server from the activation code;
  * the page is only ever rendered for the eSIM's owner.
  */
 export default async function AccountEsimPage({ params }: PageProps) {
@@ -32,6 +37,7 @@ export default async function AccountEsimPage({ params }: PageProps) {
   await connectDB();
   const esim = await getCustomerEsim(session.user.id, id);
   if (!esim) notFound();
+  const [topup, topups] = await Promise.all([esimTopupStatus(session.user.id, id), listEsimTopups(session.user.id, id)]);
 
   const date = new Intl.DateTimeFormat(locale, { dateStyle: "medium" });
   const dateTime = new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short" });
@@ -141,6 +147,51 @@ export default async function AccountEsimPage({ params }: PageProps) {
               <a href={esim.customerLink} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline">
                 {tr("esim.account.installPage", "Open the supplier's installation page")}
               </a>
+            ) : null}
+          </CardContent>
+        </Card>
+      ) : null}
+
+      {topup?.supported || topups.length ? (
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between gap-4 space-y-0">
+            <CardTitle className="text-base">{tr("esim.topup.section", "Top up")}</CardTitle>
+            {topup?.eligibility.ok ? (
+              <Link href={`/account/esims/${esim.id}/topup`} className={buttonVariants({ size: "sm" })}>
+                {tr("esim.topup.cta", "Add data")}
+              </Link>
+            ) : null}
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {topup && !topup.eligibility.ok && topup.supported ? (
+              <p className="text-sm text-muted-foreground">
+                {tr(`esim.topup.refusal.${topup.eligibility.reason}`, REFUSAL_TEXT[topup.eligibility.reason])}
+              </p>
+            ) : null}
+            {topup?.eligibility.ok && !topups.length ? (
+              <p className="text-sm text-muted-foreground">
+                {tr("esim.topup.hint", "Running low? Add data to this eSIM — nothing new to install.")}
+              </p>
+            ) : null}
+            {topups.length ? (
+              <div className="divide-y">
+                {topups.map((entry) => (
+                  <div key={entry.id} className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 py-2 text-sm">
+                    <div>
+                      <div className="font-medium">{entry.name}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {date.format(entry.createdAt)} · {tr("esim.account.order", "Order {number}", { number: entry.orderNumber })}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div>{formatStorePrice(entry.priceMinor, locale)}</div>
+                      <div className={`text-xs ${entry.status === "failed" ? "text-destructive" : "text-muted-foreground"}`}>
+                        {tr(`esim.topup.status.${entry.status}`, TOPUP_STATUS_TEXT[entry.status])}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             ) : null}
           </CardContent>
         </Card>

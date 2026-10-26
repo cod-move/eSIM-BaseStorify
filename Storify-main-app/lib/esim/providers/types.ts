@@ -242,6 +242,8 @@ export interface EsimProviderAdapter {
   getUsage(ref: EsimRef): Promise<ProviderUsage>;
   listTopupPlans(ref: EsimRef): Promise<ProviderTopupPlan[]>;
   topup(input: TopupInput): Promise<TopupResult>;
+  /** A top-up that answered "processing", read again; suppliers without it are asked by repeating `topup` with the same key. */
+  queryTopup?(providerTopupId: string): Promise<TopupResult>;
   cancel(ref: EsimRef): Promise<CancelResult>;
 }
 

@@ -21,6 +21,7 @@ import { EsimProductLink } from "@/models/esim-product-link.model";
 import { EsimProfile } from "@/models/esim-profile.model";
 import { EsimProvider } from "@/models/esim-provider.model";
 import { EsimProviderLog } from "@/models/esim-provider-log.model";
+import { keepTopupProductAsItWas } from "./lib/esim-topup-product";
 
 const tag = `e2e-days-${Date.now()}`;
 const slug = `${tag}-japan`;
@@ -43,10 +44,12 @@ async function main() {
   process.env.ESIM_ENABLE_FAKE_PROVIDER = "true";
   await connectDB();
   const before = await counts();
+  const restoreTopupProduct = await keepTopupProductAsItWas();
   try {
     await run();
   } finally {
     await cleanup().catch((error) => console.error("cleanup failed:", error));
+    await restoreTopupProduct().catch((error) => console.error("top-up product cleanup failed:", error));
     const after = await counts();
     const changed = [...new Set([...before.keys(), ...after.keys()])]
       .filter((name) => (before.get(name) ?? 0) !== (after.get(name) ?? 0))

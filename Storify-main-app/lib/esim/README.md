@@ -58,9 +58,21 @@ Everything eSIM-specific lives here and in the files named below; official Stori
 | `storefront/product-facts.ts`, `storefront/sections/product.tsx` | Product-page block `esim-product-details` (WEB-34): coverage, networks, speed, data type, activation, hotspot, top-up, extras — in the eSIM theme's product page |
 | `admin/help-pages.ts`, `scripts/esim-dev-help-pages.ts` | The help pages `/pages/esim-compatibility` and `/pages/esim-install` (WEB-35), created from Admin → eSIM → Devices |
 
+| `topup/eligibility.ts` | Whether an eSIM can be topped up now (TOP-01): before_expiry / while_profile_exists (pure) |
+| `topup/offers.ts`, `app/api/esim/me/esims/[id]/topup` | The supplier's top-ups for an eSIM, priced by the pricing rules (TOP-02); a chosen one becomes an `EsimTopupQuote` (TOP-03) |
+| `topup/product.ts` | The hidden "eSIM Top-up" store product: active, not on the online store, so only the cart and checkout see it |
+| `cart/index.ts` (top-up lines) | A top-up line carries `lineAttributes.topup` (the quote) — signed-in owner only, one unit, priced from the quote; checkout refuses an invalid one |
+| `topup/service.ts`, `models/esim-topup.model.ts` | Paid order → one job per top-up line; tried at the eSIM's own supplier with key `provider-topup:{id}`, polled while processing; stack adds to the base package, addon adds one (TOP-04/05); admin retry / give up / refunded by hand |
+| `fulfillment/refund.ts`, `fulfillment/delivery.ts` | Failed top-ups are refunded with the order's failed eSIMs (TOP-07); completed ones are emailed; all-digital orders close as delivered |
+| `app/[locale]/(store)/account/esims/[id]/topup`, `topup/history.ts` | The shopper's top-up page and the eSIM's top-up history (TOP-06) |
+| `admin/topups.ts`, `app/[locale]/admin/esim/topups` | Admin → eSIM → Top-ups: by status, shopper (email), supplier and date, with the actions (TOP-06) |
+| `scripts/esim-dev-topup.ts` | End-to-end check of top-ups with fake suppliers; cleans up and reports leftovers |
+
 **Scheduled jobs.** `esim-fulfillment` (every minute), `esim-catalog` (every 6 hours) and `esim-fx` (daily) are scheduled in `vercel.json`. A Vercel Hobby plan runs crons at most daily; the fulfilment job then needs Pro. On your own server, call each address with `Authorization: Bearer $CRON_SECRET` from the system scheduler.
 
 Day-priced plans (Stellar's "pick the days" plans) are one variant per allowance, sold per day for the days the shopper picks. A cart holds one line per variant: adding the same variant with other days replaces the line.
+
+Top-ups need an account: the shopper buys one from the eSIM's page in My eSIMs (guests have no such page). A cart holds one top-up line at a time — the top-up product has one variant, and a cart holds one line per variant.
 
 Not automatic: refunding a guest order (needs the gateway refund flow) — admins are told the exact amount.
 

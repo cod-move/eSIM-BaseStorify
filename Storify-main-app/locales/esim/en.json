@@ -175,6 +175,36 @@
       "vpnSome": "A free VPN on some plans",
       "voice": "Calls",
       "sms": "Texts"
+    },
+    "topup": {
+      "section": "Top up",
+      "cta": "Add data",
+      "hint": "Running low? Add data to this eSIM — nothing new to install.",
+      "title": "Top up your eSIM",
+      "choose": "Choose a top-up",
+      "validFor": "Valid for {count} days",
+      "buy": "Continue to checkout",
+      "quoteFailed": "Could not start the top-up",
+      "stack": "The top-up adds to your current plan: more data, and for some plans more days.",
+      "addon": "The top-up is a package of its own: its data and days start alongside your current plan.",
+      "supplierDown": "We could not load the top-ups for this eSIM right now. Please try again in a few minutes.",
+      "none": "There are no top-ups for this eSIM at the moment.",
+      "note": "Nothing new to install: the top-up goes onto this eSIM. Pay with your balance or any payment method at checkout.",
+      "refusal": {
+        "not_supported": "This plan cannot be topped up.",
+        "not_issued": "This eSIM has not been issued.",
+        "cancelled": "This eSIM was cancelled.",
+        "expired": "This plan has expired and can no longer be topped up. Buy a new eSIM instead.",
+        "used_up": "This plan's data is used up and it can no longer be topped up. Buy a new eSIM instead.",
+        "profile_expired": "This eSIM is no longer valid. Buy a new eSIM instead."
+      },
+      "status": {
+        "paid": "Paid — being added",
+        "processing": "Being added",
+        "completed": "Added",
+        "failed": "Could not be added",
+        "refunded": "Refunded"
+      }
     }
   },
   "admin": {
@@ -518,7 +548,24 @@
       "pageDraft": "Draft",
       "editPage": "Edit",
       "viewPage": "View",
-      "pageMissing": "Not created"
+      "pageMissing": "Not created",
+      "topupsHint": "Data top-ups shoppers bought for their eSIMs. A failed top-up is refunded to the shopper's store credit on its own.",
+      "allTopups": "All top-ups",
+      "topupCompleted": "Completed",
+      "topupProcessing": "At the supplier",
+      "topupQueued": "Paid, queued",
+      "topupAddon": "own package",
+      "topupStack": "adds to the plan",
+      "searchTopups": "Order, ICCID or email",
+      "allSuppliers": "All suppliers",
+      "from": "From",
+      "to": "To",
+      "topupCost": "cost",
+      "noTopupProblems": "No top-up needs a person right now.",
+      "noTopups": "No top-ups match.",
+      "topupMayHaveHappened": "The supplier may already have made this top-up. Check its portal before refunding; trying again is safe.",
+      "topupHistory": "Top-up history",
+      "confirmFailTopup": "Stop trying and refund the shopper's store credit?"
     },
     "sidebar": {
       "esim": "eSIM",
@@ -530,7 +577,8 @@
       "esimProblems": "Problems",
       "esimDestinations": "Destinations",
       "esimDevices": "Devices",
-      "esimJobs": "Scheduled jobs"
+      "esimJobs": "Scheduled jobs",
+      "esimTopups": "Top-ups"
     }
   }
 }

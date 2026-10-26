@@ -2,13 +2,11 @@ import "server-only";
 
 import { mongoose } from "@/lib/db";
 import { PRODUCT_STATUS } from "@/config/app.config";
-import { Category } from "@/models/category.model";
 import { Product } from "@/models";
 import { EsimPlan, type IEsimPlan } from "@/models/esim-plan.model";
 import { EsimProvider } from "@/models/esim-provider.model";
 import { EsimProductLink, type IEsimProductLink } from "@/models/esim-product-link.model";
 import { EsimDestination } from "@/models/esim-destination.model";
-import { getEsimSettings } from "@/models/esim-pricing.model";
 import { ensureDefaultVendorId } from "@/lib/vendors/multi-vendor";
 import { productSlugBase, uniqueProductSlug } from "@/lib/products/product-slug";
 import { assignProductLookupCodes } from "@/lib/products/barcode-normalization";
@@ -20,6 +18,8 @@ import { markProductsForCatalogSync } from "@/lib/meta-catalog/sync-marks";
 import { withInventoryWrite } from "@/lib/inventory/finance-context";
 import { slugify } from "@/lib/esim/providers/json";
 import { planProducts, type PlannedProduct, type VariantPlan } from "@/lib/esim/catalog/variants";
+import { ensureCategory } from "@/lib/esim/catalog/category";
+import { ensureTopupProduct } from "@/lib/esim/topup/product";
 
 /** The destination pages' cache tag (lib/esim/storefront/catalog.ts). */
 const STOREFRONT_TAG = "esim-storefront";
@@ -50,17 +50,6 @@ export interface PublishResult {
 }
 
 const toUnits = (minor: number) => Math.round(minor) / 100;
-
-async function ensureCategory(): Promise<mongoose.Types.ObjectId> {
-  const settings = await getEsimSettings();
-  if (settings.categoryId && (await Category.exists({ _id: settings.categoryId }))) return settings.categoryId;
-  const category =
-    (await Category.findOne({ slug: "esim" })) ??
-    (await Category.create({ name: "eSIM", slug: "esim", description: "Travel eSIM data plans", isActive: true }));
-  settings.categoryId = category._id as mongoose.Types.ObjectId;
-  await settings.save();
-  return settings.categoryId;
-}
 
 async function eligiblePlans(productSlugs?: string[]): Promise<VariantPlan[]> {
   const providers = await EsimProvider.find({ status: "active" }).select({ code: 1, priority: 1 }).lean();
@@ -371,6 +360,11 @@ export async function publishProducts(options: { productSlugs?: string[]; status
       result.drafted.push(link.productSlug);
       revalidateProductContent({});
     }
+  }
+  // Whatever is on sale can be topped up later: the hidden top-up product is
+  // made here, in the admin's publish, never in a shopper's request.
+  if (planned.length) {
+    await ensureTopupProduct().catch((error) => console.error("[esim] top-up product could not be created:", error));
   }
   // The destination pages read the catalogue through their own cache.
   try {

@@ -36,7 +36,7 @@
 | P7 | 计划 | `Storify-main-app/contracts/mobile/shop/v1/home.ts` | `HOME_BLOCKS` 映射与 `HomeBlock` 联合类型 | 注册 eSIM 首页区块 schema | 修改后需在顾客 App 执行 `pnpm contracts:sync` |
 | P8 | 计划 | `storify-customer-app/src/features/home/blocks/index.ts` | 区块渲染映射 | 注册 eSIM 区块组件 | App 首页渲染 eSIM 区块；老版本 App 忽略未知区块不崩溃 |
 | P9 | 已改 | `Storify-main-app/lib/i18n/request.ts` | 导入区；`getRequestConfig` 返回的 `messages` | 用 `withEsimMessages(locale, messages[locale])`（`lib/esim/i18n/messages.ts`）合并 `locales/esim/<locale>.json`（目前 en、zh）；同名键以官方为准，不改官方 `locales/*.json` | `getRequestConfig` 返回结构是否变化、是否有别处绕过它直接读 locale 文件；切换中英文时 eSIM 页面和后台区块名称正常 |
-| P10 | 已改（天数；充值 ICCID、激活日期待 Top-up） | 见下方「P10 明细」，共 13 个文件 | 购物车行、订单行 schema，加购、结账定价、建单复制、商品页 | 加通用 `lineAttributes` 对象，内容由 eSIM 模块（`lib/esim/cart`）校验、定价；目前只收 `days`（按天计价套餐的天数）。**同一规格只占一行**：同一规格换了天数再加购，就替换这一行的天数和数量（因为官方购物车、App、`productId-variantId` 的行 id 都只按商品 + 规格区分行） | 见「P10 明细」每行的检查项；整条链路：商品页选天数 → 加购 → 购物车显示「· N days」→ 三种结账（跳转网关、Stripe 卡、`POST /api/orders`）→ 订单行有 `lineAttributes` 且规格名是所选天数 → 开卡按天数购买 |
+| P10 | 已改（天数、充值；激活日期待做） | 见下方「P10 明细」，共 14 个文件 | 购物车行、订单行 schema，加购、结账定价、建单复制、商品页、Stripe 购物车指纹 | 加通用 `lineAttributes` 对象，内容由 eSIM 模块（`lib/esim/cart`）校验、定价；收 `days`（按天计价套餐的天数）和 `topup`（充值报价 id，服务端再补上 `iccid` 和行名 `label`）。**同一规格只占一行**：同一规格换了天数再加购，就替换这一行的天数和数量；充值行永远是 1 件，再加一次就替换（因为官方购物车、App、`productId-variantId` 的行 id 都只按商品 + 规格区分行） | 见「P10 明细」每行的检查项；整条链路：商品页选天数 → 加购 → 购物车显示「· N days」→ 三种结账（跳转网关、Stripe 卡、`POST /api/orders`）→ 订单行有 `lineAttributes` 且规格名是所选天数 → 开卡按天数购买 |
 | P11 | 已改（Web 的「我的 eSIM」） | `Storify-main-app/components/account/account-nav-links.ts`（App 端位置待定） | `dashboardLinks` 数组「订单」项之后；lucide 导入里加 `Smartphone` | 加「我的 eSIM」入口（`/account/esims`，labelKey `esim.account.title`，兜底 "My eSIMs"）；「钱包」「推荐」入口待做 | 侧栏/手机端菜单仍显示该入口；`AccountNavLink` 结构是否变化 |
 | P12 | 计划 | `Storify-main-app/models/store-credit.model.ts` | `STORE_CREDIT_SOURCES` | 加「充值」「推荐佣金」来源 | 枚举及读取它的报表是否变化 |
 | P13 | 计划 | 订单详情页（顾客端 + 后台，位置待定） | 订单行展示处 | 显示开卡状态和 eSIM 入口 | 页面结构是否变化 |
@@ -58,8 +58,8 @@
 | `models/cart.model.ts` | `CartItemSchema`，`quoteId` 之后 | 加 `lineAttributes`（Mixed） | 行 schema 是否改结构 |
 | `models/order.model.ts` | 订单行 schema，`quoteId` 之后 | 同上 | 同上；子订单行是否仍用同一 schema |
 | `lib/validations/index.ts` | `CartAddByIdSchema` | 加 `lineAttributes` 可选对象 | 加购请求体是否仍用这个 schema |
-| `lib/cart/cart-service.ts` | 导入；`CartLineInput`、`MutableCartItem`；`putLine` 定价处和新旧行赋值处 | 调 `esimCartLine(line)` 取天数、单价、带天数的规格名；天数不同就替换数量 | `putLine` 是否仍是加购和 App upsert 的唯一入口；同一规格是否仍只占一行 |
-| `lib/checkout/prepare-checkout.ts` | 导入；逐行定价循环之前；`livePrice` 表达式 | `esimLinePrices(items)` 先算好，`livePrice` 优先取它 | 跳转网关结账是否仍在这里按实时价重定价 |
+| `lib/cart/cart-service.ts` | 导入；`CartLineInput`、`MutableCartItem`；`putLine` 定价处和新旧行赋值处 | 调 `esimCartLine(line, { userId })` 取行属性、单价、规格名（充值行要求登录且是 eSIM 的主人）；天数不同或是充值行（`singleUnit`）就替换数量 | `putLine` 是否仍是加购和 App upsert 的唯一入口；`userId` 变量是否还在；同一规格是否仍只占一行 |
+| `lib/checkout/prepare-checkout.ts` | 导入；逐行定价循环之前；`livePrice` 表达式 | `esimLinePrices(items, { userId })` 先算好，`livePrice` 优先取它；充值行报价无效时抛 `ValidationError`（和缺货一样拒绝结账） | 跳转网关结账是否仍在这里按实时价重定价；`user` 变量是否还在 |
 | `lib/checkout/stripe-card-intent.ts` | 同上 | 同上 | Stripe 卡支付是否仍在这里重定价 |
 | `app/api/orders/route.ts` | 导入；本地购物车行类型；`resolveCurrentItemPrice` 之前和其中；订单行 `quoteId` 之后；两处 `orderLineVariantSnapshot` | 同上定价；订单行复制 `lineAttributes`；规格快照套 `withLineDays` | 建单是否仍走这三处 |
 | `lib/checkout/checkout-order-document.ts` | 导入；`CheckoutCartItem`；`variantSnapshotByLine`；订单行 `quoteId` 之后 | 复制 `lineAttributes`；规格快照套 `withLineDays` | 订单文档是否仍由这里组装 |
@@ -67,12 +67,15 @@
 | `hooks/use-cart.tsx` | `addItem` 的请求体 | 带上 `item.lineAttributes` | 加购是否仍走 `POST /api/cart/items` |
 | `components/products/product-purchase.tsx` | `useProductPurchaseState`：新 state、`displayedPrice`、`cartLine()`、返回值 | `lineOptions` / `setLineOptions`：所选规格的行属性和对应单价 | 购买状态 hook 和 `cartLine()` 是否改名或改结构 |
 | `components/products/product-purchase-rows.tsx` | 导入；`PurchaseVariantsRow` 选项列表之后 | 渲染 `EsimDayPicker`（不是按天计价的规格时什么也不画） | 规格行组件是否仍存在；主题自定义商品页时是否还用它 |
+| `lib/checkout/checkout-cart-fingerprint.ts` | `CartFingerprintLine`；`lineKey` 数组末尾 | 带 `lineAttributes` 的行把它加进指纹（只在有时才加，其他行的指纹不变） | Stripe 是否仍用这个指纹比对「报价时的购物车」和「建单时的购物车」；`lineKey` 是否改结构 |
 
 不需要改的地方（已核对）：
 - `GET /api/cart`（`getCartView`）直接显示行上存的价格，而加购时已经按天数定价。
 - 改数量（`setCartItemQuantity`）不重新定价。
 - 游客购物车并入账户时，保留账户行的天数，结账时再重定价。
 - 旧的 `POST /api/cart` 没有调用方，而且结账时 eSIM 行反正会重新定价。
+- 充值商品是普通的上架商品（`status: active`），只是不发布到网店（`publishing.onlineStore: false`）：所有网店查询都按这个渠道过滤（`lib/catalog/product-visibility.ts`），购物车和结账不过滤，所以不用为「隐藏商品」再改官方文件。
+- 改数量（`setCartItemQuantity`）可以把充值行改成 2 件，但结账时 `esimLinePrices` 会拒绝，不会多扣钱。
 - 结账重试指纹（`checkoutAttemptFingerprint`）里有价格，天数变了价格就变。做 Top-up 时，充值 ICCID 不影响价格，要把 `lineAttributes` 加进这个指纹。
 
 ## 官方发布新版时的升级流程
