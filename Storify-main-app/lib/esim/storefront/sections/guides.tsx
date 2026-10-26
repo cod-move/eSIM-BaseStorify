@@ -86,6 +86,12 @@ const ANDROID_STEPS = [
   ["Turn it on abroad", "On arrival, choose the travel eSIM for mobile data and turn on roaming for it."],
 ];
 
+/** The guide's default steps: what the page builder inserts, and the help page (WEB-35) ships with. */
+export const INSTALL_GUIDE_STEPS = [
+  ...IOS_STEPS.map(([heading, body]) => ({ type: "step", settings: { platform: "ios", heading, text: body } })),
+  ...ANDROID_STEPS.map(([heading, body]) => ({ type: "step", settings: { platform: "android", heading, text: body } })),
+];
+
 export const esimInstallGuide: SectionDefinition = {
   type: "esim-install-guide",
   version: 1,
@@ -103,12 +109,7 @@ export const esimInstallGuide: SectionDefinition = {
       ],
     },
   ],
-  starter: {
-    blocks: [
-      ...IOS_STEPS.map(([heading, body]) => ({ type: "step", settings: { platform: "ios", heading, text: body } })),
-      ...ANDROID_STEPS.map(([heading, body]) => ({ type: "step", settings: { platform: "android", heading, text: body } })),
-    ],
-  },
+  starter: { blocks: INSTALL_GUIDE_STEPS },
   Render({ settings, blocks, ctx }) {
     const tabs = [
       { id: "ios", label: "iPhone / iPad" },

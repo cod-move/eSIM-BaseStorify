@@ -79,6 +79,14 @@ export const ESIM_HOME_PRESET: SectionInstance[] = [
   ]),
 ];
 
+/** Classic's product page, with the eSIM facts (WEB-34) right under the buy box. */
+export const ESIM_PRODUCT_PRESET: SectionInstance[] = (() => {
+  const sections = [...ESSENTIAL_PRODUCT_PRESET];
+  const main = sections.findIndex((section) => section.type === "product-main");
+  sections.splice(main + 1, 0, instance(10, "esim-product-details"));
+  return sections;
+})();
+
 export const esimTheme: ThemeManifest = {
   id: "esim-travel",
   version: "1.0.0",
@@ -115,7 +123,7 @@ export const esimTheme: ThemeManifest = {
   presets: {
     templates: {
       home: ESIM_HOME_PRESET,
-      product: ESSENTIAL_PRODUCT_PRESET,
+      product: ESIM_PRODUCT_PRESET,
     },
     groups: ESSENTIAL_GROUP_PRESETS,
   },

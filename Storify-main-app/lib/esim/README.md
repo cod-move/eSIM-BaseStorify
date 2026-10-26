@@ -55,6 +55,9 @@ Everything eSIM-specific lives here and in the files named below; official Stori
 | `admin/devices.ts`, `models/esim-device.model.ts` | The device-compatibility list kept in the admin; the storefront uses the built-in list until it has rows |
 | `scripts/esim-dev-admin2.ts` | End-to-end check of jobs, destinations, pinning and devices; cleans up and reports leftovers |
 
+| `storefront/product-facts.ts`, `storefront/sections/product.tsx` | Product-page block `esim-product-details` (WEB-34): coverage, networks, speed, data type, activation, hotspot, top-up, extras — in the eSIM theme's product page |
+| `admin/help-pages.ts`, `scripts/esim-dev-help-pages.ts` | The help pages `/pages/esim-compatibility` and `/pages/esim-install` (WEB-35), created from Admin → eSIM → Devices |
+
 **Scheduled jobs.** `esim-fulfillment` (every minute), `esim-catalog` (every 6 hours) and `esim-fx` (daily) are scheduled in `vercel.json`. A Vercel Hobby plan runs crons at most daily; the fulfilment job then needs Pro. On your own server, call each address with `Authorization: Bearer $CRON_SECRET` from the system scheduler.
 
 Day-priced plans (Stellar's "pick the days" plans) are one variant per allowance, sold per day for the days the shopper picks. A cart holds one line per variant: adding the same variant with other days replaces the line.

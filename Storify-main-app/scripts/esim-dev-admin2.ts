@@ -75,7 +75,7 @@ async function run() {
   const devices = await import("@/lib/esim/admin/devices");
 
   // Scheduled jobs: listed, and a manual run is recorded like a scheduled one.
-  cronBefore = await CronRun.findOne({ job: "esim-fulfillment" }).lean();
+  cronBefore = await CronRun.collection.findOne({ job: "esim-fulfillment" });
   const listed = await jobs.listJobs();
   assert.deepEqual(listed.map((job) => job.job), ["esim-fulfillment", "esim-catalog", "esim-fx"]);
   const result = await jobs.runJobNow("esim-fulfillment");
@@ -119,7 +119,7 @@ async function run() {
   console.log("✓ destinations: listed, featured, pinned supplier leads and prices the variant, unpinned, shown");
 
   // Devices: built-in list until the table has rows; import, add, remove.
-  devicesBefore = await EsimDevice.find().lean();
+  devicesBefore = await EsimDevice.collection.find().toArray();
   await EsimDevice.deleteMany({});
   assert.equal((await devices.listDevicesAdmin()).usingBuiltIn, true);
   const imported = await devices.importBuiltInDevices();

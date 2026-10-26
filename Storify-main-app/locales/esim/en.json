@@ -141,6 +141,40 @@
       "search": "Type your model, e.g. iPhone 15",
       "notFound": "That model is not on our list. It may still take an eSIM — check your phone's settings.",
       "howToCheck": "To be sure: on iPhone open Settings → General → About and look for \"Digital SIM\" or \"Available SIM\"; on Android dial *#06# and look for an EID. The phone must also be carrier-unlocked."
+    },
+    "details": {
+      "title": "About this eSIM",
+      "dataTotal": "A fixed amount of data for the whole trip",
+      "dataUnlimited": "Unlimited data",
+      "dataDailyThrottled": "A daily allowance, then reduced speed",
+      "dataDailyCutoff": "A daily allowance, renewed each day",
+      "dataLifetime": "Data that does not expire",
+      "startConnection": "The plan starts when the eSIM first connects at your destination.",
+      "startInstall": "The plan starts when you install the eSIM.",
+      "startPurchase": "The plan starts at purchase.",
+      "topupStack": "Can be topped up from My eSIMs.",
+      "topupAddon": "More packages can be added from My eSIMs.",
+      "topupNone": "No top-up: buy another plan if you need more.",
+      "depends": "Depends on the plan you choose.",
+      "coverage": "Coverage",
+      "networks": "Networks",
+      "bestAvailable": "The best network available locally.",
+      "data": "Data",
+      "speed": "Speed",
+      "upTo": "Up to {speed}",
+      "activation": "Activation",
+      "installWithin": "Install it within {days} days of purchase.",
+      "hotspot": "Hotspot",
+      "hotspotYes": "Share your connection with other devices.",
+      "hotspotNo": "Sharing the connection is not allowed.",
+      "topup": "Top-up",
+      "ip": "IP address",
+      "ipFrom": "Your traffic leaves from {countries}.",
+      "extras": "Included",
+      "vpn": "A free VPN",
+      "vpnSome": "A free VPN on some plans",
+      "voice": "Calls",
+      "sms": "Texts"
     }
   },
   "admin": {
@@ -181,6 +215,10 @@
         "esim-device-check": {
           "name": "eSIM: Device check",
           "description": "Search a phone model to see if it supports eSIM"
+        },
+        "esim-product-details": {
+          "name": "eSIM: Plan details",
+          "description": "Coverage, networks, data type, activation, hotspot, top-up"
         }
       },
       "blocks": {
@@ -471,7 +509,16 @@
       "pinnedBadge": "Pinned",
       "unpin": "Back to cheapest first",
       "primary": "Primary",
-      "makePrimary": "Make primary"
+      "makePrimary": "Make primary",
+      "helpCreated": "{count} help pages created and published",
+      "helpPages": "Help pages",
+      "helpPagesHint": "Ready-made pages built from the eSIM blocks; edit them in the page builder and link them from your menus.",
+      "createHelpPages": "Create help pages",
+      "pagePublished": "Published",
+      "pageDraft": "Draft",
+      "editPage": "Edit",
+      "viewPage": "View",
+      "pageMissing": "Not created"
     },
     "sidebar": {
       "esim": "eSIM",

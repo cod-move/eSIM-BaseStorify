@@ -141,6 +141,40 @@
       "search": "输入机型，例如 iPhone 15",
       "notFound": "列表里没有这个机型，但它仍可能支持 eSIM，请在手机设置里确认。",
       "howToCheck": "确认方法：iPhone 打开「设置 → 通用 → 关于本机」，看有没有「数字 SIM」或「可用的 SIM」；安卓手机拨 *#06#，看有没有 EID。手机还必须没有网络锁。"
+    },
+    "details": {
+      "title": "关于这款 eSIM",
+      "dataTotal": "整个行程共用固定流量",
+      "dataUnlimited": "不限流量",
+      "dataDailyThrottled": "每日固定流量，用完后降速",
+      "dataDailyCutoff": "每日固定流量，每天重置",
+      "dataLifetime": "流量不会过期",
+      "startConnection": "eSIM 在目的地首次联网时开始计时。",
+      "startInstall": "安装 eSIM 时开始计时。",
+      "startPurchase": "购买时开始计时。",
+      "topupStack": "可在「我的 eSIM」里充值。",
+      "topupAddon": "可在「我的 eSIM」里加购套餐。",
+      "topupNone": "不可充值：流量不够请另买一个套餐。",
+      "depends": "取决于你选择的套餐。",
+      "coverage": "覆盖范围",
+      "networks": "运营商网络",
+      "bestAvailable": "使用当地最好的网络。",
+      "data": "流量",
+      "speed": "网速",
+      "upTo": "最高 {speed}",
+      "activation": "激活",
+      "installWithin": "请在购买后 {days} 天内安装。",
+      "hotspot": "热点",
+      "hotspotYes": "可以开热点给其他设备共享。",
+      "hotspotNo": "不允许开热点共享。",
+      "topup": "充值",
+      "ip": "IP 地址",
+      "ipFrom": "流量从 {countries} 出口。",
+      "extras": "附赠",
+      "vpn": "免费 VPN",
+      "vpnSome": "部分套餐附赠免费 VPN",
+      "voice": "通话",
+      "sms": "短信"
     }
   },
   "admin": {
@@ -181,6 +215,10 @@
         "esim-device-check": {
           "name": "eSIM：机型检查",
           "description": "搜索手机型号，看是否支持 eSIM"
+        },
+        "esim-product-details": {
+          "name": "eSIM：套餐详情",
+          "description": "覆盖、网络、流量类型、激活方式、热点、充值"
         }
       },
       "blocks": {
@@ -471,7 +509,16 @@
       "pinnedBadge": "已指定",
       "unpin": "改回价格最低优先",
       "primary": "主供应商",
-      "makePrimary": "设为主供应商"
+      "makePrimary": "设为主供应商",
+      "helpCreated": "已创建并发布 {count} 个帮助页面",
+      "helpPages": "帮助页面",
+      "helpPagesHint": "用 eSIM 区块搭好的现成页面；可在页面装修里编辑，并加到菜单里。",
+      "createHelpPages": "创建帮助页面",
+      "pagePublished": "已发布",
+      "pageDraft": "草稿",
+      "editPage": "编辑",
+      "viewPage": "查看",
+      "pageMissing": "未创建"
     },
     "sidebar": {
       "esim": "eSIM",

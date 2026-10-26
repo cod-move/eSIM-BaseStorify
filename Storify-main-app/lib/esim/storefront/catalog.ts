@@ -10,6 +10,7 @@ import { EsimProfile } from "@/models/esim-profile.model";
 import { EsimDestination } from "@/models/esim-destination.model";
 import { continentOf, type Continent } from "@/lib/esim/storefront/continents";
 import { fromPriceMinor, type StorefrontVariant } from "@/lib/esim/storefront/selector";
+import { summarizeFacts } from "@/lib/esim/storefront/product-facts";
 import type { CoverageScope } from "@/lib/esim/providers/types";
 
 /**
@@ -252,4 +253,42 @@ export function regionNamesFor(destination: Pick<DestinationDetail, "variants">,
       }
     }),
   );
+}
+
+/**
+ * The eSIM facts of a store product (WEB-34): read from the plans that would
+ * fulfil its variants — the primary of each, as the shopper would get. Null
+ * for a product that is not an eSIM.
+ */
+export async function productEsimFacts(productId: string) {
+  if (!mongoose.isValidObjectId(productId)) return null;
+  return unstable_cache(
+    async () => {
+      await connectDB();
+      const link = await EsimProductLink.findOne({ product: new mongoose.Types.ObjectId(productId) }).select({ variants: 1 }).lean();
+      if (!link) return null;
+      const plans = await EsimPlan.find({ _id: { $in: link.variants.map((variant) => variant.candidates[0]).filter(Boolean) } })
+        .select({ coverage: 1, data: 1, speed: 1, tethering: 1, activation: 1, topup: 1, bundles: 1, extras: 1 })
+        .lean<IEsimPlan[]>();
+      return summarizeFacts(
+        plans.map((plan) => ({
+          scope: plan.coverage.scope,
+          countries: plan.coverage.countries,
+          networks: plan.coverage.networks,
+          breakoutIp: plan.coverage.breakoutIp ?? [],
+          dataType: plan.data.type,
+          speed: plan.speed ?? [],
+          tethering: plan.tethering ?? null,
+          billingStarts: plan.activation?.billingStarts ?? null,
+          preInstallDays: plan.activation?.preInstallDays ?? null,
+          topupMode: plan.topup.supported ? plan.topup.mode : "none",
+          vpn: (plan.bundles ?? []).some((bundle) => bundle.type === "vpn"),
+          voiceMinutes: plan.extras?.voiceMinutes ?? 0,
+          smsCount: plan.extras?.smsCount ?? 0,
+        })),
+      );
+    },
+    ["esim-product-facts", productId],
+    { revalidate: 300, tags: [STOREFRONT_TAG] },
+  )();
 }
