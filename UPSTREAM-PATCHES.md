@@ -44,6 +44,7 @@
 | P15 | 计划 | `Storify-main-app/lib/payments/checkout-gateways.ts` 的 `CHECKOUT_GATEWAY_IDS`，以及引用网关枚举的约 30 个文件 | 网关枚举 | 一次性加入通用「扩展支付」网关，后面挂 eSIM 的网关插件 | 官方新增或改名网关时逐个核对引用点；用扩展支付各下一单、各退一单 |
 | P16 | 计划 | `Storify-main-app/lib/auth/auth.ts` | 邮箱密码登录的密码校验 | 新方式校验失败且是 bcrypt 格式时用 bcrypt 校验，通过后按新方式重新加密 | 旧系统导入的用户能登录，登录后哈希已换成新格式 |
 | P17 | 已改 | `Storify-main-app/app/sitemap.ts` | `sitemap()` 末尾，`return entries;` 之前 | 动态 import `@/lib/esim/storefront/catalog`，用同一个 `push` 加入 `/esim` 和每个在售目的地页（国家 `/esim/<slug>`、地区 `/esim/region/<slug>`、全球 `/esim/global`），沿用官方的多语言 hreflang；整段 try/catch，读不到 eSIM 目录不影响其余站点地图 | `push` 和 `entries` 是否改名；站点地图是否改成 `generateSitemaps()` 分文件（那时这段要挪进相应的文件）；`/sitemap.xml` 里能看到 eSIM 页面 |
+| P18 | 已改 | `Storify-main-app/vercel.json`、`Storify-main-app/lib/cron/health.ts` | `vercel.json` 的 `crons` 数组末尾；`health.ts` 导入区和 `CRON_STALE_AFTER_MS` 末尾 | `vercel.json` 加三个 eSIM 定时任务：`/api/cron/esim-fulfillment` 每分钟、`/api/cron/esim-catalog` 每 6 小时、`/api/cron/esim-fx` 每天 15:30 UTC（JSON 不能写注释，所以没有 `[esim-patch]` 标记）；`CRON_STALE_AFTER_MS` 展开 `ESIM_CRON_STALE_AFTER_MS`（`lib/esim/admin/cron-config.ts`），任务停跑时后台仪表盘会提示 | 官方新版的 `vercel.json` 覆盖后三条是否还在（升级时最容易丢）；`CRON_STALE_AFTER_MS` 是否改名；Vercel Hobby 套餐只支持每天一次，每分钟的开卡兜底需要 Pro 或自建定时器；自建服务器用系统定时任务带 `CRON_SECRET` 调这三个地址 |
 
 > 新增插入点时按编号往后加；某项最终没改，就把状态改为 `取消` 并保留记录。
 

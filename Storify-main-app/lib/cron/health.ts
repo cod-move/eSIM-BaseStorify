@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { isCronRequestAuthorized } from "@/lib/cron/cron-auth";
 import { CronRun } from "@/models/cron-run.model";
 import type { CronRunOutcome } from "@/lib/cron/reconciliation-outcome";
+import { ESIM_CRON_STALE_AFTER_MS } from "@/lib/esim/admin/cron-config"; // [esim-patch] P18
 
 /**
  * Whether the background jobs are actually running.
@@ -44,6 +45,8 @@ export const CRON_STALE_AFTER_MS: Record<string, number> = {
   "checkout-expiry": 3 * 60 * 60 * 1000, // every 30 minutes
   "store-credit": 6 * 60 * 60 * 1000, // hourly
   "vendor-payouts": 36 * 60 * 60 * 1000, // daily
+  // [esim-patch] P18 the eSIM jobs (lib/esim/admin/jobs.ts).
+  ...ESIM_CRON_STALE_AFTER_MS,
 };
 
 /**

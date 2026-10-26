@@ -7,6 +7,7 @@ import { Product } from "@/models";
 import { EsimPlan, type IEsimPlan } from "@/models/esim-plan.model";
 import { EsimProvider } from "@/models/esim-provider.model";
 import { EsimProductLink, type IEsimProductLink } from "@/models/esim-product-link.model";
+import { EsimDestination } from "@/models/esim-destination.model";
 import { getEsimSettings } from "@/models/esim-pricing.model";
 import { ensureDefaultVendorId } from "@/lib/vendors/multi-vendor";
 import { productSlugBase, uniqueProductSlug } from "@/lib/products/product-slug";
@@ -332,7 +333,12 @@ async function updateProduct(planned: PlannedProduct, link: IEsimProductLink) {
  */
 export async function publishProducts(options: { productSlugs?: string[]; status?: "draft" | "active" } = {}) {
   const status = options.status === "active" ? PRODUCT_STATUS.ACTIVE : PRODUCT_STATUS.DRAFT;
-  const planned = planProducts(await eligiblePlans(options.productSlugs)).filter(
+  const pins = new Map(
+    (await EsimDestination.find(options.productSlugs ? { productSlug: { $in: options.productSlugs } } : {}).select({ productSlug: 1, pins: 1 }).lean()).map(
+      (destination) => [destination.productSlug, new Map(Object.entries(destination.pins ?? {}).map(([key, planId]) => [key, String(planId)]))],
+    ),
+  );
+  const planned = planProducts(await eligiblePlans(options.productSlugs), pins).filter(
     (product) => product.variants.length > 0,
   );
   const links = new Map(

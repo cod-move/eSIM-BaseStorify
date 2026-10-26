@@ -50,6 +50,13 @@ Everything eSIM-specific lives here and in the files named below; official Stori
 | `fulfillment/service.ts` (`adminRetryJob`, `adminFailJob`, `adminMarkRefunded`, `adminBindEsim`) | Queue actions: retry or another supplier (refused while the current one may still deliver), give up and refund, a guest refund made by hand, bind an eSIM bought by hand by its ICCID |
 | `scripts/esim-dev-ops.ts` | End-to-end check of the queue actions with fake suppliers; cleans up and reports leftovers |
 
+| `admin/{jobs,cron-config}.ts`, `app/api/cron/esim-fx` | Scheduled jobs page (status from Storify's `CronRun`, run now); schedules in `vercel.json` and the stale-job alert via patch P18 |
+| `admin/destinations.ts`, `models/esim-destination.model.ts` | Destinations (feature, show/hide, all plans on/off, publish) and the variant ↔ supplier mapping with a pinned primary that publishing honours |
+| `admin/devices.ts`, `models/esim-device.model.ts` | The device-compatibility list kept in the admin; the storefront uses the built-in list until it has rows |
+| `scripts/esim-dev-admin2.ts` | End-to-end check of jobs, destinations, pinning and devices; cleans up and reports leftovers |
+
+**Scheduled jobs.** `esim-fulfillment` (every minute), `esim-catalog` (every 6 hours) and `esim-fx` (daily) are scheduled in `vercel.json`. A Vercel Hobby plan runs crons at most daily; the fulfilment job then needs Pro. On your own server, call each address with `Authorization: Bearer $CRON_SECRET` from the system scheduler.
+
 Day-priced plans (Stellar's "pick the days" plans) are one variant per allowance, sold per day for the days the shopper picks. A cart holds one line per variant: adding the same variant with other days replaces the line.
 
 Not automatic: refunding a guest order (needs the gateway refund flow) — admins are told the exact amount.

@@ -35,6 +35,19 @@ describe("planProducts", () => {
     assert.equal(product.variants[0].name, "5GB / 30 days");
   });
 
+  it("puts a pinned plan first and sells at its price, while it is on sale", () => {
+    const plans = [
+      { ...base, id: "cheap", retailPriceMinor: 499 },
+      { ...base, id: "pinned", providerCode: "esimaccess", retailPriceMinor: 599 },
+    ];
+    const pins = new Map([["japan-esim", new Map([["total|5120|30", "pinned"]])]]);
+    const [product] = planProducts(plans, pins);
+    assert.deepEqual(product.variants[0].candidates, ["pinned", "cheap"]);
+    assert.equal(product.variants[0].priceMinor, 599);
+    const [unpinned] = planProducts([plans[0]], pins);
+    assert.deepEqual(unpinned.variants[0].candidates, ["cheap"], "a pin on a plan no longer on sale is ignored");
+  });
+
   it("orders variants by type, allowance, then days", () => {
     const [product] = planProducts([
       { ...base, id: "a", megabytes: 10240, dataLabel: "10GB" },

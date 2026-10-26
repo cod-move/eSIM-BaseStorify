@@ -25,8 +25,13 @@ else
     short="${file#"$APP"}"
     if grep -qF "\`$file\`" "$LIST" || grep -qF "\`$short\`" "$LIST"; then
       marks="$(grep -c "\[esim-patch\]" "$file" 2>/dev/null || true)"
-      echo "  已登记  $file（标记 ${marks:-0} 处）"
-      if [ "${marks:-0}" -eq 0 ]; then
+      if [ "${file##*.}" = "json" ]; then
+        # JSON 不能写注释，只要求登记（改动内容写在 UPSTREAM-PATCHES.md 里）。
+        echo "  已登记  $file（JSON，无法加标记）"
+      else
+        echo "  已登记  $file（标记 ${marks:-0} 处）"
+      fi
+      if [ "${marks:-0}" -eq 0 ] && [ "${file##*.}" != "json" ]; then
         echo "          ↑ 没有 [esim-patch] 标记"
         missing=$((missing + 1))
       fi

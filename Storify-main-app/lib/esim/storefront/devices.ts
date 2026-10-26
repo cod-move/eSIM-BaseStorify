@@ -9,7 +9,8 @@
 
 export interface DeviceBrand {
   brand: string;
-  models: Array<{ name: string; note?: string }>;
+  /** `supported: false` lists a model known not to take an eSIM. */
+  models: Array<{ name: string; note?: string; supported?: boolean }>;
 }
 
 const list = (names: string, note?: string) => names.split("|").map((name) => ({ name: name.trim(), ...(note ? { note } : {}) }));
@@ -85,9 +86,9 @@ export const ESIM_DEVICES: DeviceBrand[] = [
 ];
 
 /** Models of every brand whose name contains the query; at most `limit`. */
-export function searchDevices(query: string, brand?: string, limit = 20) {
+export function searchDevices(query: string, brand?: string, limit = 20, devices: DeviceBrand[] = ESIM_DEVICES) {
   const needle = query.trim().toLowerCase();
-  return ESIM_DEVICES.filter((entry) => !brand || entry.brand === brand)
+  return devices.filter((entry) => !brand || entry.brand === brand)
     .flatMap((entry) => entry.models.map((model) => ({ brand: entry.brand, ...model })))
     .filter((model) => !needle || `${model.brand} ${model.name}`.toLowerCase().includes(needle))
     .slice(0, limit);

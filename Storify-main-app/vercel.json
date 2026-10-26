@@ -75,6 +75,18 @@
     {
       "path": "/api/cron/vendor-payouts",
       "schedule": "30 2 * * *"
+    },
+    {
+      "path": "/api/cron/esim-fulfillment",
+      "schedule": "* * * * *"
+    },
+    {
+      "path": "/api/cron/esim-catalog",
+      "schedule": "0 */6 * * *"
+    },
+    {
+      "path": "/api/cron/esim-fx",
+      "schedule": "30 15 * * *"
     }
   ]
 }

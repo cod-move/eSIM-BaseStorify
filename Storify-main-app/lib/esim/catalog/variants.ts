@@ -105,7 +105,12 @@ export function clampDays(days: unknown, range: Omit<PerDayPricing, "priceMinor"
   return Math.min(range.maxDays, Math.max(range.minDays, value));
 }
 
-export function planProducts(plans: VariantPlan[]): PlannedProduct[] {
+/**
+ * @param pins per product slug, per variant key: the plan an admin pinned as
+ *   primary (ADM-06). A pinned plan still on sale goes first, ahead of the
+ *   cheapest, and the variant takes its price.
+ */
+export function planProducts(plans: VariantPlan[], pins: ReadonlyMap<string, ReadonlyMap<string, string>> = new Map()): PlannedProduct[] {
   const products = new Map<string, Map<string, VariantPlan[]>>();
   const destinations = new Map<string, string>();
   for (const plan of plans) {
@@ -122,8 +127,10 @@ export function planProducts(plans: VariantPlan[]): PlannedProduct[] {
     destination: destinations.get(productSlug) ?? productSlug,
     variants: mergeSameName([...variants]
       .map(([key, candidates]): PlannedVariant => {
+        const pinned = pins.get(productSlug)?.get(key);
         const ordered = [...candidates].sort(
           (a, b) =>
+            Number(b.id === pinned) - Number(a.id === pinned) ||
             a.retailPriceMinor - b.retailPriceMinor ||
             a.costUsdMinor - b.costUsdMinor ||
             a.providerPriority - b.providerPriority ||

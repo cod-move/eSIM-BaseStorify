@@ -2,22 +2,22 @@
 
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
-import { CheckCircle2, Info, Search } from "lucide-react";
+import { CheckCircle2, Info, Search, XCircle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useFallbackTranslator } from "@/hooks/use-fallback-translator";
 import { cn } from "@/lib/utils";
-import { ESIM_DEVICES, searchDevices } from "@/lib/esim/storefront/devices";
+import { searchDevices, type DeviceBrand } from "@/lib/esim/storefront/devices";
 
 /**
  * "Does my phone take an eSIM?" (WEB-16): pick a brand, type the model.
  * A model not found is not proof it cannot: the advice to check the phone's
  * own settings is always shown.
  */
-export function DeviceCheck() {
+export function DeviceCheck({ devices }: { devices: DeviceBrand[] }) {
   const t = useFallbackTranslator(useTranslations());
-  const [brand, setBrand] = useState<string>(ESIM_DEVICES[0]?.brand ?? "");
+  const [brand, setBrand] = useState<string>(devices[0]?.brand ?? "");
   const [query, setQuery] = useState("");
-  const results = useMemo(() => searchDevices(query, brand || undefined, 80), [query, brand]);
+  const results = useMemo(() => searchDevices(query, brand || undefined, 80, devices), [query, brand, devices]);
   // The caveat most of the listed models share is said once, above them;
   // a model with a different one keeps it beside its name.
   const shared = useMemo(() => {
@@ -29,7 +29,7 @@ export function DeviceCheck() {
   return (
     <div className="mx-auto max-w-3xl space-y-4">
       <div className="flex flex-wrap gap-2">
-        {ESIM_DEVICES.map((entry) => (
+        {devices.map((entry) => (
           <button
             key={entry.brand}
             type="button"
@@ -60,9 +60,13 @@ export function DeviceCheck() {
           <ul className="grid max-h-96 gap-x-4 gap-y-1 overflow-y-auto rounded-xl border p-3 sm:grid-cols-2">
             {results.map((model) => (
               <li key={`${model.brand}-${model.name}`} className="flex items-start gap-2 py-1 text-sm">
-                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
+                {model.supported === false ? (
+                  <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
+                ) : (
+                  <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
+                )}
                 <div>
-                  <div>{model.name}</div>
+                  <div className={model.supported === false ? "text-muted-foreground line-through" : ""}>{model.name}</div>
                   {model.note && model.note !== shared ? <div className="text-xs text-muted-foreground">{model.note}</div> : null}
                 </div>
               </li>

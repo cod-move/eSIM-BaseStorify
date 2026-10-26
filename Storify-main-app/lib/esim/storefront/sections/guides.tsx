@@ -2,6 +2,7 @@ import { Globe2, Plane, QrCode, ShoppingBag, Smartphone, Wifi, type LucideIcon }
 import { SectionHeading } from "@/components/store/sections/section-shell";
 import { DeviceCheck } from "@/components/esim/sections/device-check";
 import { InstallGuideTabs } from "@/components/esim/sections/install-guide-tabs";
+import { deviceList } from "@/lib/esim/admin/devices";
 import { lt } from "@/lib/storefront/sections/localized";
 import type { LocalizedText, SectionDefinition, SectionRenderContext } from "@/lib/storefront/sections/types";
 
@@ -145,14 +146,15 @@ export const esimDeviceCheck: SectionDefinition = {
     { key: "title", type: "text", translatable: true, default: "Does my phone support eSIM?" },
     { key: "subtitle", type: "textarea", translatable: true, default: "Find your phone to check before you buy." },
   ],
-  Render({ settings, ctx }) {
+  async Render({ settings, ctx }) {
     const subtitle = text(settings.subtitle, ctx);
+    const devices = await deviceList();
     return (
       <section className="py-5 lg:py-8">
         <div className="container mx-auto px-4">
           <SectionHeading title={text(settings.title, ctx)} className="mb-2 justify-center text-center" />
           {subtitle ? <p className="mb-6 text-center text-sm text-muted-foreground">{subtitle}</p> : null}
-          <DeviceCheck />
+          <DeviceCheck devices={devices} />
         </div>
       </section>
     );

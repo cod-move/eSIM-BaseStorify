@@ -7,6 +7,7 @@ import { Product } from "@/models";
 import { EsimPlan, type IEsimPlan } from "@/models/esim-plan.model";
 import { EsimProductLink } from "@/models/esim-product-link.model";
 import { EsimProfile } from "@/models/esim-profile.model";
+import { EsimDestination } from "@/models/esim-destination.model";
 import { continentOf, type Continent } from "@/lib/esim/storefront/continents";
 import { fromPriceMinor, type StorefrontVariant } from "@/lib/esim/storefront/selector";
 import type { CoverageScope } from "@/lib/esim/providers/types";
@@ -178,6 +179,14 @@ export function toBrowserDestination(destination: Destination) {
   };
 }
 
+async function readFeatured(): Promise<string[]> {
+  await connectDB();
+  const rows = await EsimDestination.find({ featured: true }).select({ productSlug: 1 }).lean();
+  return rows.map((row) => urlSlug(row.productSlug));
+}
+
+const cachedFeatured = unstable_cache(readFeatured, ["esim-storefront-featured"], { revalidate: 300, tags: [STOREFRONT_TAG] });
+
 async function readPopularity(): Promise<Array<[string, number]>> {
   await connectDB();
   const since = new Date(Date.now() - 90 * 86_400_000);
@@ -203,15 +212,22 @@ const cachedPopularity = unstable_cache(readPopularity, ["esim-storefront-popula
 });
 
 /**
- * The best-selling destinations of the last 90 days (WEB-11 "auto"), then
- * the rest by name — a new store with no sales still shows a full grid.
+ * The destinations an admin featured (ADM-02), then the best sellers of the
+ * last 90 days (WEB-11 "auto"), then the rest by name — a new store with no
+ * sales still shows a full grid.
  */
 export async function popularDestinations(limit: number, scope?: CoverageScope): Promise<Destination[]> {
-  const [all, ranking] = await Promise.all([listDestinations(), cachedPopularity()]);
+  const [all, ranking, featured] = await Promise.all([listDestinations(), cachedPopularity(), cachedFeatured()]);
   const rank = new Map(ranking.map(([slug], index) => [slug, index]));
+  const pinned = new Set(featured);
   return all
     .filter((destination) => !scope || destination.scope === scope)
-    .sort((a, b) => (rank.get(a.slug) ?? Infinity) - (rank.get(b.slug) ?? Infinity) || a.name.localeCompare(b.name))
+    .sort(
+      (a, b) =>
+        Number(pinned.has(b.slug)) - Number(pinned.has(a.slug)) ||
+        (rank.get(a.slug) ?? Infinity) - (rank.get(b.slug) ?? Infinity) ||
+        a.name.localeCompare(b.name),
+    )
     .slice(0, limit);
 }
 
