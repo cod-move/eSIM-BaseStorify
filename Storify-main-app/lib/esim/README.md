@@ -68,7 +68,13 @@ Everything eSIM-specific lives here and in the files named below; official Stori
 | `admin/topups.ts`, `app/[locale]/admin/esim/topups` | Admin → eSIM → Top-ups: by status, shopper (email), supplier and date, with the actions (TOP-06) |
 | `scripts/esim-dev-topup.ts` | End-to-end check of top-ups with fake suppliers; cleans up and reports leftovers |
 
-**Scheduled jobs.** `esim-fulfillment` (every minute), `esim-catalog` (every 6 hours) and `esim-fx` (daily) are scheduled in `vercel.json`. A Vercel Hobby plan runs crons at most daily; the fulfilment job then needs Pro. On your own server, call each address with `Authorization: Bearer $CRON_SECRET` from the system scheduler.
+| `usage/sync.ts`, `app/api/cron/esim-usage` | Every 30 minutes: live eSIMs' usage and status from their suppliers (hourly in use, 3-hourly installed, twice a day waiting), then the reminders due |
+| `reminders/policy.ts`, `reminders/send.ts` | Shopper reminders, each once: connected (NTF-03), low data with a top-up link (NTF-04, again after a top-up), plan ending (NTF-05), install-by (NTF-07); email, plus an in-app notice for registered shoppers |
+| `admin/reminders.ts`, `components/esim/admin/reminders-card.tsx` | Reminders on/off and thresholds, on Admin → eSIM → Scheduled jobs |
+| `alerts.ts` | Admin alerts (NTF-09), once per supplier, kind and day: catalogue sync failed, usage checks failing, a refusal that reads like an empty balance |
+| `scripts/esim-dev-reminders.ts` | End-to-end check of the sync and reminders on the script's own eSIMs; cleans up and reports leftovers |
+
+**Scheduled jobs.** `esim-fulfillment` (every minute), `esim-catalog` (every 6 hours), `esim-fx` (daily) and `esim-usage` (every 30 minutes) are scheduled in `vercel.json`. A Vercel Hobby plan runs crons at most daily; the fulfilment job then needs Pro. On your own server, call each address with `Authorization: Bearer $CRON_SECRET` from the system scheduler.
 
 Day-priced plans (Stellar's "pick the days" plans) are one variant per allowance, sold per day for the days the shopper picks. A cart holds one line per variant: adding the same variant with other days replaces the line.
 

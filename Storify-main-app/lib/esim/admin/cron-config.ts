@@ -8,6 +8,7 @@ export const ESIM_CRON_JOBS = [
   { job: "esim-fulfillment", path: "/api/cron/esim-fulfillment", schedule: "* * * * *", staleAfterMs: 15 * 60 * 1000 },
   { job: "esim-catalog", path: "/api/cron/esim-catalog", schedule: "0 */6 * * *", staleAfterMs: 18 * 60 * 60 * 1000 },
   { job: "esim-fx", path: "/api/cron/esim-fx", schedule: "30 15 * * *", staleAfterMs: 36 * 60 * 60 * 1000 },
+  { job: "esim-usage", path: "/api/cron/esim-usage", schedule: "*/30 * * * *", staleAfterMs: 3 * 60 * 60 * 1000 },
 ] as const;
 
 export type EsimCronJob = (typeof ESIM_CRON_JOBS)[number]["job"];

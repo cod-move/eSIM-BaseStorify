@@ -565,7 +565,17 @@
       "noTopups": "No top-ups match.",
       "topupMayHaveHappened": "The supplier may already have made this top-up. Check its portal before refunding; trying again is safe.",
       "topupHistory": "Top-up history",
-      "confirmFailTopup": "Stop trying and refund the shopper's store credit?"
+      "confirmFailTopup": "Stop trying and refund the shopper's store credit?",
+      "jobUsage": "Checks live eSIMs' usage with their suppliers and sends shopper reminders. Every 30 minutes.",
+      "remindersTitle": "Shopper reminders",
+      "remindersHint": "Sent by the usage job by email, and in the account for registered shoppers: when the eSIM connects, when data runs low (with a top-up link), before the plan ends and before the install-by date. Each is sent once.",
+      "remindersEnabled": "Send reminders",
+      "reminderLowData": "Low data at",
+      "reminderPercentLeft": "% left",
+      "reminderExpiring": "Plan ending",
+      "reminderHoursBefore": "hours before",
+      "reminderInstall": "Not installed",
+      "reminderDaysBefore": "days before the install-by date"
     },
     "sidebar": {
       "esim": "eSIM",

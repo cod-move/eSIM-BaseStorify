@@ -68,6 +68,20 @@ export interface IEsimProfile extends mongoose.Document {
   profileExpiresAt: Date | null;
   activationDeadline: Date | null;
   remark: string | null;
+  /**
+   * Reminders already sent (NTF-03/04/05/07), so each goes out once: the
+   * activation notice; low data for the allowance it was measured against
+   * (a top-up raises the total and arms it again); expiry and the install
+   * deadline for the date they warned about (a new date arms them again).
+   */
+  reminders: {
+    activatedAt: Date | null;
+    lowDataForTotal: number | null;
+    expiringFor: Date | null;
+    installDeadlineFor: Date | null;
+  };
+  /** When the usage sync (lib/esim/usage) last looked at this eSIM, whatever the answer. */
+  usageSyncedAt: Date | null;
   raw: unknown;
   createdAt: Date;
   updatedAt: Date;
@@ -158,6 +172,13 @@ const EsimProfileSchema = new Schema<IEsimProfile>(
     profileExpiresAt: date,
     activationDeadline: date,
     remark: { type: String, default: null, maxlength: 100 },
+    reminders: {
+      activatedAt: date,
+      lowDataForTotal: { type: Number, default: null },
+      expiringFor: date,
+      installDeadlineFor: date,
+    },
+    usageSyncedAt: date,
     raw: { type: Schema.Types.Mixed, select: false },
   },
   { timestamps: true },
@@ -167,6 +188,7 @@ EsimProfileSchema.index({ order: 1, lineIndex: 1, unit: 1 }, { unique: true });
 EsimProfileSchema.index({ iccid: 1 }, { sparse: true });
 EsimProfileSchema.index({ simId: 1 }, { sparse: true });
 EsimProfileSchema.index({ email: 1 }, { sparse: true });
+EsimProfileSchema.index({ status: 1, usageSyncedAt: 1 });
 
 if (models.EsimProfile) delete models.EsimProfile;
 export const EsimProfile = model<IEsimProfile>("EsimProfile", EsimProfileSchema);

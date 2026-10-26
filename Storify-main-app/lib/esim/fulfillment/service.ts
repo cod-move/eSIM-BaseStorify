@@ -16,6 +16,7 @@ import { decide, idempotencyKey, type Outcome } from "@/lib/esim/fulfillment/pol
 import { ProviderError, type ProviderEsim, type PurchaseResult } from "@/lib/esim/providers/types";
 import { lineDays } from "@/lib/esim/cart/line-attributes";
 import type { PerDayPricing } from "@/lib/esim/catalog/variants";
+import { alertSupplierProblem, looksLikeBalanceProblem } from "@/lib/esim/alerts";
 
 /**
  * Paid order → one supplier purchase per eSIM unit (ORD-05..09).
@@ -258,6 +259,9 @@ async function processOne(job: IEsimFulfillment, owner: string): Promise<IEsimFu
   );
   const event = (name: string, detail?: string) => ({ history: { at: now, event: name, ...(detail ? { detail } : {}) } });
   const error = outcome.kind === "error" ? { code: outcome.code, message: outcome.message, at: now } : null;
+  if (outcome.kind === "error" && plan && looksLikeBalanceProblem(outcome.message)) {
+    await alertSupplierProblem(plan.providerCode, "balance", `Refused an eSIM for order ${job.orderNumber}: ${outcome.message}`);
+  }
 
   switch (decision.action) {
     case "fulfilled": {

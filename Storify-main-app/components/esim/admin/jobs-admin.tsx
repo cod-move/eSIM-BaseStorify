@@ -23,6 +23,7 @@ export function EsimJobsAdmin({ jobs, canManage }: { jobs: AdminJob[]; canManage
     "esim-fulfillment": t("admin.esim.jobFulfilment", "Retries, supplier polls and paid orders never queued. Every minute."),
     "esim-catalog": t("admin.esim.jobCatalog", "Syncs every active supplier's plans. Every 6 hours."),
     "esim-fx": t("admin.esim.jobFx", "Loads the day's exchange rates and re-prices plans whose currency moved. Daily."),
+    "esim-usage": t("admin.esim.jobUsage", "Checks live eSIMs' usage with their suppliers and sends shopper reminders. Every 30 minutes."),
   };
 
   async function run(job: string) {

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import { withCronRun } from "@/lib/cron/health";
 import { syncAllCatalogs } from "@/lib/esim/catalog/sync";
+import { alertSupplierProblem } from "@/lib/esim/alerts";
 
 /**
  * eSIM catalogue sync (CAT-03): every active supplier's plans into EsimPlan.
@@ -17,6 +18,10 @@ export const GET = withCronRun(
   async () => {
     await connectDB();
     const results = await syncAllCatalogs();
+    // NTF-09: a failed sync leaves that supplier's prices and stock stale.
+    for (const result of results) {
+      if (result.status === "failed") await alertSupplierProblem(result.provider, "catalog", result.error ?? "The catalogue sync failed.");
+    }
     return NextResponse.json({ success: true, data: results });
   },
   {

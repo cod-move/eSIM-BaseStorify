@@ -5,6 +5,7 @@ import { CronRun } from "@/models/cron-run.model";
 import { syncAllCatalogs } from "@/lib/esim/catalog/sync";
 import { runFulfilmentCron } from "@/lib/esim/fulfillment";
 import { refreshFx } from "@/lib/esim/admin/pricing";
+import { runUsageSync } from "@/lib/esim/usage/sync";
 import { ESIM_CRON_JOBS, type EsimCronJob } from "@/lib/esim/admin/cron-config";
 
 /**
@@ -18,6 +19,7 @@ const RUNNERS: Record<EsimCronJob, () => Promise<unknown>> = {
   "esim-fulfillment": runFulfilmentCron,
   "esim-catalog": syncAllCatalogs,
   "esim-fx": refreshFx,
+  "esim-usage": () => runUsageSync(),
 };
 
 export interface AdminJob {

@@ -87,6 +87,10 @@
     {
       "path": "/api/cron/esim-fx",
       "schedule": "30 15 * * *"
+    },
+    {
+      "path": "/api/cron/esim-usage",
+      "schedule": "*/30 * * * *"
     }
   ]
 }

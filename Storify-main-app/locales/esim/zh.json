@@ -565,7 +565,17 @@
       "noTopups": "没有符合条件的充值。",
       "topupMayHaveHappened": "供应商可能已经完成了这笔充值。退款前请先到供应商后台核实；重试是安全的，不会重复充值。",
       "topupHistory": "充值记录",
-      "confirmFailTopup": "停止重试，并把款项退到顾客的余额？"
+      "confirmFailTopup": "停止重试，并把款项退到顾客的余额？",
+      "jobUsage": "向供应商查询在用 eSIM 的用量，并发送顾客提醒。每 30 分钟一次。",
+      "remindersTitle": "顾客提醒",
+      "remindersHint": "由用量任务发送：邮件，注册顾客另有站内通知。包括：eSIM 开始使用、流量不足（附充值链接）、套餐即将到期、安装截止日前未安装。每种提醒只发一次。",
+      "remindersEnabled": "发送提醒",
+      "reminderLowData": "流量剩余低于",
+      "reminderPercentLeft": "%",
+      "reminderExpiring": "套餐到期前",
+      "reminderHoursBefore": "小时",
+      "reminderInstall": "未安装提醒",
+      "reminderDaysBefore": "天（安装截止日前）"
     },
     "sidebar": {
       "esim": "eSIM",

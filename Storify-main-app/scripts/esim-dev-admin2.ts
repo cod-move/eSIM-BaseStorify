@@ -78,7 +78,7 @@ async function run() {
   // Scheduled jobs: listed, and a manual run is recorded like a scheduled one.
   cronBefore = await CronRun.collection.findOne({ job: "esim-fulfillment" });
   const listed = await jobs.listJobs();
-  assert.deepEqual(listed.map((job) => job.job), ["esim-fulfillment", "esim-catalog", "esim-fx"]);
+  assert.deepEqual(listed.map((job) => job.job), ["esim-fulfillment", "esim-catalog", "esim-fx", "esim-usage"]);
   const result = await jobs.runJobNow("esim-fulfillment");
   assert.equal(result.ok, true);
   const after = (await jobs.listJobs()).find((job) => job.job === "esim-fulfillment")!;

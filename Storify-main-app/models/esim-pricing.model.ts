@@ -55,6 +55,8 @@ export interface IEsimSettings extends mongoose.Document {
   categoryId: mongoose.Types.ObjectId | null;
   /** The hidden store product top-ups are sold as (lib/esim/topup/product.ts). */
   topupProductId: mongoose.Types.ObjectId | null;
+  /** Shopper reminders (NTF-03/04/05/07) and their thresholds. */
+  reminders: { enabled: boolean; lowDataPercent: number; expiringHours: number; installDays: number };
   updatedAt: Date;
 }
 
@@ -68,6 +70,12 @@ const EsimSettingsSchema = new Schema<IEsimSettings>(
     repriceThresholdPercent: { type: Number, default: 2, min: 0, max: 50 },
     categoryId: { type: Schema.Types.ObjectId, ref: "Category", default: null },
     topupProductId: { type: Schema.Types.ObjectId, ref: "Product", default: null },
+    reminders: {
+      enabled: { type: Boolean, default: true },
+      lowDataPercent: { type: Number, default: 20, min: 1, max: 90 },
+      expiringHours: { type: Number, default: 24, min: 1, max: 336 },
+      installDays: { type: Number, default: 3, min: 1, max: 60 },
+    },
   },
   { timestamps: true },
 );

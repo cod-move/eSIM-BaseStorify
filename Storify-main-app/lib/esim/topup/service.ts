@@ -16,6 +16,7 @@ import { refreshEsimProfile } from "@/lib/esim/account/esims";
 import { ProviderError, type TopupResult } from "@/lib/esim/providers/types";
 import type { EsimLineAttributes } from "@/lib/esim/cart/line-attributes";
 import { findTopupProduct } from "@/lib/esim/topup/product";
+import { alertSupplierProblem, looksLikeBalanceProblem } from "@/lib/esim/alerts";
 
 /**
  * Paid top-up lines → supplier top-ups (TOP-04/05).
@@ -213,6 +214,9 @@ async function processOne(job: IEsimTopup, owner: string): Promise<IEsimTopup["s
   );
   const event = (name: string, detail?: string) => ({ history: { at: now, event: name, ...(detail ? { detail } : {}) } });
   const error = outcome.kind === "error" ? { code: outcome.code, message: outcome.message, at: now } : null;
+  if (outcome.kind === "error" && provider && looksLikeBalanceProblem(outcome.message)) {
+    await alertSupplierProblem(job.providerCode, "balance", `Refused a top-up for order ${job.orderNumber}: ${outcome.message}`);
+  }
 
   switch (decision.action) {
     case "fulfilled": {
