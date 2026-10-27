@@ -5,7 +5,7 @@ Everything eSIM-specific lives here and in the files named below; official Stori
 | Path | What |
 |---|---|
 | `providers/types.ts` | The adapter contract; shapes follow Stellar's wholesale API |
-| `providers/{stellar,esim-access,roamwifi,bnesim}.ts` | One adapter per supplier; pure TS, no database. BNESIM buys in stages (license → eSIM → card), each stored before the next, and its top-ups are flagged `nonIdempotent` so an unclear answer stops for a person |
+| `providers/{stellar,esim-access,roamwifi,bnesim,mobimatter}.ts` | One adapter per supplier; pure TS, no database. BNESIM buys in stages (license → eSIM → card), each stored before the next, and its top-ups are flagged `nonIdempotent` so an unclear answer stops for a person. MobiMatter creates an order (nothing charged) and completes it from `queryPurchase` / `queryTopup` only while it is still "created", so a retry never pays twice |
 | `providers/registry.ts` | Supplier code → adapter, credential keys, which keys are secret |
 | `provider-service.ts` | Supplier record → working adapter; encrypts/decrypts credentials |
 | `catalog/sync.ts` | Supplier catalogue → `EsimPlan` (CAT-03) |

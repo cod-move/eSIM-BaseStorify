@@ -13,7 +13,7 @@ import { ProviderError, type JsonObject } from "./types";
 export type FetchLike = (input: string, init?: RequestInit) => Promise<Response>;
 
 export interface HttpRequest {
-  method: "GET" | "POST";
+  method: "GET" | "POST" | "PUT";
   url: string;
   headers?: Record<string, string>;
   query?: Record<string, string | number | undefined>;

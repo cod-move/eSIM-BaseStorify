@@ -1,6 +1,7 @@
 import { BnesimAdapter } from "./bnesim";
 import { EsimAccessAdapter } from "./esim-access";
 import { FakeAdapter, type FakeMode } from "./fake";
+import { MobiMatterAdapter } from "./mobimatter";
 import { RoamWifiAdapter } from "./roamwifi";
 import { StellarAdapter } from "./stellar";
 import { ProviderError, type EsimProviderAdapter } from "./types";
@@ -75,6 +76,17 @@ export const PROVIDER_DEFINITIONS = {
         apiSecret: required(credentials, "apiSecret", "BNESIM"),
         type: credentials.type || undefined,
         currency: settlementCurrency,
+        baseUrl: credentials.baseUrl || undefined,
+      }),
+  },
+  mobimatter: {
+    displayName: "MobiMatter",
+    credentialKeys: ["merchantId", "apiKey", "baseUrl"],
+    secretKeys: ["apiKey"],
+    create: (credentials) =>
+      new MobiMatterAdapter({
+        merchantId: required(credentials, "merchantId", "MobiMatter"),
+        apiKey: required(credentials, "apiKey", "MobiMatter"),
         baseUrl: credentials.baseUrl || undefined,
       }),
   },
