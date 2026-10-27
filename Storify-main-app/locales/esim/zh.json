@@ -765,7 +765,23 @@
       "payMarkRefunded": "标记为已退回",
       "payConfirmRefunded": "确认已通过 {method} 把 {amount} 退还给顾客？",
       "payNothing": "没有需要处理的付款。",
-      "payNone": "还没有付款记录。"
+      "payNone": "还没有付款记录。",
+      "migImport": "导入",
+      "migCheck": "预检",
+      "migRunning": "进行中",
+      "migFailed": "失败",
+      "migDone": "完成",
+      "migDid": "已完成",
+      "migWould": "将会",
+      "migSkipped": "跳过",
+      "migConfirm": "现在导入旧站的顾客、余额、推荐关系和在用 eSIM 吗？不会给顾客发邮件。以后再次导入只会补充新增的数据。",
+      "migStarted": "已开始；完成后本页会自动更新",
+      "migHint": "把旧站的顾客（保留原密码）、余额、推荐关系和在用 eSIM 迁移过来，历史订单不迁移。请先同步各供应商的套餐库：套餐在这里还没有的 eSIM 会被跳过，下次导入时会补上。",
+      "migSource": "旧数据库",
+      "migNoSource": "未配置——请在 .env 设置 LEGACY_MYSQL_HOST、LEGACY_MYSQL_DATABASE、LEGACY_MYSQL_USER 和 LEGACY_MYSQL_PASSWORD 后重启。",
+      "migImported": "已导入",
+      "migCheckButton": "预检（不做任何修改）",
+      "migImportButton": "导入"
     },
     "sidebar": {
       "esim": "eSIM",
@@ -781,7 +797,13 @@
       "esimTopups": "充值记录",
       "esimReferrals": "推荐返佣",
       "esimKyc": "身份认证",
-      "esimPayments": "支付"
+      "esimPayments": "支付",
+      "esimMigration": "数据迁移"
+    }
+  },
+  "finance": {
+    "account": {
+      "opening_balance_equity": "期初余额权益"
     }
   }
 }

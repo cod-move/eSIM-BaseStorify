@@ -57,6 +57,8 @@ export interface IEsimSettings extends mongoose.Document {
   topupProductId: mongoose.Types.ObjectId | null;
   /** The hidden store product wallet top-ups are sold as (lib/esim/wallet/product.ts). */
   walletProductId: mongoose.Types.ObjectId | null;
+  /** The hidden store product the old store's eSIMs are listed under on their import order (lib/esim/migration). */
+  migratedProductId: mongoose.Types.ObjectId | null;
   /** Wallet top-ups (WAL-01): on/off, the amounts allowed and the fee, in cents and percent. */
   wallet: { enabled: boolean; minMinor: number; maxMinor: number; feeFixedMinor: number; feePercent: number };
   /** Referrals (REF-02/06): see lib/esim/referral/rules.ts for what each setting means. */
@@ -87,6 +89,7 @@ const EsimSettingsSchema = new Schema<IEsimSettings>(
     categoryId: { type: Schema.Types.ObjectId, ref: "Category", default: null },
     topupProductId: { type: Schema.Types.ObjectId, ref: "Product", default: null },
     walletProductId: { type: Schema.Types.ObjectId, ref: "Product", default: null },
+    migratedProductId: { type: Schema.Types.ObjectId, ref: "Product", default: null },
     wallet: {
       enabled: { type: Boolean, default: true },
       minMinor: { type: Number, default: 500, min: 100 },

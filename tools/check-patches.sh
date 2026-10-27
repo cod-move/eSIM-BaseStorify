@@ -25,13 +25,15 @@ else
     short="${file#"$APP"}"
     if grep -qF "\`$file\`" "$LIST" || grep -qF "\`$short\`" "$LIST"; then
       marks="$(grep -c "\[esim-patch\]" "$file" 2>/dev/null || true)"
-      if [ "${file##*.}" = "json" ]; then
-        # JSON 不能写注释，只要求登记（改动内容写在 UPSTREAM-PATCHES.md 里）。
-        echo "  已登记  $file（JSON，无法加标记）"
+      unmarkable=0
+      case "$file" in *.json|*/pnpm-lock.yaml) unmarkable=1 ;; esac
+      if [ "$unmarkable" -eq 1 ]; then
+        # JSON 和生成的锁文件不能写注释，只要求登记（改动内容写在 UPSTREAM-PATCHES.md 里）。
+        echo "  已登记  $file（JSON/锁文件，无法加标记）"
       else
         echo "  已登记  $file（标记 ${marks:-0} 处）"
       fi
-      if [ "${marks:-0}" -eq 0 ] && [ "${file##*.}" != "json" ]; then
+      if [ "${marks:-0}" -eq 0 ] && [ "$unmarkable" -eq 0 ]; then
         echo "          ↑ 没有 [esim-patch] 标记"
         missing=$((missing + 1))
       fi

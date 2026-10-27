@@ -765,7 +765,23 @@
       "payMarkRefunded": "Mark sent back",
       "payConfirmRefunded": "Record that {amount} was sent back to the shopper through {method}?",
       "payNothing": "No payment needs attention.",
-      "payNone": "No payments yet."
+      "payNone": "No payments yet.",
+      "migImport": "Import",
+      "migCheck": "Check",
+      "migRunning": "Running",
+      "migFailed": "Failed",
+      "migDone": "Done",
+      "migDid": "Done",
+      "migWould": "Would do",
+      "migSkipped": "Left out",
+      "migConfirm": "Import the old store's shoppers, balances, referrals and active eSIMs now? Shoppers are not emailed. Running it again later only adds what is new.",
+      "migStarted": "Started; this page updates when it is done",
+      "migHint": "Brings shoppers (with their old passwords), balances, referrals and active eSIMs over from the old store. Old orders are not imported. Sync every supplier's catalogue first: an eSIM whose plan is not here yet is left out, and the next import picks it up.",
+      "migSource": "Old database",
+      "migNoSource": "Not configured — set LEGACY_MYSQL_HOST, LEGACY_MYSQL_DATABASE, LEGACY_MYSQL_USER and LEGACY_MYSQL_PASSWORD in .env and restart.",
+      "migImported": "Imported so far",
+      "migCheckButton": "Check (changes nothing)",
+      "migImportButton": "Import"
     },
     "sidebar": {
       "esim": "eSIM",
@@ -781,7 +797,13 @@
       "esimTopups": "Top-ups",
       "esimReferrals": "Referrals",
       "esimKyc": "KYC",
-      "esimPayments": "Payments"
+      "esimPayments": "Payments",
+      "esimMigration": "Migration"
+    }
+  },
+  "finance": {
+    "account": {
+      "opening_balance_equity": "Opening balance equity"
     }
   }
 }

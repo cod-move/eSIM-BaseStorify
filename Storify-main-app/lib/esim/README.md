@@ -98,6 +98,11 @@ Everything eSIM-specific lives here and in the files named below; official Stori
 
 | `migration/legacy-password.ts` | Shoppers migrated from the old store sign in with their old (bcrypt) password; on the first sign-in it is re-hashed in Better Auth's own format (patch P16) |
 | `scripts/esim-dev-legacy-login.ts` | End-to-end check of a migrated password signing in and being re-hashed |
+| `migration/legacy-rows.ts` | The old store's users and eSIMs and what they become here (verified users only, bcrypt kept, balances to exact cents, active eSIMs mapped by supplier + plan id) — pure, tested |
+| `migration/legacy-source.ts` | Reads the old MySQL database named in `.env` (`LEGACY_MYSQL_*`), in one read-only consistent snapshot |
+| `migration/import.ts` | Writes users, balances (store credit + an opening-balance ledger entry, patch P20), referrals and active eSIMs (on one zero-value import order per shopper); every row linked, so running it again changes nothing |
+| `admin/migration.ts`, `/admin/esim/migration` | "Check" (counts only) and "Import", in the background; the page shows counts, never people |
+| `scripts/esim-dev-migration.ts` | End-to-end check of the import with sample rows (no MySQL) |
 | `payments/plugins/` | Extension payment plugins (patch P15): BEpusdt (USDT/USDC) and RedeePay (WeChat Pay, Alipay), ported from the old store's signing rules, and a fake one for tests. A plugin only calls its gateway and checks its notifications |
 | `payments/registry.ts` | The payment methods the eSIM payment page can offer, each one plugin with its own defaults |
 | `payments/checkout.ts` | Storify's checkout for "extension": a checkout attempt (never a pre-written order) and the eSIM payment page |

@@ -25,6 +25,8 @@ export const LEDGER_ACCOUNT = {
   INVENTORY: "inventory",
   /** Opening stock is capital, not this period's sales or cash spending. */
   OPENING_INVENTORY_EQUITY: "opening_inventory_equity",
+  // [esim-patch] P20 balances shoppers brought from the old store: owed to them, never paid in here.
+  OPENING_BALANCE_EQUITY: "opening_balance_equity",
   /** Owed BY the marketplace to a vendor — their share, until the payout clears. */
   VENDOR_PAYABLE: "vendor_payable",
   /** Owed TO the marketplace by a vendor: commission on a sale they collected. */
@@ -158,6 +160,7 @@ export const LEDGER_ACCOUNT_TYPES: Record<LedgerAccount, LedgerAccountType> = {
   [LEDGER_ACCOUNT.CASH_ON_HAND]: LEDGER_ACCOUNT_TYPE.ASSET,
   [LEDGER_ACCOUNT.INVENTORY]: LEDGER_ACCOUNT_TYPE.ASSET,
   [LEDGER_ACCOUNT.OPENING_INVENTORY_EQUITY]: LEDGER_ACCOUNT_TYPE.EQUITY,
+  [LEDGER_ACCOUNT.OPENING_BALANCE_EQUITY]: LEDGER_ACCOUNT_TYPE.EQUITY, // [esim-patch] P20
   [LEDGER_ACCOUNT.COMMISSION_RECEIVABLE]: LEDGER_ACCOUNT_TYPE.ASSET,
   [LEDGER_ACCOUNT.CUSTOMER_RECEIVABLE]: LEDGER_ACCOUNT_TYPE.ASSET,
   [LEDGER_ACCOUNT.VENDOR_PAYABLE]: LEDGER_ACCOUNT_TYPE.LIABILITY,
