@@ -59,6 +59,16 @@ export interface IEsimSettings extends mongoose.Document {
   walletProductId: mongoose.Types.ObjectId | null;
   /** Wallet top-ups (WAL-01): on/off, the amounts allowed and the fee, in cents and percent. */
   wallet: { enabled: boolean; minMinor: number; maxMinor: number; feeFixedMinor: number; feePercent: number };
+  /** Referrals (REF-02/06): see lib/esim/referral/rules.ts for what each setting means. */
+  referral: {
+    enabled: boolean;
+    commissionType: "percent" | "fixed";
+    commissionValue: number;
+    validityDays: number;
+    orderLimit: number;
+    holdDays: number;
+    coupon: { enabled: boolean; type: "percentage" | "fixed"; value: number; days: number; minOrderMinor: number };
+  };
   /** Shopper reminders (NTF-03/04/05/07) and their thresholds. */
   reminders: { enabled: boolean; lowDataPercent: number; expiringHours: number; installDays: number };
   updatedAt: Date;
@@ -81,6 +91,21 @@ const EsimSettingsSchema = new Schema<IEsimSettings>(
       maxMinor: { type: Number, default: 100_000, min: 100 },
       feeFixedMinor: { type: Number, default: 0, min: 0 },
       feePercent: { type: Number, default: 0, min: 0, max: 50 },
+    },
+    referral: {
+      enabled: { type: Boolean, default: false },
+      commissionType: { type: String, enum: ["percent", "fixed"], default: "percent" },
+      commissionValue: { type: Number, default: 10, min: 0 },
+      validityDays: { type: Number, default: 365, min: 0 },
+      orderLimit: { type: Number, default: 0, min: 0 },
+      holdDays: { type: Number, default: 14, min: 0, max: 365 },
+      coupon: {
+        enabled: { type: Boolean, default: false },
+        type: { type: String, enum: ["percentage", "fixed"], default: "percentage" },
+        value: { type: Number, default: 10, min: 0 },
+        days: { type: Number, default: 30, min: 1 },
+        minOrderMinor: { type: Number, default: 0, min: 0 },
+      },
     },
     reminders: {
       enabled: { type: Boolean, default: true },

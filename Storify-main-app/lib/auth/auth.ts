@@ -571,10 +571,13 @@ function createAuth(
               },
             };
           },
-          after: async (user) => {
+          after: async (user, ctx) => {
             // A customer's profile, and word to the admins of a sign-up.
             const { onUserCreated } = await import("@/lib/auth/user-created");
             await onUserCreated(user as CreatedUser);
+            // [esim-patch] P14 the eSIM referral the invite cookie names, and the referee's welcome coupon.
+            const { esimOnUserCreated } = await import("@/lib/esim/referral/service");
+            await esimOnUserCreated(user as CreatedUser, ctx?.request?.headers ?? ctx?.headers);
           },
         },
         update: {

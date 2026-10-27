@@ -49,6 +49,14 @@ export default async function AccountEsimsPage({ params }: PageProps) {
           </CardContent>
         </Card>
       </Link>
+      <Link href="/account/esims/referrals" className="block">
+        <Card className="transition-colors hover:bg-muted/40">
+          <CardContent className="flex items-center justify-between gap-4 p-4 text-sm">
+            <span>{tr("esim.referral.teaser", "Invite friends and earn a reward on their orders")}</span>
+            <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+          </CardContent>
+        </Card>
+      </Link>
 
       {esims.length === 0 ? (
         <Card>

@@ -82,6 +82,13 @@ Everything eSIM-specific lives here and in the files named below; official Stori
 | `admin/wallet.ts`, `components/esim/admin/wallet-settings-card.tsx` | Wallet top-up on/off, amounts and fee, on Admin → eSIM → Pricing |
 | `scripts/esim-dev-wallet.ts` | End-to-end check: cart, checkout, booking through Storify's posting rules, refund ceiling, credit once |
 
+| `referral/rules.ts` | Referral codes, the commission (percent or fixed), what an order earns on (paid less refunds and wallet top-ups), validity and order limit (pure) |
+| `referral/service.ts`, `app/[locale]/(store)/esim/invite/[code]` | Codes (made on first ask, changeable), the invite link's 30-day cookie, recording the referral at sign-up (patch P14) and the friend's one-use welcome coupon (REF-01/06) |
+| `referral/commission.ts`, `models/esim-referral.model.ts` | A commission per delivered referred order; paid as store credit (`goodwill`, a promotion) after the holding period by the usage cron; refunded during the hold → cancelled, after → marked to take back by hand (REF-02..04) |
+| `referral/centre.ts`, `app/[locale]/(store)/account/esims/referrals` | The shopper's referral centre: link, code, offer, friends (emails masked), rewards (REF-05) |
+| `admin/referrals.ts`, `app/[locale]/admin/esim/referrals` | Admin → eSIM → Referrals: settings, every reward, cancel one on hold, mark a take-back dealt with |
+| `scripts/esim-dev-referrals.ts` | End-to-end check of codes, sign-up, coupon, commission, payout and refunds; cleans up and reports leftovers |
+
 **Scheduled jobs.** `esim-fulfillment` (every minute), `esim-catalog` (every 6 hours), `esim-fx` (daily) and `esim-usage` (every 30 minutes) are scheduled in `vercel.json`. A Vercel Hobby plan runs crons at most daily; the fulfilment job then needs Pro. On your own server, call each address with `Authorization: Bearer $CRON_SECRET` from the system scheduler.
 
 Day-priced plans (Stellar's "pick the days" plans) are one variant per allowance, sold per day for the days the shopper picks. A cart holds one line per variant: adding the same variant with other days replaces the line.

@@ -231,6 +231,9 @@ export async function settleOrderDelivery(orderId: string) {
     }
   }
 
+  // Referral reward (REF-03) on whatever the order delivered; idempotent, and refunds are taken off it.
+  const { earnReferralCommission } = await import("@/lib/esim/referral/commission");
+  if (fulfilled.length || completedTopups.length) await earnReferralCommission(orderId).catch((error) => console.error("Referral commission failed:", error));
   if (allFailed.length) return fulfilled.length || completedTopups.length ? "partial" : "failed";
   const done = new Set(jobs.map((job) => String(job.variantId)));
   if (topups.length) {
