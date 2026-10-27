@@ -20,6 +20,7 @@ import { slugify } from "@/lib/esim/providers/json";
 import { planProducts, type PlannedProduct, type VariantPlan } from "@/lib/esim/catalog/variants";
 import { ensureCategory } from "@/lib/esim/catalog/category";
 import { ensureTopupProduct } from "@/lib/esim/topup/product";
+import { ensureWalletProduct } from "@/lib/esim/wallet/product";
 
 /** The destination pages' cache tag (lib/esim/storefront/catalog.ts). */
 const STOREFRONT_TAG = "esim-storefront";
@@ -361,10 +362,12 @@ export async function publishProducts(options: { productSlugs?: string[]; status
       revalidateProductContent({});
     }
   }
-  // Whatever is on sale can be topped up later: the hidden top-up product is
-  // made here, in the admin's publish, never in a shopper's request.
+  // Whatever is on sale can be topped up later, and paid for from a balance:
+  // the hidden top-up and wallet products are made here, in the admin's
+  // publish, never in a shopper's request.
   if (planned.length) {
     await ensureTopupProduct().catch((error) => console.error("[esim] top-up product could not be created:", error));
+    await ensureWalletProduct().catch((error) => console.error("[esim] wallet product could not be created:", error));
   }
   // The destination pages read the catalogue through their own cache.
   try {

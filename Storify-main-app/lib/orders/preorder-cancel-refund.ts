@@ -29,6 +29,7 @@ import {
   type OrderStoreCredit,
 } from "@/lib/store-credit/order-credit";
 import { isActiveExchangeOrder } from "@/lib/returns/exchange";
+import { walletCreditOfOrder } from "@/lib/esim/wallet/booking"; // [esim-patch] P19
 
 /** The return an exchange order was made for (R7) — see lib/returns/exchange.ts. */
 type ExchangeOrderFields = {
@@ -269,7 +270,10 @@ export function getOrderRefundCeiling(
 ): number {
   const total = Number(order.total || 0);
   const collected = getOrderCollectedAmount(order);
-  return collected > 0 ? Math.min(total, collected) : total;
+  const ceiling = collected > 0 ? Math.min(total, collected) : total;
+  // [esim-patch] P19 an eSIM wallet top-up's balance is not refunded as money:
+  // it stays the shopper's balance; only the fee can be refunded.
+  return Math.max(0, quantizeToCurrency(ceiling - walletCreditOfOrder(order as Parameters<typeof walletCreditOfOrder>[0]), String(order.currency || "USD")));
 }
 
 export async function refundCancelledPreorder(params: {

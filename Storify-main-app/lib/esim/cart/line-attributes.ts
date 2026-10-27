@@ -8,6 +8,8 @@ import { clampDays, validityValue, type PerDayPricing } from "@/lib/esim/catalog
  * - `topup`: the top-up quote a top-up line is for (lib/esim/topup). The
  *   server adds `iccid` (the eSIM topped up) and `label` (the line's name)
  *   from the quote; whatever a request sends for those two is ignored.
+ * - `wallet`: the amount a wallet top-up adds to the balance, in cents. The
+ *   server adds `walletFee` and `label`; a request's own are ignored.
  *
  * A cart holds one line per variant, as Storify's cart does. Adding the same
  * variant again with other days replaces the days (the shopper changed their
@@ -20,6 +22,8 @@ export interface EsimLineAttributes {
   topup?: string;
   iccid?: string | null;
   label?: string;
+  wallet?: number;
+  walletFee?: number;
 }
 
 export class LineAttributesError extends Error {
@@ -39,12 +43,17 @@ export function parseLineAttributes(input: unknown): EsimLineAttributes | null {
   if (entries.length === 0) return null;
   const parsed: EsimLineAttributes = {};
   for (const [key, value] of entries) {
-    if (key === "iccid" || key === "label") continue;
+    if (key === "iccid" || key === "label" || key === "walletFee") continue;
     if (key === "days") {
       if (typeof value !== "number" || !Number.isInteger(value) || value < 1 || value > 3650) {
         throw new LineAttributesError("The number of days must be a whole number");
       }
       parsed.days = value;
+    } else if (key === "wallet") {
+      if (typeof value !== "number" || !Number.isInteger(value) || value < 1 || value > 100_000_000) {
+        throw new LineAttributesError("The amount must be a whole number of cents");
+      }
+      parsed.wallet = value;
     } else if (key === "topup") {
       if (typeof value !== "string" || !/^[a-f0-9]{24}$/i.test(value)) throw new LineAttributesError("Unknown top-up");
       parsed.topup = value;
@@ -54,6 +63,9 @@ export function parseLineAttributes(input: unknown): EsimLineAttributes | null {
   }
   if (parsed.days !== undefined && parsed.topup !== undefined) {
     throw new LineAttributesError("A top-up takes no number of days");
+  }
+  if (parsed.wallet !== undefined && (parsed.days !== undefined || parsed.topup !== undefined)) {
+    throw new LineAttributesError("A wallet top-up takes no other options");
   }
   return Object.keys(parsed).length ? parsed : null;
 }
@@ -111,7 +123,7 @@ export function withLineDays<S extends VariantSnapshot>(line: { lineAttributes?:
   const attributes = line.lineAttributes && typeof line.lineAttributes === "object"
     ? (line.lineAttributes as EsimLineAttributes)
     : undefined;
-  const label = attributes?.topup && typeof attributes.label === "string" ? attributes.label : null;
+  const label = (attributes?.topup || attributes?.wallet) && typeof attributes.label === "string" ? attributes.label : null;
   if (label) {
     return {
       ...snapshot,

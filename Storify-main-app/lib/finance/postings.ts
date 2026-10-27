@@ -33,6 +33,7 @@ import {
 } from "@/lib/finance/accounts";
 import { postingKey, type LedgerPosting } from "@/lib/finance/ledger";
 import { LEDGER_SOURCE_KIND } from "@/models/ledger-entry.model";
+import { walletCreditOf } from "@/lib/esim/wallet/booking"; // [esim-patch] P19
 import {
   SHIPPING_REVENUE_TO,
   vendorEarnsShipping,
@@ -177,6 +178,8 @@ export interface PostingOrder {
   storeCredit?: OrderStoreCredit | null;
   /** What a counter sale taken as a deposit still owes — see `isConsignmentCollected`. */
   posBalanceDue?: number | null;
+  // [esim-patch] P19 the order's lines; an eSIM wallet top-up line names its amount in `lineAttributes`.
+  items?: Array<{ price?: number | null; quantity?: number | null; lineAttributes?: unknown }> | null;
 }
 
 export interface OrderPostingContext {
@@ -1000,13 +1003,30 @@ export function orderPaidPostings(
       postingKey(LEDGER_SOURCE_KIND.ORDER, order._id, part, vendorId || index);
 
     if (isOwn) {
+      // [esim-patch] P19 an eSIM wallet top-up sells balance, not goods: its
+      // amount is owed to the shopper (store credit payable); only its fee is income.
+      const walletCredit = quantizeToCurrency(Math.min(merchandiseShare, walletCreditOf(order.items, merchandiseShare)), currency);
+      if (walletCredit > 0) {
+        entries.push({
+          date,
+          book,
+          debit: cashAccount,
+          credit: LEDGER_ACCOUNT.STORE_CREDIT_PAYABLE,
+          amount: walletCredit,
+          currency,
+          source,
+          vendorId: sub.vendorId as Types.ObjectId,
+          note: "eSIM wallet top-up",
+          key: line("wallet-credit"),
+        });
+      }
       // The store IS the seller: the whole merchandise share is revenue.
       entries.push({
         date,
         book,
         debit: cashAccount,
         credit: LEDGER_ACCOUNT.PRODUCT_REVENUE,
-        amount: merchandiseShare,
+        amount: quantizeToCurrency(merchandiseShare - walletCredit, currency), // [esim-patch] P19
         currency,
         source,
         vendorId: sub.vendorId as Types.ObjectId,

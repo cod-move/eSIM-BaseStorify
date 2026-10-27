@@ -55,6 +55,10 @@ export interface IEsimSettings extends mongoose.Document {
   categoryId: mongoose.Types.ObjectId | null;
   /** The hidden store product top-ups are sold as (lib/esim/topup/product.ts). */
   topupProductId: mongoose.Types.ObjectId | null;
+  /** The hidden store product wallet top-ups are sold as (lib/esim/wallet/product.ts). */
+  walletProductId: mongoose.Types.ObjectId | null;
+  /** Wallet top-ups (WAL-01): on/off, the amounts allowed and the fee, in cents and percent. */
+  wallet: { enabled: boolean; minMinor: number; maxMinor: number; feeFixedMinor: number; feePercent: number };
   /** Shopper reminders (NTF-03/04/05/07) and their thresholds. */
   reminders: { enabled: boolean; lowDataPercent: number; expiringHours: number; installDays: number };
   updatedAt: Date;
@@ -70,6 +74,14 @@ const EsimSettingsSchema = new Schema<IEsimSettings>(
     repriceThresholdPercent: { type: Number, default: 2, min: 0, max: 50 },
     categoryId: { type: Schema.Types.ObjectId, ref: "Category", default: null },
     topupProductId: { type: Schema.Types.ObjectId, ref: "Product", default: null },
+    walletProductId: { type: Schema.Types.ObjectId, ref: "Product", default: null },
+    wallet: {
+      enabled: { type: Boolean, default: true },
+      minMinor: { type: Number, default: 500, min: 100 },
+      maxMinor: { type: Number, default: 100_000, min: 100 },
+      feeFixedMinor: { type: Number, default: 0, min: 0 },
+      feePercent: { type: Number, default: 0, min: 0, max: 50 },
+    },
     reminders: {
       enabled: { type: Boolean, default: true },
       lowDataPercent: { type: Number, default: 20, min: 1, max: 90 },

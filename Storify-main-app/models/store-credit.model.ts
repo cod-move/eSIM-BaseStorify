@@ -39,6 +39,9 @@ export const STORE_CREDIT_SOURCES = [
   "order",
   /** Expired. */
   "expiry",
+  // [esim-patch] P12 balance a shopper paid for (an eSIM wallet top-up). Booked by
+  // the order that sold it (lib/finance/postings.ts, P19), so the lot posts nothing.
+  "wallet_topup",
 ] as const;
 export type StoreCreditSource = (typeof STORE_CREDIT_SOURCES)[number];
 

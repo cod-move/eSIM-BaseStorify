@@ -10,25 +10,33 @@ import { settleOrderDelivery } from "@/lib/esim/fulfillment/delivery";
 import { EsimTopup } from "@/models/esim-topup.model";
 import { enqueueOrderTopups, processTopupJobs } from "@/lib/esim/topup/service";
 import { findTopupProduct } from "@/lib/esim/topup/product";
+import { findWalletProduct } from "@/lib/esim/wallet/product";
+import { creditWalletTopups, walletTopupsDue } from "@/lib/esim/wallet/credit";
 
 /**
  * The two ways eSIM fulfilment is driven. Payment settlement calls the first
  * (patch point P3); the `esim-fulfillment` cron calls the second every minute.
- * Both carry an order's top-ups (lib/esim/topup) along with its eSIMs.
+ * Both carry an order's top-ups (lib/esim/topup) and wallet top-ups
+ * (lib/esim/wallet) along with its eSIMs.
  */
 
-/** Queue the paid order's eSIMs and top-ups. Cheap and durable: only writes jobs. */
+/**
+ * Queue the paid order's eSIMs and top-ups. Cheap and durable: only writes
+ * jobs. A wallet top-up waiting to be credited counts too, so the caller runs
+ * `esimFulfilOrder`, which credits it after the response.
+ */
 export async function esimQueueOrder(orderId: string): Promise<number> {
-  return (await enqueueOrderFulfillment(orderId)) + (await enqueueOrderTopups(orderId));
+  return (await enqueueOrderFulfillment(orderId)) + (await enqueueOrderTopups(orderId)) + (await walletTopupsDue(orderId));
 }
 
 /** Buy the order's queued eSIMs and make its top-ups now, then deliver if they all settled. */
 export async function esimFulfilOrder(orderId: string) {
+  const wallet = await creditWalletTopups(orderId);
   const result = await processFulfillmentJobs({ orderId, budgetMs: 20_000 });
   const topups = await processTopupJobs({ orderId, budgetMs: 10_000 });
   // Always: a top-up can fail as it is queued (its quote gone) and still needs its refund.
   await settleOrderDelivery(orderId);
-  return { ...result, topups };
+  return { ...result, topups, wallet };
 }
 
 /** How far back the cron looks for paid orders whose jobs were never queued. */
@@ -43,17 +51,24 @@ async function sweepUnqueuedOrders(): Promise<number> {
   );
   const topupProduct = await findTopupProduct();
   if (topupProduct) linked.add(topupProduct.variantId);
-  if (!linked.size) return 0;
+  const walletProduct = await findWalletProduct();
+  if (!linked.size && !walletProduct) return 0;
   const orders = await Order.find({ paymentStatus: PAYMENT_STATUS.PAID, updatedAt: { $gte: since } })
     .select({ "items.variantId": 1 })
     .lean<Array<{ _id: Types.ObjectId; items: Array<{ variantId?: unknown }> }>>();
+  let added = 0;
+  // A wallet top-up never credited (settlement's after-response work lost): credit it now. Idempotent.
+  if (walletProduct) {
+    for (const order of orders.filter((entry) => entry.items.some((item) => String(item.variantId ?? "") === walletProduct.variantId))) {
+      added += (await creditWalletTopups(order._id)).credited;
+    }
+  }
   const withEsim = orders.filter((order) => order.items.some((item) => linked.has(String(item.variantId ?? ""))));
-  if (!withEsim.length) return 0;
+  if (!withEsim.length) return added;
   const ids = { order: { $in: withEsim.map((order) => order._id) } };
   const queued = new Set(
     [...(await EsimFulfillment.distinct("order", ids)), ...(await EsimTopup.distinct("order", ids))].map(String),
   );
-  let added = 0;
   for (const order of withEsim) {
     if (!queued.has(String(order._id))) added += (await enqueueOrderFulfillment(order._id)) + (await enqueueOrderTopups(order._id));
   }

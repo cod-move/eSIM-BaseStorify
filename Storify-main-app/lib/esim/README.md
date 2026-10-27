@@ -74,9 +74,19 @@ Everything eSIM-specific lives here and in the files named below; official Stori
 | `alerts.ts` | Admin alerts (NTF-09), once per supplier, kind and day: catalogue sync failed, usage checks failing, a refusal that reads like an empty balance |
 | `scripts/esim-dev-reminders.ts` | End-to-end check of the sync and reminders on the script's own eSIMs; cleans up and reports leftovers |
 
+| `wallet/booking.ts` | Wallet top-ups (WAL-01): the fee, and how much of a paid top-up line is balance — read by the ledger and the refund ceiling (patch P19) and the credit (pure) |
+| `wallet/product.ts`, `catalog/hidden-product.ts` | The hidden "Wallet top-up" product (and the top-up product), made by the catalogue publish |
+| `cart/index.ts` (wallet lines) | `lineAttributes.wallet` (cents): signed-in only, within the set amounts, one unit, alone in the cart; priced as amount + fee |
+| `wallet/credit.ts` | Paid → one store-credit lot, source `wallet_topup` (patch P12), once per order; the order is delivered |
+| `app/[locale]/(store)/account/esims/balance`, `components/esim/wallet-topup-form.tsx` | The shopper's balance and Add money (amount, fee, what is paid) |
+| `admin/wallet.ts`, `components/esim/admin/wallet-settings-card.tsx` | Wallet top-up on/off, amounts and fee, on Admin → eSIM → Pricing |
+| `scripts/esim-dev-wallet.ts` | End-to-end check: cart, checkout, booking through Storify's posting rules, refund ceiling, credit once |
+
 **Scheduled jobs.** `esim-fulfillment` (every minute), `esim-catalog` (every 6 hours), `esim-fx` (daily) and `esim-usage` (every 30 minutes) are scheduled in `vercel.json`. A Vercel Hobby plan runs crons at most daily; the fulfilment job then needs Pro. On your own server, call each address with `Authorization: Bearer $CRON_SECRET` from the system scheduler.
 
 Day-priced plans (Stellar's "pick the days" plans) are one variant per allowance, sold per day for the days the shopper picks. A cart holds one line per variant: adding the same variant with other days replaces the line.
+
+A wallet top-up is bought on its own and needs an account. Its amount is the shopper's balance, booked as owed to them (not revenue); only the fee is income and only the fee can be refunded.
 
 Top-ups need an account: the shopper buys one from the eSIM's page in My eSIMs (guests have no such page). A cart holds one top-up line at a time — the top-up product has one variant, and a cart holds one line per variant.
 

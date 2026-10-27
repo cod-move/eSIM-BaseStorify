@@ -17,12 +17,16 @@ import {
 import { isTopupVariant } from "@/lib/esim/topup/product";
 import { priceTopupCosts, quoteStillEligible, quoteWithPlan } from "@/lib/esim/topup/offers";
 import { topupLineLabel } from "@/lib/esim/topup/label";
+import { isWalletVariant } from "@/lib/esim/wallet/product";
+import { walletFeeMinor } from "@/lib/esim/wallet/booking";
+import { getEsimSettings } from "@/models/esim-pricing.model";
 
 /**
  * The eSIM side of patch point P10: what Storify's cart and checkout ask about
  * a line's `lineAttributes`. Storify prices a line from its variant; a
  * day-priced eSIM variant is priced here instead, per day × the chosen days,
- * and a top-up line from its quote (lib/esim/topup).
+ * a top-up line from its quote (lib/esim/topup), and a wallet top-up line as
+ * its amount plus the fee (lib/esim/wallet).
  *
  * - `esimCartLine` — adding to the cart (`lib/cart/cart-service.ts`).
  * - `esimLinePrices` — every place checkout re-prices lines from the live
@@ -72,6 +76,20 @@ async function topupLine(quoteId: string | undefined, userId: string | undefined
   return { lineAttributes: { topup: String(quote._id), iccid: quote.iccid, label }, priceMinor, label };
 }
 
+/** A wallet top-up line's settled attributes and price, or why it cannot be bought. */
+async function walletLine(amountMinor: number | undefined, userId: string | undefined): Promise<TopupLine | string> {
+  if (!userId) return "Sign in to add money to your balance";
+  const wallet = (await getEsimSettings()).wallet;
+  if (!wallet?.enabled) return "Adding money to your balance is not available";
+  if (!amountMinor) return "Choose how much to add";
+  if (amountMinor < wallet.minMinor || amountMinor > wallet.maxMinor) {
+    return `Choose between ${(wallet.minMinor / 100).toFixed(2)} and ${(wallet.maxMinor / 100).toFixed(2)}`;
+  }
+  const fee = walletFeeMinor(amountMinor, wallet);
+  const label = `Wallet top-up · ${(amountMinor / 100).toFixed(2)}${fee ? ` + ${(fee / 100).toFixed(2)} fee` : ""}`;
+  return { lineAttributes: { wallet: amountMinor, walletFee: fee, label }, priceMinor: amountMinor + fee, label };
+}
+
 /**
  * The attributes, unit price and variant name a line is added to the cart
  * with, or `null` when the line is an ordinary one (no attributes, not a
@@ -92,7 +110,14 @@ export async function esimCartLine(
       if (typeof topup === "string") throw new LineAttributesError(topup);
       return { lineAttributes: { ...topup.lineAttributes }, price: toUnits(topup.priceMinor), variantName: topup.label, singleUnit: true };
     }
+    if (await isWalletVariant(line.variantId)) {
+      if ((line.quantity ?? 1) !== 1) throw new LineAttributesError("Add one amount at a time");
+      const wallet = await walletLine(requested?.wallet, context.userId);
+      if (typeof wallet === "string") throw new LineAttributesError(wallet);
+      return { lineAttributes: { ...wallet.lineAttributes }, price: toUnits(wallet.priceMinor), variantName: wallet.label, singleUnit: true };
+    }
     if (requested?.topup) throw new LineAttributesError("This product is not a top-up");
+    if (requested?.wallet) throw new LineAttributesError("This product is not a wallet top-up");
     const info = line.variantId ? (await variantInfo([line.variantId])).get(String(line.variantId)) : undefined;
     if (!info) {
       if (requested) throw new LineAttributesError("This product takes no options of that kind");
@@ -131,6 +156,18 @@ export async function esimLinePrices<T extends { variantId?: unknown; lineAttrib
   context: { userId?: string | null } = {},
 ): Promise<Map<T, number>> {
   const prices = new Map<T, number>();
+  for (const item of items) {
+    if (!(await isWalletVariant(item.variantId))) continue;
+    // Balance is bought on its own: its order is booked and credited as a whole (patch P19).
+    const wallet = items.length !== 1
+      ? "Check out a wallet top-up on its own: remove the other items from your cart, or the top-up"
+      : (item.quantity ?? 1) !== 1
+        ? "Add one amount at a time"
+        : await walletLine((item.lineAttributes as EsimLineAttributes | undefined)?.wallet, context.userId ?? undefined);
+    if (typeof wallet === "string") throw new ValidationError({ stock: [wallet] });
+    item.lineAttributes = wallet.lineAttributes;
+    prices.set(item, toUnits(wallet.priceMinor));
+  }
   for (const item of items) {
     if (!(await isTopupVariant(item.variantId))) continue;
     const attributes = item.lineAttributes && typeof item.lineAttributes === "object" ? (item.lineAttributes as EsimLineAttributes) : {};

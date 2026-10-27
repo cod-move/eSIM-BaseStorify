@@ -7,6 +7,8 @@ import { getAccountSession } from "@/lib/customers/account-data";
 import { listCustomerEsims } from "@/lib/esim/account/esims";
 import { formatBytes, remainingPercent } from "@/lib/esim/account/display";
 import { EsimStatusBadge, UsageBar } from "@/components/esim/esim-status-badge";
+import { storeCreditSummary } from "@/lib/store-credit/store-credit";
+import { formatStorePrice } from "@/lib/esim/topup/format";
 
 interface PageProps {
   params: Promise<{ locale: string }>;
@@ -21,7 +23,8 @@ export default async function AccountEsimsPage({ params }: PageProps) {
     t.has(key) ? t(key, values) : fallback.replace(/\{(\w+)\}/g, (_, name) => String(values?.[name] ?? ""));
   const session = await getAccountSession();
   await connectDB();
-  const esims = session ? await listCustomerEsims(session.user.id) : [];
+  const [esims, balances] = session ? await Promise.all([listCustomerEsims(session.user.id), storeCreditSummary(session.user.id)]) : [[], []];
+  const balance = balances.find((entry) => entry.currency === "USD")?.balance ?? 0;
   const date = new Intl.DateTimeFormat(locale, { dateStyle: "medium" });
 
   return (
@@ -32,6 +35,20 @@ export default async function AccountEsimsPage({ params }: PageProps) {
           {tr("esim.account.description", "Install, check remaining data and top up your eSIMs.")}
         </p>
       </div>
+
+      <Link href="/account/esims/balance" className="block">
+        <Card className="transition-colors hover:bg-muted/40">
+          <CardContent className="flex items-center justify-between gap-4 p-4 text-sm">
+            <span>
+              {tr("esim.wallet.title", "Balance")}: <b>{formatStorePrice(Math.round(balance * 100), locale)}</b>
+            </span>
+            <span className="inline-flex items-center gap-1 font-medium text-primary">
+              {tr("esim.wallet.add", "Add money")}
+              <ChevronRight className="h-4 w-4" />
+            </span>
+          </CardContent>
+        </Card>
+      </Link>
 
       {esims.length === 0 ? (
         <Card>

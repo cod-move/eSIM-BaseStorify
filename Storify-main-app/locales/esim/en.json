@@ -205,6 +205,21 @@
         "failed": "Could not be added",
         "refunded": "Refunded"
       }
+    },
+    "wallet": {
+      "title": "Balance",
+      "add": "Add money",
+      "history": "See every change",
+      "amount": "Amount to add",
+      "range": "Between {min} and {max}",
+      "added": "Added to your balance",
+      "fee": "Fee",
+      "pay": "You pay",
+      "checkout": "Continue to checkout",
+      "lineName": "Wallet top-up",
+      "failed": "Could not start the top-up",
+      "unavailable": "Adding money to your balance is not available at the moment.",
+      "note": "Your balance is used at checkout for eSIMs and top-ups. Money added to your balance is not refunded to your card."
     }
   },
   "admin": {
@@ -575,7 +590,14 @@
       "reminderExpiring": "Plan ending",
       "reminderHoursBefore": "hours before",
       "reminderInstall": "Not installed",
-      "reminderDaysBefore": "days before the install-by date"
+      "reminderDaysBefore": "days before the install-by date",
+      "walletTitle": "Wallet top-ups",
+      "walletHint": "Shoppers add money to their balance from My eSIMs and pay for it at checkout. The amount is booked as balance owed to them, the fee as income; balance added this way is not refunded as money.",
+      "walletEnabled": "Allow wallet top-ups",
+      "walletMin": "Smallest amount",
+      "walletMax": "Largest amount",
+      "walletFeeFixed": "Fixed fee",
+      "walletFeePercent": "Fee %"
     },
     "sidebar": {
       "esim": "eSIM",

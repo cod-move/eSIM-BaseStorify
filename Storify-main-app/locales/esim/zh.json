@@ -205,6 +205,21 @@
         "failed": "充值失败",
         "refunded": "已退款"
       }
+    },
+    "wallet": {
+      "title": "余额",
+      "add": "充值",
+      "history": "查看余额明细",
+      "amount": "充值金额",
+      "range": "{min} 至 {max}",
+      "added": "到账余额",
+      "fee": "手续费",
+      "pay": "实付",
+      "checkout": "去结账",
+      "lineName": "钱包充值",
+      "failed": "无法发起充值",
+      "unavailable": "暂不支持余额充值。",
+      "note": "余额在结账时用于购买 eSIM 和充值包。充入余额的钱不会原路退回。"
     }
   },
   "admin": {
@@ -575,7 +590,14 @@
       "reminderExpiring": "套餐到期前",
       "reminderHoursBefore": "小时",
       "reminderInstall": "未安装提醒",
-      "reminderDaysBefore": "天（安装截止日前）"
+      "reminderDaysBefore": "天（安装截止日前）",
+      "walletTitle": "钱包充值",
+      "walletHint": "顾客在「我的 eSIM」给余额充值，并在结账时付款。充值金额记为欠顾客的余额，手续费记为收入；这样充入的余额不会原路退款。",
+      "walletEnabled": "允许钱包充值",
+      "walletMin": "最低金额",
+      "walletMax": "最高金额",
+      "walletFeeFixed": "固定手续费",
+      "walletFeePercent": "手续费 %"
     },
     "sidebar": {
       "esim": "eSIM",

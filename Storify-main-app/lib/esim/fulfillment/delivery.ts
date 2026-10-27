@@ -111,8 +111,8 @@ async function sendDelivery(order: OrderView, profiles: IEsimProfile[], dedupeKe
   });
 }
 
-/** Mirrors the carrier-scan path: walk the order to delivered, guarded against a concurrent move. */
-async function markDelivered(order: OrderView) {
+/** Mirrors the carrier-scan path: walk the order to delivered, guarded against a concurrent move. Also for a paid wallet top-up. */
+export async function markOrderDelivered(order: OrderView) {
   const path = advanceOrderStatusTo(order.status, ORDER_STATUS.DELIVERED);
   if (!path?.length) return;
   let current = order.status as OrderStatusValue;
@@ -238,7 +238,7 @@ export async function settleOrderDelivery(orderId: string) {
     if (product) done.add(product.variantId);
   }
   if (order.items.every((item) => done.has(String(item.variantId ?? "")))) {
-    await markDelivered(order);
+    await markOrderDelivered(order);
   }
   return "delivered";
 }
