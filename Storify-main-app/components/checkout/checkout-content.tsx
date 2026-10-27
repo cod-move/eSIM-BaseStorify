@@ -509,6 +509,7 @@ function CheckoutForm({
         "iotec",
         "orange_money",
         "mtn_momo",
+        "extension", // [esim-patch] P15
         "cod",
       ]),
       iotecChannel: z.enum(["mobile_money", "card"]).optional(),
@@ -734,6 +735,8 @@ function CheckoutForm({
     orangeMoneyConfigured?: boolean;
     mtnMomoEnabled: boolean;
     mtnMomoConfigured?: boolean;
+    extensionEnabled?: boolean; // [esim-patch] P15
+    extensionMethods?: string[];
     codInstructions?: string;
     codMinOrderAmount?: number;
     codMaxOrderAmount?: number;
@@ -1147,6 +1150,7 @@ function CheckoutForm({
             json.data.payment?.iotecConfigured ||
             json.data.payment?.orangeMoneyConfigured ||
             json.data.payment?.mtnMomoConfigured ||
+            json.data.payment?.extensionEnabled || // [esim-patch] P15
             json.data.payment?.codEnabled;
           if (!configuredAny) {
             setError(
@@ -2314,6 +2318,16 @@ function CheckoutForm({
         detail: t("checkout.payment.mtnMomoDetail"),
       });
     }
+    // [esim-patch] P15 the eSIM payment page's methods; not for pre-orders,
+    // whose balance only a card can collect.
+    if (paymentConfig.extensionEnabled && !hasPreorderItems) {
+      methods.push({
+        value: "extension",
+        label: t.has("esim.pay.checkoutLabel") ? t("esim.pay.checkoutLabel") : "More ways to pay",
+        icon: Wallet,
+        detail: (paymentConfig.extensionMethods ?? []).join(" · "),
+      });
+    }
     // COD is offered on carts with digital lines too: their downloads unlock
     // only once the order is marked paid (`isOrderEntitledToDownloads`), so no
     // file leaves before the cash is in. Pre-orders stay out: the seller
@@ -2432,21 +2446,23 @@ function CheckoutForm({
     codOutsideLimits;
 
   const redirectPaymentProvider = (
-    ["paypal", "razorpay", "paystack", "pesapal", "orange_money"] as const
+    ["paypal", "razorpay", "paystack", "pesapal", "orange_money", "extension"] as const // [esim-patch] P15
   ).includes(
     selectedPayment as
       | "paypal"
       | "razorpay"
       | "paystack"
       | "pesapal"
-      | "orange_money",
+      | "orange_money"
+      | "extension",
   )
     ? (selectedPayment as
         | "paypal"
         | "razorpay"
         | "paystack"
         | "pesapal"
-        | "orange_money")
+        | "orange_money"
+        | "extension")
     : null;
   const redirectPaymentProviderName = redirectPaymentProvider
     ? paymentMethods.find((method) => method.value === redirectPaymentProvider)

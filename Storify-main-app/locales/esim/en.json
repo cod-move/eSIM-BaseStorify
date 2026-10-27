@@ -267,6 +267,22 @@
       "fixErrors": "Some answers need another look",
       "failed": "Could not send your details",
       "sent": "Sent. We will tell you when it has been checked."
+    },
+    "pay": {
+      "checkoutLabel": "More ways to pay",
+      "title": "Complete your payment",
+      "choose": "Choose how to pay",
+      "another": "Or pay another way",
+      "waiting": "Waiting for the payment to be confirmed…",
+      "paid": "Payment received",
+      "scan": "Scan the code with your wallet app to pay.",
+      "qrAlt": "Payment QR code",
+      "copy": "Copy payment details",
+      "closed": "This checkout has closed.",
+      "closedNote": "If you paid, the payment will be refunded. Please check out again.",
+      "backToCart": "Back to cart",
+      "none": "No payment method is available right now. Please try again later.",
+      "note": "Your order is created as soon as the payment is confirmed. Do not pay twice for the same order."
     }
   },
   "admin": {
@@ -724,7 +740,32 @@
       "kycOff": "No KYC",
       "kycDefault": "KYC: use defaults",
       "confirmKyc": "Change whether {count} plans need identity verification?",
-      "kycNoStorage": "File storage is not set up (Settings → Storage), so shoppers cannot upload documents. Set it up, or publish a form without file questions."
+      "kycNoStorage": "File storage is not set up (Settings → Storage), so shoppers cannot upload documents. Set it up, or publish a form without file questions.",
+      "paymentsHint": "The methods offered at checkout as “More ways to pay”. The shopper picks one on the eSIM payment page; the order is placed when the gateway confirms the payment. Refunds of these payments are made by hand in the gateway.",
+      "payMissing": "Still to fill in: {fields}",
+      "payOffered": "Offered",
+      "payName": "Name shown to shoppers",
+      "paySort": "Order on the payment page (lower first)",
+      "payNotify": "Notification URL (the gateway posts here): {url}",
+      "payList": "Payments",
+      "payAttention": "Needs attention",
+      "payAll": "Latest 100",
+      "payReference": "Reference",
+      "payMethod": "Method",
+      "payAmount": "Amount",
+      "payResult": "Result",
+      "payWhen": "Started",
+      "payOutcomeOrder": "Order placed",
+      "payOutcomeDuplicate": "Paid twice — send it back",
+      "payOutcomeClosed": "Checkout had closed — send it back",
+      "payOutcomeUnsettled": "Paid, order not placed yet",
+      "payRefundedAt": "Sent back {time}",
+      "payPaidAt": "Paid {time}",
+      "paySettle": "Place the order now",
+      "payMarkRefunded": "Mark sent back",
+      "payConfirmRefunded": "Record that {amount} was sent back to the shopper through {method}?",
+      "payNothing": "No payment needs attention.",
+      "payNone": "No payments yet."
     },
     "sidebar": {
       "esim": "eSIM",
@@ -739,7 +780,8 @@
       "esimJobs": "Scheduled jobs",
       "esimTopups": "Top-ups",
       "esimReferrals": "Referrals",
-      "esimKyc": "KYC"
+      "esimKyc": "KYC",
+      "esimPayments": "Payments"
     }
   }
 }

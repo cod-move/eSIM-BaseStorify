@@ -10,6 +10,7 @@ export const ESIM_ADMIN_NAV = {
     { label: "admin.sidebar.esimEsims", href: "/admin/esim/esims", icon: "ListOrdered" },
     { label: "admin.sidebar.esimProblems", href: "/admin/esim/problems", icon: "ShieldCheck" },
     { label: "admin.sidebar.esimTopups", href: "/admin/esim/topups", icon: "CreditCard" },
+    { label: "admin.sidebar.esimPayments", href: "/admin/esim/payments", icon: "HandCoins" },
     { label: "admin.sidebar.esimReferrals", href: "/admin/esim/referrals", icon: "Gift" },
     { label: "admin.sidebar.esimKyc", href: "/admin/esim/kyc", icon: "UserCog" },
     { label: "admin.sidebar.esimDestinations", href: "/admin/esim/destinations", icon: "MapPin" },

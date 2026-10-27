@@ -60,6 +60,8 @@ const AttemptGatewayRefsSchema = new Schema(
     pesapalMerchantReference: { type: String, trim: true },
     stripePaymentIntentId: { type: String, trim: true },
     stripeSessionId: { type: String, trim: true },
+    // [esim-patch] P15 the eSIM payment page's checkout reference.
+    extensionReference: { type: String, trim: true },
     /** The hosted page the shopper was sent to, for support and for a retry. */
     checkoutUrl: { type: String, trim: true },
   },
@@ -221,6 +223,7 @@ for (const field of [
   "gateway.pesapalMerchantReference",
   "gateway.stripePaymentIntentId",
   "gateway.stripeSessionId",
+  "gateway.extensionReference", // [esim-patch] P15
 ] as const) {
   CheckoutAttemptSchema.index(
     { [field]: 1 },

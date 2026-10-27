@@ -7,6 +7,7 @@ import { runFulfilmentCron } from "@/lib/esim/fulfillment";
 import { refreshFx } from "@/lib/esim/admin/pricing";
 import { runUsageSync } from "@/lib/esim/usage/sync";
 import { runReferralPayouts } from "@/lib/esim/referral/commission";
+import { sweepPayments } from "@/lib/esim/payments/service";
 import { ESIM_CRON_JOBS, type EsimCronJob } from "@/lib/esim/admin/cron-config";
 
 /**
@@ -17,7 +18,7 @@ import { ESIM_CRON_JOBS, type EsimCronJob } from "@/lib/esim/admin/cron-config";
  */
 
 const RUNNERS: Record<EsimCronJob, () => Promise<unknown>> = {
-  "esim-fulfillment": runFulfilmentCron,
+  "esim-fulfillment": async () => ({ ...(await runFulfilmentCron()), payments: await sweepPayments() }),
   "esim-catalog": syncAllCatalogs,
   "esim-fx": refreshFx,
   "esim-usage": async () => ({ ...(await runUsageSync()), referrals: await runReferralPayouts() }),

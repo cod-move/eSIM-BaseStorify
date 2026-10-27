@@ -52,6 +52,7 @@ export function getPaymentMethodMeta(
     return { label: "Orange Money", Icon: Smartphone };
   }
   if (key.includes("mtn_momo")) return { label: "MTN MoMo", Icon: Smartphone };
+  if (key === "extension") return { label: "eSIM payment", Icon: Wallet }; // [esim-patch] P15
   // Store credit paid all of it (R8).
   if (key === "store_credit") {
     return {

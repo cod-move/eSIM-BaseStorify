@@ -67,6 +67,7 @@ import { startPayPalCheckout } from "@/lib/checkout/gateway-start/paypal";
 import { startPaystackCheckout } from "@/lib/checkout/gateway-start/paystack";
 import { startPesapalCheckout } from "@/lib/checkout/gateway-start/pesapal";
 import { startRazorpayCheckout } from "@/lib/checkout/gateway-start/razorpay";
+import { startExtensionCheckout } from "@/lib/esim/payments/checkout"; // [esim-patch] P15
 
 /**
  * POST /api/payments/checkout
@@ -490,6 +491,25 @@ async function placeCheckout(request: NextRequest) {
           paymentMethod: "pesapal",
           pesapalOrderTrackingId: start.orderTrackingId,
           pesapalMerchantReference: start.merchantReference,
+          url: start.redirectUrl,
+          ...(start.resumed ? { resumed: true } : {}),
+        },
+      });
+    }
+
+    // [esim-patch] P15 the extension gateway: the eSIM payment page, where the
+    // shopper picks a plugin (lib/esim/payments/checkout.ts).
+    if (paymentMethod === "extension") {
+      const start = await startExtensionCheckout(draft, {
+        pageUrl: (reference) => checkoutUrl(`/esim/pay/${reference}`),
+        request: startRequest,
+      });
+      return NextResponse.json({
+        success: true,
+        data: {
+          orderId: start.record.id,
+          orderNumber: start.record.orderNumber,
+          paymentMethod: "extension",
           url: start.redirectUrl,
           ...(start.resumed ? { resumed: true } : {}),
         },

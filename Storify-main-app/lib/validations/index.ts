@@ -1357,6 +1357,7 @@ export const CheckoutSchema = z.object({
     "iotec",
     "orange_money",
     "mtn_momo",
+    "extension", // [esim-patch] P15 the eSIM payment page and its plugins
     // Store credit covers all of it, and no gateway is asked for anything (R8).
     "store_credit",
   ]),

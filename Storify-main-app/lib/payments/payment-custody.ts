@@ -59,6 +59,8 @@ export const PLATFORM_GATEWAY_PAYMENT_METHODS = [
   // Same custody as Orange Money: requesttopay settles into the platform's
   // MoMo collections account.
   "mtn_momo",
+  // [esim-patch] P15 the eSIM payment plugins settle into the platform's accounts.
+  "extension",
   // Paid wholly with the shopper's store credit (R8): a debt the platform
   // owed, settled — so the platform holds the sale and owes the vendor.
   "store_credit",

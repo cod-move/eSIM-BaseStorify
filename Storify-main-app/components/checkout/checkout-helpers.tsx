@@ -38,6 +38,7 @@ export type CheckoutFormData = {
     | "iotec"
     | "orange_money"
     | "mtn_momo"
+    | "extension" // [esim-patch] P15
     | "cod";
   /** ioTec Pay collection channel; defaults to mobile money. */
   iotecChannel?: "mobile_money" | "card";
@@ -622,7 +623,8 @@ export function PaymentProviderLogo({
     | "pesapal"
     | "iotec"
     | "orange_money"
-    | "mtn_momo";
+    | "mtn_momo"
+    | "extension"; // [esim-patch] P15
 }) {
   const config = {
     paypal: {
@@ -658,6 +660,12 @@ export function PaymentProviderLogo({
     mtn_momo: {
       label: "MoMo",
       className: "text-[#8a6d00]",
+      textClassName: "",
+    },
+    // [esim-patch] P15
+    extension: {
+      label: "+",
+      className: "text-foreground",
       textClassName: "",
     },
   }[provider];

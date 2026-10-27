@@ -267,6 +267,22 @@
       "fixErrors": "部分内容需要修改",
       "failed": "资料提交失败",
       "sent": "已提交，审核完成后会通知你。"
+    },
+    "pay": {
+      "checkoutLabel": "更多支付方式",
+      "title": "完成支付",
+      "choose": "选择支付方式",
+      "another": "或换一种方式支付",
+      "waiting": "正在等待支付确认…",
+      "paid": "已收到付款",
+      "scan": "请用钱包 App 扫码支付。",
+      "qrAlt": "支付二维码",
+      "copy": "复制支付信息",
+      "closed": "这次结账已关闭。",
+      "closedNote": "如果您已付款，款项会退回。请重新结账。",
+      "backToCart": "返回购物车",
+      "none": "暂时没有可用的支付方式，请稍后再试。",
+      "note": "付款确认后订单会立即生成。同一订单请勿重复付款。"
     }
   },
   "admin": {
@@ -724,7 +740,32 @@
       "kycOff": "不需认证",
       "kycDefault": "认证：按默认",
       "confirmKyc": "修改 {count} 个套餐是否需要身份认证？",
-      "kycNoStorage": "尚未配置文件存储（设置 → 存储），顾客无法上传证件。请先配置存储，或发布不含文件问题的表单。"
+      "kycNoStorage": "尚未配置文件存储（设置 → 存储），顾客无法上传证件。请先配置存储，或发布不含文件问题的表单。",
+      "paymentsHint": "结账页「更多支付方式」背后的支付方式。顾客在 eSIM 支付页选择其中一种，网关确认付款后才生成订单。这些付款的退款需要在网关后台手动操作。",
+      "payMissing": "还需填写：{fields}",
+      "payOffered": "启用",
+      "payName": "顾客看到的名称",
+      "paySort": "在支付页的顺序（小的在前）",
+      "payNotify": "回调地址（网关通知发到这里）：{url}",
+      "payList": "付款记录",
+      "payAttention": "需要处理",
+      "payAll": "最近 100 笔",
+      "payReference": "单号",
+      "payMethod": "方式",
+      "payAmount": "金额",
+      "payResult": "结果",
+      "payWhen": "发起时间",
+      "payOutcomeOrder": "已生成订单",
+      "payOutcomeDuplicate": "重复付款，需退回",
+      "payOutcomeClosed": "结账已关闭，需退回",
+      "payOutcomeUnsettled": "已付款，订单尚未生成",
+      "payRefundedAt": "{time} 已退回",
+      "payPaidAt": "{time} 付款",
+      "paySettle": "立即生成订单",
+      "payMarkRefunded": "标记为已退回",
+      "payConfirmRefunded": "确认已通过 {method} 把 {amount} 退还给顾客？",
+      "payNothing": "没有需要处理的付款。",
+      "payNone": "还没有付款记录。"
     },
     "sidebar": {
       "esim": "eSIM",
@@ -739,7 +780,8 @@
       "esimJobs": "定时任务",
       "esimTopups": "充值记录",
       "esimReferrals": "推荐返佣",
-      "esimKyc": "身份认证"
+      "esimKyc": "身份认证",
+      "esimPayments": "支付"
     }
   }
 }

@@ -98,6 +98,12 @@ Everything eSIM-specific lives here and in the files named below; official Stori
 
 | `migration/legacy-password.ts` | Shoppers migrated from the old store sign in with their old (bcrypt) password; on the first sign-in it is re-hashed in Better Auth's own format (patch P16) |
 | `scripts/esim-dev-legacy-login.ts` | End-to-end check of a migrated password signing in and being re-hashed |
+| `payments/plugins/` | Extension payment plugins (patch P15): BEpusdt (USDT/USDC) and RedeePay (WeChat Pay, Alipay), ported from the old store's signing rules, and a fake one for tests. A plugin only calls its gateway and checks its notifications |
+| `payments/registry.ts` | The payment methods the eSIM payment page can offer, each one plugin with its own defaults |
+| `payments/checkout.ts` | Storify's checkout for "extension": a checkout attempt (never a pre-written order) and the eSIM payment page |
+| `payments/service.ts` | The payment page, starting a payment, the gateway's notification, settling a paid payment through Storify's `finalizeCapturedAttempt` (one order however often it is replayed; a second paid payment is recorded as owed back), and the sweep run with the fulfilment cron |
+| `admin/payments.ts`, `/admin/esim/payments` | Switching methods on, their settings (secrets encrypted), the payments that need a person |
+| `scripts/esim-dev-payments.ts` | End-to-end check of a checkout paid with the fake method |
 
 **Scheduled jobs.** `esim-fulfillment` (every minute), `esim-catalog` (every 6 hours), `esim-fx` (daily) and `esim-usage` (every 30 minutes) are scheduled in `vercel.json`. A Vercel Hobby plan runs crons at most daily; the fulfilment job then needs Pro. On your own server, call each address with `Authorization: Bearer $CRON_SECRET` from the system scheduler.
 
@@ -132,6 +138,14 @@ pnpm exec tsx --env-file-if-exists=.env --require ./scripts/lib/finance-cli.cjs 
 pnpm exec tsx --env-file-if-exists=.env --require ./scripts/lib/finance-cli.cjs scripts/esim-catalog.ts plans activate --product japan-esim
 pnpm exec tsx --env-file-if-exists=.env --require ./scripts/lib/finance-cli.cjs scripts/esim-catalog.ts publish --product japan-esim
 ```
+
+## Adding a payment gateway
+
+1. Write `payments/plugins/<code>.ts` implementing `PaymentPlugin`: start a payment (a page or QR data) and read a notification, returning `null` for anything not authentic.
+2. Add one or more methods to `PAYMENT_METHOD_DEFINITIONS` in `payments/registry.ts`, and its required settings to `REQUIRED` in `payments/service.ts`.
+3. Add tests under `payments/__tests__/` with a faked `fetch`. The gateway posts to `/api/esim/pay/notify/<method>`.
+
+Refunds of these payments are recorded as made by hand (Storify does that for any method it cannot refund itself). The shopper app does not offer the method yet. In maintenance mode notifications are refused like other storefront requests, and the gateway retries them.
 
 ## Adding a supplier
 
