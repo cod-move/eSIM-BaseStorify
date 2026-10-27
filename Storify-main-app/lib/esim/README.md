@@ -96,6 +96,9 @@ Everything eSIM-specific lives here and in the files named below; official Stori
 | `admin/kyc.ts`, `app/[locale]/admin/esim/kyc`, `app/api/esim/admin/kyc/file` | Admin → eSIM → KYC: review (documents through a protected download), the form builder, countries and supplier defaults; per-plan settings in the plan library's bulk actions |
 | `scripts/esim-dev-kyc.ts` | End-to-end check of the gate, the form, a submission with a file, rejection and approval; cleans up and reports leftovers |
 
+| `migration/legacy-password.ts` | Shoppers migrated from the old store sign in with their old (bcrypt) password; on the first sign-in it is re-hashed in Better Auth's own format (patch P16) |
+| `scripts/esim-dev-legacy-login.ts` | End-to-end check of a migrated password signing in and being re-hashed |
+
 **Scheduled jobs.** `esim-fulfillment` (every minute), `esim-catalog` (every 6 hours), `esim-fx` (daily) and `esim-usage` (every 30 minutes) are scheduled in `vercel.json`. A Vercel Hobby plan runs crons at most daily; the fulfilment job then needs Pro. On your own server, call each address with `Authorization: Bearer $CRON_SECRET` from the system scheduler.
 
 Day-priced plans (Stellar's "pick the days" plans) are one variant per allowance, sold per day for the days the shopper picks. A cart holds one line per variant: adding the same variant with other days replaces the line.

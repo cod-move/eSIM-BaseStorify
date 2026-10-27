@@ -60,6 +60,8 @@ import {
 } from "@/lib/security-limits";
 import type { ISettings } from "@/models/settings.model";
 import type { CreatedUser } from "@/lib/auth/user-created";
+import { hashPassword } from "better-auth/crypto"; // [esim-patch] P16
+import { verifyAnyPassword } from "@/lib/esim/migration/legacy-password"; // [esim-patch] P16
 
 /**
  * Better Auth Server Configuration
@@ -342,6 +344,8 @@ function createAuth(
       // Length is all Better Auth understands; the uppercase/number/special
       // switches are enforced alongside it in `assertPasswordPolicy`.
       minPasswordLength: securitySettings.passwordPolicy.minPasswordLength,
+      // [esim-patch] P16 passwords migrated from the old store (bcrypt) sign in and are re-hashed.
+      password: { hash: hashPassword, verify: verifyAnyPassword },
     },
 
     // Credential stuffing and TOTP brute force both land on these endpoints,
