@@ -48,10 +48,10 @@ async function counts() {
   return new Map(await Promise.all(names.map(async (name) => [name, await db.collection(name).countDocuments()] as const)));
 }
 
-async function provider(code: string, mode: string) {
+async function provider(code: string, mode: string, extra: Record<string, string> = {}) {
   const existing = await EsimProvider.findOne({ code });
   if (existing) return existing;
-  const doc = await new EsimProvider({ code, name: code, status: "active", settlementCurrency: "USD", credentials: { mode } }).save();
+  const doc = await new EsimProvider({ code, name: code, status: "active", settlementCurrency: "USD", credentials: { mode, ...extra } }).save();
   created.providers.push(doc._id as Id);
   return doc;
 }
@@ -288,11 +288,25 @@ async function run() {
   assert.equal(foreign?.refund?.state, "done", "and the money goes back");
   console.log("✓ someone else's quote: failed without a supplier call, refunded");
 
+  // 7b. A supplier without top-up idempotency (BNESIM) answers unclearly: no retry, a person checks.
+  await provider("fake-unsafe", "uncertain", { nonIdempotent: "topup" });
+  const unsafePlan = await plan("fake-unsafe", "uncertain", { mode: "addon", window: "while_profile_exists" });
+  const unsafe = await esimOf(alice, unsafePlan, 5);
+  const unsafeQuote = await offersLib.createTopupQuote(String(alice), String(unsafe._id), "fake-topup-1gb");
+  const order5 = await paidOrder(alice, { productId: new ObjectId(unsafeQuote!.product.productId), variantId: new ObjectId(unsafeQuote!.product.variantId), name: "eSIM Top-up", price: unsafeQuote!.priceMinor / 100, lineAttributes: { topup: unsafeQuote!.quoteId } });
+  await fulfilment.esimQueueOrder(order5);
+  await fulfilment.esimFulfilOrder(order5);
+  const stopped = await EsimTopup.findOne({ order: order5 }).lean();
+  assert.equal(stopped?.state, "failed", "not left to retry");
+  assert.equal(stopped?.attempts, 1, "asked once");
+  assert.match(stopped?.lastError?.message ?? "", /cannot be asked safely again/);
+  console.log("✓ supplier without top-up idempotency: an unclear answer stops after one try for a person to check");
+
   // 8. History and the admin list.
   const history = await listEsimTopups(String(alice), String(stacked._id));
   assert.deepEqual(history.map((row) => row.status), ["completed"]);
   const all = await listTopupsAdmin("all", { search: tag });
-  assert.equal(all.rows.length, 4);
+  assert.equal(all.rows.length, 5);
   const byProvider = await listTopupsAdmin("all", { search: tag, provider: "fake-reject" });
   assert.equal(byProvider.rows.length, 1);
   const byEmail = await listTopupsAdmin("all", { search: `${tag}-2@esim.test` });

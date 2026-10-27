@@ -1,3 +1,4 @@
+import { BnesimAdapter } from "./bnesim";
 import { EsimAccessAdapter } from "./esim-access";
 import { FakeAdapter, type FakeMode } from "./fake";
 import { RoamWifiAdapter } from "./roamwifi";
@@ -64,6 +65,19 @@ export const PROVIDER_DEFINITIONS = {
         baseUrl: credentials.baseUrl || undefined,
       }),
   },
+  bnesim: {
+    displayName: "BNESIM",
+    credentialKeys: ["apiKey", "apiSecret", "type", "baseUrl"],
+    secretKeys: ["apiSecret"],
+    create: (credentials, settlementCurrency) =>
+      new BnesimAdapter({
+        apiKey: required(credentials, "apiKey", "BNESIM"),
+        apiSecret: required(credentials, "apiSecret", "BNESIM"),
+        type: credentials.type || undefined,
+        currency: settlementCurrency,
+        baseUrl: credentials.baseUrl || undefined,
+      }),
+  },
 } satisfies Record<string, ProviderDefinition>;
 
 export type ProviderCode = keyof typeof PROVIDER_DEFINITIONS;
@@ -90,7 +104,7 @@ export function createAdapter(
   if (/^fake(-[a-z0-9]+)?$/.test(code) && fakeEnabled()) {
     const mode = (credentials.mode ?? "fulfil") as FakeMode;
     if (!FAKE_MODES.includes(mode)) throw new ProviderError("credentials_missing", `Fake mode "${mode}" is unknown`);
-    return new FakeAdapter({ mode });
+    return new FakeAdapter({ mode, nonIdempotentTopup: credentials.nonIdempotent === "topup" });
   }
   if (!isProviderCode(code)) {
     throw new ProviderError("unsupported", `No adapter for provider "${code}"`);

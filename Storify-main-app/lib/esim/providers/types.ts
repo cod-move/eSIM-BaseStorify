@@ -230,6 +230,11 @@ export interface EsimProviderAdapter {
   readonly code: string;
   readonly displayName: string;
   readonly capabilities: Readonly<Record<ProviderCapability, boolean>>;
+  /**
+   * Calls the supplier gives no idempotency key for: an uncertain answer to
+   * one cannot be retried safely, so the caller stops and asks a person.
+   */
+  readonly nonIdempotent?: Readonly<{ topup?: boolean }>;
   /** Cheap authenticated call proving the credentials work. */
   probe(): Promise<{ message: string; metadata: JsonObject }>;
   /** The full catalogue, streamed so a large one never sits in memory whole. */

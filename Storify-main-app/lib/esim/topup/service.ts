@@ -175,6 +175,7 @@ async function processOne(job: IEsimTopup, owner: string): Promise<IEsimTopup["s
   const now = new Date();
 
   let outcome: Outcome;
+  let retryUnsafe = false;
   let result: TopupResult | null = null;
   if (!profile || !provider) {
     outcome = { kind: "error", code: "not_found", message: "The eSIM or its supplier no longer exists" };
@@ -184,6 +185,7 @@ async function processOne(job: IEsimTopup, owner: string): Promise<IEsimTopup["s
     const key = topupIdempotencyKey(String(job._id));
     try {
       const adapter = adapterFor(provider);
+      retryUnsafe = Boolean(adapter.nonIdempotent?.topup);
       const query = job.providerTopupId && adapter.queryTopup ? job.providerTopupId : null;
       result = await withProviderLog(
         {
@@ -207,13 +209,18 @@ async function processOne(job: IEsimTopup, owner: string): Promise<IEsimTopup["s
     }
   }
 
-  const decision = decide(
-    { candidateIndex: 0, candidateCount: 1, candidateAttempts: job.candidateAttempts, pendingSince: job.pendingSince },
-    outcome,
-    now,
-  );
+  // A supplier without top-up idempotency may have done it: never retry blindly, a person checks.
+  const decision = retryUnsafe && outcome.kind === "error" && outcome.code === "uncertain"
+    ? { action: "fail" as const, reason: `${job.providerCode} gave no clear answer and cannot be asked safely again: check its portal before retrying or refunding — ${outcome.message}` }
+    : decide(
+        { candidateIndex: 0, candidateCount: 1, candidateAttempts: job.candidateAttempts, pendingSince: job.pendingSince },
+        outcome,
+        now,
+      );
   const event = (name: string, detail?: string) => ({ history: { at: now, event: name, ...(detail ? { detail } : {}) } });
-  const error = outcome.kind === "error" ? { code: outcome.code, message: outcome.message, at: now } : null;
+  const unsafeStop = retryUnsafe && outcome.kind === "error" && outcome.code === "uncertain" && decision.action === "fail";
+  // The admin sees why it stopped, not just the supplier's timeout.
+  const error = outcome.kind === "error" ? { code: outcome.code, message: unsafeStop && decision.action === "fail" ? decision.reason : outcome.message, at: now } : null;
   if (outcome.kind === "error" && provider && looksLikeBalanceProblem(outcome.message)) {
     await alertSupplierProblem(job.providerCode, "balance", `Refused a top-up for order ${job.orderNumber}: ${outcome.message}`);
   }

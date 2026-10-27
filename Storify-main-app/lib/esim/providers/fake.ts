@@ -29,6 +29,8 @@ export type FakeMode = "fulfil" | "pending" | "reject" | "uncertain";
 
 export interface FakeOptions {
   mode: FakeMode;
+  /** Behave like a supplier without top-up idempotency (BNESIM): see `nonIdempotent`. */
+  nonIdempotentTopup?: boolean;
 }
 
 function digits(seed: string, length: number) {
@@ -72,7 +74,11 @@ export class FakeAdapter implements EsimProviderAdapter {
   readonly displayName = "Fake supplier (testing)";
   readonly capabilities = { listPlans: true, purchase: true, usage: true, topup: true, cancel: true } as const;
 
-  constructor(private readonly options: FakeOptions) {}
+  readonly nonIdempotent: { topup?: boolean };
+
+  constructor(private readonly options: FakeOptions) {
+    this.nonIdempotent = options.nonIdempotentTopup ? { topup: true } : {};
+  }
 
   async probe() {
     return { message: `Fake supplier in ${this.options.mode} mode`, metadata: { mode: this.options.mode } };
