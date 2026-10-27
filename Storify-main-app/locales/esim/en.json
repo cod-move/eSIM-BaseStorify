@@ -251,6 +251,22 @@
         "credited": "Added to your balance",
         "cancelled": "Cancelled (order refunded)"
       }
+    },
+    "kyc": {
+      "title": "Identity verification",
+      "link": "Identity verification",
+      "why": "Some countries' networks need to know who uses an eSIM. Verify once, and every eSIM that needs it can be bought.",
+      "approved": "Your identity is verified.",
+      "pending": "Sent on {date}. We are checking it and will let you know.",
+      "rejected": "Not passed: {reason}. Please send your details again.",
+      "yourDetails": "Your details",
+      "closed": "Identity verification is not open yet.",
+      "choose": "Choose…",
+      "submit": "Send for review",
+      "privacy": "Your documents are stored privately and seen only by our staff checking them.",
+      "fixErrors": "Some answers need another look",
+      "failed": "Could not send your details",
+      "sent": "Sent. We will tell you when it has been checked."
     }
   },
   "admin": {
@@ -662,7 +678,53 @@
       "referralFrom": "from {date}",
       "referralTakeBack": "Refunded later: take back {amount}",
       "referralCancel": "Cancel",
-      "referralSettle": "Dealt with"
+      "referralSettle": "Dealt with",
+      "kycHint": "Shoppers verify their identity once, in My eSIMs. A plan that needs it can then be checked out only by a verified shopper, and never by a guest.",
+      "kycReview": "Review",
+      "kycForm": "Form",
+      "kycRules": "Which plans",
+      "kycPending": "Waiting",
+      "kycApproved": "Approved",
+      "kycRejected": "Rejected",
+      "kycAll": "All",
+      "kycSearch": "Shopper email",
+      "kycNone": "Nothing here.",
+      "kycSent": "Sent {date} · form v{version}",
+      "kycReviewedBy": "Reviewed by {who}, {date}",
+      "kycApprove": "Approve",
+      "kycReject": "Reject",
+      "kycReason": "Why it is rejected",
+      "kycApprovedDone": "Approved; the shopper is told",
+      "kycRejectedDone": "Rejected; the shopper is told",
+      "kycFormVersion": "Form — version {version} is live",
+      "kycFormNone": "Form — not published yet",
+      "kycFormHint": "Publishing makes a new version; submissions keep the version they answered.",
+      "kycLabel": "Question",
+      "kycOptions": "Choices, separated by commas",
+      "kycHelp": "Help text (optional)",
+      "kycRequired": "Required",
+      "kycType": {
+        "text": "Short text",
+        "textarea": "Long text",
+        "select": "Choice",
+        "date": "Date",
+        "file": "File"
+      },
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "remove": "Remove",
+      "kycAddField": "Add a question",
+      "kycPublish": "Publish as a new version",
+      "kycPublished": "Published",
+      "kycRulesHint": "A plan needs KYC when it is set so in the plan library; otherwise when it covers a listed country; otherwise when its supplier says so. Set in the plan library: {required} need it, {notRequired} do not.",
+      "kycCountries": "Countries that need it (two-letter codes)",
+      "kycSuppliers": "Suppliers whose plans need it",
+      "kycNoSuppliers": "No suppliers yet.",
+      "kycOn": "Needs KYC",
+      "kycOff": "No KYC",
+      "kycDefault": "KYC: use defaults",
+      "confirmKyc": "Change whether {count} plans need identity verification?",
+      "kycNoStorage": "File storage is not set up (Settings → Storage), so shoppers cannot upload documents. Set it up, or publish a form without file questions."
     },
     "sidebar": {
       "esim": "eSIM",
@@ -676,7 +738,8 @@
       "esimDevices": "Devices",
       "esimJobs": "Scheduled jobs",
       "esimTopups": "Top-ups",
-      "esimReferrals": "Referrals"
+      "esimReferrals": "Referrals",
+      "esimKyc": "KYC"
     }
   }
 }

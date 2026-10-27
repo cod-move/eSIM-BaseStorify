@@ -63,14 +63,16 @@ export function EsimPlansTable({ rows, pagination, stats, filters, sort, provide
   const activeFilters: PlanFilters = { ...filters, search: filters.search || undefined };
   const hasFilter = Object.values(activeFilters).some(Boolean);
 
-  async function bulk(action: "activate" | "disable" | "publish", target: { ids: string[] } | { filters: PlanFilters }) {
+  async function bulk(action: "activate" | "disable" | "publish" | "kyc-required" | "kyc-not-required" | "kyc-default", target: { ids: string[] } | { filters: PlanFilters }) {
     const count = "ids" in target ? target.ids.length : pagination.total;
     const label =
       action === "activate"
         ? t("admin.esim.confirmActivate", "Switch on {count} plans? They will be priced and can be published.", { count })
         : action === "disable"
           ? t("admin.esim.confirmDisable", "Switch off {count} plans? Their variants leave the store at the next publish.", { count })
-          : t("admin.esim.confirmPublish", "Publish the destinations of {count} plans? New products are created as drafts.", { count });
+          : action === "publish"
+            ? t("admin.esim.confirmPublish", "Publish the destinations of {count} plans? New products are created as drafts.", { count })
+            : t("admin.esim.confirmKyc", "Change whether {count} plans need identity verification?", { count });
     if (!(await confirm({ title: t("admin.esim.confirm", "Are you sure?"), description: label }))) return;
     try {
       const result = await apiClient.post<Record<string, unknown>>("/api/esim/admin/plans/bulk", { action, ...target });
@@ -265,6 +267,9 @@ export function EsimPlansTable({ rows, pagination, stats, filters, sort, provide
                 { id: "on", label: t("admin.esim.switchOn", "Switch on"), icon: <CheckCircle2 className="h-4 w-4" />, onClick: (items) => bulk("activate", { ids: items.map((item) => item.id) }) },
                 { id: "off", label: t("admin.esim.switchOff", "Switch off"), icon: <Ban className="h-4 w-4" />, onClick: (items) => bulk("disable", { ids: items.map((item) => item.id) }) },
                 { id: "publish", label: t("admin.esim.publish", "Publish destinations"), icon: <Rocket className="h-4 w-4" />, onClick: (items) => bulk("publish", { ids: items.map((item) => item.id) }) },
+                { id: "kyc-on", label: t("admin.esim.kycOn", "Needs KYC"), onClick: (items) => bulk("kyc-required", { ids: items.map((item) => item.id) }) },
+                { id: "kyc-off", label: t("admin.esim.kycOff", "No KYC"), onClick: (items) => bulk("kyc-not-required", { ids: items.map((item) => item.id) }) },
+                { id: "kyc-default", label: t("admin.esim.kycDefault", "KYC: use defaults"), onClick: (items) => bulk("kyc-default", { ids: items.map((item) => item.id) }) },
               ]
             : undefined
         }

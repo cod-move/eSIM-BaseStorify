@@ -251,6 +251,22 @@
         "credited": "已存入余额",
         "cancelled": "已取消（订单退款）"
       }
+    },
+    "kyc": {
+      "title": "身份认证",
+      "link": "身份认证",
+      "why": "部分国家的运营商要求实名使用 eSIM。认证一次，所有需要认证的 eSIM 都能购买。",
+      "approved": "你的身份已通过认证。",
+      "pending": "已于 {date} 提交，正在审核，结果会通知你。",
+      "rejected": "未通过：{reason}。请重新提交资料。",
+      "yourDetails": "你的资料",
+      "closed": "身份认证暂未开放。",
+      "choose": "请选择…",
+      "submit": "提交审核",
+      "privacy": "你的证件私密保存，只有负责审核的工作人员可以查看。",
+      "fixErrors": "部分内容需要修改",
+      "failed": "资料提交失败",
+      "sent": "已提交，审核完成后会通知你。"
     }
   },
   "admin": {
@@ -662,7 +678,53 @@
       "referralFrom": "{date} 起",
       "referralTakeBack": "发放后退款：需扣回 {amount}",
       "referralCancel": "取消",
-      "referralSettle": "已处理"
+      "referralSettle": "已处理",
+      "kycHint": "顾客在「我的 eSIM」中认证一次身份。需要认证的套餐只有已认证的顾客能结账，游客不能购买。",
+      "kycReview": "审核",
+      "kycForm": "表单",
+      "kycRules": "适用套餐",
+      "kycPending": "待审核",
+      "kycApproved": "已通过",
+      "kycRejected": "已拒绝",
+      "kycAll": "全部",
+      "kycSearch": "顾客邮箱",
+      "kycNone": "没有记录。",
+      "kycSent": "{date} 提交 · 表单 v{version}",
+      "kycReviewedBy": "{who} 于 {date} 审核",
+      "kycApprove": "通过",
+      "kycReject": "拒绝",
+      "kycReason": "拒绝原因",
+      "kycApprovedDone": "已通过，已通知顾客",
+      "kycRejectedDone": "已拒绝，已通知顾客",
+      "kycFormVersion": "表单：当前为第 {version} 版",
+      "kycFormNone": "表单：尚未发布",
+      "kycFormHint": "每次发布都会生成新版本；已提交的资料保留提交时的版本。",
+      "kycLabel": "问题",
+      "kycOptions": "选项，用逗号分隔",
+      "kycHelp": "说明（可选）",
+      "kycRequired": "必填",
+      "kycType": {
+        "text": "短文本",
+        "textarea": "长文本",
+        "select": "单选",
+        "date": "日期",
+        "file": "文件"
+      },
+      "moveUp": "上移",
+      "moveDown": "下移",
+      "remove": "删除",
+      "kycAddField": "添加问题",
+      "kycPublish": "发布为新版本",
+      "kycPublished": "已发布",
+      "kycRulesHint": "套餐在套餐库里单独设置的以设置为准；否则覆盖所列国家的需要认证；否则看供应商默认。套餐库中已单独设置：{required} 个需要，{notRequired} 个不需要。",
+      "kycCountries": "需要认证的国家（两位代码）",
+      "kycSuppliers": "需要认证的供应商",
+      "kycNoSuppliers": "还没有供应商。",
+      "kycOn": "需要认证",
+      "kycOff": "不需认证",
+      "kycDefault": "认证：按默认",
+      "confirmKyc": "修改 {count} 个套餐是否需要身份认证？",
+      "kycNoStorage": "尚未配置文件存储（设置 → 存储），顾客无法上传证件。请先配置存储，或发布不含文件问题的表单。"
     },
     "sidebar": {
       "esim": "eSIM",
@@ -676,7 +738,8 @@
       "esimDevices": "机型表",
       "esimJobs": "定时任务",
       "esimTopups": "充值记录",
-      "esimReferrals": "推荐返佣"
+      "esimReferrals": "推荐返佣",
+      "esimKyc": "身份认证"
     }
   }
 }

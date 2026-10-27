@@ -176,6 +176,13 @@ export async function setPlansStatus(selection: PlanSelection, status: "active" 
   return { changed: result.modifiedCount, productSlugs: affected, priced: priced?.changed ?? 0 };
 }
 
+/** KYC for the selected plans (KYC-03): always, never, or back to the country and supplier defaults (null). */
+export async function setPlansKyc(selection: PlanSelection, required: boolean | null) {
+  await connectDB();
+  const result = await EsimPlan.updateMany(selectionQuery(selection), { $set: { kycRequired: required } });
+  return { changed: result.modifiedCount };
+}
+
 /** A hand-set selling price (USD minor units), or back to the pricing rules with null. */
 export async function setManualPrice(planId: string, retailPriceMinor: number | null) {
   await connectDB();

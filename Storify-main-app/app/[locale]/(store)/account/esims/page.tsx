@@ -57,6 +57,9 @@ export default async function AccountEsimsPage({ params }: PageProps) {
           </CardContent>
         </Card>
       </Link>
+      <Link href="/account/esims/verification" className="block text-sm text-muted-foreground hover:text-foreground">
+        {tr("esim.kyc.link", "Identity verification")} →
+      </Link>
 
       {esims.length === 0 ? (
         <Card>

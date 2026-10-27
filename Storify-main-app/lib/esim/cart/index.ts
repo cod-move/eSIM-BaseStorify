@@ -20,6 +20,7 @@ import { topupLineLabel } from "@/lib/esim/topup/label";
 import { isWalletVariant } from "@/lib/esim/wallet/product";
 import { walletFeeMinor } from "@/lib/esim/wallet/booking";
 import { getEsimSettings } from "@/models/esim-pricing.model";
+import { kycState, variantsNeedingKyc } from "@/lib/esim/kyc/service";
 
 /**
  * The eSIM side of patch point P10: what Storify's cart and checkout ask about
@@ -123,6 +124,10 @@ export async function esimCartLine(
       if (requested) throw new LineAttributesError("This product takes no options of that kind");
       return null;
     }
+    // KYC-03: a plan that needs identity verification is not sold to guests.
+    if (!context.userId && (await variantsNeedingKyc([line.variantId])).size) {
+      throw new LineAttributesError("Sign in to buy this eSIM: it needs identity verification");
+    }
     const lineAttributes = resolveLineAttributes(requested, info.perDay);
     if (!lineAttributes || !info.perDay) return null;
     const days = lineAttributes.days ?? info.perDay.defaultDays;
@@ -180,6 +185,17 @@ export async function esimLinePrices<T extends { variantId?: unknown; lineAttrib
   }
   const info = await variantInfo(items.map((item) => item.variantId));
   if (!info.size) return prices;
+  // KYC-03: plans that need identity verification are paid for only by a verified shopper.
+  if ((await variantsNeedingKyc([...info.keys()])).size) {
+    const verified = context.userId ? (await kycState(context.userId)).status === "approved" : false;
+    if (!verified) {
+      throw new ValidationError({
+        stock: [context.userId
+          ? "An eSIM in your cart needs identity verification. Verify your identity in My eSIMs → Identity verification, then check out."
+          : "An eSIM in your cart needs identity verification: sign in and verify your identity first."],
+      });
+    }
+  }
   for (const item of items) {
     const variant = info.get(String(item.variantId ?? ""));
     if (!variant) continue;

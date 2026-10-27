@@ -69,6 +69,8 @@ export interface IEsimSettings extends mongoose.Document {
     holdDays: number;
     coupon: { enabled: boolean; type: "percentage" | "fixed"; value: number; days: number; minOrderMinor: number };
   };
+  /** Customer KYC (KYC-03): countries whose plans need it unless a plan says otherwise. */
+  kyc: { countries: string[] };
   /** Shopper reminders (NTF-03/04/05/07) and their thresholds. */
   reminders: { enabled: boolean; lowDataPercent: number; expiringHours: number; installDays: number };
   updatedAt: Date;
@@ -106,6 +108,9 @@ const EsimSettingsSchema = new Schema<IEsimSettings>(
         days: { type: Number, default: 30, min: 1 },
         minOrderMinor: { type: Number, default: 0, min: 0 },
       },
+    },
+    kyc: {
+      countries: { type: [String], default: [] },
     },
     reminders: {
       enabled: { type: Boolean, default: true },

@@ -3,7 +3,7 @@ import { successResponse } from "@/lib/api/response";
 import { withApi } from "@/lib/api/handler";
 import { validateBody } from "@/lib/api/validate";
 import { ValidationError } from "@/lib/api/errors";
-import { publishDestinations, selectionDestinations, setPlansStatus, type PlanSelection } from "@/lib/esim/admin/plans";
+import { publishDestinations, selectionDestinations, setPlansKyc, setPlansStatus, type PlanSelection } from "@/lib/esim/admin/plans";
 import { ESIM_WRITE, auditEsim, runAfterResponse } from "@/lib/esim/admin/route";
 
 const Filters = z.object({
@@ -17,7 +17,7 @@ const Filters = z.object({
 });
 
 const BulkSchema = z.object({
-  action: z.enum(["activate", "disable", "publish"]),
+  action: z.enum(["activate", "disable", "publish", "kyc-required", "kyc-not-required", "kyc-default"]),
   ids: z.array(z.string()).max(1000).optional(),
   filters: Filters.optional(),
   /** For "publish": the status a newly created product gets. */
@@ -56,6 +56,18 @@ export const POST = withApi(ESIM_WRITE, async ({ request, session }) => {
     }
     const result = await publishDestinations({ productSlugs }, body.publishStatus);
     return successResponse({ background: false, destinations: productSlugs.length, result });
+  }
+
+  if (body.action.startsWith("kyc-")) {
+    const required = body.action === "kyc-required" ? true : body.action === "kyc-not-required" ? false : null;
+    const result = await setPlansKyc(selection, required);
+    await auditEsim(request, session, {
+      resourceId: "esim:plans",
+      resourceName: "eSIM plans",
+      summary: `KYC ${required === null ? "back to the defaults" : required ? "required" : "not required"} on ${result.changed} eSIM plans (${scope})`,
+      after: { kycRequired: required, changed: result.changed },
+    });
+    return successResponse(result);
   }
 
   const status = body.action === "activate" ? "active" : "disabled";
