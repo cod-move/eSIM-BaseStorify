@@ -4,6 +4,8 @@ import {
   EsimDestinationList,
   EsimDetail,
   EsimList,
+  EsimTopupQuote,
+  EsimTopups,
 } from '@/contracts/mobile/shop/v1/esim';
 
 import { api } from '../api';
@@ -54,5 +56,27 @@ export function getEsimDestination(
       signal,
     },
     EsimDestinationDetail
+  );
+}
+
+/** The top-ups this eSIM can take now, priced. */
+export function getEsimTopups(locale: string, id: string, signal: AbortSignal) {
+  return api.data(
+    { locale, path: `/me/esims/${encodeURIComponent(id)}/topups`, auth: 'user', signal },
+    EsimTopups
+  );
+}
+
+/** Fixes one top-up for the cart: the answer is the cart line to send as it is. */
+export function quoteEsimTopup(locale: string, id: string, topupPlanId: string) {
+  return api.data(
+    {
+      locale,
+      path: `/me/esims/${encodeURIComponent(id)}/topups/quote`,
+      method: 'POST',
+      auth: 'user',
+      body: { topupPlanId },
+    },
+    EsimTopupQuote
   );
 }

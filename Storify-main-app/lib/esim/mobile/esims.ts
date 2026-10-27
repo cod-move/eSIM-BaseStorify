@@ -5,6 +5,7 @@ import { connectDB } from "@/lib/db";
 import { getCustomerEsim, listCustomerEsims, refreshCustomerEsim } from "@/lib/esim/account/esims";
 import { esimDestinationRoute, esimDestinationsRoute } from "./destinations";
 import { toEsimDetail, toEsimSummary } from "./dto";
+import { esimTopupQuoteRoute, esimTopupsRoute } from "./topups";
 
 /**
  * The shopper app's eSIMs (APP-03/04): the website's own readers
@@ -68,4 +69,4 @@ export const refreshMyEsimRoute = defineRoute({
 });
 
 /** The eSIM module's shopper endpoints, for the API's route list (patch P22). */
-export const esimShopRoutes: readonly RouteEntry[] = [myEsimsRoute, myEsimRoute, refreshMyEsimRoute, esimDestinationsRoute, esimDestinationRoute];
+export const esimShopRoutes: readonly RouteEntry[] = [myEsimsRoute, myEsimRoute, refreshMyEsimRoute, esimDestinationsRoute, esimDestinationRoute, esimTopupsRoute, esimTopupQuoteRoute];

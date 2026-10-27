@@ -1,8 +1,15 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { getEsim, getEsims, refreshEsim } from '@/api/endpoints/esims';
+import {
+  getEsim,
+  getEsims,
+  getEsimTopups,
+  quoteEsimTopup,
+  refreshEsim,
+} from '@/api/endpoints/esims';
 import { STALE } from '@/api/query-client';
 import { queryKeys } from '@/api/query-keys';
+import { useSetCartLine } from '@/features/cart/use-cart';
 import { useLocale } from '@/i18n/locale-store';
 
 /** The shopper's eSIMs, newest first. */
@@ -41,6 +48,36 @@ export function useRefreshEsim(id: string) {
     onSuccess: (detail) => {
       client.setQueryData(queryKeys.esim(locale, id), detail);
       void client.invalidateQueries({ queryKey: queryKeys.esimList(locale) });
+    },
+  });
+}
+
+/** The top-ups an eSIM can take now. */
+export function useEsimTopups(id: string) {
+  const locale = useLocale();
+
+  return useQuery({
+    queryKey: queryKeys.esimTopups(locale, id),
+    queryFn: ({ signal }) => getEsimTopups(locale, id, signal),
+    staleTime: STALE.private,
+  });
+}
+
+/** Fixes a top-up and puts it in the cart, as the line the store answered with. */
+export function useBuyEsimTopup(id: string) {
+  const locale = useLocale();
+  const setLine = useSetCartLine();
+
+  return useMutation({
+    mutationFn: async (topupPlanId: string) => {
+      const quote = await quoteEsimTopup(locale, id, topupPlanId);
+      await setLine.mutateAsync({
+        productId: quote.productId,
+        variantId: quote.variantId,
+        quantity: 1,
+        lineAttributes: quote.lineAttributes,
+      });
+      return quote;
     },
   });
 }

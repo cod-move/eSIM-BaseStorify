@@ -206,3 +206,58 @@ export const EsimDestinationDetail = EsimDestination.extend({
   plans: z.array(EsimPlanOption),
 });
 export type EsimDestinationDetail = z.infer<typeof EsimDestinationDetail>;
+
+/*
+ * Top-ups (the website's /account/esims/{id}/topup, APP-06).
+ *
+ * GET /me/esims/{id}/topups is what the eSIM can take now, priced. POST
+ * /me/esims/{id}/topups/quote fixes one for the cart: its answer is the line
+ * to send to PUT /cart/lines as it is (`productId`, `variantId`, quantity 1,
+ * `lineAttributes`). The quote is checked again at checkout.
+ */
+
+/** Why an eSIM takes no top-up (`EsimTopups.refusal`). */
+export const ESIM_TOPUP_REFUSALS = [
+  "not_supported",
+  "not_issued",
+  "cancelled",
+  "expired",
+  "used_up",
+  "profile_expired",
+] as const;
+
+export const EsimTopupOffer = z.object({
+  topupPlanId: z.string(),
+  name: z.string(),
+  /** "1 GB", "500 MB". */
+  data: z.string(),
+  validityDays: z.number().int(),
+  price: Money,
+});
+export type EsimTopupOffer = z.infer<typeof EsimTopupOffer>;
+
+/** GET /me/esims/{id}/topups */
+export const EsimTopups = z.object({
+  /** Left out when the eSIM can be topped up; one of `ESIM_TOPUP_REFUSALS` otherwise. */
+  refusal: z.string().optional(),
+  /** stack: added to the current plan; addon: a separate package beside it. */
+  mode: z.enum(["stack", "addon"]).optional(),
+  offers: z.array(EsimTopupOffer),
+  /** The supplier could not be asked just now: try again shortly. */
+  unavailable: z.boolean(),
+});
+export type EsimTopups = z.infer<typeof EsimTopups>;
+
+/** POST /me/esims/{id}/topups/quote */
+export const EsimTopupQuoteRequest = z.object({ topupPlanId: z.string().min(1).max(200) });
+export type EsimTopupQuoteRequest = z.infer<typeof EsimTopupQuoteRequest>;
+
+export const EsimTopupQuote = z.object({
+  productId: z.string(),
+  variantId: z.string(),
+  lineAttributes: z.object({ topup: z.string() }),
+  /** What the cart line will say, and cost. */
+  label: z.string(),
+  price: Money,
+});
+export type EsimTopupQuote = z.infer<typeof EsimTopupQuote>;

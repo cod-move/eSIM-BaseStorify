@@ -58,6 +58,23 @@
     "viewCart": "查看购物车",
     "pickDays": "自选天数",
     "topupable": "可充值",
-    "buyAnother": "购买 eSIM"
+    "buyAnother": "购买 eSIM",
+    "topupTitle": "充值",
+    "topupButton": "为此 eSIM 充值",
+    "topupAdd": "加入购物车",
+    "topupClosed": "此 eSIM 无法充值",
+    "topupNone": "该套餐暂时没有可买的充值包。",
+    "topupUnavailable": "暂时无法连接运营商，请稍后再试。",
+    "tryAgain": "重试",
+    "topupStackNote": "流量和天数会加到当前套餐上。",
+    "topupAddonNote": "这是与当前套餐并行的独立流量包，有自己的流量和天数。",
+    "topupRefusal": {
+      "not_supported": "该套餐不支持充值。",
+      "not_issued": "此 eSIM 尚未开通。",
+      "cancelled": "此 eSIM 已取消。",
+      "expired": "该套餐已过期，无法再充值，请购买新的 eSIM。",
+      "used_up": "该套餐流量已用完，无法再充值，请购买新的 eSIM。",
+      "profile_expired": "此 eSIM 已失效，请购买新的 eSIM。"
+    }
   }
 }

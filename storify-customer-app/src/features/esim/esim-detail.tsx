@@ -1,4 +1,5 @@
 import { setStringAsync } from 'expo-clipboard';
+import { useRouter } from 'expo-router';
 import { openURL } from 'expo-linking';
 import { useState } from 'react';
 import { Platform, ScrollView, View } from 'react-native';
@@ -29,6 +30,7 @@ export function EsimDetailView({ esim }: { esim: EsimDetail }) {
   const toast = useToast();
   const describe = useErrorMessage();
   const refresh = useRefreshEsim(esim.id);
+  const router = useRouter();
   const date = (value: string | undefined) =>
     value ? format.dateTime(new Date(value), { dateStyle: 'medium', timeStyle: 'short' }) : null;
 
@@ -75,6 +77,17 @@ export function EsimDetailView({ esim }: { esim: EsimDetail }) {
       </View>
 
       {esim.install ? <InstallCard install={esim.install} prominent={esim.canInstall} /> : null}
+
+      {esim.canTopup ? (
+        <Button
+          label={t('topupButton')}
+          variant="secondary"
+          icon="plus"
+          onPress={() =>
+            router.push({ pathname: '/account/esims/[id]/topup', params: { id: esim.id } })
+          }
+        />
+      ) : null}
 
       <View className="gap-2 rounded-xl bg-surface p-4">
         <Fact label={t('data')} value={esim.dataLabel} />

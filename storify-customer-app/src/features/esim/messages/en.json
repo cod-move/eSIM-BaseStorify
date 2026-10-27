@@ -58,6 +58,23 @@
     "viewCart": "View cart",
     "pickDays": "Choose the days",
     "topupable": "Can be topped up",
-    "buyAnother": "Buy an eSIM"
+    "buyAnother": "Buy an eSIM",
+    "topupTitle": "Top up",
+    "topupButton": "Top up this eSIM",
+    "topupAdd": "Add to cart",
+    "topupClosed": "No top-up for this eSIM",
+    "topupNone": "No top-up is on offer for this plan right now.",
+    "topupUnavailable": "The network could not be reached. Try again in a moment.",
+    "tryAgain": "Try again",
+    "topupStackNote": "The data and days are added to your current plan.",
+    "topupAddonNote": "This is a separate package beside your current plan, with its own data and days.",
+    "topupRefusal": {
+      "not_supported": "This plan cannot be topped up.",
+      "not_issued": "This eSIM has not been issued yet.",
+      "cancelled": "This eSIM was cancelled.",
+      "expired": "This plan has expired and can no longer be topped up. Buy a new eSIM instead.",
+      "used_up": "This plan's data is used up and it can no longer be topped up. Buy a new eSIM instead.",
+      "profile_expired": "This eSIM is no longer valid. Buy a new eSIM instead."
+    }
   }
 }
