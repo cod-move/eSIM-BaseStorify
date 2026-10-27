@@ -16,6 +16,8 @@
  */
 import * as z from "zod";
 
+import { Money } from "./common";
+
 /** What the shopper sees an eSIM as (`EsimSummary.status`). */
 export const ESIM_STATUSES = [
   /** The supplier is issuing it. */
@@ -127,3 +129,80 @@ export type EsimDetail = z.infer<typeof EsimDetail>;
 /** POST /me/esims/{id}/refresh: nothing to send. */
 export const EsimRefreshInput = z.object({}).strict();
 export type EsimRefreshInput = z.infer<typeof EsimRefreshInput>;
+
+/*
+ * Destinations and their plans (the website's /esim pages, APP-02).
+ *
+ * GET /esim/destinations is every destination an admin has put on sale, in
+ * three lists; GET /esim/destinations/{scope}/{slug} one of them with its
+ * plans, `scope` being `local` for a country and `multi` for a region or the
+ * global plan. A plan is bought by adding its `productId` and `variantId` to
+ * the cart (PUT /cart/lines); a day-priced plan sends the days chosen as
+ * `lineAttributes.days`, between `perDay.minDays` and `perDay.maxDays`. The
+ * cart prices it: the app works out no price.
+ */
+
+export const EsimScope = z.enum(["local", "regional", "global"]);
+export type EsimScope = z.infer<typeof EsimScope>;
+
+export const EsimDestination = z.object({
+  slug: z.string(),
+  /** `local` or `multi`, for GET /esim/destinations/{scope}/{slug}. */
+  pathScope: z.enum(["local", "multi"]),
+  name: z.string(),
+  emoji: z.string().optional(),
+  scope: EsimScope,
+  /** A country's continent: asia, europe, middle_east, north_america, south_america, oceania, africa or other. Left out for regions. */
+  continent: z.string().optional(),
+  /** ISO codes of the countries covered. */
+  countries: z.array(z.string()),
+  /** The cheapest plan, "from". Left out when every plan is day-priced. */
+  fromPrice: Money.optional(),
+  planCount: z.number().int(),
+});
+export type EsimDestination = z.infer<typeof EsimDestination>;
+
+/** GET /esim/destinations */
+export const EsimDestinationList = z.object({
+  local: z.array(EsimDestination),
+  regional: z.array(EsimDestination),
+  global: z.array(EsimDestination),
+});
+export type EsimDestinationList = z.infer<typeof EsimDestinationList>;
+
+export const EsimPlanOption = z.object({
+  variantId: z.string(),
+  name: z.string(),
+  /** "5GB", "Unlimited (3GB/day high speed)", "1GB/day". */
+  data: z.string(),
+  dataType: z.string(),
+  /** Fixed validity; left out for a day-priced plan. */
+  days: z.number().int().optional(),
+  /** The fixed plan's price; for a day-priced plan, the price of `perDay.minDays`. */
+  price: Money,
+  /** A day-priced plan: the shopper picks how many days. */
+  perDay: z
+    .object({
+      minDays: z.number().int(),
+      maxDays: z.number().int(),
+      /** What one day adds, for "+ … a day". */
+      pricePerDay: Money,
+    })
+    .optional(),
+  /** stack: a top-up adds to it; addon: a separate package; none: no top-ups. */
+  topupMode: z.string(),
+});
+export type EsimPlanOption = z.infer<typeof EsimPlanOption>;
+
+/** GET /esim/destinations/{scope}/{slug} */
+export const EsimDestinationDetail = EsimDestination.extend({
+  /** The store product the plans are variants of, for the cart. */
+  productId: z.string(),
+  /** The product's own page (`/products/{slug}`), with the full description. */
+  productSlug: z.string(),
+  image: z.string().optional(),
+  countryNames: z.array(z.object({ code: z.string(), name: z.string() })),
+  networks: z.array(z.object({ countryCode: z.string(), operator: z.string(), network: z.string().optional() })),
+  plans: z.array(EsimPlanOption),
+});
+export type EsimDestinationDetail = z.infer<typeof EsimDestinationDetail>;

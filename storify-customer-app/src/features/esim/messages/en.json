@@ -40,6 +40,24 @@
     "copyLabel": "Copy {what}",
     "emptyTitle": "No eSIMs yet",
     "emptyBody": "eSIMs you buy show up here, with how to install them.",
-    "browse": "Find a destination"
+    "browse": "Find a destination",
+    "destinationsTitle": "eSIM destinations",
+    "searchDestinations": "Search a country or region",
+    "destinationKinds": "Destinations",
+    "countries": "Countries",
+    "regions": "Regions",
+    "global": "Global",
+    "noDestinations": "No destination matches.",
+    "countryCount": "{count, plural, one {# country} other {# countries}}",
+    "noPlans": "No plans on sale here right now.",
+    "howManyDays": "How many days?",
+    "perDayNote": "{price} for {days} days, then {perDay} for each extra day. The cart shows the exact total.",
+    "networks": "Networks",
+    "addToCart": "Add to cart",
+    "added": "Added to your cart",
+    "viewCart": "View cart",
+    "pickDays": "Choose the days",
+    "topupable": "Can be topped up",
+    "buyAnother": "Buy an eSIM"
   }
 }

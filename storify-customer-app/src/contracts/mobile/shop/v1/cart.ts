@@ -96,5 +96,7 @@ export const SetCartLineRequest = z.object({
   productId: z.string(),
   variantId: z.string().optional(),
   quantity: z.number().int().min(1),
+  // [esim-patch] P10 an eSIM line's choices (`days` for a day-priced plan), checked and priced by the server.
+  lineAttributes: z.record(z.string(), z.unknown()).optional(),
 });
 export type SetCartLineRequest = z.infer<typeof SetCartLineRequest>;

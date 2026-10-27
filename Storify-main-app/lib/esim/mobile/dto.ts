@@ -1,5 +1,7 @@
 import QRCode from "qrcode";
-import type { EsimDetail, EsimSummary, EsimUsage } from "@/contracts/mobile/shop/v1/esim";
+import type { EsimDestination, EsimDestinationDetail, EsimDetail, EsimSummary, EsimUsage } from "@/contracts/mobile/shop/v1/esim";
+import { toMoney } from "@/lib/api-core/shop/money";
+import type { Destination, DestinationDetail } from "@/lib/esim/storefront/catalog";
 import { formatBytes, remainingPercent } from "@/lib/esim/account/display";
 import type { EsimView } from "@/lib/esim/account/esims";
 import { installLinks } from "@/lib/esim/fulfillment/install-links";
@@ -71,5 +73,55 @@ export async function toEsimDetail(view: EsimView): Promise<EsimDetail> {
         }
       : {}),
     ...(view.customerLink ? { supplierLink: view.customerLink } : {}),
+  };
+}
+
+type Currency = Parameters<typeof toMoney>[1];
+
+/** A listed destination (lib/esim/storefront/catalog.ts) in the contract's shape (APP-02). */
+export function toEsimDestination(destination: Destination, currency: Currency): EsimDestination {
+  return {
+    slug: destination.slug,
+    pathScope: destination.scope === "local" ? "local" : "multi",
+    name: destination.name,
+    ...(destination.emoji ? { emoji: destination.emoji } : {}),
+    scope: destination.scope,
+    ...(destination.continent ? { continent: destination.continent } : {}),
+    countries: destination.countries.map((country) => country.code),
+    ...(destination.fromPriceMinor !== null ? { fromPrice: toMoney(destination.fromPriceMinor / 100, currency) } : {}),
+    planCount: destination.variantCount,
+  };
+}
+
+export function toEsimDestinationDetail(destination: DestinationDetail, currency: Currency): EsimDestinationDetail {
+  return {
+    ...toEsimDestination(destination, currency),
+    productId: destination.productId,
+    productSlug: destination.productHandle,
+    ...(destination.image ? { image: destination.image } : {}),
+    countryNames: destination.countries,
+    networks: destination.networks.map((network) => ({
+      countryCode: network.countryCode,
+      operator: network.operator,
+      ...(network.network ? { network: network.network } : {}),
+    })),
+    plans: destination.variants.map((variant) => ({
+      variantId: variant.variantId,
+      name: variant.name,
+      data: variant.dataValue,
+      dataType: variant.dataType,
+      ...(variant.days !== null ? { days: variant.days } : {}),
+      price: toMoney(variant.priceMinor / 100, currency),
+      ...(variant.perDay
+        ? {
+            perDay: {
+              minDays: variant.perDay.minDays,
+              maxDays: variant.perDay.maxDays,
+              pricePerDay: toMoney(variant.perDay.priceMinor / 100, currency),
+            },
+          }
+        : {}),
+      topupMode: variant.topupMode,
+    })),
   };
 }

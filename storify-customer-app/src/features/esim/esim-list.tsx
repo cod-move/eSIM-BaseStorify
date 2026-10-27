@@ -3,6 +3,7 @@ import { FlatList, Pressable, View } from 'react-native';
 import { useTranslations } from 'use-intl';
 
 import { useTabBarHeight } from '@/components/shell/tab-bar';
+import { Button } from '@/components/ui/button';
 import { Icon } from '@/components/ui/icon';
 import { Reveal, useReveal } from '@/components/ui/motion';
 import { Text } from '@/components/ui/text';
@@ -16,6 +17,7 @@ export function EsimList({ esims }: { esims: EsimSummary[] }) {
   const router = useRouter();
   const tabBar = useTabBarHeight();
   const reveal = useReveal();
+  const t = useTranslations('esim');
 
   return (
     <FlatList
@@ -24,6 +26,14 @@ export function EsimList({ esims }: { esims: EsimSummary[] }) {
       className="flex-1 bg-background"
       contentContainerClassName="gap-3 px-4 pt-3"
       contentContainerStyle={{ paddingBottom: tabBar + 16 }}
+      ListFooterComponent={
+        <Button
+          label={t('buyAnother')}
+          variant="secondary"
+          icon="globe"
+          onPress={() => router.push('/esim')}
+        />
+      }
       renderItem={({ item, index }) => (
         <Reveal entering={reveal(index)}>
           <EsimCard

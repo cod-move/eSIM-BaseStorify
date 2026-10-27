@@ -56,7 +56,7 @@ export const setCartLineRoute = defineRoute({
     const result = await withCartReasons(() =>
       setCartLine(
         identity,
-        { ...line, quantity: input.quantity },
+        { ...line, quantity: input.quantity, lineAttributes: input.lineAttributes }, // [esim-patch] P10
         { upsert: true, admit: admitInApp(mobileApp) },
       ),
     );

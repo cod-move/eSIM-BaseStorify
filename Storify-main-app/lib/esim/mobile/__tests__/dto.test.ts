@@ -1,9 +1,10 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { EsimDetail, EsimSummary } from "@/contracts/mobile/shop/v1/esim";
+import { EsimDestinationDetail, EsimDetail, EsimSummary } from "@/contracts/mobile/shop/v1/esim";
 import { displayOf } from "@/lib/esim/account/display";
 import type { EsimView } from "@/lib/esim/account/esims";
-import { toEsimDetail, toEsimSummary } from "../dto";
+import { toEsimDestinationDetail, toEsimDetail, toEsimSummary } from "../dto";
+import type { DestinationDetail } from "@/lib/esim/storefront/catalog";
 
 const GB = 1024 ** 3;
 
@@ -68,5 +69,43 @@ describe("the mobile eSIM shapes", () => {
     }
     const noCode = await toEsimDetail(view({ installation: { activationCode: null, smdpAddress: null, matchingId: null, qrCodeUrl: null, apn: null } }));
     assert.equal(noCode.install, undefined);
+  });
+});
+
+describe("the mobile destination shapes", () => {
+  const destination: DestinationDetail = {
+    slug: "japan",
+    name: "Japan",
+    emoji: "🇯🇵",
+    scope: "local",
+    continent: "asia",
+    countries: [{ code: "JP", name: "Japan" }],
+    productId: "p1",
+    productHandle: "japan-esim",
+    fromPriceMinor: 450,
+    variantCount: 2,
+    variants: [
+      { variantId: "v1", name: "5GB 7 days", priceMinor: 450, dataType: "total", megabytes: 5120, dataValue: "5GB", days: 7, perDay: null, topupMode: "stack", breakoutIp: [] },
+      { variantId: "v2", name: "Unlimited", priceMinor: 600, dataType: "daily_throttled", megabytes: 0, dataValue: "Unlimited", days: null, perDay: { priceMinor: 200, minDays: 3, maxDays: 30, defaultDays: 7 }, topupMode: "none", breakoutIp: [] },
+    ],
+    networks: [{ countryCode: "JP", operator: "Docomo", network: null }],
+    image: null,
+    updatedAt: "2026-10-27T00:00:00Z",
+  };
+
+  it("prices plans in the store currency and carries the day range", () => {
+    const detail = EsimDestinationDetail.parse(toEsimDestinationDetail(destination, "USD"));
+    assert.equal(detail.pathScope, "local");
+    assert.equal(detail.fromPrice?.amount, 4.5);
+    assert.equal(detail.plans[0].days, 7);
+    assert.equal(detail.plans[0].perDay, undefined);
+    assert.equal(detail.plans[1].days, undefined);
+    assert.deepEqual({ min: detail.plans[1].perDay?.minDays, max: detail.plans[1].perDay?.maxDays, day: detail.plans[1].perDay?.pricePerDay.amount }, { min: 3, max: 30, day: 2 });
+    assert.equal(detail.networks[0].network, undefined, "no network is left out, not null");
+    assert.equal(detail.productSlug, "japan-esim");
+  });
+
+  it("a region is reached under multi", () => {
+    assert.equal(toEsimDestinationDetail({ ...destination, scope: "regional", continent: null }, "USD").pathScope, "multi");
   });
 });

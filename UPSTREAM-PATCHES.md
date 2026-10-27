@@ -14,8 +14,8 @@
 
 1. 能新建文件就不改官方文件。eSIM 代码放在这些目录（均为新增，不在官方代码里）：
    - Web：`lib/esim/`、`models/esim-*.model.ts`、`components/esim/`、`app/api/esim/`、`app/api/cron/esim-*/`、`app/[locale]/(store)/esim/`、`app/[locale]/admin/esim/`、`lib/storefront/sections/definitions/esim-*.tsx`、`locales/esim/`
-   - Web 移动接口：`contracts/mobile/shop/v1/esim.ts`（不进 `index.ts`，按路径引用）、`app/api/mobile/shop/v1/[locale]/me/esims/`、`lib/esim/mobile/`
-   - 顾客 App：`src/features/esim/`、`src/api/endpoints/esims.ts`、`src/api/query-keys/esims.ts`、`src/app/(tabs)/(1-home,2-search,3-categories,4-cart,5-account)/account/esims/`、`src/contracts/mobile/shop/v1/esim.ts`（从 Web 复制）
+   - Web 移动接口：`contracts/mobile/shop/v1/esim.ts`（不进 `index.ts`，按路径引用）、`app/api/mobile/shop/v1/[locale]/me/esims/`、`app/api/mobile/shop/v1/[locale]/esim/`、`lib/esim/mobile/`
+   - 顾客 App：`src/features/esim/`、`src/api/endpoints/esims.ts`、`src/api/query-keys/esims.ts`、`src/app/(tabs)/(1-home,2-search,3-categories,4-cart,5-account)/account/esims/`、`…/esim/`（目的地，路径与网站相同）、`src/contracts/mobile/shop/v1/esim.ts`（从 Web 复制）
 2. 必须改官方文件时：改动尽量只有「一行 import + 一行注册/调用」，逻辑全部放到 eSIM 目录里。
 3. 每处改动用注释标记，便于搜索：`// [esim-patch] P<编号> <一句话说明>`（JSON 等不能写注释的文件在本表注明即可）。
 4. 改完立刻在下表登记（文件路径用反引号包起来，`tools/check-patches.sh` 靠它核对）。
@@ -37,7 +37,7 @@
 | P7 | 计划 | `Storify-main-app/contracts/mobile/shop/v1/home.ts` | `HOME_BLOCKS` 映射与 `HomeBlock` 联合类型 | 注册 eSIM 首页区块 schema | 修改后需在顾客 App 执行 `pnpm contracts:sync` |
 | P8 | 计划 | `storify-customer-app/src/features/home/blocks/index.ts` | 区块渲染映射 | 注册 eSIM 区块组件 | App 首页渲染 eSIM 区块；老版本 App 忽略未知区块不崩溃 |
 | P9 | 已改 | `Storify-main-app/lib/i18n/request.ts` | 导入区；`getRequestConfig` 返回的 `messages` | 用 `withEsimMessages(locale, messages[locale])`（`lib/esim/i18n/messages.ts`）合并 `locales/esim/<locale>.json`（目前 en、zh）；同名键以官方为准，不改官方 `locales/*.json` | `getRequestConfig` 返回结构是否变化、是否有别处绕过它直接读 locale 文件；切换中英文时 eSIM 页面和后台区块名称正常 |
-| P10 | 已改（天数、充值；激活日期待做） | 见下方「P10 明细」，共 14 个文件 | 购物车行、订单行 schema，加购、结账定价、建单复制、商品页、Stripe 购物车指纹 | 加通用 `lineAttributes` 对象，内容由 eSIM 模块（`lib/esim/cart`）校验、定价；收 `days`（按天计价套餐的天数）和 `topup`（充值报价 id，服务端再补上 `iccid` 和行名 `label`）。**同一规格只占一行**：同一规格换了天数再加购，就替换这一行的天数和数量；充值行永远是 1 件，再加一次就替换（因为官方购物车、App、`productId-variantId` 的行 id 都只按商品 + 规格区分行） | 见「P10 明细」每行的检查项；整条链路：商品页选天数 → 加购 → 购物车显示「· N days」→ 三种结账（跳转网关、Stripe 卡、`POST /api/orders`）→ 订单行有 `lineAttributes` 且规格名是所选天数 → 开卡按天数购买 |
+| P10 | 已改（天数、充值；激活日期待做） | 见下方「P10 明细」，共 16 个文件 | 购物车行、订单行 schema，加购、结账定价、建单复制、商品页、Stripe 购物车指纹 | 加通用 `lineAttributes` 对象，内容由 eSIM 模块（`lib/esim/cart`）校验、定价；收 `days`（按天计价套餐的天数）和 `topup`（充值报价 id，服务端再补上 `iccid` 和行名 `label`）。**同一规格只占一行**：同一规格换了天数再加购，就替换这一行的天数和数量；充值行永远是 1 件，再加一次就替换（因为官方购物车、App、`productId-variantId` 的行 id 都只按商品 + 规格区分行） | 见「P10 明细」每行的检查项；整条链路：商品页选天数 → 加购 → 购物车显示「· N days」→ 三种结账（跳转网关、Stripe 卡、`POST /api/orders`）→ 订单行有 `lineAttributes` 且规格名是所选天数 → 开卡按天数购买 |
 | P11 | 已改（Web 的「我的 eSIM」） | `Storify-main-app/components/account/account-nav-links.ts`（App 端位置待定） | `dashboardLinks` 数组「订单」项之后；lucide 导入里加 `Smartphone` | 加「我的 eSIM」入口（`/account/esims`，labelKey `esim.account.title`，兜底 "My eSIMs"）；「钱包」「推荐」入口待做 | 侧栏/手机端菜单仍显示该入口；`AccountNavLink` 结构是否变化 |
 | P12 | 已改（充值；推荐佣金改用 goodwill，见 P14） | `Storify-main-app/models/store-credit.model.ts` | `STORE_CREDIT_SOURCES` 末尾 | 加 `wallet_topup`（钱包充值买来的余额）。这种余额由卖它的订单记账（见 P19），所以余额批次本身不过账：`post-events.ts` 只给 `goodwill` 和过期过账，不需要改 | 枚举是否改名；读取来源的报表、邮件文案（`lib/email/store-credit-emails.ts` 只认识退款和 goodwill，钱包充值用 eSIM 模块自己的邮件）；`post-events.ts` 是否开始给其他来源过账 |
 | P13 | 计划 | 订单详情页（顾客端 + 后台，位置待定） | 订单行展示处 | 显示开卡状态和 eSIM 入口 | 页面结构是否变化 |
@@ -49,7 +49,7 @@
 | P18 | 已改 | `Storify-main-app/vercel.json`、`Storify-main-app/lib/cron/health.ts` | `vercel.json` 的 `crons` 数组末尾；`health.ts` 导入区和 `CRON_STALE_AFTER_MS` 末尾 | `vercel.json` 加四个 eSIM 定时任务：`/api/cron/esim-fulfillment` 每分钟、`/api/cron/esim-catalog` 每 6 小时、`/api/cron/esim-fx` 每天 15:30 UTC、`/api/cron/esim-usage` 每 30 分钟（JSON 不能写注释，所以没有 `[esim-patch]` 标记）；`CRON_STALE_AFTER_MS` 展开 `ESIM_CRON_STALE_AFTER_MS`（`lib/esim/admin/cron-config.ts`），任务停跑时后台仪表盘会提示 | 官方新版的 `vercel.json` 覆盖后这四条是否还在（升级时最容易丢）；`CRON_STALE_AFTER_MS` 是否改名；Vercel Hobby 套餐只支持每天一次，每分钟的开卡兜底需要 Pro 或自建定时器；自建服务器用系统定时任务带 `CRON_SECRET` 调这四个地址 |
 | P20 | 已改 | `Storify-main-app/lib/finance/accounts.ts`、`Storify-main-app/components/admin/finance/adjustment-dialog.tsx`、`Storify-main-app/components/admin/finance/finance-overview.tsx` | `LEDGER_ACCOUNT`（`OPENING_INVENTORY_EQUITY` 之后）、`LEDGER_ACCOUNT_TYPES`；两个组件的 `ACCOUNT_LABELS` | 加权益科目 `opening_balance_equity`（期初余额权益）：旧站迁移来的余额记「借：期初余额权益 / 贷：store credit payable」（`lib/esim/migration/import.ts`），表示欠顾客的钱但不是在新站收的。中英文名称放在 `locales/esim/*.json` 的 `finance.account` 下，不改官方语言包 | 科目表是否改名或改成可编辑；`Record<LedgerAccount, …>` 的完整映射是否出现在新文件里（tsc 会报）；报表是否按科目类型汇总权益；跑 `scripts/esim-dev-migration.ts` |
 | P21 | 已改 | `Storify-main-app/package.json`、`Storify-main-app/pnpm-lock.yaml` | `dependencies` | 加 `mysql2`（JSON，无法加标记）：后台「数据迁移」读取旧站 MySQL（`lib/esim/migration/legacy-source.ts`），连接只来自 `.env` 的 `LEGACY_MYSQL_*`，只读一致性快照 | 官方升级 `package.json` 时保留这一行；合并后重新 `pnpm install` |
-| P22 | 已改 | `Storify-main-app/lib/api-core/shop/registry.ts` | 导入区；`SHOP_V1_ROUTES` 里 `storeCreditRoutes` 之后 | 展开 `esimShopRoutes`（`lib/esim/mobile/esims.ts`）：`GET /me/esims`、`GET /me/esims/{id}`、`POST /me/esims/{id}/refresh`，供接口清单和策略测试读取；路由文件本身是新文件，不改官方 | 清单是否改名或改成自动扫描；`defineRoute` 的字段是否变化 |
+| P22 | 已改 | `Storify-main-app/lib/api-core/shop/registry.ts` | 导入区；`SHOP_V1_ROUTES` 里 `storeCreditRoutes` 之后 | 展开 `esimShopRoutes`（`lib/esim/mobile/esims.ts`）：`GET /me/esims`、`GET /me/esims/{id}`、`POST /me/esims/{id}/refresh`、`GET /esim/destinations`、`GET /esim/destinations/{scope}/{slug}`，供接口清单和策略测试读取；路由文件本身是新文件，不改官方 | 清单是否改名或改成自动扫描；`defineRoute` 的字段是否变化 |
 | P23 | 已改 | `storify-customer-app/src/i18n/messages.ts`、`storify-customer-app/src/app-routes/account.tsx`、`storify-customer-app/src/features/account/account-home.tsx`、`storify-customer-app/src/api/query-keys/index.ts` | `messages.ts` 导入区、`Messages` 类型、`getMessages`；`accountScreens` 的登录分组末尾；账户页「Track Orders」之后；query keys 的导入和展开 | App 端「我的 eSIM」（APP-03/04）：合并 `src/features/esim/messages/*.json` 文案；注册 `account/esims` 两个页面；账户页加入口；加 `esimsKeys` | 文案加载方式、`ScreenList` 和账户页布局是否变化；官方 App 的契约副本与 Web 不一致（官方基线如此）：同步时只复制 `esim.ts`，不要整体 `contracts:sync`，否则会带入官方尚未适配的结账契约 |
 
 > 新增插入点时按编号往后加；某项最终没改，就把状态改为 `取消` 并保留记录。
@@ -64,7 +64,7 @@
 | `models/cart.model.ts` | `CartItemSchema`，`quoteId` 之后 | 加 `lineAttributes`（Mixed） | 行 schema 是否改结构 |
 | `models/order.model.ts` | 订单行 schema，`quoteId` 之后 | 同上 | 同上；子订单行是否仍用同一 schema |
 | `lib/validations/index.ts` | `CartAddByIdSchema` | 加 `lineAttributes` 可选对象 | 加购请求体是否仍用这个 schema |
-| `lib/cart/cart-service.ts` | 导入；`CartLineInput`、`MutableCartItem`；`putLine` 定价处和新旧行赋值处 | 调 `esimCartLine(line, { userId })` 取行属性、单价、规格名（充值行要求登录且是 eSIM 的主人）；天数不同或是充值行（`singleUnit`）就替换数量 | `putLine` 是否仍是加购和 App upsert 的唯一入口；`userId` 变量是否还在；同一规格是否仍只占一行 |
+| `lib/cart/cart-service.ts` | 导入；`CartLineInput`、`MutableCartItem`；`putLine` 定价处和新旧行赋值处；`setCartLine` 的 upsert 短路之前 | 调 `esimCartLine(line, { userId })` 取行属性、单价、规格名（充值行要求登录且是 eSIM 的主人）；天数不同或是充值行（`singleUnit`）就替换数量；App 的 upsert 带了不同天数时改走 `putLine`（由它替换） | `putLine` 是否仍是加购和 App upsert 的唯一入口；`userId` 变量是否还在；同一规格是否仍只占一行 |
 | `lib/checkout/prepare-checkout.ts` | 导入；逐行定价循环之前；`livePrice` 表达式 | `esimLinePrices(items, { userId })` 先算好，`livePrice` 优先取它；充值行报价无效时抛 `ValidationError`（和缺货一样拒绝结账） | 跳转网关结账是否仍在这里按实时价重定价；`user` 变量是否还在 |
 | `lib/checkout/stripe-card-intent.ts` | 同上 | 同上 | Stripe 卡支付是否仍在这里重定价 |
 | `app/api/orders/route.ts` | 导入；本地购物车行类型；`resolveCurrentItemPrice` 之前和其中；订单行 `quoteId` 之后；两处 `orderLineVariantSnapshot` | 同上定价；订单行复制 `lineAttributes`；规格快照套 `withLineDays` | 建单是否仍走这三处 |
@@ -74,6 +74,8 @@
 | `components/products/product-purchase.tsx` | `useProductPurchaseState`：新 state、`displayedPrice`、`cartLine()`、返回值 | `lineOptions` / `setLineOptions`：所选规格的行属性和对应单价 | 购买状态 hook 和 `cartLine()` 是否改名或改结构 |
 | `components/products/product-purchase-rows.tsx` | 导入；`PurchaseVariantsRow` 选项列表之后 | 渲染 `EsimDayPicker`（不是按天计价的规格时什么也不画） | 规格行组件是否仍存在；主题自定义商品页时是否还用它 |
 | `lib/checkout/checkout-cart-fingerprint.ts` | `CartFingerprintLine`；`lineKey` 数组末尾 | 带 `lineAttributes` 的行把它加进指纹（只在有时才加，其他行的指纹不变） | Stripe 是否仍用这个指纹比对「报价时的购物车」和「建单时的购物车」；`lineKey` 是否改结构 |
+| `contracts/mobile/shop/v1/cart.ts` | `SetCartLineRequest` | 加 `lineAttributes` 可选对象（App 的 `PUT /cart/lines`）；顾客 App 的副本 `storify-customer-app/src/contracts/mobile/shop/v1/cart.ts` 同步复制这一处 | App 的加购请求是否仍用这个 schema |
+| `lib/api-core/shop/cart/set-cart-line.ts` | `setCartLineRoute` 调 `setCartLine` 处 | 把 `input.lineAttributes` 传给购物车 | 同上 |
 
 不需要改的地方（已核对）：
 - `GET /api/cart`（`getCartView`）直接显示行上存的价格，而加购时已经按天数定价。

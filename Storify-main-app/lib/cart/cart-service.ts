@@ -216,6 +216,10 @@ export async function setCartLine(
     }
     return putLine(identity, cart, line, { admit: options.admit });
   }
+  // [esim-patch] P10 other days on an eSIM line: the add path replaces the line.
+  if (options.upsert && line.lineAttributes && existing.lineAttributes?.days !== line.lineAttributes.days) {
+    return putLine(identity, cart, line, { admit: options.admit });
+  }
   if (options.upsert && existing.quantity === line.quantity) {
     return { status: "saved", cart: cart! };
   }

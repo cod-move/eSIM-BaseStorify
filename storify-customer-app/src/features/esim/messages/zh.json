@@ -40,6 +40,24 @@
     "copyLabel": "复制{what}",
     "emptyTitle": "还没有 eSIM",
     "emptyBody": "购买的 eSIM 会显示在这里，并附有安装方法。",
-    "browse": "选择目的地"
+    "browse": "选择目的地",
+    "destinationsTitle": "eSIM 目的地",
+    "searchDestinations": "搜索国家或地区",
+    "destinationKinds": "目的地",
+    "countries": "国家",
+    "regions": "地区",
+    "global": "全球",
+    "noDestinations": "没有匹配的目的地。",
+    "countryCount": "{count} 个国家",
+    "noPlans": "这里暂时没有在售套餐。",
+    "howManyDays": "需要几天？",
+    "perDayNote": "{days} 天 {price}，之后每多一天 {perDay}。购物车会显示准确总价。",
+    "networks": "网络",
+    "addToCart": "加入购物车",
+    "added": "已加入购物车",
+    "viewCart": "查看购物车",
+    "pickDays": "自选天数",
+    "topupable": "可充值",
+    "buyAnother": "购买 eSIM"
   }
 }

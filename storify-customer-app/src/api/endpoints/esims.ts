@@ -1,5 +1,10 @@
 /** Endpoints: the shopper's eSIMs (the eSIM module, APP-03/04). */
-import { EsimDetail, EsimList } from '@/contracts/mobile/shop/v1/esim';
+import {
+  EsimDestinationDetail,
+  EsimDestinationList,
+  EsimDetail,
+  EsimList,
+} from '@/contracts/mobile/shop/v1/esim';
 
 import { api } from '../api';
 
@@ -27,5 +32,27 @@ export function refreshEsim(locale: string, id: string) {
       body: {},
     },
     EsimDetail
+  );
+}
+
+/** Every destination on sale: countries, regions, global plans. The same for everybody. */
+export function getEsimDestinations(locale: string, signal: AbortSignal) {
+  return api.data({ locale, path: '/esim/destinations', signal }, EsimDestinationList);
+}
+
+/** One destination with its plans. `scope` is `local` for a country, `multi` for a region or global. */
+export function getEsimDestination(
+  locale: string,
+  scope: 'local' | 'multi',
+  slug: string,
+  signal: AbortSignal
+) {
+  return api.data(
+    {
+      locale,
+      path: `/esim/destinations/${scope}/${encodeURIComponent(slug)}`,
+      signal,
+    },
+    EsimDestinationDetail
   );
 }

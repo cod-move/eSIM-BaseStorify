@@ -20,7 +20,7 @@ export default function EsimsScreen() {
         icon="globe"
         title={t('emptyTitle')}
         body={t('emptyBody')}
-        action={<Button label={t('browse')} onPress={() => router.push('/')} />}
+        action={<Button label={t('browse')} onPress={() => router.push('/esim')} />}
       />
     );
   }

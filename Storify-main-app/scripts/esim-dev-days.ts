@@ -60,7 +60,7 @@ async function main() {
 
 async function run() {
   const { publishProducts } = await import("@/lib/esim/catalog/publish");
-  const { addCartLine, getCartView } = await import("@/lib/cart/cart-service");
+  const { addCartLine, getCartView, setCartLine } = await import("@/lib/cart/cart-service");
   const { esimLinePrices, withLineDays } = await import("@/lib/esim/cart");
   const { orderLineVariantSnapshot } = await import("@/lib/orders/order-line-variant");
   const fulfilment = await import("@/lib/esim/fulfillment");
@@ -130,6 +130,18 @@ async function run() {
   const view = await getCartView(identity);
   assert.equal(view.subtotal, 29.9);
   console.log("✓ cart: 7 days = 20.93, again = qty 2, 10 days replaces (29.90), 31 days and unknown options refused");
+
+  // The app's PUT /cart/lines (setCartLine, upsert): the whole state of the line.
+  await setCartLine(identity, { ...line, quantity: 1, lineAttributes: { days: 10 } }, { upsert: true });
+  assert.equal((await item()).quantity, 1, "the same state again changes nothing");
+  await setCartLine(identity, { ...line, quantity: 1, lineAttributes: { days: 5 } }, { upsert: true });
+  stored = await item();
+  assert.deepEqual(stored.lineAttributes, { days: 5 }, "other days replace the line");
+  assert.equal(stored.price, 14.95);
+  await refused(() => setCartLine(identity, { ...line, quantity: 1, lineAttributes: { days: 40 } }, { upsert: true }), /between 1 and 30/);
+  await addCartLine(identity, { ...line, quantity: 1, lineAttributes: { days: 10 } });
+  stored = await item();
+  console.log("✓ app cart: setting the same line again changes nothing; 5 days replaces (14.95); 40 days refused");
 
   // 3. Checkout re-pricing and the order line's variant.
   const lines: Array<{ variantId?: unknown; lineAttributes?: unknown }> = [
