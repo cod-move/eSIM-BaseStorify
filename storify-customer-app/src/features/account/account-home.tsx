@@ -18,6 +18,7 @@ import { MessagesTile } from './tiles/messages-tile';
 import { usePreferencesRow } from './tiles/preferences-row';
 import { ReturnsTile } from './tiles/returns-tile';
 import { ReviewsTile } from './tiles/reviews-tile';
+import { EsimAccountRow } from '@/features/esim/account-row'; // [esim-patch] P23
 
 const WISHLIST = '/account/wishlist';
 const ORDERS = '/account/orders';
@@ -87,6 +88,8 @@ export function ShopperAccount({ shopper }: { shopper: Shopper }) {
           </Text>
           <Icon name="chevron-right" size={20} directional />
         </Pressable>
+        {/* [esim-patch] P23 My eSIMs. */}
+        <EsimAccountRow />
       </View>
 
       <RowGroup>

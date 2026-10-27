@@ -1,0 +1,129 @@
+/**
+ * The shopper's eSIMs (the website's /account/esims, APP-03/04): the list,
+ * one eSIM with its usage and how to install it, and asking the supplier for
+ * fresh usage.
+ *
+ * GET /me/esims is the list, newest first; GET /me/esims/{id} one eSIM;
+ * POST /me/esims/{id}/refresh reads its status and usage from the supplier
+ * again (at most once a minute; a sooner ask answers with what is stored).
+ *
+ * `status` is one of `ESIM_STATUSES`; the app shows its own words for the
+ * ones it knows and a neutral label for any other. Byte amounts come with the
+ * text to print, as `Money` does: the app formats nothing.
+ *
+ * Not in the API's index: the eSIM module's own file (imported by path), so
+ * the official contract is left as it is.
+ */
+import * as z from "zod";
+
+/** What the shopper sees an eSIM as (`EsimSummary.status`). */
+export const ESIM_STATUSES = [
+  /** The supplier is issuing it. */
+  "issuing",
+  /** It could not be issued; the order's settlement refunds it. */
+  "failed",
+  /** Issued and not on a phone yet. */
+  "ready_to_install",
+  /** On a phone, not used yet. */
+  "installed",
+  "in_use",
+  "data_used_up",
+  "expired",
+  /** The eSIM lives on but has no plan running: a top-up starts one. */
+  "no_active_package",
+  "cancelled",
+] as const;
+
+/** How the status reads at a glance. */
+export const EsimTone = z.enum(["neutral", "info", "success", "warning", "danger"]);
+export type EsimTone = z.infer<typeof EsimTone>;
+
+/** An amount of data, with the text to print. */
+export const DataAmount = z.object({
+  bytes: z.number(),
+  formatted: z.string(),
+});
+export type DataAmount = z.infer<typeof DataAmount>;
+
+export const EsimUsage = z.object({
+  /** No allowance to measure against: only `used` is meaningful. */
+  unlimited: z.boolean(),
+  total: DataAmount,
+  used: DataAmount,
+  remaining: DataAmount,
+  /** 0–100, left out when there is no allowance. */
+  remainingPercent: z.number().optional(),
+  /** When the supplier was last asked. */
+  syncedAt: z.string().optional(),
+  /** The supplier's last answer is old (it could not be reached since). */
+  stale: z.boolean(),
+});
+export type EsimUsage = z.infer<typeof EsimUsage>;
+
+export const EsimSummary = z.object({
+  id: z.string(),
+  /** The plan as sold: "Japan 5 GB · 7 days". */
+  planName: z.string(),
+  destination: z.string(),
+  /** A flag or globe emoji, when the destination has one. */
+  emoji: z.string().optional(),
+  status: z.string(),
+  tone: EsimTone,
+  /** The shopper's own name for it. */
+  remark: z.string().optional(),
+  /** The last four digits, to tell eSIMs apart. */
+  iccidEnd: z.string().optional(),
+  usage: EsimUsage.optional(),
+  expiresAt: z.string().optional(),
+});
+export type EsimSummary = z.infer<typeof EsimSummary>;
+
+/** GET /me/esims */
+export const EsimList = z.object({
+  items: z.array(EsimSummary),
+});
+export type EsimList = z.infer<typeof EsimList>;
+
+/**
+ * How to put the eSIM on a phone. `iosLink` and `androidLink` open the
+ * system's eSIM installer directly (iOS 17.4+, Android 10+ with Google's
+ * installer); otherwise the shopper scans `qrImage` from another screen or
+ * types the SM-DP+ address and activation code.
+ */
+export const EsimInstall = z.object({
+  activationCode: z.string(),
+  smdpAddress: z.string().optional(),
+  matchingId: z.string().optional(),
+  /** A PNG, as a data URL. */
+  qrImage: z.string(),
+  iosLink: z.string().optional(),
+  androidLink: z.string().optional(),
+  apn: z.string().optional(),
+});
+export type EsimInstall = z.infer<typeof EsimInstall>;
+
+/** GET /me/esims/{id}, and the answer to POST /me/esims/{id}/refresh. */
+export const EsimDetail = EsimSummary.extend({
+  orderNumber: z.string(),
+  iccid: z.string().optional(),
+  /** The plan's allowance as sold: "5 GB", "Unlimited". */
+  dataLabel: z.string(),
+  validityDays: z.number(),
+  fulfilledAt: z.string().optional(),
+  /** Install before this, or the eSIM may lapse unused. */
+  activationDeadline: z.string().optional(),
+  /** before_expiry plans: last moment a top-up is taken. */
+  topupDeadline: z.string().optional(),
+  /** The status the shopper should act on: install it now. */
+  canInstall: z.boolean(),
+  canTopup: z.boolean(),
+  /** Left out once the eSIM is cancelled or failed, or the supplier sent no code. */
+  install: EsimInstall.optional(),
+  /** The supplier's own page for this eSIM, when it has one. */
+  supplierLink: z.string().optional(),
+});
+export type EsimDetail = z.infer<typeof EsimDetail>;
+
+/** POST /me/esims/{id}/refresh: nothing to send. */
+export const EsimRefreshInput = z.object({}).strict();
+export type EsimRefreshInput = z.infer<typeof EsimRefreshInput>;

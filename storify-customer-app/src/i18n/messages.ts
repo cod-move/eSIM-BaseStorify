@@ -1,5 +1,6 @@
 import { languageOf, type BundledLocale } from './locales';
-import en from './messages/en.json';
+import base from './messages/en.json';
+import { ESIM_MESSAGES, esimMessagesOf } from '@/features/esim/messages'; // [esim-patch] P23
 import { loadPluralRules } from './polyfills';
 
 /**
@@ -12,6 +13,9 @@ import { loadPluralRules } from './polyfills';
  *
  * Messages use ICU syntax, the same as the store's web app.
  */
+// [esim-patch] P23 the eSIM module's words (src/features/esim/messages) beside the app's.
+const en = { ...base, ...ESIM_MESSAGES };
+
 export type Messages = typeof en;
 
 // Gives `useTranslations` the list of keys, so a misspelt key is a type error.
@@ -57,7 +61,9 @@ export function getMessages(locale: string): Messages {
 
   loadPluralRules(language);
   const file = (FILES as Record<string, (() => PartialMessages) | undefined>)[language];
-  const messages = file ? (overlay(en, file()) as Messages) : en;
+  const messages = file
+    ? (overlay(en, { ...file(), ...esimMessagesOf(language) }) as Messages)
+    : en; // [esim-patch] P23
   merged.set(language, messages);
   return messages;
 }

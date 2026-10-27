@@ -12,6 +12,7 @@ import { contentKeys } from './content';
 import { couponsKeys } from './coupons';
 import { couponsListKeys } from './coupons-list';
 import { devicesKeys } from './devices';
+import { esimsKeys } from './esims'; // [esim-patch] P23
 import { guestTrackingKeys } from './guest-tracking';
 import { homeKeys } from './home';
 import { notificationsKeys } from './notifications';
@@ -60,6 +61,7 @@ export const queryKeys = {
   ...couponsKeys,
   ...couponsListKeys,
   ...devicesKeys,
+  ...esimsKeys, // [esim-patch] P23
   ...guestTrackingKeys,
   ...homeKeys,
   ...notificationsKeys,

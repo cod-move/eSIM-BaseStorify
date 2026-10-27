@@ -103,6 +103,7 @@ Everything eSIM-specific lives here and in the files named below; official Stori
 | `migration/import.ts` | Writes users, balances (store credit + an opening-balance ledger entry, patch P20), referrals and active eSIMs (on one zero-value import order per shopper); every row linked, so running it again changes nothing |
 | `admin/migration.ts`, `/admin/esim/migration` | "Check" (counts only) and "Import", in the background; the page shows counts, never people |
 | `scripts/esim-dev-migration.ts` | End-to-end check of the import with sample rows (no MySQL) |
+| `mobile/esims.ts`, `mobile/dto.ts`, `contracts/mobile/shop/v1/esim.ts` | The shopper app's eSIM endpoints (APP-03/04): list, one eSIM with its QR code and one-tap install links, refresh — the website's readers in the contract's shape (patch P22) |
 | `payments/plugins/` | Extension payment plugins (patch P15): BEpusdt (USDT/USDC) and RedeePay (WeChat Pay, Alipay), ported from the old store's signing rules, and a fake one for tests. A plugin only calls its gateway and checks its notifications |
 | `payments/registry.ts` | The payment methods the eSIM payment page can offer, each one plugin with its own defaults |
 | `payments/checkout.ts` | Storify's checkout for "extension": a checkout attempt (never a pre-written order) and the eSIM payment page |

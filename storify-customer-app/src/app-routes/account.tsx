@@ -2,6 +2,8 @@ import { Stack } from 'expo-router';
 
 import { HeaderTitle } from '@/components/shell/app-header';
 
+import { esimAccountScreens } from '@/features/esim/screens'; // [esim-patch] P23
+
 import type { ScreenList } from './types';
 
 /**
@@ -37,6 +39,8 @@ export const accountScreens: ScreenList = ({ t, isSignedIn }) => [
     <Stack.Screen name="account/preferences/index" options={UNTITLED} />
     <Stack.Screen name="account/inbox/index" options={UNTITLED} />
     <Stack.Screen name="account/inbox/[id]" options={UNTITLED} />
+    {/* [esim-patch] P23 My eSIMs. */}
+    {esimAccountScreens({ t, isSignedIn })}
   </Stack.Protected>,
 ];
 

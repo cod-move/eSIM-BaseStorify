@@ -19,6 +19,7 @@ import { searchRoutes } from "./search/registry";
 import { storeCreditRoutes } from "./store-credit/registry";
 import { uploadsRoutes } from "./uploads/registry";
 import { wishlistRoutes } from "./wishlist/registry";
+import { esimShopRoutes } from "@/lib/esim/mobile/esims"; // [esim-patch] P22
 
 /**
  * Every endpoint of `/api/mobile/shop/v1/{locale}`, for the tests that hold
@@ -46,5 +47,6 @@ export const SHOP_V1_ROUTES: readonly RouteEntry[] = [
   ...returnsRoutes,
   ...quotesRoutes,
   ...storeCreditRoutes,
+  ...esimShopRoutes, // [esim-patch] P22 the eSIM module's shopper endpoints
   ...contentRoutes,
 ];

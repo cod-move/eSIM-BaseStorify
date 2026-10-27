@@ -1,0 +1,18 @@
+import { Stack } from 'expo-router';
+
+import { HeaderTitle } from '@/components/shell/app-header';
+
+import type { ScreenList } from '@/app-routes/types';
+
+/**
+ * The eSIM module's account screens (patch P23), for the signed-in part of
+ * `accountScreens` (src/app-routes/account.tsx).
+ */
+export const esimAccountScreens: ScreenList = ({ t }) => [
+  <Stack.Screen
+    key="esims"
+    name="account/esims/index"
+    options={{ headerTitle: () => <HeaderTitle icon="globe" title={t('esim.title')} /> }}
+  />,
+  <Stack.Screen key="esim" name="account/esims/[id]" options={{ title: '' }} />,
+];

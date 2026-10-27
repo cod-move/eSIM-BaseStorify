@@ -14,7 +14,8 @@
 
 1. 能新建文件就不改官方文件。eSIM 代码放在这些目录（均为新增，不在官方代码里）：
    - Web：`lib/esim/`、`models/esim-*.model.ts`、`components/esim/`、`app/api/esim/`、`app/api/cron/esim-*/`、`app/[locale]/(store)/esim/`、`app/[locale]/admin/esim/`、`lib/storefront/sections/definitions/esim-*.tsx`、`locales/esim/`
-   - 顾客 App：`src/features/esim/`
+   - Web 移动接口：`contracts/mobile/shop/v1/esim.ts`（不进 `index.ts`，按路径引用）、`app/api/mobile/shop/v1/[locale]/me/esims/`、`lib/esim/mobile/`
+   - 顾客 App：`src/features/esim/`、`src/api/endpoints/esims.ts`、`src/api/query-keys/esims.ts`、`src/app/(tabs)/(1-home,2-search,3-categories,4-cart,5-account)/account/esims/`、`src/contracts/mobile/shop/v1/esim.ts`（从 Web 复制）
 2. 必须改官方文件时：改动尽量只有「一行 import + 一行注册/调用」，逻辑全部放到 eSIM 目录里。
 3. 每处改动用注释标记，便于搜索：`// [esim-patch] P<编号> <一句话说明>`（JSON 等不能写注释的文件在本表注明即可）。
 4. 改完立刻在下表登记（文件路径用反引号包起来，`tools/check-patches.sh` 靠它核对）。
@@ -48,6 +49,8 @@
 | P18 | 已改 | `Storify-main-app/vercel.json`、`Storify-main-app/lib/cron/health.ts` | `vercel.json` 的 `crons` 数组末尾；`health.ts` 导入区和 `CRON_STALE_AFTER_MS` 末尾 | `vercel.json` 加四个 eSIM 定时任务：`/api/cron/esim-fulfillment` 每分钟、`/api/cron/esim-catalog` 每 6 小时、`/api/cron/esim-fx` 每天 15:30 UTC、`/api/cron/esim-usage` 每 30 分钟（JSON 不能写注释，所以没有 `[esim-patch]` 标记）；`CRON_STALE_AFTER_MS` 展开 `ESIM_CRON_STALE_AFTER_MS`（`lib/esim/admin/cron-config.ts`），任务停跑时后台仪表盘会提示 | 官方新版的 `vercel.json` 覆盖后这四条是否还在（升级时最容易丢）；`CRON_STALE_AFTER_MS` 是否改名；Vercel Hobby 套餐只支持每天一次，每分钟的开卡兜底需要 Pro 或自建定时器；自建服务器用系统定时任务带 `CRON_SECRET` 调这四个地址 |
 | P20 | 已改 | `Storify-main-app/lib/finance/accounts.ts`、`Storify-main-app/components/admin/finance/adjustment-dialog.tsx`、`Storify-main-app/components/admin/finance/finance-overview.tsx` | `LEDGER_ACCOUNT`（`OPENING_INVENTORY_EQUITY` 之后）、`LEDGER_ACCOUNT_TYPES`；两个组件的 `ACCOUNT_LABELS` | 加权益科目 `opening_balance_equity`（期初余额权益）：旧站迁移来的余额记「借：期初余额权益 / 贷：store credit payable」（`lib/esim/migration/import.ts`），表示欠顾客的钱但不是在新站收的。中英文名称放在 `locales/esim/*.json` 的 `finance.account` 下，不改官方语言包 | 科目表是否改名或改成可编辑；`Record<LedgerAccount, …>` 的完整映射是否出现在新文件里（tsc 会报）；报表是否按科目类型汇总权益；跑 `scripts/esim-dev-migration.ts` |
 | P21 | 已改 | `Storify-main-app/package.json`、`Storify-main-app/pnpm-lock.yaml` | `dependencies` | 加 `mysql2`（JSON，无法加标记）：后台「数据迁移」读取旧站 MySQL（`lib/esim/migration/legacy-source.ts`），连接只来自 `.env` 的 `LEGACY_MYSQL_*`，只读一致性快照 | 官方升级 `package.json` 时保留这一行；合并后重新 `pnpm install` |
+| P22 | 已改 | `Storify-main-app/lib/api-core/shop/registry.ts` | 导入区；`SHOP_V1_ROUTES` 里 `storeCreditRoutes` 之后 | 展开 `esimShopRoutes`（`lib/esim/mobile/esims.ts`）：`GET /me/esims`、`GET /me/esims/{id}`、`POST /me/esims/{id}/refresh`，供接口清单和策略测试读取；路由文件本身是新文件，不改官方 | 清单是否改名或改成自动扫描；`defineRoute` 的字段是否变化 |
+| P23 | 已改 | `storify-customer-app/src/i18n/messages.ts`、`storify-customer-app/src/app-routes/account.tsx`、`storify-customer-app/src/features/account/account-home.tsx`、`storify-customer-app/src/api/query-keys/index.ts` | `messages.ts` 导入区、`Messages` 类型、`getMessages`；`accountScreens` 的登录分组末尾；账户页「Track Orders」之后；query keys 的导入和展开 | App 端「我的 eSIM」（APP-03/04）：合并 `src/features/esim/messages/*.json` 文案；注册 `account/esims` 两个页面；账户页加入口；加 `esimsKeys` | 文案加载方式、`ScreenList` 和账户页布局是否变化；官方 App 的契约副本与 Web 不一致（官方基线如此）：同步时只复制 `esim.ts`，不要整体 `contracts:sync`，否则会带入官方尚未适配的结账契约 |
 
 > 新增插入点时按编号往后加；某项最终没改，就把状态改为 `取消` 并保留记录。
 
