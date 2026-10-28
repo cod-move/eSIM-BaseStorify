@@ -8,6 +8,7 @@ import type { CheckoutPaymentMethod } from '@/contracts/mobile/shop/v1';
 import { cn } from '@/lib/cn';
 
 import { useResumePayment } from './use-place-order';
+import { useResumeRedirectPayment } from '@/features/esim/redirect-pending'; // [esim-patch] P24
 
 export type PaymentSectionProps = {
   /** The quote's payment methods, each saying whether it can take this order. */
@@ -109,6 +110,8 @@ export function PaymentSection({ methods, value, onChange, busy }: PaymentSectio
   const t = useTranslations('payments');
   // A card payment left unfinished is picked up before a new one is started.
   useResumePayment();
+  // [esim-patch] P24 and one on a gateway's page left being confirmed.
+  useResumeRedirectPayment();
 
   if (methods.length === 0) return null;
 

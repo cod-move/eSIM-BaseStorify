@@ -119,6 +119,17 @@ async function run() {
   await refusedWith(() => kyc.reviewKyc(first.id, "approved", "", tag), /already reviewed/);
   assert.deepEqual([(await kyc.kycState(userId)).status, (await kyc.kycState(userId)).reason], ["rejected", "The photo is blurred"]);
   assert.equal(files.size, 1, "one document stored");
+  // A document staged and never sent: the sweep deletes the file, then the record; a fresh one stays.
+  const before = files.size;
+  const old = await kyc.stageKycFile(userId, "id_photo", photo(), { storage });
+  const fresh = await kyc.stageKycFile(userId, "id_photo", photo(), { storage });
+  await EsimKycUpload.collection.updateOne({ _id: new mongoose.Types.ObjectId(old.id) }, { $set: { createdAt: new Date(Date.now() - 2 * 86_400_000) } });
+  assert.equal(files.size, before + 2);
+  assert.deepEqual(await kyc.sweepKycUploads(new Date(), { storage }), { deleted: 1 });
+  assert.equal(files.size, before + 1, "the old file is gone, the fresh one stays");
+  assert.equal(await EsimKycUpload.countDocuments({ _id: { $in: [old.id, fresh.id] } }), 1);
+  console.log("✓ sweep: a document staged over a day ago and never sent is deleted, file and record");
+
   // The shopper app's way: the document stored first, the form naming it.
   await refusedWith(() => kyc.stageKycFile(userId, "full_name", photo(), { storage }), /does not take a file/);
   const staged = await kyc.stageKycFile(userId, "id_photo", photo(), { storage });
@@ -131,6 +142,7 @@ async function run() {
   assert.ok(kyc.isKycFileKey(secondFile.key), "the staged document, under the KYC folder");
   assert.equal(await EsimKycUpload.countDocuments({ _id: staged.id }), 0, "the staged record is used up");
   console.log("✓ app upload: a document staged first and named by the form; an unknown id and a text question refused");
+
   await kyc.reviewKyc(second.id, "approved", "", tag);
   assert.equal((await kyc.kycState(userId)).status, "approved");
   await refusedWith(() => kyc.submitKyc(userId, { full_name: "Ada", id_type: "Passport" }, { id_photo: photo() }, { storage }), /already verified/);

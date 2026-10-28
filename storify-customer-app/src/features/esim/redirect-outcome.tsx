@@ -14,6 +14,7 @@ import { successHref } from '@/features/payments/success-params';
 import { useLocale } from '@/i18n/locale-store';
 
 import { resultOf } from './redirect-payment';
+import { redirectPending } from './redirect-pending';
 
 const MAX_ASKS = 40;
 
@@ -58,6 +59,7 @@ export function RedirectPending({
   const final = query.data !== undefined && result?.outcome !== 'redirect-pending';
   useEffect(() => {
     if (!final) return;
+    redirectPending.clear();
     void queryClient.invalidateQueries({ queryKey: queryKeys.cart(locale) });
     void queryClient.invalidateQueries({ queryKey: queryKeys.orderList(locale, {}).slice(0, 4) });
     router.replace(result ? successHref(result) : '/checkout');

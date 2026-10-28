@@ -96,7 +96,9 @@ EsimKycSubmissionSchema.index({ user: 1 }, { unique: true, partialFilterExpressi
 /**
  * A document the shopper app uploaded before sending the form (APP-07): the
  * app sends one file per request, so each is stored privately first and the
- * submission names it. Unused ones lapse after a day.
+ * submission names it. Unused ones are deleted after a day, file first
+ * (sweepKycUploads, run with the usage cron); the expiry index is only the
+ * backstop for a sweep that never ran.
  */
 export interface IEsimKycUpload extends mongoose.Document {
   user: mongoose.Types.ObjectId;
@@ -119,7 +121,7 @@ const EsimKycUploadSchema = new Schema<IEsimKycUpload>(
   },
   { timestamps: { createdAt: true, updatedAt: false } },
 );
-EsimKycUploadSchema.index({ createdAt: 1 }, { expireAfterSeconds: 86_400 });
+EsimKycUploadSchema.index({ createdAt: 1 }, { expireAfterSeconds: 7 * 86_400 });
 
 if (models.EsimKycForm) delete models.EsimKycForm;
 if (models.EsimKycSubmission) delete models.EsimKycSubmission;

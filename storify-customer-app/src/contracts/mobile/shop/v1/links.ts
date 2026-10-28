@@ -60,6 +60,18 @@ export const APP_LINK_PATTERNS = [
    * shopper lands on the delete-account screen, a guest on a page that says how.
    */
   "/account-deletion",
+  // [esim-patch] P26 the eSIM module's screens, at the website's paths.
+  "/esim",
+  "/esim/devices",
+  "/esim/global",
+  "/esim/region/:slug",
+  "/esim/:country",
+  "/account/esims",
+  "/account/esims/balance",
+  "/account/esims/referrals",
+  "/account/esims/verification",
+  "/account/esims/:id",
+  "/account/esims/:id/topup",
 ] as const;
 
 export type AppLinkPattern = (typeof APP_LINK_PATTERNS)[number];

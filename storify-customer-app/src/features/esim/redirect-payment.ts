@@ -9,6 +9,8 @@ import {
 } from '@/contracts/mobile/shop/v1';
 import type { PaymentResult } from '@/features/payments/success-params';
 
+import { redirectPending } from './redirect-pending';
+
 /**
  * Paying on a gateway's own page (APP-09, patch P24): the flow the store's
  * API describes for `redirect` methods — PayPal, Pesapal and the others the
@@ -89,5 +91,9 @@ export async function payByRedirect(
     reference: payment.reference,
     ...(returnParams ? { returnParams } : {}),
   });
-  return resultOf(verification, { method, reference: payment.reference });
+  const result = resultOf(verification, { method, reference: payment.reference });
+  // Still being confirmed: asked about again the next time checkout opens.
+  if (result?.outcome === 'redirect-pending')
+    redirectPending.write({ method, reference: payment.reference });
+  return result;
 }

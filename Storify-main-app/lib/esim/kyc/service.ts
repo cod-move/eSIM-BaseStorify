@@ -155,6 +155,29 @@ export async function submitKyc(
   }
 }
 
+/**
+ * Documents staged by the shopper app and never sent (stageKycFile): the
+ * file is deleted from private storage, then its record. Run with the usage
+ * cron. Never throws for one file; the next run tries again.
+ */
+export async function sweepKycUploads(now = new Date(), options: { storage?: KycStorage } = {}) {
+  await connectDB();
+  const stale = await EsimKycUpload.find({ createdAt: { $lt: new Date(now.getTime() - 86_400_000) } }).limit(200).lean();
+  if (!stale.length) return { deleted: 0 };
+  const storage = options.storage ?? (await getStorageService());
+  let deleted = 0;
+  for (const upload of stale) {
+    try {
+      if (isKycFileKey(upload.key)) await storage.deletePrivateFile(upload.key);
+      await EsimKycUpload.deleteOne({ _id: upload._id });
+      deleted++;
+    } catch (error) {
+      console.error(`Deleting a staged KYC document failed (${String(upload._id)}):`, error);
+    }
+  }
+  return { deleted };
+}
+
 async function stagedUploads(userId: string, staged: Record<string, string>) {
   const ids = Object.values(staged).filter((id) => mongoose.isValidObjectId(id));
   if (!ids.length) return {} as Record<string, { _id: mongoose.Types.ObjectId; key: string; name: string; mime: string; size: number }>;
