@@ -119,16 +119,18 @@ async function run() {
   await refusedWith(() => kyc.reviewKyc(first.id, "approved", "", tag), /already reviewed/);
   assert.deepEqual([(await kyc.kycState(userId)).status, (await kyc.kycState(userId)).reason], ["rejected", "The photo is blurred"]);
   assert.equal(files.size, 1, "one document stored");
-  // A document staged and never sent: the sweep deletes the file, then the record; a fresh one stays.
+  // One staged document per question: a new one replaces the last, file included.
   const before = files.size;
+  const replaced = await kyc.stageKycFile(userId, "id_photo", photo(), { storage });
   const old = await kyc.stageKycFile(userId, "id_photo", photo(), { storage });
-  const fresh = await kyc.stageKycFile(userId, "id_photo", photo(), { storage });
+  assert.equal(files.size, before + 1, "the replaced document is deleted");
+  assert.equal(await EsimKycUpload.countDocuments({ _id: replaced.id }), 0);
+  // Staged and never sent: the sweep deletes the file, then the record.
   await EsimKycUpload.collection.updateOne({ _id: new mongoose.Types.ObjectId(old.id) }, { $set: { createdAt: new Date(Date.now() - 2 * 86_400_000) } });
-  assert.equal(files.size, before + 2);
   assert.deepEqual(await kyc.sweepKycUploads(new Date(), { storage }), { deleted: 1 });
-  assert.equal(files.size, before + 1, "the old file is gone, the fresh one stays");
-  assert.equal(await EsimKycUpload.countDocuments({ _id: { $in: [old.id, fresh.id] } }), 1);
-  console.log("✓ sweep: a document staged over a day ago and never sent is deleted, file and record");
+  assert.equal(files.size, before, "the old file is gone");
+  assert.equal(await kyc.sweepKycUploads(new Date(), { storage }).then((result) => result.deleted), 0, "nothing left to sweep");
+  console.log("✓ staging: one document per question (a new one replaces the last); one never sent is swept after a day, file and record");
 
   // The shopper app's way: the document stored first, the form naming it.
   await refusedWith(() => kyc.stageKycFile(userId, "full_name", photo(), { storage }), /does not take a file/);

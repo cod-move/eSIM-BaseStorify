@@ -1,4 +1,4 @@
-import { isRedirectMethod, resultOf } from '../redirect-payment';
+import { isRedirectMethod, paramsOf, resultOf } from '../redirect-payment';
 
 jest.mock('expo-web-browser', () => ({ openAuthSessionAsync: jest.fn() }));
 
@@ -37,5 +37,22 @@ describe('a payment on a gateway page', () => {
 
   it('a shopper who gave up at the gateway goes back to checkout, with no error', () => {
     expect(resultOf({ status: 'CANCELLED', reason: 'PAYER_CANCELLED' }, pending)).toBeNull();
+  });
+});
+
+describe('the return link', () => {
+  it('keeps values with = and decodes them', () => {
+    expect(
+      paramsOf('storify://checkout/return/paypal?status=return&token=abc%3D%3D&x=a=b')
+    ).toEqual({
+      status: 'return',
+      token: 'abc==',
+      x: 'a=b',
+    });
+    expect(paramsOf('storify://checkout/return/extension')).toEqual({});
+  });
+
+  it('does not throw on a malformed escape', () => {
+    expect(() => paramsOf('storify://checkout/return/paypal?status=%E0%A4%A')).not.toThrow();
   });
 });

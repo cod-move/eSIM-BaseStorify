@@ -72,7 +72,18 @@ async function run() {
   await refusedWith(() => addCartLine({ sessionId: tag }, line), /Sign in/);
   await refusedWith(() => addCartLine({ userId }, { ...line, lineAttributes: { wallet: 100 } }), /between 5\.00 and 1000\.00/);
   await refusedWith(() => addCartLine({ userId }, { ...line, lineAttributes: { wallet: 5000, walletFee: 0 } as never, quantity: 2 }), /one amount at a time/);
-  console.log("✓ cart: 50.00 + 0.30 fee, one line; guest, out of range and two units refused");
+  // The app's PUT /cart/lines (setCartLine, upsert): another amount replaces the line.
+  const { setCartLine } = await import("@/lib/cart/cart-service");
+  await setCartLine({ userId }, { ...line, lineAttributes: { wallet: 2000 } }, { upsert: true });
+  let set = await Cart.findOne({ userId }).lean<{ items: Array<{ quantity: number; price: number; lineAttributes: Record<string, unknown> }> }>();
+  assert.equal(set?.items.length, 1);
+  assert.equal(set!.items[0].lineAttributes.wallet, 2000, "the new amount, not the old");
+  assert.equal(set!.items[0].price, 20.3);
+  await setCartLine({ userId }, { ...line, lineAttributes: { wallet: 2000 } }, { upsert: true });
+  set = await Cart.findOne({ userId }).lean();
+  assert.equal(set!.items[0].quantity, 1, "the same again changes nothing");
+  await addCartLine({ userId }, line);
+  console.log("✓ cart: 50.00 + 0.30 fee, one line; guest, out of range and two units refused; the app's set replaces the amount");
 
   // 2. Checkout.
   const items = [{ ...stored }];

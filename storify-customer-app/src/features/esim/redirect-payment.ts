@@ -37,16 +37,19 @@ function keyFor(body: string): string {
   return key;
 }
 
-/** The app link's query, as the store's bridge passed it on. */
-function paramsOf(url: string): Record<string, string> {
-  const query = url.includes('?') ? url.slice(url.indexOf('?') + 1) : '';
-  const params: Record<string, string> = {};
-  for (const pair of query.split('&')) {
-    if (!pair) continue;
-    const [name = '', value = ''] = pair.split('=');
-    if (name) params[decodeURIComponent(name)] = decodeURIComponent(value.replace(/\+/g, ' '));
+/**
+ * The app link's query, as the store's bridge passed it on. A query that
+ * cannot be read is left out, not thrown: the verify still runs, as it does
+ * for a browser closed without coming back.
+ */
+export function paramsOf(url: string): Record<string, string> | undefined {
+  const start = url.indexOf('?');
+  if (start < 0) return {};
+  try {
+    return Object.fromEntries(new URLSearchParams(url.slice(start + 1).split('#')[0]));
+  } catch {
+    return undefined;
   }
-  return params;
 }
 
 /** The verify's answer as the outcome screen is told; `null` when the shopper gave up. */
@@ -85,15 +88,18 @@ export async function payByRedirect(
   const payment = await startRedirectPayment(locale, body, keyFor(JSON.stringify(body)));
   current = null;
   const session = await openAuthSessionAsync(payment.url, payment.returnUrl);
-  const returnParams = session.type === 'success' ? paramsOf(session.url) : undefined;
+  const cameBack = session.type === 'success';
+  const returnParams = cameBack ? paramsOf(session.url) : undefined;
   const verification = await verifyRedirectPayment(locale, {
     paymentMethod: method,
     reference: payment.reference,
     ...(returnParams ? { returnParams } : {}),
   });
   const result = resultOf(verification, { method, reference: payment.reference });
-  // Still being confirmed: asked about again the next time checkout opens.
-  if (result?.outcome === 'redirect-pending')
+  // Still being confirmed after the shopper came back from the page: asked about again the next
+  // time checkout opens. A page closed without coming back is not kept: nothing may have been paid.
+  if (result?.outcome === 'redirect-pending' && cameBack) {
     redirectPending.write({ method, reference: payment.reference });
+  }
   return result;
 }

@@ -24,6 +24,10 @@ import { PaymentPluginError, type Credentials, type PayRequest } from "./plugins
  */
 
 export const EXTENSION_METHOD = "extension";
+/** How long a pending try keeps its checkout open past the window (a transfer being confirmed). */
+const PENDING_GRACE_MS = 6 * 3_600_000;
+/** How long a pending try is offered again instead of a new one (gateway pages last about 20 minutes). */
+const REUSE_TRY_MS = 15 * 60_000;
 /** Matched exactly by the checkout attempt's unique `gateway.extensionReference`. */
 export const CHECKOUT_REF = /^ext[0-9a-f]{24}$/;
 
@@ -63,13 +67,11 @@ export async function offeredMethods(currency = "USD"): Promise<OfferedMethod[]>
   for (const row of rows) {
     const definition = paymentMethodDefinition(row.code);
     if (!definition || !definition.plugin.currencies.includes(currency)) continue;
-    let credentials: Credentials;
-    try {
-      credentials = methodCredentials(definition, row);
-    } catch {
-      continue;
-    }
-    if (missingCredentials(definition, credentials).length) continue;
+    // Which settings hold a value is enough here: the secrets are decrypted only to take a payment.
+    const filled: Credentials = { ...definition.defaults };
+    for (const [key, value] of row.credentials ?? []) if (value) filled[key] = value;
+    for (const key of row.secretCredentials?.keys() ?? []) filled[key] = "set";
+    if (missingCredentials(definition, filled).length) continue;
     offered.push({ code: row.code, name: row.name || definition.displayName });
   }
   return offered;
@@ -190,12 +192,32 @@ export async function startPayment(checkoutRef: string, methodCode: string, cont
   const method = definition ? await EsimPaymentMethod.findOne({ code: methodCode, status: "active" }).select("+secretCredentials") : null;
   if (!definition || !method) throw new ValidationError("This payment method is not available");
   const currency = String(attempt.snapshot?.currency || "USD").toUpperCase();
-  const credentials = methodCredentials(definition, method);
+  let credentials: Credentials;
+  try {
+    credentials = methodCredentials(definition, method);
+  } catch (error) {
+    console.error(`The ${methodCode} settings cannot be read (enter its secrets again):`, error);
+    throw new ValidationError("This payment method is not available");
+  }
   if (missingCredentials(definition, credentials).length || !definition.plugin.currencies.includes(currency)) {
     throw new ValidationError("This payment method is not available");
   }
   const amountMinor = toMinor(amountDueNow(attempt.snapshot ?? {}));
   if (amountMinor <= 0) throw new ValidationError("Nothing is due on this order");
+
+  // A second tap, or the same method chosen again soon after: the try already made, not another gateway order.
+  const recent = await EsimPayment.findOne({
+    checkoutRef,
+    method: methodCode,
+    state: "pending",
+    amountMinor,
+    currency,
+    pay: { $exists: true },
+    createdAt: { $gt: new Date(Date.now() - REUSE_TRY_MS) },
+  })
+    .sort({ createdAt: -1 })
+    .lean<IEsimPayment | null>();
+  if (recent?.pay) return { reference: recent.reference, pay: await forShopper(recent.pay) };
 
   const billing = attempt.snapshot?.billingAddress ?? {};
   const customerId = attempt.customerId || attempt.snapshot?.customerId;
@@ -408,8 +430,10 @@ export async function sweepPayments(now = new Date()) {
   let expired = 0;
   for (const attempt of stale) {
     const ref = attempt.gateway?.extensionReference;
-    // Money recorded and not yet settled: leave it for the settlement above.
+    // Money recorded and not yet settled: leave it for the settlement above. A try started
+    // lately and still pending (a crypto transfer waiting for confirmations) keeps it open a while.
     if (ref && (await EsimPayment.exists({ checkoutRef: ref, state: "paid" }))) continue;
+    if (ref && (await EsimPayment.exists({ checkoutRef: ref, state: { $in: ["started", "pending"] }, createdAt: { $gt: new Date(now.getTime() - PENDING_GRACE_MS) } }))) continue;
     if (await closeCheckoutAttempt(attempt._id, CHECKOUT_ATTEMPT_STATUS.EXPIRED)) expired++;
   }
   return { settled, failed, expired };

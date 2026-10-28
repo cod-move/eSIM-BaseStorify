@@ -216,8 +216,8 @@ export async function setCartLine(
     }
     return putLine(identity, cart, line, { admit: options.admit });
   }
-  // [esim-patch] P10 other days on an eSIM line: the add path replaces the line.
-  if (options.upsert && line.lineAttributes && existing.lineAttributes?.days !== line.lineAttributes.days) {
+  // [esim-patch] P10 an eSIM line with other choices (days, a top-up quote, a wallet amount): the add path replaces it.
+  if (options.upsert && line.lineAttributes && (["days", "topup", "wallet"] as const).some((key) => existing.lineAttributes?.[key] !== line.lineAttributes?.[key])) {
     return putLine(identity, cart, line, { admit: options.admit });
   }
   if (options.upsert && existing.quantity === line.quantity) {

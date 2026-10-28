@@ -95,6 +95,8 @@ async function run() {
   const first = await service.startPayment(start.reference, "fake-pay", startContext);
   assert.equal(first.pay.kind, "redirect");
   assert.match(first.pay.data, /fake=1/);
+  const repeat = await service.startPayment(start.reference, "fake-pay", startContext);
+  assert.equal(repeat.reference, first.reference, "a second tap gets the same try, not another gateway order");
   await assert.rejects(service.startPayment(start.reference, "bepusdt", startContext), /not available/);
   assert.equal((await EsimPayment.findOne({ reference: first.reference }).lean())?.state, "pending");
   console.log("✓ payment started (pending); a method that is off is refused");

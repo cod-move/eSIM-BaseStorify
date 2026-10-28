@@ -219,6 +219,11 @@ export async function stageKycFile(userId: string, fieldKey: string, file: File,
     customPath: `${KYC_FILE_PREFIX}${userId}/`,
     metadata: { uploadedBy: userId, purpose: "esim-kyc", field: field.key },
   });
+  // One staged document per question: the one it replaces goes, file first.
+  for (const previous of await EsimKycUpload.find({ user: userId, field: field.key }).lean()) {
+    await storage.deletePrivateFile(previous.key).catch(() => undefined);
+    await EsimKycUpload.deleteOne({ _id: previous._id });
+  }
   const upload = await EsimKycUpload.create({ user: new mongoose.Types.ObjectId(userId), field: field.key, key: result.key, name: file.name, mime: file.type, size: file.size });
   return { id: String(upload._id), name: file.name };
 }

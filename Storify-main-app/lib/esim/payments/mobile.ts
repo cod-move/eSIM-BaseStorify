@@ -8,7 +8,7 @@ import { appBaseUrl } from "@/lib/app-url";
 import { buildLocalePath } from "@/lib/i18n/locale-prefix";
 import { getLocaleRouting } from "@/lib/i18n/locale-routing";
 import { isValidAppScheme } from "@/lib/settings/mobile-app";
-import { Order } from "@/models";
+import { CheckoutAttempt, CHECKOUT_ATTEMPT_STATUS, Order } from "@/models";
 import { EsimPayment } from "@/models/esim-payment.model";
 import { startExtensionCheckout } from "./checkout";
 import { extensionMethodNames, settlePayment } from "./service";
@@ -77,5 +77,11 @@ export async function verifyExtensionRedirect(checkoutRef: string | undefined, g
     }
     return { status: "PENDING" };
   }
-  return gaveUp ? { status: "CANCELLED", reason: "PAYER_CANCELLED" } : { status: "PENDING" };
+  if (gaveUp) return { status: "CANCELLED", reason: "PAYER_CANCELLED" };
+  // Nothing paid and the checkout closed (expired, or replaced by another): it can no longer be paid.
+  const attempt = await CheckoutAttempt.findOne({ "gateway.extensionReference": checkoutRef }).select("status").lean<{ status?: string } | null>();
+  if (!attempt || attempt.status === CHECKOUT_ATTEMPT_STATUS.EXPIRED || attempt.status === CHECKOUT_ATTEMPT_STATUS.SUPERSEDED) {
+    return { status: "FAILED", reason: "EXPIRED" };
+  }
+  return { status: "PENDING" };
 }

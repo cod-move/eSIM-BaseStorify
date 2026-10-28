@@ -66,6 +66,10 @@ export function RedirectPending({
   }, [final, result, locale, queryClient, router]);
 
   const stuck = !final && (query.isError || asked >= MAX_ASKS);
+  // Given up asking on its own: checkout is no longer sent here; the order still arrives if it is paid.
+  useEffect(() => {
+    if (stuck) redirectPending.clear();
+  }, [stuck]);
   return (
     <View className="flex-1 items-center justify-center gap-3 bg-background px-6">
       {stuck ? null : <ActivityIndicator colorClassName="accent-muted" />}
