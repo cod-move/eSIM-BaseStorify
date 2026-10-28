@@ -14,7 +14,7 @@
 import assert from "node:assert/strict";
 import { connectDB, disconnectDB, mongoose } from "@/lib/db";
 import { Cart, Product, User } from "@/models";
-import { EsimKycForm, EsimKycSubmission } from "@/models/esim-kyc.model";
+import { EsimKycForm, EsimKycSubmission, EsimKycUpload } from "@/models/esim-kyc.model";
 import { EsimPlan } from "@/models/esim-plan.model";
 import { EsimProductLink } from "@/models/esim-product-link.model";
 import { EsimProvider } from "@/models/esim-provider.model";
@@ -119,7 +119,18 @@ async function run() {
   await refusedWith(() => kyc.reviewKyc(first.id, "approved", "", tag), /already reviewed/);
   assert.deepEqual([(await kyc.kycState(userId)).status, (await kyc.kycState(userId)).reason], ["rejected", "The photo is blurred"]);
   assert.equal(files.size, 1, "one document stored");
-  const second = await kyc.submitKyc(userId, { full_name: "Ada Lovelace", id_type: "Passport" }, { id_photo: photo() }, { storage });
+  // The shopper app's way: the document stored first, the form naming it.
+  await refusedWith(() => kyc.stageKycFile(userId, "full_name", photo(), { storage }), /does not take a file/);
+  const staged = await kyc.stageKycFile(userId, "id_photo", photo(), { storage });
+  await refusedWith(
+    () => kyc.submitKyc(userId, { full_name: "Ada Lovelace", id_type: "Passport" }, {}, { storage, staged: { id_photo: "64b000000000000000000000" } }),
+    /Add a file/,
+  );
+  const second = await kyc.submitKyc(userId, { full_name: "Ada Lovelace", id_type: "Passport" }, {}, { storage, staged: { id_photo: staged.id } });
+  const secondFile = (await EsimKycSubmission.findById(second.id).lean())!.answers.find((answer) => answer.key === "id_photo")!.file!;
+  assert.ok(kyc.isKycFileKey(secondFile.key), "the staged document, under the KYC folder");
+  assert.equal(await EsimKycUpload.countDocuments({ _id: staged.id }), 0, "the staged record is used up");
+  console.log("✓ app upload: a document staged first and named by the form; an unknown id and a text question refused");
   await kyc.reviewKyc(second.id, "approved", "", tag);
   assert.equal((await kyc.kycState(userId)).status, "approved");
   await refusedWith(() => kyc.submitKyc(userId, { full_name: "Ada", id_type: "Passport" }, { id_photo: photo() }, { storage }), /already verified/);
@@ -139,6 +150,8 @@ async function cleanup() {
     for (const answer of submission.answers) if (answer.file?.key) await storage.deletePrivateFile(answer.file.key).catch(() => undefined);
   }
   await EsimKycSubmission.deleteMany({ user: { $in: created.users } });
+  for (const upload of await EsimKycUpload.find({ user: { $in: created.users } }).lean()) await storage.deletePrivateFile(upload.key).catch(() => undefined);
+  await EsimKycUpload.deleteMany({ user: { $in: created.users } });
   await EsimKycForm.deleteMany({ version: { $gt: created.formVersionsAbove } });
   await db.collection("notifications").deleteMany({ userId: { $in: users } }).catch(() => undefined);
   await db.collection("emailjobs").deleteMany({ to: new RegExp(tag) }).catch(() => undefined);

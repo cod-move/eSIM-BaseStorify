@@ -93,7 +93,36 @@ EsimKycSubmissionSchema.index({ status: 1, createdAt: 1 });
 // One submission waiting for review per shopper.
 EsimKycSubmissionSchema.index({ user: 1 }, { unique: true, partialFilterExpression: { status: "pending" } });
 
+/**
+ * A document the shopper app uploaded before sending the form (APP-07): the
+ * app sends one file per request, so each is stored privately first and the
+ * submission names it. Unused ones lapse after a day.
+ */
+export interface IEsimKycUpload extends mongoose.Document {
+  user: mongoose.Types.ObjectId;
+  field: string;
+  key: string;
+  name: string;
+  mime: string;
+  size: number;
+  createdAt: Date;
+}
+
+const EsimKycUploadSchema = new Schema<IEsimKycUpload>(
+  {
+    user: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
+    field: { type: String, required: true },
+    key: { type: String, required: true },
+    name: { type: String, required: true },
+    mime: { type: String, required: true },
+    size: { type: Number, required: true },
+  },
+  { timestamps: { createdAt: true, updatedAt: false } },
+);
+EsimKycUploadSchema.index({ createdAt: 1 }, { expireAfterSeconds: 86_400 });
+
 if (models.EsimKycForm) delete models.EsimKycForm;
 if (models.EsimKycSubmission) delete models.EsimKycSubmission;
 export const EsimKycForm = model<IEsimKycForm>("EsimKycForm", EsimKycFormSchema);
 export const EsimKycSubmission = model<IEsimKycSubmission>("EsimKycSubmission", EsimKycSubmissionSchema);
+export const EsimKycUpload = (models.EsimKycUpload as mongoose.Model<IEsimKycUpload>) || model<IEsimKycUpload>("EsimKycUpload", EsimKycUploadSchema);

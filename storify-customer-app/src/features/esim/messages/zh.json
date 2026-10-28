@@ -116,6 +116,20 @@
       "pending": "待到账",
       "credited": "已存入余额",
       "cancelled": "已取消"
-    }
+    },
+    "kycTitle": "身份认证",
+    "kycWhy": "部分国家的运营商需要知道 eSIM 的使用者。认证一次，所有需要认证的 eSIM 都可以购买。",
+    "kycApproved": "你的身份已通过认证。",
+    "kycPending": "{date} 已提交，我们正在审核，结果会通知你。",
+    "kycRejected": "未通过：{reason}。请重新提交资料。",
+    "kycClosed": "身份认证暂未开放。",
+    "kycYourDetails": "你的资料",
+    "kycChooseFile": "选择文件",
+    "kycReplaceFile": "重新选择文件",
+    "kycNoUploads": "暂时无法上传证件。",
+    "kycTooLarge": "文件太大。",
+    "kycSend": "提交审核",
+    "kycSent": "已提交，审核完成后会通知你。",
+    "kycPrivacy": "你的证件私密保存，仅审核人员可见。"
   }
 }

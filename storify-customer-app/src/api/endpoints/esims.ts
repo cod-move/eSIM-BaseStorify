@@ -4,6 +4,9 @@ import {
   EsimDestinationList,
   EsimDetail,
   EsimDevices,
+  EsimKyc,
+  EsimKycFile,
+  type EsimKycSubmitRequest,
   EsimReferralCode,
   EsimReferrals,
   EsimWallet,
@@ -12,7 +15,8 @@ import {
   EsimTopups,
 } from '@/contracts/mobile/shop/v1/esim';
 
-import { api } from '../api';
+import { api, sendFile } from '../api';
+import type { FormFile } from '../transport';
 
 /** The shopper's eSIMs, newest first. */
 export function getEsims(locale: string, signal: AbortSignal) {
@@ -105,5 +109,23 @@ export function setEsimReferralCode(locale: string, code: string) {
   return api.data(
     { locale, path: '/me/esim-referrals/code', method: 'PATCH', auth: 'user', body: { code } },
     EsimReferralCode
+  );
+}
+
+/** Where the shopper stands with identity verification, and the form. */
+export function getEsimKyc(locale: string, signal: AbortSignal) {
+  return api.data({ locale, path: '/me/esim-kyc', auth: 'user', signal }, EsimKyc);
+}
+
+/** One document for a file question, stored privately until the form names it. */
+export function uploadEsimKycFile(locale: string, field: string, file: FormFile) {
+  return sendFile({ locale, path: '/me/esim-kyc/files', field: 'file', file, fields: { field } }, EsimKycFile);
+}
+
+/** The answers, and the documents by the ids they were stored under. */
+export function submitEsimKyc(locale: string, body: EsimKycSubmitRequest) {
+  return api.data(
+    { locale, path: '/me/esim-kyc', method: 'POST', auth: 'user', body },
+    EsimKyc
   );
 }

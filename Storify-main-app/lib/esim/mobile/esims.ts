@@ -6,6 +6,7 @@ import { getCustomerEsim, listCustomerEsims, refreshCustomerEsim } from "@/lib/e
 import { esimReferralCodeRoute, esimReferralsRoute, esimWalletRoute } from "./account";
 import { esimDestinationRoute, esimDestinationsRoute } from "./destinations";
 import { esimDevicesRoute } from "./devices";
+import { esimKycFileRoute, esimKycRoute, esimKycSubmitRoute } from "./kyc";
 import { toEsimDetail, toEsimSummary } from "./dto";
 import { esimTopupQuoteRoute, esimTopupsRoute } from "./topups";
 
@@ -71,4 +72,4 @@ export const refreshMyEsimRoute = defineRoute({
 });
 
 /** The eSIM module's shopper endpoints, for the API's route list (patch P22). */
-export const esimShopRoutes: readonly RouteEntry[] = [myEsimsRoute, myEsimRoute, refreshMyEsimRoute, esimDestinationsRoute, esimDestinationRoute, esimTopupsRoute, esimTopupQuoteRoute, esimDevicesRoute, esimWalletRoute, esimReferralsRoute, esimReferralCodeRoute];
+export const esimShopRoutes: readonly RouteEntry[] = [myEsimsRoute, myEsimRoute, refreshMyEsimRoute, esimDestinationsRoute, esimDestinationRoute, esimTopupsRoute, esimTopupQuoteRoute, esimDevicesRoute, esimWalletRoute, esimReferralsRoute, esimReferralCodeRoute, esimKycRoute, esimKycFileRoute, esimKycSubmitRoute];

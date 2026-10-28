@@ -662,7 +662,7 @@
       "walletMax": "最高金额",
       "walletFeeFixed": "固定手续费",
       "walletFeePercent": "手续费 %",
-      "referralsHint": "顾客分享 /esim/invite/<推荐码>。好友通过链接注册后，每笔交付完成的订单都给推荐人一笔奖励，过了冻结期存入余额，按营销费用记账。已有 {count} 位顾客通过推荐注册。",
+      "referralsHint": "顾客分享 /esim/invite/[推荐码]。好友通过链接注册后，每笔交付完成的订单都给推荐人一笔奖励，过了冻结期存入余额，按营销费用记账。已有 {count} 位顾客通过推荐注册。",
       "referralSettings": "设置",
       "referralEnabled": "开启推荐",
       "referralReward": "奖励方式",

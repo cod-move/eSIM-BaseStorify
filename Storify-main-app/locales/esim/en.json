@@ -662,7 +662,7 @@
       "walletMax": "Largest amount",
       "walletFeeFixed": "Fixed fee",
       "walletFeePercent": "Fee %",
-      "referralsHint": "Shoppers share /esim/invite/<code>. A friend who opens an account through it earns them a reward on each order delivered, added to their balance after the holding period — booked as a promotion. {count} shoppers have joined through a referral.",
+      "referralsHint": "Shoppers share /esim/invite/[code]. A friend who opens an account through it earns them a reward on each order delivered, added to their balance after the holding period — booked as a promotion. {count} shoppers have joined through a referral.",
       "referralSettings": "Settings",
       "referralEnabled": "Referrals on",
       "referralReward": "Reward",

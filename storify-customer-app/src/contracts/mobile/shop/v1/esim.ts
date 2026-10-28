@@ -382,3 +382,57 @@ export type EsimReferralCodeRequest = z.infer<typeof EsimReferralCodeRequest>;
 
 export const EsimReferralCode = z.object({ code: z.string(), link: z.string() });
 export type EsimReferralCode = z.infer<typeof EsimReferralCode>;
+
+/*
+ * Identity verification (the website's /account/esims/verification, APP-07).
+ *
+ * GET /me/esim-kyc: where the shopper stands and the form to fill in. A file
+ * question is answered in two steps, as the app sends one file per request:
+ * POST /me/esim-kyc/files (multipart: the file in `file`, the question's key
+ * in `field`) stores it privately and answers its `id`; POST /me/esim-kyc
+ * then sends the answers, with `files` naming those ids by question. An id is
+ * good for a day and only for this shopper.
+ *
+ * Refusals: 422 VALIDATION_ERROR with `errors` by question key.
+ */
+export const ESIM_KYC_STATUSES = ["none", "pending", "approved", "rejected"] as const;
+export const ESIM_KYC_FIELD_TYPES = ["text", "textarea", "select", "date", "file"] as const;
+
+export const EsimKycField = z.object({
+  key: z.string(),
+  label: z.string(),
+  /** One of `ESIM_KYC_FIELD_TYPES`; a type the app does not know is shown as text. */
+  type: z.string(),
+  required: z.boolean(),
+  /** select only. */
+  options: z.array(z.string()),
+  help: z.string().optional(),
+});
+export type EsimKycField = z.infer<typeof EsimKycField>;
+
+/** GET /me/esim-kyc */
+export const EsimKyc = z.object({
+  status: z.string(),
+  /** rejected: why. */
+  reason: z.string().optional(),
+  submittedAt: z.string().optional(),
+  /** Left out when verification is not open yet. */
+  form: z.object({ version: z.number().int(), fields: z.array(EsimKycField) }).optional(),
+  /** Files can be stored; without it, file questions cannot be answered yet. */
+  uploadsReady: z.boolean(),
+  fileTypes: z.array(z.string()),
+  maxFileBytes: z.number().int(),
+});
+export type EsimKyc = z.infer<typeof EsimKyc>;
+
+/** POST /me/esim-kyc/files */
+export const EsimKycFile = z.object({ id: z.string(), name: z.string() });
+export type EsimKycFile = z.infer<typeof EsimKycFile>;
+
+/** POST /me/esim-kyc */
+export const EsimKycSubmitRequest = z.object({
+  values: z.record(z.string().max(64), z.string().max(2000)),
+  /** Question key → `EsimKycFile.id`. */
+  files: z.record(z.string().max(64), z.string().max(64)),
+});
+export type EsimKycSubmitRequest = z.infer<typeof EsimKycSubmitRequest>;

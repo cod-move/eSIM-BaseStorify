@@ -116,6 +116,20 @@
       "pending": "On its way",
       "credited": "Added to your balance",
       "cancelled": "Cancelled"
-    }
+    },
+    "kycTitle": "Identity verification",
+    "kycWhy": "Some countries' networks need to know who uses an eSIM. Verify once, and every eSIM that needs it can be bought.",
+    "kycApproved": "Your identity is verified.",
+    "kycPending": "Sent on {date}. We are checking it and will let you know.",
+    "kycRejected": "Not passed: {reason}. Please send your details again.",
+    "kycClosed": "Identity verification is not open yet.",
+    "kycYourDetails": "Your details",
+    "kycChooseFile": "Choose a file",
+    "kycReplaceFile": "Choose another file",
+    "kycNoUploads": "Documents cannot be uploaded at the moment.",
+    "kycTooLarge": "This file is too large.",
+    "kycSend": "Send for review",
+    "kycSent": "Sent. We will tell you when it has been checked.",
+    "kycPrivacy": "Your documents are stored privately and seen only by our staff checking them."
   }
 }

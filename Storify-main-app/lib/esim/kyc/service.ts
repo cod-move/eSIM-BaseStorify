@@ -4,7 +4,7 @@ import { connectDB, mongoose } from "@/lib/db";
 import { User } from "@/models";
 import { NotificationType } from "@/models/notification.model";
 import { getEsimSettings } from "@/models/esim-pricing.model";
-import { EsimKycForm, EsimKycSubmission, type IEsimKycSubmission, type KycStatus } from "@/models/esim-kyc.model";
+import { EsimKycForm, EsimKycSubmission, EsimKycUpload, type IEsimKycSubmission, type KycStatus } from "@/models/esim-kyc.model";
 import { EsimPlan } from "@/models/esim-plan.model";
 import { EsimProductLink } from "@/models/esim-product-link.model";
 import { EsimProvider } from "@/models/esim-provider.model";
@@ -94,7 +94,7 @@ export async function submitKyc(
   userId: string,
   values: Record<string, unknown>,
   files: Record<string, File | undefined>,
-  options: { storage?: KycStorage } = {},
+  options: { storage?: KycStorage; staged?: Record<string, string> } = {},
 ) {
   const form = await currentKycForm();
   if (!form) throw new KycError("Identity verification is not open yet");
@@ -102,6 +102,9 @@ export async function submitKyc(
   if (state.status === "pending") throw new KycError("Your details are already waiting for review");
   if (state.status === "approved") throw new KycError("Your identity is already verified");
   const uploads = Object.fromEntries(Object.entries(files).filter(([, file]) => file && file.size > 0).map(([key, file]) => [key, { name: file!.name, mime: file!.type || "application/octet-stream", size: file!.size }]));
+  // Documents the shopper app stored first (stageKycFile), named by the submission: this shopper's, for that field.
+  const staged = await stagedUploads(userId, options.staged ?? {});
+  for (const [key, upload] of Object.entries(staged)) uploads[key] ??= { name: upload.name, mime: upload.mime, size: upload.size };
   const checked = checkAnswers(form.fields, values, uploads);
   if (!checked.ok) throw new KycError("Some answers need another look", checked.errors);
 
@@ -111,7 +114,9 @@ export async function submitKyc(
   }
   const storage: KycStorage | null = withFiles ? options.storage ?? (await getStorageService()) : null;
   const config = withFiles ? await getStorageConfig() : null;
-  const stored: Record<string, { key: string; name: string; mime: string; size: number }> = {};
+  const stored: Record<string, { key: string; name: string; mime: string; size: number }> = Object.fromEntries(
+    Object.entries(staged).filter(([key]) => !files[key]?.size).map(([key, upload]) => [key, { key: upload.key, name: upload.name, mime: upload.mime, size: upload.size }]),
+  );
   for (const field of form.fields.filter((entry) => entry.type === "file")) {
     const file = files[field.key];
     if (!file || !file.size || !storage || !config) continue;
@@ -139,13 +144,60 @@ export async function submitKyc(
         file: stored[field.key] ?? null,
       })),
     });
+    await EsimKycUpload.deleteMany({ _id: { $in: Object.values(staged).map((upload) => upload._id) } }).catch(() => undefined);
     return { id: String(submission._id) };
   } catch (error) {
-    // Lost a race with another submission of the same shopper: its files go.
-    for (const file of Object.values(stored)) await storage?.deletePrivateFile(file.key).catch(() => undefined);
+    // Lost a race with another submission of the same shopper: its files go (staged ones stay for a retry).
+    const stagedKeys = new Set(Object.values(staged).map((upload) => upload.key));
+    for (const file of Object.values(stored)) if (!stagedKeys.has(file.key)) await storage?.deletePrivateFile(file.key).catch(() => undefined);
     if ((error as { code?: number })?.code === 11000) throw new KycError("Your details are already waiting for review");
     throw error;
   }
+}
+
+async function stagedUploads(userId: string, staged: Record<string, string>) {
+  const ids = Object.values(staged).filter((id) => mongoose.isValidObjectId(id));
+  if (!ids.length) return {} as Record<string, { _id: mongoose.Types.ObjectId; key: string; name: string; mime: string; size: number }>;
+  const rows = await EsimKycUpload.find({ _id: { $in: ids }, user: userId }).lean();
+  const byId = new Map(rows.map((row) => [String(row._id), row]));
+  const found: Record<string, { _id: mongoose.Types.ObjectId; key: string; name: string; mime: string; size: number }> = {};
+  for (const [field, id] of Object.entries(staged)) {
+    const row = byId.get(id);
+    if (row && row.field === field && isKycFileKey(row.key)) found[field] = { _id: row._id as mongoose.Types.ObjectId, key: row.key, name: row.name, mime: row.mime, size: row.size };
+  }
+  return found;
+}
+
+/**
+ * One document for a file question of the current form, stored privately
+ * under the shopper's folder before the form is sent (the shopper app sends
+ * one file per request). The answer is the id the submission names.
+ */
+export async function stageKycFile(userId: string, fieldKey: string, file: File, options: { storage?: KycStorage } = {}) {
+  const form = await currentKycForm();
+  if (!form) throw new KycError("Identity verification is not open yet");
+  const field = form.fields.find((entry) => entry.key === fieldKey && entry.type === "file");
+  if (!field) throw new KycError("That question does not take a file", { [fieldKey]: "Not a file question" });
+  const state = await kycState(userId);
+  if (state.status === "pending" || state.status === "approved") throw new KycError("Your details cannot be changed now");
+  if (!options.storage && !(await kycStorageReady())) {
+    throw new KycError("Uploading documents is not set up for this store yet. Please try again later.");
+  }
+  const config = await getStorageConfig();
+  const checked = checkAnswers([{ ...field, required: true }], {}, { [field.key]: { name: file.name, mime: file.type || "application/octet-stream", size: file.size } });
+  if (!checked.ok) throw new KycError(checked.errors[field.key] ?? "That file cannot be uploaded", checked.errors);
+  const allowed = validateUpload(config, file.size, file.type);
+  if (!allowed.valid) throw new KycError(allowed.error || "That file cannot be uploaded", { [field.key]: allowed.error || "Upload refused" });
+  const storage = options.storage ?? (await getStorageService());
+  const result = await storage.uploadPrivateFile(Buffer.from(await file.arrayBuffer()), {
+    fileName: file.name,
+    contentType: file.type,
+    fileSize: file.size,
+    customPath: `${KYC_FILE_PREFIX}${userId}/`,
+    metadata: { uploadedBy: userId, purpose: "esim-kyc", field: field.key },
+  });
+  const upload = await EsimKycUpload.create({ user: new mongoose.Types.ObjectId(userId), field: field.key, key: result.key, name: file.name, mime: file.type, size: file.size });
+  return { id: String(upload._id), name: file.name };
 }
 
 async function tellShopper(submission: IEsimKycSubmission) {
