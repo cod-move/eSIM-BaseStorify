@@ -308,3 +308,77 @@ export const EsimDeviceCheckBlock = z.object({
   subtitle: z.string().optional(),
 });
 export type EsimDeviceCheckBlock = z.infer<typeof EsimDeviceCheckBlock>;
+
+/*
+ * The balance and referrals (the website's /account/esims/balance and
+ * /account/esims/referrals, APP-07).
+ *
+ * GET /me/esim-wallet: the balance (the store credit eSIMs are paid with) and
+ * how to add to it. Adding is a cart line: PUT /cart/lines with `product`
+ * and `lineAttributes.wallet` the amount in cents, between `min` and `max`;
+ * the cart adds the fee and says the total.
+ *
+ * GET /me/esim-referrals: the shopper's code and invite link, what a friend
+ * gets, who joined and what it earned. PATCH /me/esim-referrals/code chooses
+ * another code.
+ */
+export const EsimWallet = z.object({
+  balance: Money,
+  /** Adding money is switched on. */
+  enabled: z.boolean(),
+  min: Money,
+  max: Money,
+  /** Suggested amounts, between `min` and `max`. */
+  presets: z.array(Money),
+  fee: z.object({ fixed: Money, percent: z.number() }),
+  /** The cart line's product, when adding money is on. */
+  product: z.object({ productId: z.string(), variantId: z.string() }).optional(),
+});
+export type EsimWallet = z.infer<typeof EsimWallet>;
+
+/** What a reward stands at (`EsimReferralReward.status`). */
+export const ESIM_REWARD_STATUSES = ["pending", "credited", "cancelled"] as const;
+
+export const EsimReferralReward = z.object({
+  id: z.string(),
+  orderNumber: z.string(),
+  amount: Money,
+  status: z.string(),
+  /** pending: when it is added to the balance. */
+  payableAt: z.string(),
+  creditedAt: z.string().optional(),
+});
+export type EsimReferralReward = z.infer<typeof EsimReferralReward>;
+
+const EsimRate = z.union([
+  z.object({ kind: z.literal("percent"), percent: z.number() }),
+  z.object({ kind: z.literal("fixed"), amount: Money }),
+]);
+
+/** GET /me/esim-referrals */
+export const EsimReferrals = z.object({
+  enabled: z.boolean(),
+  code: z.string(),
+  link: z.string(),
+  offer: z.object({
+    /** Earned per order of a friend: a percentage of it, or a fixed amount. */
+    commission: EsimRate,
+    /** Orders per friend that earn; 0 = every one. */
+    orderLimit: z.number().int(),
+    /** Days after the friend joins that orders earn; 0 = no end. */
+    validityDays: z.number().int(),
+    /** The friend's welcome discount, when there is one. */
+    friendDiscount: EsimRate.optional(),
+  }),
+  invited: z.array(z.object({ id: z.string(), who: z.string(), joinedAt: z.string(), rewards: Money })),
+  rewards: z.array(EsimReferralReward),
+  totals: z.object({ credited: Money, pending: Money }),
+});
+export type EsimReferrals = z.infer<typeof EsimReferrals>;
+
+/** PATCH /me/esim-referrals/code */
+export const EsimReferralCodeRequest = z.object({ code: z.string().trim().min(1).max(40) });
+export type EsimReferralCodeRequest = z.infer<typeof EsimReferralCodeRequest>;
+
+export const EsimReferralCode = z.object({ code: z.string(), link: z.string() });
+export type EsimReferralCode = z.infer<typeof EsimReferralCode>;

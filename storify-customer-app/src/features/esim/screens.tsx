@@ -16,4 +16,6 @@ export const esimAccountScreens: ScreenList = ({ t }) => [
   />,
   <Stack.Screen key="esim" name="account/esims/[id]/index" options={{ title: '' }} />,
   <Stack.Screen key="esim-topup" name="account/esims/[id]/topup" options={{ title: '' }} />,
+  <Stack.Screen key="esim-balance" name="account/esims/balance" options={{ title: '' }} />,
+  <Stack.Screen key="esim-referrals" name="account/esims/referrals" options={{ title: '' }} />,
 ];

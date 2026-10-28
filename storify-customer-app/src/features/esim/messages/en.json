@@ -89,6 +89,33 @@
     "phoneUnknown": "We could not tell from this phone. Look it up below.",
     "deviceCaution": "Where a phone was bought and whether it is locked to a carrier also decide. Check that your phone is unlocked before you travel.",
     "searchDevices": "Search your phone",
-    "noDevices": "No phone matches."
+    "noDevices": "No phone matches.",
+    "balance": "Balance",
+    "addMoney": "Add money",
+    "amount": "Amount",
+    "amountRange": "Between {min} and {max}",
+    "walletFee": "A fee of {fixed} + {percent}% is added; the cart shows the total.",
+    "walletOff": "Adding money to your balance is not available at the moment.",
+    "walletNote": "Your balance pays for eSIMs and top-ups at checkout. Money added to it is not refunded to your card.",
+    "inviteFriends": "Invite friends",
+    "inviteTitle": "Invite friends, earn credit",
+    "inviteOffer": "You earn {you} of every order your friends place.",
+    "inviteOfferBoth": "Your friends get {friend} off their first order, and you earn {you} of their orders.",
+    "share": "Share",
+    "yourCode": "Your code",
+    "saveCode": "Save the code",
+    "codeSaved": "Code saved",
+    "rewardsCredited": "Earned",
+    "rewardsPending": "On its way",
+    "invited": "{count, plural, =0 {No friends yet} one {# friend joined} other {# friends joined}}",
+    "invitedNone": "Share your link: friends who join with it show up here.",
+    "rewards": "Rewards",
+    "payableOn": "added on {date}",
+    "referralsOff": "Inviting friends is not available at the moment.",
+    "rewardStatus": {
+      "pending": "On its way",
+      "credited": "Added to your balance",
+      "cancelled": "Cancelled"
+    }
   }
 }

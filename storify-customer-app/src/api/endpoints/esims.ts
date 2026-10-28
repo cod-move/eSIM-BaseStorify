@@ -4,6 +4,9 @@ import {
   EsimDestinationList,
   EsimDetail,
   EsimDevices,
+  EsimReferralCode,
+  EsimReferrals,
+  EsimWallet,
   EsimList,
   EsimTopupQuote,
   EsimTopups,
@@ -85,4 +88,22 @@ export function quoteEsimTopup(locale: string, id: string, topupPlanId: string) 
 /** Phones that take an eSIM, by brand. The same for everybody. */
 export function getEsimDevices(locale: string, signal: AbortSignal) {
   return api.data({ locale, path: '/esim/devices', signal }, EsimDevices);
+}
+
+/** The shopper's balance and how to add to it. */
+export function getEsimWallet(locale: string, signal: AbortSignal) {
+  return api.data({ locale, path: '/me/esim-wallet', auth: 'user', signal }, EsimWallet);
+}
+
+/** The shopper's referral code, link, friends and rewards. */
+export function getEsimReferrals(locale: string, signal: AbortSignal) {
+  return api.data({ locale, path: '/me/esim-referrals', auth: 'user', signal }, EsimReferrals);
+}
+
+/** Chooses another referral code; the store refuses one that is taken or malformed. */
+export function setEsimReferralCode(locale: string, code: string) {
+  return api.data(
+    { locale, path: '/me/esim-referrals/code', method: 'PATCH', auth: 'user', body: { code } },
+    EsimReferralCode
+  );
 }

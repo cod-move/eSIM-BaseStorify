@@ -89,6 +89,33 @@
     "phoneUnknown": "无法从本机判断，请在下方查找。",
     "deviceCaution": "购买地区和是否锁网也会影响能否使用，出行前请确认手机未锁网。",
     "searchDevices": "搜索你的手机",
-    "noDevices": "没有匹配的机型。"
+    "noDevices": "没有匹配的机型。",
+    "balance": "余额",
+    "addMoney": "充值余额",
+    "amount": "金额",
+    "amountRange": "介于 {min} 和 {max} 之间",
+    "walletFee": "需另付手续费 {fixed} + {percent}%，购物车会显示总价。",
+    "walletOff": "暂时无法充值余额。",
+    "walletNote": "余额可在结账时支付 eSIM 和充值包。充入余额的钱不能退回到银行卡。",
+    "inviteFriends": "邀请好友",
+    "inviteTitle": "邀请好友，赚取余额",
+    "inviteOffer": "好友每下一单，你可获得 {you}。",
+    "inviteOfferBoth": "好友首单立减 {friend}，你可获得其订单的 {you}。",
+    "share": "分享",
+    "yourCode": "你的邀请码",
+    "saveCode": "保存邀请码",
+    "codeSaved": "邀请码已保存",
+    "rewardsCredited": "已到账",
+    "rewardsPending": "待到账",
+    "invited": "{count} 位好友已加入",
+    "invitedNone": "分享你的链接，通过它注册的好友会显示在这里。",
+    "rewards": "奖励",
+    "payableOn": "{date} 到账",
+    "referralsOff": "邀请好友功能暂未开放。",
+    "rewardStatus": {
+      "pending": "待到账",
+      "credited": "已存入余额",
+      "cancelled": "已取消"
+    }
   }
 }
