@@ -79,6 +79,16 @@
     "payWaitingTitle": "Waiting for your payment",
     "payWaitingText": "We are waiting for the payment to be confirmed. Some payments take a few minutes; your order appears in your orders as soon as it arrives.",
     "payCheckAgain": "Check again",
-    "redirectNote": "You will finish paying on the payment page, then come back here."
+    "redirectNote": "You will finish paying on the payment page, then come back here.",
+    "devicesTitle": "Does my phone take an eSIM?",
+    "checkPhone": "Does my phone take an eSIM?",
+    "thisPhone": "This phone: {phone}",
+    "unknownPhone": "unknown model",
+    "phoneSupported": "This phone takes an eSIM.",
+    "phoneUnsupported": "This phone does not take an eSIM.",
+    "phoneUnknown": "We could not tell from this phone. Look it up below.",
+    "deviceCaution": "Where a phone was bought and whether it is locked to a carrier also decide. Check that your phone is unlocked before you travel.",
+    "searchDevices": "Search your phone",
+    "noDevices": "No phone matches."
   }
 }

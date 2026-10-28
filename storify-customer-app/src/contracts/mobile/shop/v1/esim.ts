@@ -261,3 +261,50 @@ export const EsimTopupQuote = z.object({
   price: Money,
 });
 export type EsimTopupQuote = z.infer<typeof EsimTopupQuote>;
+
+/*
+ * Phones that take an eSIM (APP-05): GET /esim/devices, the website's device
+ * table (the admin's, or the built-in list until the admin has one). A model
+ * listed supports eSIM in general; where it was bought and its carrier lock
+ * decide for one handset, which `note` and the app's caution say.
+ */
+export const EsimDeviceModel = z.object({
+  name: z.string(),
+  /** false: listed as not taking an eSIM. */
+  supported: z.boolean(),
+  note: z.string().optional(),
+});
+export type EsimDeviceModel = z.infer<typeof EsimDeviceModel>;
+
+/** GET /esim/devices */
+export const EsimDevices = z.object({
+  brands: z.array(z.object({ brand: z.string(), models: z.array(EsimDeviceModel) })),
+});
+export type EsimDevices = z.infer<typeof EsimDevices>;
+
+/*
+ * Home blocks (APP-01), listed in `HOME_BLOCKS` (home.ts, patch P7): the
+ * website's eSIM sections as the app draws them. The hero search, popular
+ * destinations and the destination tabs become ESIM_DESTINATIONS; the device
+ * check becomes ESIM_DEVICE_CHECK, a way to /esim/devices. An app that does
+ * not know these types skips them.
+ */
+export const EsimDestinationsBlock = z.object({
+  type: z.literal("ESIM_DESTINATIONS"),
+  id: z.string(),
+  title: z.string().optional(),
+  subtitle: z.string().optional(),
+  /** Set: draw a search box with these words, opening /esim. */
+  searchPlaceholder: z.string().optional(),
+  destinations: z.array(EsimDestination),
+  showPrice: z.boolean(),
+});
+export type EsimDestinationsBlock = z.infer<typeof EsimDestinationsBlock>;
+
+export const EsimDeviceCheckBlock = z.object({
+  type: z.literal("ESIM_DEVICE_CHECK"),
+  id: z.string(),
+  title: z.string(),
+  subtitle: z.string().optional(),
+});
+export type EsimDeviceCheckBlock = z.infer<typeof EsimDeviceCheckBlock>;

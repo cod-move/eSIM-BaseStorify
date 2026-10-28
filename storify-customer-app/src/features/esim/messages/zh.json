@@ -79,6 +79,16 @@
     "payWaitingTitle": "正在等待付款确认",
     "payWaitingText": "正在等待付款确认。部分付款方式需要几分钟，到账后订单会立即出现在「我的订单」中。",
     "payCheckAgain": "再次查询",
-    "redirectNote": "将跳转到支付页面完成付款，之后返回这里。"
+    "redirectNote": "将跳转到支付页面完成付款，之后返回这里。",
+    "devicesTitle": "我的手机支持 eSIM 吗？",
+    "checkPhone": "我的手机支持 eSIM 吗？",
+    "thisPhone": "本机：{phone}",
+    "unknownPhone": "未知型号",
+    "phoneSupported": "本机支持 eSIM。",
+    "phoneUnsupported": "本机不支持 eSIM。",
+    "phoneUnknown": "无法从本机判断，请在下方查找。",
+    "deviceCaution": "购买地区和是否锁网也会影响能否使用，出行前请确认手机未锁网。",
+    "searchDevices": "搜索你的手机",
+    "noDevices": "没有匹配的机型。"
   }
 }

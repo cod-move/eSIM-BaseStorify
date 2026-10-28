@@ -7,6 +7,8 @@ export const esimsKeys = {
   esimDestinations: (locale: string) => ['public', locale, 'esims', 'destinations'] as const,
   esimDestination: (locale: string, scope: string, slug: string) =>
     ['public', locale, 'esims', 'destination', scope, slug] as const,
+  /** Phones that take an eSIM. */
+  esimDevices: (locale: string) => ['public', locale, 'esims', 'devices'] as const,
   /** How a payment on a gateway's page stands (APP-09). */
   redirectOutcome: (locale: string, reference: string) =>
     ['private', locale, 'esims', 'redirect-outcome', reference] as const,

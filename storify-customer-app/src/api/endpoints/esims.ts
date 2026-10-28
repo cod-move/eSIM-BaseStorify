@@ -3,6 +3,7 @@ import {
   EsimDestinationDetail,
   EsimDestinationList,
   EsimDetail,
+  EsimDevices,
   EsimList,
   EsimTopupQuote,
   EsimTopups,
@@ -79,4 +80,9 @@ export function quoteEsimTopup(locale: string, id: string, topupPlanId: string) 
     },
     EsimTopupQuote
   );
+}
+
+/** Phones that take an eSIM, by brand. The same for everybody. */
+export function getEsimDevices(locale: string, signal: AbortSignal) {
+  return api.data({ locale, path: '/esim/devices', signal }, EsimDevices);
 }

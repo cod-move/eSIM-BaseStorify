@@ -36,6 +36,7 @@ import { buildRenderSlides } from "@/lib/sliders/render";
 import { composeCollectionShelf } from "@/lib/storefront/sections/collection-shelf";
 import { getDealLayout } from "@/lib/storefront/sections/deal-layouts";
 import type { DrawnSection } from "@/lib/storefront/sections/drawn";
+import { ESIM_HOME_BLOCK_MAPPERS } from "@/lib/esim/mobile/home"; // [esim-patch] P7
 import { pickedLookIds } from "@/lib/storefront/sections/definitions/looks-list";
 import { lt } from "@/lib/storefront/sections/localized";
 import { lookShape } from "@/lib/storefront/sections/looks-shapes";
@@ -802,4 +803,6 @@ export const HOME_BLOCK_MAPPERS: Record<string, BlockMapper> = {
   "service-benefits": serviceBenefits,
   faq,
   "become-vendor": becomeVendor,
+  // [esim-patch] P7 the eSIM sections (lib/esim/mobile/home.ts).
+  ...ESIM_HOME_BLOCK_MAPPERS,
 };

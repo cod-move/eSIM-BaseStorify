@@ -47,6 +47,13 @@ export function DestinationBrowser({ destinations }: { destinations: EsimDestina
       ListHeaderComponent={
         <View className="gap-3 pb-1">
           <SearchField label={t('searchDestinations')} value={query} onChangeText={setQuery} />
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => router.push('/esim/devices')}
+            className="flex-row items-center gap-2 py-1 active:opacity-70">
+            <Icon name="phone" size={18} />
+            <Text className="flex-1 text-link">{t('checkPhone')}</Text>
+          </Pressable>
           {query.trim() ? null : (
             <SegmentedTabs
               label={t('destinationKinds')}

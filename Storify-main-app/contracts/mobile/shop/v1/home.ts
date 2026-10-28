@@ -21,6 +21,7 @@ import * as z from "zod";
 
 import { CollectionSummary, NamedLink, ProductCard, Rating } from "./catalog";
 import { ImageSet, Money } from "./common";
+import { EsimDestinationsBlock, EsimDeviceCheckBlock } from "./esim"; // [esim-patch] P7
 
 /**
  * Where a tap leads: a path of the storefront on the web, such as
@@ -646,6 +647,9 @@ export const HOME_BLOCKS = {
   BENEFITS: BenefitsBlock,
   FAQ: FaqBlock,
   SELLER_INVITE: SellerInviteBlock,
+  // [esim-patch] P7 the eSIM module's blocks (esim.ts).
+  ESIM_DESTINATIONS: EsimDestinationsBlock,
+  ESIM_DEVICE_CHECK: EsimDeviceCheckBlock,
 } as const;
 
 export type HomeBlock =
@@ -675,7 +679,10 @@ export type HomeBlock =
   | TestimonialsBlock
   | BenefitsBlock
   | FaqBlock
-  | SellerInviteBlock;
+  | SellerInviteBlock
+  // [esim-patch] P7
+  | EsimDestinationsBlock
+  | EsimDeviceCheckBlock;
 
 /** A block before the app has checked whether it knows its type. */
 export const RawHomeBlock = z.looseObject({
