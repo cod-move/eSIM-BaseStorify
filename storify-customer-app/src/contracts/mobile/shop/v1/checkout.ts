@@ -142,7 +142,7 @@ export const CheckoutQuoteRequest = z.object({
     .record(z.string().max(50), z.union([z.string().max(2000), z.boolean(), z.number()]))
     .optional(),
   /** Lets the form ask for what this method needs; leave out until chosen. */
-  paymentMethod: z.enum(["cod", "card", "paypal", "razorpay", "paystack", "pesapal", "orange_money", "mtn_momo", "iotec"]).optional(),
+  paymentMethod: z.enum(["cod", "card", "paypal", "razorpay", "paystack", "pesapal", "orange_money", "mtn_momo", "iotec", "extension"]).optional(), // [esim-patch] P15
   /** The "email me with news and offers" box, when `CheckoutMarketing.email.offered`. */
   buyerAcceptsMarketing: z.boolean().optional(),
   /** The "text me with news and offers" box, when `CheckoutMarketing.sms.offered`. */
@@ -282,6 +282,7 @@ export const CHECKOUT_PAYMENT_METHODS = [
   "orange_money",
   "mtn_momo",
   "iotec",
+  "extension", // [esim-patch] P15 the eSIM payment page (redirect)
 ] as const;
 
 /**
@@ -541,7 +542,7 @@ export type StripeConfirmation = z.infer<typeof StripeConfirmation>;
  * depending on the store's settings: `RedirectPayment.orderId` says which.
  * The cart is emptied when the money arrives, not before.
  */
-export const REDIRECT_PAYMENT_METHODS = ["paypal", "razorpay", "paystack", "pesapal", "orange_money"] as const;
+export const REDIRECT_PAYMENT_METHODS = ["paypal", "razorpay", "paystack", "pesapal", "orange_money", "extension"] as const; // [esim-patch] P15
 export const RedirectPaymentMethod = z.enum(REDIRECT_PAYMENT_METHODS);
 export type RedirectPaymentMethod = z.infer<typeof RedirectPaymentMethod>;
 

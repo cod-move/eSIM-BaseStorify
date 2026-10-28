@@ -55,8 +55,14 @@ type MethodRowProps = {
 function MethodRow({ method, selected, locked, onSelect, t }: MethodRowProps) {
   const name = method.name;
   const reason = unavailableText(method, t);
+  // [esim-patch] P24 a gateway's own page has its own note.
+  const esim = useTranslations('esim');
   const note =
-    selected && method.available ? t(method.id === 'cod' ? 'codNote' : 'cardNote') : null;
+    selected && method.available
+      ? method.flow === 'redirect'
+        ? esim('redirectNote')
+        : t(method.id === 'cod' ? 'codNote' : 'cardNote')
+      : null;
 
   return (
     <View>

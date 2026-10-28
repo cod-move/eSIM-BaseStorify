@@ -18,7 +18,7 @@ const POLL_MS = 4000;
  * the gateway's confirmation the page asks again every few seconds; once the
  * order exists it moves on to Storify's order confirmation.
  */
-export function EsimPayPage({ initial }: { initial: PaymentPageView }) {
+export function EsimPayPage({ initial, appReturn }: { initial: PaymentPageView; appReturn: { done: string; cancel: string } | null }) {
   const t = useFallbackTranslator(useTranslations());
   const locale = useLocale();
   const router = useRouter();
@@ -38,9 +38,13 @@ export function EsimPayPage({ initial }: { initial: PaymentPageView }) {
 
   useEffect(() => {
     if (view.state === "paid" && view.orderNumber) {
+      if (appReturn) {
+        window.location.replace(appReturn.done);
+        return;
+      }
       router.replace(`/checkout/success?order=${encodeURIComponent(view.orderNumber)}`);
     }
-  }, [view.state, view.orderNumber, router]);
+  }, [view.state, view.orderNumber, router, appReturn]);
 
   useEffect(() => {
     if (!waiting) return;
@@ -54,7 +58,7 @@ export function EsimPayPage({ initial }: { initial: PaymentPageView }) {
       const response = await fetch(`/api/esim/pay/${view.checkoutRef}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ method, locale }),
+        body: JSON.stringify({ method, locale, app: Boolean(appReturn) }),
       });
       const json = (await response.json()) as { data?: { reference: string; pay: ShopperPay }; message?: string };
       if (!response.ok || !json.data) throw new Error(json.message || "The payment could not be started");
@@ -92,7 +96,11 @@ export function EsimPayPage({ initial }: { initial: PaymentPageView }) {
             {t("esim.pay.closedNote", "If you paid, the payment will be refunded. Please check out again.")}
           </p>
           <Button asChild>
-            <Link href="/cart">{t("esim.pay.backToCart", "Back to cart")}</Link>
+            {appReturn ? (
+              <a href={appReturn.cancel}>{t("esim.pay.backToApp", "Back to the app")}</a>
+            ) : (
+              <Link href="/cart">{t("esim.pay.backToCart", "Back to cart")}</Link>
+            )}
           </Button>
         </CardContent>
       </Card>
@@ -141,6 +149,11 @@ export function EsimPayPage({ initial }: { initial: PaymentPageView }) {
         ) : (
           <p className="text-center text-sm text-muted-foreground">{t("esim.pay.none", "No payment method is available right now. Please try again later.")}</p>
         )}
+        {appReturn ? (
+          <Button asChild variant="ghost" className="w-full">
+            <a href={appReturn.cancel}>{t("esim.pay.backToApp", "Back to the app")}</a>
+          </Button>
+        ) : null}
         <p className="text-center text-xs text-muted-foreground">
           {t("esim.pay.note", "Your order is created as soon as the payment is confirmed. Do not pay twice for the same order.")}
         </p>

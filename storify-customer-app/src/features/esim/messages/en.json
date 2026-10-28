@@ -75,6 +75,10 @@
       "expired": "This plan has expired and can no longer be topped up. Buy a new eSIM instead.",
       "used_up": "This plan's data is used up and it can no longer be topped up. Buy a new eSIM instead.",
       "profile_expired": "This eSIM is no longer valid. Buy a new eSIM instead."
-    }
+    },
+    "payWaitingTitle": "Waiting for your payment",
+    "payWaitingText": "We are waiting for the payment to be confirmed. Some payments take a few minutes; your order appears in your orders as soon as it arrives.",
+    "payCheckAgain": "Check again",
+    "redirectNote": "You will finish paying on the payment page, then come back here."
   }
 }

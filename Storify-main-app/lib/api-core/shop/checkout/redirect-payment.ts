@@ -42,6 +42,7 @@ import {
   checkRazorpayPayment,
 } from "@/lib/payments/razorpay-verify";
 import { CheckoutAttempt, Order } from "@/models";
+import { startExtensionRedirect, verifyExtensionRedirect } from "@/lib/esim/payments/mobile"; // [esim-patch] P15
 
 /**
  * The shopper app's payments on a gateway's own page: starting one from a
@@ -92,6 +93,9 @@ export async function startRedirectPayment(
       const start = await startOrangeMoneyCheckout(draft, { returnUrl: () => returnUrl, cancelUrl });
       return { record: start.record, gatewayUrl: start.paymentUrl, resumed: false };
     }
+    // [esim-patch] P15 the eSIM payment page, in app mode.
+    case "extension":
+      return startExtensionRedirect(draft, ctx);
   }
 }
 
@@ -104,6 +108,7 @@ interface GatewayRefs {
   pesapalMerchantReference?: string;
   orangeMoneyOrderId?: string;
   orangeMoneyPayToken?: string;
+  extensionReference?: string; // [esim-patch] P15
 }
 
 /** What a reference names: the record the payment lands on, as far as verifying it needs. */
@@ -329,6 +334,9 @@ export async function verifyRedirectPayment(input: {
         if (check.state === "failed" || check.state === "invalid") return declined;
         return notYet(gaveUp);
       }
+      // [esim-patch] P15 paid at the eSIM payment page, or still being paid.
+      case "extension":
+        return verifyExtensionRedirect(refs.extensionReference, gaveUp);
     }
   }
 }

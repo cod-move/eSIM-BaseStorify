@@ -6,6 +6,7 @@ import { placeCodOrder } from '@/api/endpoints/payments';
 import { queryKeys } from '@/api/query-keys';
 import type { CheckoutPaymentMethod, PlaceOrderRequest } from '@/contracts/mobile/shop/v1';
 import { rememberGuestContact } from '@/features/orders/guest-contact';
+import { isRedirectMethod, payByRedirect } from '@/features/esim/redirect-payment'; // [esim-patch] P24
 import { useLocale } from '@/i18n/locale-store';
 
 import { attemptFor, isFinal, withRetries, type Attempt, type Sleep } from './attempt';
@@ -118,8 +119,13 @@ export function usePlaceOrder() {
       setServing(true);
       setError(null);
       try {
+        // [esim-patch] P24 a gateway's own page (PayPal, the eSIM payment page, …): src/features/esim/redirect-payment.ts.
         const result =
-          method === 'cod' ? await placeCashOrder(locale, request) : await payCard(locale, request);
+          method === 'cod'
+            ? await placeCashOrder(locale, request)
+            : isRedirectMethod(method)
+              ? await payByRedirect(locale, request, method)
+              : await payCard(locale, request);
         if (!result) return;
         // A guest's contact goes with the order (a signed-in shopper sends none): their receipt needs it.
         const contact = request.email ?? request.phone;

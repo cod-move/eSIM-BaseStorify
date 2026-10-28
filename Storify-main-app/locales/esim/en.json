@@ -282,7 +282,8 @@
       "closedNote": "If you paid, the payment will be refunded. Please check out again.",
       "backToCart": "Back to cart",
       "none": "No payment method is available right now. Please try again later.",
-      "note": "Your order is created as soon as the payment is confirmed. Do not pay twice for the same order."
+      "note": "Your order is created as soon as the payment is confirmed. Do not pay twice for the same order.",
+      "backToApp": "Back to the app"
     }
   },
   "admin": {

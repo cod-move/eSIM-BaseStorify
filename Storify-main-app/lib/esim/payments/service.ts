@@ -174,6 +174,8 @@ export interface StartContext {
   clientIp: string;
   userAgent: string;
   locale: string;
+  /** Opened by the shopper app: the gateway sends the payer back to the page in app mode. */
+  app?: boolean;
 }
 
 /** A try with one method: the plugin is asked for a page or QR data. */
@@ -221,7 +223,7 @@ export async function startPayment(checkoutRef: string, methodCode: string, cont
     amountMinor,
     currency,
     subject: "eSIM Order",
-    returnUrl: `${origin}/esim/pay/${checkoutRef}?payment=${payment.reference}`,
+    returnUrl: `${origin}/esim/pay/${checkoutRef}?payment=${payment.reference}${context.app ? "&app=1" : ""}`,
     notifyUrl: `${origin}/api/esim/pay/notify/${methodCode}`,
     email,
     name: String(billing.fullName || [billing.firstName, billing.lastName].filter(Boolean).join(" ") || ""),

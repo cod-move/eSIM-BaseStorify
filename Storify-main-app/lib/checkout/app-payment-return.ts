@@ -29,6 +29,7 @@ export const APP_PAYMENT_RETURN_PROVIDERS = [
   "orange_money",
   // ioTec's card page (session P2's push work): no values, only `status`.
   "iotec",
+  "extension", // [esim-patch] P15 the eSIM payment page, in app mode
 ] as const;
 export type AppPaymentReturnProvider = (typeof APP_PAYMENT_RETURN_PROVIDERS)[number];
 
@@ -91,6 +92,7 @@ const PASSED_ON: Record<AppPaymentReturnProvider, Record<string, RegExp>> = {
   // The app holds the reference already.
   orange_money: { status: STATUS },
   iotec: { status: STATUS },
+  extension: { status: STATUS }, // [esim-patch] P15
 };
 
 const RAZORPAY_FIELDS = ["razorpay_payment_id", "razorpay_order_id", "razorpay_signature"] as const;

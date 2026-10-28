@@ -22,6 +22,7 @@ import {
   toQuoteInput,
 } from "./app-checkout";
 import { toCheckoutQuote } from "./quote-dto";
+import { withExtensionMethod } from "@/lib/esim/payments/mobile"; // [esim-patch] P15
 
 type QuoteRequestContext = {
   input: CheckoutQuoteRequest;
@@ -48,7 +49,8 @@ async function quoteCheckout(ctx: QuoteRequestContext): Promise<CheckoutQuote> {
       getLocaleRouting(),
     ]);
     const couponError = priced.couponError;
-    return toCheckoutQuote(priced, {
+    // [esim-patch] P15 the eSIM payment page joins the methods (lib/esim/payments/mobile.ts).
+    return withExtensionMethod(toCheckoutQuote(priced, {
       ...(couponError instanceof CouponRefusedError
         ? { couponRefusal: { error: couponError, copy: await getCouponCopy(ctx.locale) } }
         : {}),
@@ -58,7 +60,7 @@ async function quoteCheckout(ctx: QuoteRequestContext): Promise<CheckoutQuote> {
       schemaErrors,
       couponCode: input.couponCode,
       appScheme: ctx.mobileApp.scheme,
-    });
+    }), { appScheme: ctx.mobileApp.scheme, currency: String(priced.settings.general?.defaultCurrency || "USD"), hasPreorder: Boolean(priced.hasPreorder) });
   } catch (error) {
     throw toCheckoutError(error, ctx.input.fulfillmentMethod);
   }

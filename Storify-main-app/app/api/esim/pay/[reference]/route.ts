@@ -19,7 +19,7 @@ export const GET = withApi<{ reference: string }>(
   },
 );
 
-const StartSchema = z.object({ method: z.string().trim().min(1).max(40), locale: z.string().trim().max(10).optional() });
+const StartSchema = z.object({ method: z.string().trim().min(1).max(40), locale: z.string().trim().max(10).optional(), app: z.boolean().optional() });
 
 /** Pay with one method: the answer is a page to go to or QR data to show. */
 export const POST = withApi<{ reference: string }>(
@@ -32,6 +32,7 @@ export const POST = withApi<{ reference: string }>(
         clientIp: getClientIP(request),
         userAgent: request.headers.get("user-agent") || "",
         locale: body.locale || "en",
+        app: Boolean(body.app),
       }),
     );
   },

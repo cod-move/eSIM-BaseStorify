@@ -32,6 +32,7 @@ import {
 } from "./app-checkout";
 import { pricesChanged } from "./quote";
 import { startRedirectPayment } from "./redirect-payment";
+import { extensionCheckoutAvailable } from "@/lib/esim/payments/service"; // [esim-patch] P15
 
 /** The gateways' HTTP clients' own failures: the gateway refused, or did not answer. */
 const GATEWAY_FAILURE = /^(PayPal|Razorpay|Paystack|Pesapal|Orange Money) /;
@@ -74,7 +75,8 @@ export const redirectPaymentRoute = defineRoute({
       const body = toPlaceInput(input, method, locale);
 
       const settings = await getSettings();
-      if (!settings.payment?.[method]?.enabled || !resolveCheckoutGatewayReadiness(settings)[method].ready) {
+      // [esim-patch] P15 the eSIM payment page is on when one of its methods is.
+      if (method === "extension" ? !(await extensionCheckoutAvailable(storeCurrencyCode(settings))) : !settings.payment?.[method]?.enabled || !resolveCheckoutGatewayReadiness(settings)[method].ready) {
         throw unavailable("This payment method is not available.");
       }
       // Without the app's scheme the payer has no way back from the gateway.

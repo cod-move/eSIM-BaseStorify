@@ -75,6 +75,10 @@
       "expired": "该套餐已过期，无法再充值，请购买新的 eSIM。",
       "used_up": "该套餐流量已用完，无法再充值，请购买新的 eSIM。",
       "profile_expired": "此 eSIM 已失效，请购买新的 eSIM。"
-    }
+    },
+    "payWaitingTitle": "正在等待付款确认",
+    "payWaitingText": "正在等待付款确认。部分付款方式需要几分钟，到账后订单会立即出现在「我的订单」中。",
+    "payCheckAgain": "再次查询",
+    "redirectNote": "将跳转到支付页面完成付款，之后返回这里。"
   }
 }

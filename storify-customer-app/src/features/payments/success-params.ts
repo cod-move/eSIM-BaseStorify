@@ -1,6 +1,8 @@
 import type { Href } from 'expo-router';
 import * as z from 'zod';
 
+import { REDIRECT_PAYMENT_METHODS } from '@/contracts/mobile/shop/v1'; // [esim-patch] P24
+
 /**
  * How a payment ended, as the outcome screen (`/checkout/success`) is told: in
  * its address. The address can be written by anybody (a link), so the screen
@@ -19,6 +21,12 @@ const PaymentResultParams = z.discriminatedUnion('outcome', [
   }),
   /** Stripe is still confirming; the screen asks the store until it ends. */
   z.object({ outcome: z.literal('pending'), paymentIntentId: z.string().min(1).max(100) }),
+  // [esim-patch] P24 a payment on a gateway's page not finished yet: the store is asked until it knows.
+  z.object({
+    outcome: z.literal('redirect-pending'),
+    method: z.enum(REDIRECT_PAYMENT_METHODS),
+    reference: z.string().min(1).max(300),
+  }),
   z.object({
     outcome: z.literal('failed'),
     reason: z.enum(FAILED_REASONS),

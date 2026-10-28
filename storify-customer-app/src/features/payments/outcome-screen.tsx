@@ -13,6 +13,7 @@ import { useSession } from '@/features/auth/use-session';
 import { PushPermissionMoment } from '@/features/notifications/push-permission-moment';
 import { guestContactOf } from '@/features/orders/guest-contact';
 import { ReceiptButton } from '@/features/orders/receipt-button';
+import { RedirectPending } from '@/features/esim/redirect-outcome'; // [esim-patch] P24
 import type { ReceiptSource } from '@/features/orders/use-receipt';
 
 import type { PaymentResult } from './success-params';
@@ -154,6 +155,9 @@ function Outcome({ result }: { result: PaymentResult }) {
       return <Failed result={result} />;
     case 'pending':
       return <Pending paymentIntentId={result.paymentIntentId} />;
+    // [esim-patch] P24 a payment on a gateway's page, still being confirmed.
+    case 'redirect-pending':
+      return <RedirectPending method={result.method} reference={result.reference} />;
   }
 }
 
