@@ -69,6 +69,20 @@ export interface IEsimProfile extends mongoose.Document {
   activationDeadline: Date | null;
   remark: string | null;
   /**
+   * Called off after it was issued (USR-07/08): by the shopper, an admin, or a
+   * refund of the order. `state` pending while the supplier is asked;
+   * `refundMinor` what went back to the shopper, `feeMinor` what was kept.
+   */
+  cancellation: {
+    state: "pending" | "cancelled" | "refused";
+    by: "shopper" | "admin" | "order_refund";
+    at: Date;
+    refundMinor: number;
+    feeMinor: number;
+    refund: "balance" | "manual" | "none";
+    note: string | null;
+  } | null;
+  /**
    * Reminders already sent (NTF-03/04/05/07), so each goes out once: the
    * activation notice; low data for the allowance it was measured against
    * (a top-up raises the total and arms it again); expiry and the install
@@ -172,6 +186,21 @@ const EsimProfileSchema = new Schema<IEsimProfile>(
     profileExpiresAt: date,
     activationDeadline: date,
     remark: { type: String, default: null, maxlength: 100 },
+    cancellation: {
+      type: new Schema(
+        {
+          state: { type: String, enum: ["pending", "cancelled", "refused"], required: true },
+          by: { type: String, enum: ["shopper", "admin", "order_refund"], required: true },
+          at: { type: Date, required: true },
+          refundMinor: { type: Number, default: 0 },
+          feeMinor: { type: Number, default: 0 },
+          refund: { type: String, enum: ["balance", "manual", "none"], default: "none" },
+          note: { type: String, default: null, maxlength: 500 },
+        },
+        { _id: false },
+      ),
+      default: null,
+    },
     reminders: {
       activatedAt: date,
       lowDataForTotal: { type: Number, default: null },

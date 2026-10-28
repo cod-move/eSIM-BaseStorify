@@ -823,5 +823,12 @@ export async function createRefundTransaction(params: {
     );
   }
 
+  // [esim-patch] P4 a refund of the whole order calls its eSIMs off (lib/esim/cancel/service.ts), after the response.
+  const { afterResponse } = await import("@/lib/after-response");
+  afterResponse(async () => {
+    const { esimOnOrderRefunded } = await import("@/lib/esim/cancel/service");
+    await esimOnOrderRefunded({ orderId: params.order._id, metadata: params.metadata });
+  });
+
   return txn;
 }

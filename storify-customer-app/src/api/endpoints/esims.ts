@@ -119,13 +119,27 @@ export function getEsimKyc(locale: string, signal: AbortSignal) {
 
 /** One document for a file question, stored privately until the form names it. */
 export function uploadEsimKycFile(locale: string, field: string, file: FormFile) {
-  return sendFile({ locale, path: '/me/esim-kyc/files', field: 'file', file, fields: { field } }, EsimKycFile);
+  return sendFile(
+    { locale, path: '/me/esim-kyc/files', field: 'file', file, fields: { field } },
+    EsimKycFile
+  );
 }
 
 /** The answers, and the documents by the ids they were stored under. */
 export function submitEsimKyc(locale: string, body: EsimKycSubmitRequest) {
+  return api.data({ locale, path: '/me/esim-kyc', method: 'POST', auth: 'user', body }, EsimKyc);
+}
+
+/** Cancels an eSIM not installed yet; the answer is the eSIM as it now is. */
+export function cancelEsim(locale: string, id: string) {
   return api.data(
-    { locale, path: '/me/esim-kyc', method: 'POST', auth: 'user', body },
-    EsimKyc
+    {
+      locale,
+      path: `/me/esims/${encodeURIComponent(id)}/cancel`,
+      method: 'POST',
+      auth: 'user',
+      body: {},
+    },
+    EsimDetail
   );
 }

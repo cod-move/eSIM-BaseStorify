@@ -6,10 +6,7 @@ import { EsimFulfillment } from "@/models/esim-fulfillment.model";
 import { EsimPackage } from "@/models/esim-package.model";
 import { EsimPlan } from "@/models/esim-plan.model";
 import { EsimProfile, type IEsimProfile } from "@/models/esim-profile.model";
-import { EsimProvider } from "@/models/esim-provider.model";
 import { EsimProviderLog } from "@/models/esim-provider-log.model";
-import { adapterFor } from "@/lib/esim/provider-service";
-import { withProviderLog } from "@/lib/esim/provider-log";
 import { refreshEsimProfile } from "@/lib/esim/account/esims";
 import { displayOf, planTitle } from "@/lib/esim/account/display";
 import { resendEsimDelivery } from "@/lib/esim/fulfillment/delivery";
@@ -174,22 +171,6 @@ export async function adminCancelEsim(id: string) {
   await connectDB();
   const profile = mongoose.isValidObjectId(id) ? await EsimProfile.findById(id) : null;
   if (!profile) throw new Error("Unknown eSIM");
-  if (profile.lifecycle?.status === "cancelled") return { cancelled: true, message: "Already cancelled" };
-  const provider = await EsimProvider.findOne({ code: profile.providerCode }).select("+secretCredentials");
-  if (!provider) throw new Error("Supplier is not set up");
-  const adapter = adapterFor(provider);
-  if (!adapter.capabilities.cancel) return { cancelled: false, message: `${provider.name} does not support cancelling an eSIM through its API` };
-  const result = await withProviderLog(
-    { provider: provider._id as mongoose.Types.ObjectId, providerCode: provider.code, operation: "cancel", refs: { esimId: String(profile._id), orderId: String(profile.order) } },
-    () => adapter.cancel({ providerEsimId: profile.providerEsimId, simId: profile.simId, iccid: profile.iccid }),
-    (value) => ({ status: value.status }),
-  );
-  if (result.status === "cancelled") {
-    profile.set("lifecycle.status", "cancelled");
-    profile.set("lifecycle.lastStatusUpdateAt", new Date());
-    await profile.save();
-    await EsimPackage.updateMany({ esim: profile._id }, { $set: { status: "cancelled" } });
-    return { cancelled: true, message: "Cancelled at the supplier" };
-  }
-  return { cancelled: false, message: `The supplier answered: ${result.status}` };
+  const { cancelAtSupplier } = await import("@/lib/esim/cancel/service");
+  return cancelAtSupplier(profile);
 }

@@ -106,6 +106,8 @@ Everything eSIM-specific lives here and in the files named below; official Stori
 | `mobile/esims.ts`, `mobile/dto.ts`, `contracts/mobile/shop/v1/esim.ts` | The shopper app's eSIM endpoints (APP-03/04): list, one eSIM with its QR code and one-tap install links, refresh — the website's readers in the contract's shape (patch P22) |
 | `mobile/destinations.ts`, `mobile/topups.ts`, `mobile/devices.ts`, `mobile/home.ts` | The app's destinations and plans (APP-02), top-ups (APP-06), device table (APP-05) and home blocks (APP-01, patch P7) |
 | `payments/mobile.ts` | The extension method in the app's redirect flow (APP-09, patch P15): its place in the quote, the payment page in app mode, the verify |
+| `cancel/service.ts` | Cancelling issued eSIMs (USR-07/08): the shopper's cancellation of a refundable eSIM not installed yet (supplier first, then the refund to the balance less the fee, shared with the failed-eSIM refund), and a whole-order refund in Storify (patch P4) stopping jobs not bought and cancelling eSIMs not installed |
+| `scripts/esim-dev-cancel.ts` | End-to-end check of both |
 | `payments/plugins/` | Extension payment plugins (patch P15): BEpusdt (USDT/USDC) and RedeePay (WeChat Pay, Alipay), ported from the old store's signing rules, and a fake one for tests. A plugin only calls its gateway and checks its notifications |
 | `payments/registry.ts` | The payment methods the eSIM payment page can offer, each one plugin with its own defaults |
 | `payments/checkout.ts` | Storify's checkout for "extension": a checkout attempt (never a pre-written order) and the eSIM payment page |

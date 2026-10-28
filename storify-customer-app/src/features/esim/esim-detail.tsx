@@ -13,6 +13,7 @@ import { useToast } from '@/components/ui/toast';
 import type { EsimDetail, EsimInstall } from '@/contracts/mobile/shop/v1/esim';
 import { useErrorMessage } from '@/i18n/use-error-message';
 
+import { CancelEsim } from './cancel-esim';
 import { EsimStatus } from './esim-status';
 import { UsageBar } from './usage-bar';
 import { useRefreshEsim } from './use-esims';
@@ -88,6 +89,8 @@ export function EsimDetailView({ esim }: { esim: EsimDetail }) {
           }
         />
       ) : null}
+
+      {esim.cancellation ? <CancelEsim id={esim.id} offer={esim.cancellation} /> : null}
 
       <View className="gap-2 rounded-xl bg-surface p-4">
         <Fact label={t('data')} value={esim.dataLabel} />

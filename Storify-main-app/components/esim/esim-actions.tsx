@@ -6,6 +6,7 @@ import { Check, Copy, Pencil, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/toast-notification";
+import { useConfirmation } from "@/components/ui/confirmation-dialog";
 import { useRouter } from "@/hooks/use-locale-navigation";
 import { useFallbackTranslator } from "@/hooks/use-fallback-translator";
 
@@ -133,5 +134,42 @@ export function CopyValue({ value, label }: { value: string; label: string }) {
         <span className="sr-only">{copied ? t("esim.account.copied", "Copied") : t("esim.account.copy", "Copy")}</span>
       </Button>
     </div>
+  );
+}
+
+/** Cancel and refund (USR-07): only offered when the page found the eSIM cancellable. */
+export function CancelEsimButton({ esimId, refund, fee, toBalance }: { esimId: string; refund: string; fee: string; toBalance: boolean }) {
+  const t = useFallbackTranslator(useTranslations());
+  const router = useRouter();
+  const { confirm } = useConfirmation();
+  const [busy, setBusy] = useState(false);
+
+  async function cancel() {
+    const ok = await confirm({
+      title: t("esim.cancel.confirmTitle", "Cancel this eSIM?"),
+      description: toBalance
+        ? t("esim.cancel.confirmBalance", "It stops working at once and cannot be installed. {refund} goes back to your balance ({fee} fee kept).", { refund, fee })
+        : t("esim.cancel.confirmOriginal", "It stops working at once and cannot be installed. {refund} is refunded to your payment ({fee} fee kept).", { refund, fee }),
+    });
+    if (!ok) return;
+    setBusy(true);
+    try {
+      const response = await fetch(`/api/esim/me/esims/${esimId}/cancel`, { method: "POST" });
+      if (!response.ok) {
+        const reason = await readError(response, "");
+        toast.error(reason === "supplier" ? t("esim.cancel.supplierRefused", "The network did not accept the cancellation. Please contact us.") : t("esim.cancel.failed", "This eSIM can no longer be cancelled."));
+        return;
+      }
+      toast.success(t("esim.cancel.done", "Cancelled. Your refund is on its way."));
+      router.refresh();
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <Button variant="outline" size="sm" onClick={cancel} disabled={busy}>
+      {t("esim.cancel.button", "Cancel and refund")}
+    </Button>
   );
 }

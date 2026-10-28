@@ -123,8 +123,18 @@ export const EsimDetail = EsimSummary.extend({
   install: EsimInstall.optional(),
   /** The supplier's own page for this eSIM, when it has one. */
   supplierLink: z.string().optional(),
+  /**
+   * The shopper may cancel it (USR-07): not installed yet, on a refundable
+   * plan. POST /me/esims/{id}/cancel; `refund` goes to the balance
+   * (`toBalance`) or back to the payment, `fee` is kept.
+   */
+  cancellation: z.object({ refund: Money, fee: Money, toBalance: z.boolean() }).optional(),
 });
 export type EsimDetail = z.infer<typeof EsimDetail>;
+
+/** POST /me/esims/{id}/cancel: nothing to send; the answer is the eSIM as it now is. */
+export const EsimCancelInput = z.object({}).strict();
+export type EsimCancelInput = z.infer<typeof EsimCancelInput>;
 
 /** POST /me/esims/{id}/refresh: nothing to send. */
 export const EsimRefreshInput = z.object({}).strict();

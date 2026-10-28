@@ -10,7 +10,8 @@ import { getCustomerEsim } from "@/lib/esim/account/esims";
 import { formatBytes, remainingPercent } from "@/lib/esim/account/display";
 import { installLinks } from "@/lib/esim/fulfillment/install-links";
 import { EsimStatusBadge, UsageBar } from "@/components/esim/esim-status-badge";
-import { CopyValue, RefreshUsageButton, RemarkEditor } from "@/components/esim/esim-actions";
+import { CancelEsimButton, CopyValue, RefreshUsageButton, RemarkEditor } from "@/components/esim/esim-actions";
+import { shopperCancelOffer } from "@/lib/esim/cancel/service";
 import { buttonVariants } from "@/components/ui/button";
 import { esimTopupStatus } from "@/lib/esim/topup/offers";
 import { REFUSAL_TEXT } from "@/lib/esim/topup/eligibility";
@@ -37,7 +38,7 @@ export default async function AccountEsimPage({ params }: PageProps) {
   await connectDB();
   const esim = await getCustomerEsim(session.user.id, id);
   if (!esim) notFound();
-  const [topup, topups] = await Promise.all([esimTopupStatus(session.user.id, id), listEsimTopups(session.user.id, id)]);
+  const [topup, topups, cancel] = await Promise.all([esimTopupStatus(session.user.id, id), listEsimTopups(session.user.id, id), shopperCancelOffer(session.user.id, id)]);
 
   const date = new Intl.DateTimeFormat(locale, { dateStyle: "medium" });
   const dateTime = new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short" });
@@ -77,6 +78,14 @@ export default async function AccountEsimPage({ params }: PageProps) {
         <CardHeader className="flex flex-row items-center justify-between gap-4 space-y-0">
           <CardTitle className="text-base">{tr("esim.account.usage", "Data")}</CardTitle>
           {esim.display.status !== "failed" && esim.display.status !== "issuing" ? <RefreshUsageButton esimId={esim.id} /> : null}
+          {cancel?.allowed ? (
+            <CancelEsimButton
+              esimId={esim.id}
+              refund={formatStorePrice(cancel.refundMinor, locale)}
+              fee={formatStorePrice(cancel.feeMinor, locale)}
+              toBalance={cancel.refundTo === "balance"}
+            />
+          ) : null}
         </CardHeader>
         <CardContent className="space-y-3">
           {percent !== null ? (

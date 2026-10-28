@@ -118,7 +118,44 @@ export async function refundFailedEsims(orderId: string): Promise<EsimRefundResu
     return { state: "manual", amount, currency, reason: "guest order" };
   }
 
-  // Reserve against what the order collected, exactly as the admin route does.
+  const credited = await creditToBalance(order, amount, {
+    stamp,
+    refunded,
+    ceiling,
+    reason: "eSIM could not be issued",
+    note: `eSIM for order ${order.orderNumber} could not be issued`,
+    metadata: { esimFulfillmentJobs: jobIds.map(String) },
+  });
+  if (credited.state === "busy") {
+    // Another refund is being recorded, or the room is gone: hand the jobs back for the next run.
+    await updateJobs({ _id: { $in: jobIds }, "refund.at": stamp }, { $set: { refund: null } });
+    return { state: "nothing", amount: 0, currency, reason: "order busy or nothing refundable" };
+  }
+  if (credited.state === "failed") {
+    await markManual(jobIds, amount, `store credit could not be given (${credited.why.slice(0, 200)})`, order, currency);
+    return { state: "manual", amount, currency, reason: credited.why };
+  }
+  await updateJobs({ _id: { $in: jobIds } }, { $set: { refund: { state: "done", amount, at: new Date() } } });
+  return { state: "refunded", amount, currency };
+}
+
+/**
+ * Store credit for part of an order, the admin order route's store-credit
+ * refund step by step: reserve the amount against what the order collected,
+ * stamp the refund in flight, give the credit (refund row, credit lot,
+ * ledger), settle the payment status, tell the shopper, audit — rolling the
+ * reservation back on any failure. Shared by the failed-eSIM refund and the
+ * shopper's cancellation (USR-07). `metadata.esim` marks the refund as the
+ * eSIM module's own, so the order-refund hook (P4) leaves it alone.
+ */
+async function creditToBalance(
+  order: OrderDoc,
+  amount: number,
+  options: { stamp: Date; refunded: number; ceiling: number; reason: string; note: string; metadata: Record<string, unknown> },
+): Promise<{ state: "done" } | { state: "busy" } | { state: "failed"; why: string }> {
+  const { stamp, refunded, ceiling } = options;
+  const currency = String(order.currency || "USD").toUpperCase();
+  const customerId = String(order.customerId || "");
   const reservation = await Order.findOneAndUpdate(
     {
       _id: order._id,
@@ -135,11 +172,7 @@ export async function refundFailedEsims(orderId: string): Promise<EsimRefundResu
     ],
     { returnDocument: "after" },
   ).lean<{ refundedTotal?: number } | null>();
-  if (!reservation) {
-    // Another refund is being recorded, or the room is gone: hand the jobs back for the next run.
-    await updateJobs({ _id: { $in: jobIds }, "refund.at": stamp }, { $set: { refund: null } });
-    return { state: "nothing", amount: 0, currency, reason: "order busy or nothing refundable" };
-  }
+  if (!reservation) return { state: "busy" };
 
   try {
     const { refundToStoreCredit } = await import("@/lib/store-credit/refund-to-credit");
@@ -147,9 +180,9 @@ export async function refundFailedEsims(orderId: string): Promise<EsimRefundResu
       order: { ...order, _id: String(order._id), customerId: order.customerId, channel: (order.channel as string) || "online" } as never,
       amount,
       source: "order_refund",
-      reason: "eSIM could not be issued",
+      reason: options.reason,
       createdBy: "system",
-      metadata: { esimFulfillmentJobs: jobIds.map(String) },
+      metadata: { ...options.metadata, esim: true },
     });
     const refundedAfter = Number(reservation.refundedTotal ?? refunded + amount);
     await Order.updateOne(
@@ -161,7 +194,6 @@ export async function refundFailedEsims(orderId: string): Promise<EsimRefundResu
       },
     );
     await settleRefundedPaymentStatus({ orderId: order._id, ceiling });
-    await updateJobs({ _id: { $in: jobIds } }, { $set: { refund: { state: "done", amount, at: new Date() } } });
 
     const { notifyStoreCreditIssued } = await import("@/lib/store-credit/store-credit-notify");
     await notifyStoreCreditIssued({
@@ -170,7 +202,7 @@ export async function refundFailedEsims(orderId: string): Promise<EsimRefundResu
       amount,
       currency,
       reason: "order_refund",
-      note: `eSIM for order ${order.orderNumber} could not be issued`,
+      note: options.note,
     }).catch((error) => console.error("Failed to tell a shopper about store credit:", error));
     const { reverseOrderLoyaltyPoints } = await import("@/lib/customers/customer");
     await reverseOrderLoyaltyPoints(String(order._id)).catch((error) =>
@@ -179,20 +211,62 @@ export async function refundFailedEsims(orderId: string): Promise<EsimRefundResu
     await auditOrderRefunded(systemActor(), { _id: String(order._id), orderNumber: order.orderNumber }, {
       amount,
       currency,
-      reason: "eSIM could not be issued",
+      reason: options.reason,
       gatewayCalled: false,
       full: refundedAfter >= ceiling - 0.01,
       storeCredit: amount,
     }).catch((error) => console.error("Failed to audit an eSIM refund:", error));
-    return { state: "refunded", amount, currency };
+    return { state: "done" };
   } catch (error) {
     await Order.updateOne({ _id: order._id }, { $inc: { refundedTotal: -amount } }).catch((rollbackError) =>
       console.error("Failed to roll back the eSIM refund reservation:", rollbackError),
     );
-    const why = error instanceof Error ? error.message : String(error);
-    await markManual(jobIds, amount, `store credit could not be given (${why.slice(0, 200)})`, order, currency);
-    return { state: "manual", amount, currency, reason: why };
+    return { state: "failed", why: error instanceof Error ? error.message : String(error) };
   } finally {
     await Order.updateOne(...releaseRefundInFlightWrite(order._id, stamp)).catch(logRefundInFlightReleaseError);
   }
+}
+
+/**
+ * Refunds some units of an order to the shopper's balance, less a fee
+ * (USR-07). What a unit cost is its share of what the order collected, as
+ * for a failed eSIM. Guests have no balance: `manual`, with the admins told.
+ */
+export async function refundUnitsToBalance(input: {
+  orderId: string;
+  lineIndexes: number[];
+  feeMinor: number;
+  reason: string;
+  note: string;
+  metadata: Record<string, unknown>;
+}): Promise<EsimRefundResult & { feeMinor: number }> {
+  const order = await Order.findById(input.orderId).lean<OrderDoc | null>();
+  if (!order) return { state: "nothing", amount: 0, currency: "USD", feeMinor: 0 };
+  const currency = String(order.currency || "USD").toUpperCase();
+  const ceiling = getOrderRefundCeiling(order as unknown as Parameters<typeof getOrderRefundCeiling>[0]);
+  const refunded = Number(order.refundedTotal ?? (await alreadyRefunded(order._id)));
+  const paidMinor = Math.round(
+    refundAmount({
+      total: Number(order.total || 0),
+      items: order.items.map((item) => ({ price: Number(item.price || 0), quantity: Number(item.quantity || 1) })),
+      units: input.lineIndexes,
+      refundable: Math.max(0, ceiling - refunded),
+    }) * 100,
+  );
+  const feeMinor = Math.min(paidMinor, Math.max(0, Math.round(input.feeMinor)));
+  const amount = (paidMinor - feeMinor) / 100;
+  if (!(amount > 0)) return { state: "nothing", amount: 0, currency, feeMinor };
+  const customerId = String(order.customerId || "");
+  if (order.guestEmail || !mongoose.isValidObjectId(customerId)) {
+    await notifyAdminsPaymentAnomaly({
+      title: "Refund a cancelled eSIM by hand",
+      message: `Order ${order.orderNumber}: ${input.note}. Refund ${amount.toFixed(2)} ${currency} to the original payment from the order screen.`,
+      dedupeKey: `esim-cancel-manual:${order._id}:${input.lineIndexes.join(",")}`,
+    }).catch(console.error);
+    return { state: "manual", amount, currency, reason: "guest order", feeMinor };
+  }
+  const credited = await creditToBalance(order, amount, { stamp: new Date(), refunded, ceiling, reason: input.reason, note: input.note, metadata: input.metadata });
+  if (credited.state === "done") return { state: "refunded", amount, currency, feeMinor };
+  if (credited.state === "busy") return { state: "nothing", amount: 0, currency, reason: "order busy", feeMinor };
+  return { state: "manual", amount, currency, reason: credited.why, feeMinor };
 }

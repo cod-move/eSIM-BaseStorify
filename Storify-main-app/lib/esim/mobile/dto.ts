@@ -46,7 +46,7 @@ export function toEsimSummary(view: EsimView): EsimSummary {
 /** Installing is offered while the eSIM can still be used, and only with a code. */
 const INSTALLABLE = new Set(["ready_to_install", "installed", "in_use", "data_used_up", "no_active_package"]);
 
-export async function toEsimDetail(view: EsimView): Promise<EsimDetail> {
+export async function toEsimDetail(view: EsimView, cancellation?: EsimDetail["cancellation"]): Promise<EsimDetail> {
   const code = view.installation?.activationCode ?? null;
   const links = installLinks(code);
   return {
@@ -73,6 +73,7 @@ export async function toEsimDetail(view: EsimView): Promise<EsimDetail> {
         }
       : {}),
     ...(view.customerLink ? { supplierLink: view.customerLink } : {}),
+    ...(cancellation ? { cancellation } : {}),
   };
 }
 

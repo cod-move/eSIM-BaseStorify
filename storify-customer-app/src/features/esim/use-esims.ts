@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import {
+  cancelEsim,
   getEsim,
   getEsims,
   getEsimTopups,
@@ -78,6 +79,20 @@ export function useBuyEsimTopup(id: string) {
         lineAttributes: quote.lineAttributes,
       });
       return quote;
+    },
+  });
+}
+
+/** Cancels the eSIM; the store answers with it as it now is, and the list is read again. */
+export function useCancelEsim(id: string) {
+  const locale = useLocale();
+  const client = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => cancelEsim(locale, id),
+    onSuccess: (detail) => {
+      client.setQueryData(queryKeys.esim(locale, id), detail);
+      void client.invalidateQueries({ queryKey: queryKeys.esimList(locale) });
     },
   });
 }

@@ -284,6 +284,15 @@
       "none": "No payment method is available right now. Please try again later.",
       "note": "Your order is created as soon as the payment is confirmed. Do not pay twice for the same order.",
       "backToApp": "Back to the app"
+    },
+    "cancel": {
+      "button": "Cancel and refund",
+      "confirmTitle": "Cancel this eSIM?",
+      "confirmBalance": "It stops working at once and cannot be installed. {refund} goes back to your balance ({fee} fee kept).",
+      "confirmOriginal": "It stops working at once and cannot be installed. {refund} is refunded to your payment ({fee} fee kept).",
+      "supplierRefused": "The network did not accept the cancellation. Please contact us.",
+      "failed": "This eSIM can no longer be cancelled.",
+      "done": "Cancelled. Your refund is on its way."
     }
   },
   "admin": {
@@ -782,7 +791,15 @@
       "migNoSource": "Not configured — set LEGACY_MYSQL_HOST, LEGACY_MYSQL_DATABASE, LEGACY_MYSQL_USER and LEGACY_MYSQL_PASSWORD in .env and restart.",
       "migImported": "Imported so far",
       "migCheckButton": "Check (changes nothing)",
-      "migImportButton": "Import"
+      "migImportButton": "Import",
+      "cancelTitle": "Cancellation by the shopper",
+      "cancelHint": "A shopper can cancel an eSIM not installed yet, on a plan its supplier marks refundable, when the supplier cancels through its API. The supplier is asked first; the shopper is refunded only once it agrees.",
+      "cancelEnabled": "Allow cancellation",
+      "cancelFeeFixed": "Fixed fee kept",
+      "cancelFeePercent": "Fee % kept",
+      "cancelRefundTo": "Refund to",
+      "cancelToBalance": "The shopper's balance",
+      "cancelToOriginal": "The original payment (by hand)"
     },
     "sidebar": {
       "esim": "eSIM",

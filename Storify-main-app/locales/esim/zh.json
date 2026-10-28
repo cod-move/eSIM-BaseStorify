@@ -284,6 +284,15 @@
       "none": "暂时没有可用的支付方式，请稍后再试。",
       "note": "付款确认后订单会立即生成。同一订单请勿重复付款。",
       "backToApp": "返回 App"
+    },
+    "cancel": {
+      "button": "取消并退款",
+      "confirmTitle": "取消这张 eSIM？",
+      "confirmBalance": "取消后立即失效，无法再安装。{refund} 将退回你的余额（扣除手续费 {fee}）。",
+      "confirmOriginal": "取消后立即失效，无法再安装。{refund} 将原路退回（扣除手续费 {fee}）。",
+      "supplierRefused": "运营商未接受取消，请联系我们。",
+      "failed": "这张 eSIM 已无法取消。",
+      "done": "已取消，退款处理中。"
     }
   },
   "admin": {
@@ -782,7 +791,15 @@
       "migNoSource": "未配置——请在 .env 设置 LEGACY_MYSQL_HOST、LEGACY_MYSQL_DATABASE、LEGACY_MYSQL_USER 和 LEGACY_MYSQL_PASSWORD 后重启。",
       "migImported": "已导入",
       "migCheckButton": "预检（不做任何修改）",
-      "migImportButton": "导入"
+      "migImportButton": "导入",
+      "cancelTitle": "顾客取消",
+      "cancelHint": "顾客可以取消尚未安装、且供应商标记为可退的套餐（供应商需支持接口取消）。先向供应商取消，供应商确认后才退款。",
+      "cancelEnabled": "允许取消",
+      "cancelFeeFixed": "固定手续费",
+      "cancelFeePercent": "手续费比例 %",
+      "cancelRefundTo": "退款到",
+      "cancelToBalance": "顾客余额",
+      "cancelToOriginal": "原支付方式（手动）"
     },
     "sidebar": {
       "esim": "eSIM",

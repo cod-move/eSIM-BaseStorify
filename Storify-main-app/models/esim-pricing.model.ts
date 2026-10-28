@@ -75,6 +75,8 @@ export interface IEsimSettings extends mongoose.Document {
   kyc: { countries: string[] };
   /** Shopper reminders (NTF-03/04/05/07) and their thresholds. */
   reminders: { enabled: boolean; lowDataPercent: number; expiringHours: number; installDays: number };
+  /** Shopper cancellation (USR-07): on/off, the fee kept, where the rest goes. */
+  cancellation: { enabled: boolean; feeFixedMinor: number; feePercent: number; refundTo: "balance" | "original" };
   updatedAt: Date;
 }
 
@@ -120,6 +122,12 @@ const EsimSettingsSchema = new Schema<IEsimSettings>(
       lowDataPercent: { type: Number, default: 20, min: 1, max: 90 },
       expiringHours: { type: Number, default: 24, min: 1, max: 336 },
       installDays: { type: Number, default: 3, min: 1, max: 60 },
+    },
+    cancellation: {
+      enabled: { type: Boolean, default: false },
+      feeFixedMinor: { type: Number, default: 0, min: 0 },
+      feePercent: { type: Number, default: 0, min: 0, max: 100 },
+      refundTo: { type: String, enum: ["balance", "original"], default: "balance" },
     },
   },
   { timestamps: true },

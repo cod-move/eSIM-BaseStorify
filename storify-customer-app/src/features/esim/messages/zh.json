@@ -130,6 +130,15 @@
     "kycTooLarge": "文件太大。",
     "kycSend": "提交审核",
     "kycSent": "已提交，审核完成后会通知你。",
-    "kycPrivacy": "你的证件私密保存，仅审核人员可见。"
+    "kycPrivacy": "你的证件私密保存，仅审核人员可见。",
+    "cancelButton": "取消并退款",
+    "cancelTitle": "取消这张 eSIM？",
+    "cancelBodyBalance": "取消后立即失效，无法再安装。{refund} 将退回你的余额（扣除手续费 {fee}）。",
+    "cancelBodyOriginal": "取消后立即失效，无法再安装。{refund} 将原路退回（扣除手续费 {fee}）。",
+    "cancelConfirm": "确认取消",
+    "cancelKeep": "保留",
+    "cancelDone": "已取消，退款处理中。",
+    "cancelFailed": "这张 eSIM 已无法取消。",
+    "cancelSupplierRefused": "运营商未接受取消，请联系我们。"
   }
 }

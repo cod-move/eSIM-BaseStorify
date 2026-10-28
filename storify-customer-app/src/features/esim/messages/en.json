@@ -130,6 +130,15 @@
     "kycTooLarge": "This file is too large.",
     "kycSend": "Send for review",
     "kycSent": "Sent. We will tell you when it has been checked.",
-    "kycPrivacy": "Your documents are stored privately and seen only by our staff checking them."
+    "kycPrivacy": "Your documents are stored privately and seen only by our staff checking them.",
+    "cancelButton": "Cancel and refund",
+    "cancelTitle": "Cancel this eSIM?",
+    "cancelBodyBalance": "It stops working at once and cannot be installed. {refund} goes back to your balance ({fee} fee kept).",
+    "cancelBodyOriginal": "It stops working at once and cannot be installed. {refund} is refunded to your payment ({fee} fee kept).",
+    "cancelConfirm": "Cancel the eSIM",
+    "cancelKeep": "Keep it",
+    "cancelDone": "Cancelled. Your refund is on its way.",
+    "cancelFailed": "This eSIM can no longer be cancelled.",
+    "cancelSupplierRefused": "The network did not accept the cancellation. Please contact us."
   }
 }

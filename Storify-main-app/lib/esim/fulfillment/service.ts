@@ -205,6 +205,18 @@ async function processOne(job: IEsimFulfillment, owner: string): Promise<IEsimFu
   const provider = plan ? await EsimProvider.findOne({ code: plan.providerCode }).select("+secretCredentials") : null;
   const now = new Date();
 
+  // Not bought yet and the order was refunded or cancelled since (USR-08): never buy it now.
+  if (job.state === "queued") {
+    const order = await Order.findById(job.order).select({ paymentStatus: 1, status: 1 }).lean<{ paymentStatus?: string; status?: string } | null>();
+    if (!order || order.paymentStatus === PAYMENT_STATUS.REFUNDED || order.status === ORDER_STATUS.CANCELLED) {
+      await EsimFulfillment.updateOne(
+        { _id: job._id, "lease.owner": owner },
+        { $set: { state: "failed", lease: null, lastError: { code: "order_refunded", message: "The order was refunded", at: now }, refund: { state: "done", amount: 0, at: now, note: "order refunded in Storify" } } },
+      );
+      return "failed";
+    }
+  }
+
   let outcome: Outcome;
   let result: PurchaseResult | null = null;
   if (!plan || !provider) {
