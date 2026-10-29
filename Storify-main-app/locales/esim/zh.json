@@ -312,6 +312,17 @@
       "bestAvailable": "使用当地最佳网络",
       "showAll": "显示全部 {count} 个国家和地区",
       "showLess": "收起"
+    },
+    "campaign": {
+      "off": "{percent}% 折扣",
+      "ends": "{date} 结束",
+      "useCode": "使用优惠码",
+      "copy": "复制优惠码 {code}",
+      "see": "查看活动",
+      "fromWithCode": "用码后 {price} 起",
+      "destinations": "参加活动的目的地",
+      "noDestinations": "本活动的目的地目前没有在售。",
+      "howTo": "结账时输入优惠码 {code}，活动结束前购买这些目的地的 eSIM 均可使用。"
     }
   },
   "admin": {
@@ -857,7 +868,35 @@
       "riskHint": "满足以下条件的已付款订单，先由人工审核，再向供应商购买 eSIM。待审订单在「eSIM → 问题」里通过或拒绝。填 0 表示关闭该规则。",
       "riskOver": "订单金额达到",
       "riskOrders": "同一买家已有订单数达到",
-      "riskWindow": "……统计时间范围（小时）"
+      "riskWindow": "……统计时间范围（小时）",
+      "campaignsHint": "活动是一个带横幅的页面，在活动期间为选定目的地提供优惠码。优惠码是与活动同步的 Storify 优惠券，只对这些目的地的 eSIM 有效。",
+      "campaignNew": "新建活动",
+      "campaignEdit": "编辑活动",
+      "campaignNone": "还没有活动。",
+      "campaignDraft": "草稿",
+      "campaignScheduled": "未开始",
+      "campaignLive": "进行中",
+      "campaignEnded": "已结束",
+      "campaignUsed": "已使用 {count} 次",
+      "campaignView": "查看页面",
+      "campaignDelete": "删除",
+      "campaignDeleted": "活动已删除",
+      "campaignConfirmDelete": "删除这个活动？活动页面会下线，优惠码也会失效。",
+      "campaignName": "名称",
+      "campaignSlug": "页面地址",
+      "campaignHeadline": "横幅标题",
+      "campaignDescription": "说明",
+      "campaignImage": "横幅图片地址（可选）",
+      "campaignCode": "优惠码",
+      "campaignDiscount": "折扣 %",
+      "campaignStarts": "开始时间",
+      "campaignEnds": "结束时间",
+      "campaignDestinations": "目的地",
+      "campaignFind": "搜索目的地",
+      "campaignSeoTitle": "SEO 标题（可选）",
+      "campaignSeoDescription": "SEO 描述（可选）",
+      "campaignActive": "启用：活动期间页面和优惠码生效",
+      "edit": "编辑"
     },
     "sidebar": {
       "esim": "eSIM",
@@ -875,7 +914,8 @@
       "esimKyc": "身份认证",
       "esimPayments": "支付",
       "esimMigration": "数据迁移",
-      "esimReports": "报表"
+      "esimReports": "报表",
+      "esimCampaigns": "活动"
     }
   },
   "finance": {

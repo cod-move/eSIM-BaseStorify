@@ -312,6 +312,17 @@
       "bestAvailable": "The best network available locally",
       "showAll": "Show all {count} countries",
       "showLess": "Show fewer"
+    },
+    "campaign": {
+      "off": "{percent}% off",
+      "ends": "Ends {date}",
+      "useCode": "Use code",
+      "copy": "Copy the code {code}",
+      "see": "See the offer",
+      "fromWithCode": "from {price} with the code",
+      "destinations": "Destinations in this offer",
+      "noDestinations": "The destinations of this offer are not on sale right now.",
+      "howTo": "Enter the code {code} at checkout. It works on eSIMs for these destinations until the offer ends."
     }
   },
   "admin": {
@@ -857,7 +868,35 @@
       "riskHint": "Hold a paid order's eSIMs for a person before anything is bought from a supplier. Held orders appear under eSIM → Problems, to approve or reject. 0 turns a rule off.",
       "riskOver": "Review orders of at least",
       "riskOrders": "Review once a buyer already has this many orders",
-      "riskWindow": "…within this many hours"
+      "riskWindow": "…within this many hours",
+      "campaignsHint": "A campaign is a page with a banner and a coupon code for chosen destinations, for its dates. The code is a Storify coupon kept in step with the campaign, and works only on those destinations' eSIMs.",
+      "campaignNew": "New campaign",
+      "campaignEdit": "Edit campaign",
+      "campaignNone": "No campaigns yet.",
+      "campaignDraft": "Draft",
+      "campaignScheduled": "Scheduled",
+      "campaignLive": "Running",
+      "campaignEnded": "Ended",
+      "campaignUsed": "used {count} times",
+      "campaignView": "View page",
+      "campaignDelete": "Remove",
+      "campaignDeleted": "Campaign removed",
+      "campaignConfirmDelete": "Remove this campaign? Its page goes, and its coupon code stops working.",
+      "campaignName": "Name",
+      "campaignSlug": "Page address",
+      "campaignHeadline": "Banner headline",
+      "campaignDescription": "Description",
+      "campaignImage": "Banner image URL (optional)",
+      "campaignCode": "Coupon code",
+      "campaignDiscount": "Discount %",
+      "campaignStarts": "Starts",
+      "campaignEnds": "Ends",
+      "campaignDestinations": "Destinations",
+      "campaignFind": "Find a destination",
+      "campaignSeoTitle": "SEO title (optional)",
+      "campaignSeoDescription": "SEO description (optional)",
+      "campaignActive": "Active: the page and the code work between the dates",
+      "edit": "Edit"
     },
     "sidebar": {
       "esim": "eSIM",
@@ -875,7 +914,8 @@
       "esimKyc": "KYC",
       "esimPayments": "Payments",
       "esimMigration": "Migration",
-      "esimReports": "Reports"
+      "esimReports": "Reports",
+      "esimCampaigns": "Campaigns"
     }
   },
   "finance": {

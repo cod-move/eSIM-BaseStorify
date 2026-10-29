@@ -5,6 +5,7 @@ import Link from "@/components/language/link";
 import { useFallbackTranslator } from "@/hooks/use-fallback-translator";
 import { useCurrency } from "@/providers/currency-provider";
 import { flagEmoji, type Continent } from "@/lib/esim/storefront/continents";
+import { campaignPriceMinor } from "@/lib/esim/campaigns/rules";
 
 /** A destination as the overview, the blocks and search draw it. Serialisable. */
 export interface BrowserDestination {
@@ -26,13 +27,28 @@ export function destinationIcon(destination: Pick<BrowserDestination, "scope" | 
     : destination.emoji || "🌐";
 }
 
-/** One destination: its flag, name, coverage and the price it sells from. */
-export function DestinationCard({ destination, showPrice = true }: { destination: BrowserDestination; showPrice?: boolean }) {
+/**
+ * One destination: its flag, name, coverage and the price it sells from; on
+ * a campaign's page (`discountPercent`), the price with the campaign's code.
+ */
+export function DestinationCard({
+  destination,
+  showPrice = true,
+  discountPercent,
+}: {
+  destination: BrowserDestination;
+  showPrice?: boolean;
+  discountPercent?: number;
+}) {
   const t = useFallbackTranslator(useTranslations());
   const { formatPrice } = useCurrency();
   const price =
     showPrice && destination.fromPriceMinor !== null
-      ? t("esim.selector.from", "from {price}", { price: formatPrice(destination.fromPriceMinor / 100) })
+      ? discountPercent
+        ? t("esim.campaign.fromWithCode", "from {price} with the code", {
+            price: formatPrice(campaignPriceMinor(destination.fromPriceMinor, discountPercent) / 100),
+          })
+        : t("esim.selector.from", "from {price}", { price: formatPrice(destination.fromPriceMinor / 100) })
       : "";
   const coverage =
     destination.scope === "local" ? "" : t("esim.browse.countries", "{count} countries", { count: destination.countryCodes.length });

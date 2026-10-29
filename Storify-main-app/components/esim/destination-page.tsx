@@ -3,6 +3,8 @@ import { Globe2, QrCode, ShoppingBag, Signal, Wifi } from "lucide-react";
 import { CoverageList } from "@/components/esim/coverage-list";
 import { PlanComparison } from "@/components/esim/plan-comparison";
 import { coverageByCountry } from "@/lib/esim/storefront/compare";
+import { CampaignBanner } from "@/components/esim/campaign-banner";
+import { bannerData, campaignForPage } from "@/lib/esim/campaigns/service";
 import Link from "@/components/language/link";
 import { StoreBreadcrumb } from "@/components/store/store-breadcrumb";
 import { PlanSelector } from "@/components/esim/plan-selector";
@@ -47,9 +49,10 @@ export async function DestinationPage({
   crumbs: Array<{ label: string; href?: string }>;
 }) {
   const tr = await translator(locale);
-  const [{ storeDefault }, { defaultCurrency, storeName }] = await Promise.all([
+  const [{ storeDefault }, { defaultCurrency, storeName }, campaign] = await Promise.all([
     getLocaleRouting(),
     getStorefrontMetadataSettings(),
+    campaignForPage(destination.slug),
   ]);
   const countryCodes = destination.countries.map((country) => country.code);
   const regionNames = regionNamesFor(destination, locale);
@@ -79,6 +82,12 @@ export async function DestinationPage({
   return (
     <div className="container mx-auto px-4 py-8 lg:py-12">
       <StoreBreadcrumb className="mb-4" locale={locale} storeDefault={storeDefault} items={crumbs} />
+      {/* WEB-19: a running campaign that covers this destination. */}
+      {campaign ? (
+        <div className="mb-6">
+          <CampaignBanner campaign={bannerData(campaign, locale)} />
+        </div>
+      ) : null}
 
       <div className="grid gap-8 lg:grid-cols-[1fr_minmax(0,28rem)] lg:items-start xl:grid-cols-[1fr_minmax(0,32rem)]">
         <div className="space-y-8">

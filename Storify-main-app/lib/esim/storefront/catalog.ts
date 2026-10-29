@@ -160,9 +160,12 @@ export async function globalDestinations(): Promise<DestinationDetail[]> {
     .sort((a, b) => (a.fromPriceMinor ?? Infinity) - (b.fromPriceMinor ?? Infinity));
 }
 
-/** Paths and last change of every listed destination, for the sitemap. */
+/** Paths and last change of every listed destination and running campaign (CAT-11), for the sitemap. */
 export async function destinationSitemap(): Promise<Array<{ path: string; updatedAt: string }>> {
-  return (await cachedCatalog()).map((destination) => ({ path: destinationPath(destination), updatedAt: destination.updatedAt }));
+  const destinations = (await cachedCatalog()).map((destination) => ({ path: destinationPath(destination), updatedAt: destination.updatedAt }));
+  // Imported here: the campaigns read the catalogue themselves.
+  const { campaignSitemap } = await import("@/lib/esim/campaigns/service");
+  return [...destinations, ...(await campaignSitemap())];
 }
 
 /** A destination as the client components take it (`components/esim/destination-card.tsx`). */

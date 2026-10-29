@@ -5,6 +5,8 @@ import { DestinationBrowser } from "@/components/esim/destination-browser";
 import { translator } from "@/lib/esim/i18n/server";
 import { getLocaleRouting } from "@/lib/i18n/locale-routing";
 import { listDestinations, toBrowserDestination } from "@/lib/esim/storefront/catalog";
+import { CampaignBanner } from "@/components/esim/campaign-banner";
+import { bannerData, campaignForPage } from "@/lib/esim/campaigns/service";
 
 interface PageProps {
   params: Promise<{ locale: string }>;
@@ -22,7 +24,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 export default async function EsimDestinationsPage({ params }: PageProps) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const [tr, { storeDefault }, destinations] = await Promise.all([translator(locale), getLocaleRouting(), listDestinations()]);
+  const [tr, { storeDefault }, destinations, campaign] = await Promise.all([translator(locale), getLocaleRouting(), listDestinations(), campaignForPage()]);
 
   return (
     <div className="container mx-auto px-4 py-8 lg:py-12">
@@ -33,6 +35,11 @@ export default async function EsimDestinationsPage({ params }: PageProps) {
           {tr("esim.browse.description", "Pick where you are going. Plans for a single country, a whole region, or the world.")}
         </p>
       </div>
+      {campaign ? (
+        <div className="mb-8">
+          <CampaignBanner campaign={bannerData(campaign, locale)} />
+        </div>
+      ) : null}
       <DestinationBrowser
         destinations={destinations.map(toBrowserDestination)}
       />
