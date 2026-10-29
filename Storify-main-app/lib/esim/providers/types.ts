@@ -224,7 +224,9 @@ export type ProviderCapability =
   | "purchase"
   | "usage"
   | "topup"
-  | "cancel";
+  | "cancel"
+  /** `getPlan` is one quick call, so checkout can ask it whether a plan is still sold (CAT-09). */
+  | "planLookup";
 
 export interface EsimProviderAdapter {
   readonly code: string;

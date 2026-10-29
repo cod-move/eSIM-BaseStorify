@@ -3,7 +3,7 @@ import "server-only";
 import { connectDB, mongoose } from "@/lib/db";
 import { ORDER_STATUS, PAYMENT_STATUS } from "@/config/app.config";
 import { Order } from "@/models";
-import { EsimFulfillment } from "@/models/esim-fulfillment.model";
+import { EsimFulfillment, type FulfillmentState } from "@/models/esim-fulfillment.model";
 import { EsimPackage } from "@/models/esim-package.model";
 import { EsimPlan } from "@/models/esim-plan.model";
 import { EsimProfile, type IEsimProfile } from "@/models/esim-profile.model";
@@ -136,7 +136,9 @@ export async function cancelByShopper(userId: string, esimId: string) {
   };
 }
 
-const NOT_BOUGHT = { state: "queued" } as const;
+// Queued, or an eSIM held for review (ORD-13): nothing was bought.
+const NOT_BOUGHT = { state: { $in: ["queued", "review"] as FulfillmentState[] } };
+const TOPUP_NOT_BOUGHT = { state: "queued" } as const;
 
 /**
  * A refund recorded in Storify (patch P4, from `createRefundTransaction`).
@@ -170,7 +172,7 @@ export async function esimOnOrderRefunded(input: { orderId: unknown; metadata?: 
     // Not bought yet: never buy them now.
     const stop = { $set: { state: "failed", lastError: { code: "order_refunded", message: "The order was refunded", at: new Date() }, refund: { state: "done", amount: 0, at: new Date(), note: "order refunded in Storify" } } };
     await EsimFulfillment.updateMany({ order: orderId, ...NOT_BOUGHT }, stop);
-    await EsimTopup.updateMany({ order: orderId, ...NOT_BOUGHT }, stop);
+    await EsimTopup.updateMany({ order: orderId, ...TOPUP_NOT_BOUGHT }, stop);
 
     const stillUsable: string[] = [];
     for (const profile of profiles) {

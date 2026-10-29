@@ -70,6 +70,7 @@ export class EsimAccessAdapter implements EsimProviderAdapter {
     topup: true,
     // The API refunds only unused profiles and only on request to support.
     cancel: false,
+    planLookup: true,
   } as const;
 
   private readonly accessCode: string;

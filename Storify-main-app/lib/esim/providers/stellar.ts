@@ -69,6 +69,7 @@ export class StellarAdapter implements EsimProviderAdapter {
     usage: true,
     topup: true,
     cancel: true,
+    planLookup: true,
   } as const;
 
   private readonly apiKey: string;

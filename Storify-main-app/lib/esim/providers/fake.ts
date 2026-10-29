@@ -72,7 +72,7 @@ function fakeEsim(key: string): ProviderEsim {
 export class FakeAdapter implements EsimProviderAdapter {
   readonly code = "fake";
   readonly displayName = "Fake supplier (testing)";
-  readonly capabilities = { listPlans: true, purchase: true, usage: true, topup: true, cancel: true } as const;
+  readonly capabilities = { listPlans: true, purchase: true, usage: true, topup: true, cancel: true, planLookup: true } as const;
 
   readonly nonIdempotent: { topup?: boolean };
 
@@ -88,8 +88,34 @@ export class FakeAdapter implements EsimProviderAdapter {
     // The fake sells only plans created by hand in tests.
   }
 
-  async getPlan() {
-    return null;
+  /** Every plan is on sale, except ids holding "gone" (withdrawn) or "soldout" (not available). */
+  async getPlan(providerPlanId: string): Promise<ProviderPlan | null> {
+    if (providerPlanId.includes("gone")) return null;
+    return {
+      providerPlanId,
+      sku: null,
+      name: providerPlanId,
+      slug: providerPlanId,
+      productSlug: providerPlanId,
+      destination: "Fake",
+      emoji: null,
+      coverage: { scope: "local", countries: [], networks: [], breakoutIp: [] },
+      data: { megabytes: 1024, label: "1GB", type: "total" },
+      fairUse: null,
+      validityDays: 7,
+      duration: { configurable: false, defaultDays: 7, minDays: 7, maxDays: 7 },
+      speed: [],
+      tethering: null,
+      activation: { billingStarts: null, preInstallDays: null },
+      topup: { supported: false, type: null, mode: "none", stackTarget: null, window: null, coverage: null, profileRetentionDays: null },
+      cost: { currency: "USD", amountMinor: 100, billingUnit: "plan" },
+      bundles: [],
+      extras: { voiceMinutes: 0, smsCount: 0, refundable: true, phoneNumberIncluded: false },
+      additionalInfo: null,
+      available: !providerPlanId.includes("soldout"),
+      providerUpdatedAt: null,
+      raw: { fake: true },
+    };
   }
 
   async purchase(input: PurchaseInput): Promise<PurchaseResult> {

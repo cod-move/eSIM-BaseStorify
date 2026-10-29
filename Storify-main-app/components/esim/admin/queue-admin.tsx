@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { AlertTriangle, Link2, Loader2, RotateCcw, Search, Shuffle, Undo2, XCircle } from "lucide-react";
+import { AlertTriangle, Ban, CheckCircle2, Link2, Loader2, RotateCcw, Search, ShieldAlert, Shuffle, Undo2, XCircle } from "lucide-react";
 import Link from "@/components/language/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -23,14 +23,15 @@ import type { QueueRow, QueueView } from "@/lib/esim/admin/queue";
 /**
  * eSIM fulfilment that needs a person (ADM-08): what went wrong, what the
  * shopper was refunded, and the ways out — try again, another supplier, an
- * eSIM bought by hand, or give up and refund.
+ * eSIM bought by hand, or give up and refund. Orders held for review
+ * (ORD-13) are approved (bought now) or rejected (refund the payment by hand).
  */
 
 type Dialogue = { row: QueueRow; kind: "switch" | "bind" | "refunded" } | null;
 
 interface Props {
   view: QueueView;
-  queue: { rows: QueueRow[]; counts: { attention: number; failed: number; stuck: number }; pagination: { page: number; totalPages: number; total: number } };
+  queue: { rows: QueueRow[]; counts: { attention: number; review: number; failed: number; stuck: number }; pagination: { page: number; totalPages: number; total: number } };
   canManage: boolean;
   search: string;
 }
@@ -76,13 +77,16 @@ export function EsimQueueAdmin({ view, queue, canManage, search: initialSearch }
 
   const views: Array<{ id: QueueView; label: string; count?: number }> = [
     { id: "attention", label: t("admin.esim.needsAction", "Needs action"), count: queue.counts.attention },
+    { id: "review", label: t("admin.esim.heldForReview", "Held for review"), count: queue.counts.review },
     { id: "failed", label: t("admin.esim.failed", "Failed"), count: queue.counts.failed },
     { id: "stuck", label: t("admin.esim.stuck", "Stuck"), count: queue.counts.stuck },
     { id: "all", label: t("admin.esim.allJobs", "All fulfilment") },
   ];
 
   const stateLabel = (row: QueueRow) =>
-    row.state === "failed"
+    row.state === "review"
+      ? t("admin.esim.heldForReview", "Held for review")
+      : row.state === "failed"
       ? t("admin.esim.failed", "Failed")
       : row.state === "provider_pending"
         ? t("admin.esim.waitingSupplier", "Waiting for supplier")
@@ -180,6 +184,20 @@ export function EsimQueueAdmin({ view, queue, canManage, search: initialSearch }
                     </span>
                   </div>
                 ) : null}
+                {row.review?.reasons.length ? (
+                  <div className="flex items-start gap-2 rounded-lg bg-amber-500/10 p-2 text-sm">
+                    <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+                    <span>
+                      {row.review.reasons.join("; ")}
+                      {row.review.decision ? (
+                        <span className="ml-2 text-xs text-muted-foreground">
+                          {row.review.decision === "approved" ? t("admin.esim.reviewApproved", "Approved") : t("admin.esim.reviewRejected", "Rejected")}
+                          {row.review.decidedBy ? ` · ${row.review.decidedBy}` : ""}
+                        </span>
+                      ) : null}
+                    </span>
+                  </div>
+                ) : null}
                 {row.lastError?.code === "uncertain" || row.providerOrderId ? (
                   <p className="text-xs text-amber-700">
                     {t("admin.esim.mayStillDeliver", "The supplier may still have issued this eSIM. Check its portal before trying another supplier or refunding.")}
@@ -198,7 +216,35 @@ export function EsimQueueAdmin({ view, queue, canManage, search: initialSearch }
                   </ol>
                 </details>
 
-                {canManage && !closed ? (
+                {canManage && row.state === "review" ? (
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      size="sm"
+                      disabled={busy !== null}
+                      onClick={async () => {
+                        if (await confirm({ title: t("admin.esim.confirm", "Are you sure?"), description: t("admin.esim.confirmApprove", "Buy every eSIM of this order now?") })) {
+                          await act(row, { action: "approve" }, t("admin.esim.approvedDone", "Approved; the eSIMs are being bought"));
+                        }
+                      }}
+                    >
+                      {busy === row.id ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle2 className="mr-2 h-4 w-4" />}
+                      {t("admin.esim.approve", "Approve")}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="text-destructive"
+                      disabled={busy !== null}
+                      onClick={async () => {
+                        if (await confirm({ title: t("admin.esim.confirm", "Are you sure?"), description: t("admin.esim.confirmReject", "Buy nothing for this order? Then refund the payment in Storify (Orders → Refund) to where it came from.") })) {
+                          await act(row, { action: "reject" }, t("admin.esim.rejectedDone", "Rejected; refund the payment in Storify"));
+                        }
+                      }}
+                    >
+                      <Ban className="mr-2 h-4 w-4" /> {t("admin.esim.reject", "Reject")}
+                    </Button>
+                  </div>
+                ) : canManage && !closed ? (
                   <div className="flex flex-wrap gap-2">
                     <Button size="sm" disabled={busy !== null} onClick={() => act(row, { action: "retry" }, t("admin.esim.retryStarted", "Trying again"))}>
                       {busy === row.id ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RotateCcw className="mr-2 h-4 w-4" />}

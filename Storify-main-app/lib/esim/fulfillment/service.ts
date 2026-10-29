@@ -20,6 +20,8 @@ import { alertSupplierProblem, looksLikeBalanceProblem } from "@/lib/esim/alerts
 import { currentRates } from "@/lib/esim/pricing/fx-service";
 import { purchaseCostMinor, unitSaleMinor, usdMinorOf } from "@/lib/esim/reports/snapshot";
 import type { EsimSaleSnapshot } from "@/models/esim-profile.model";
+import { getEsimSettings } from "@/models/esim-pricing.model";
+import { reviewReasons } from "@/lib/esim/fulfillment/risk";
 
 /**
  * Paid order → one supplier purchase per eSIM unit (ORD-05..09).
@@ -40,7 +42,7 @@ type Consignment = { vendorId?: unknown; status?: string };
  */
 export async function enqueueOrderFulfillment(orderId: unknown): Promise<number> {
   const order = await Order.findById(orderId)
-    .select({ orderNumber: 1, paymentStatus: 1, status: 1, items: 1, subOrders: 1 })
+    .select({ orderNumber: 1, paymentStatus: 1, status: 1, items: 1, subOrders: 1, total: 1, customerId: 1, guestEmail: 1 })
     .lean<{
       _id: mongoose.Types.ObjectId;
       orderNumber: string;
@@ -48,6 +50,9 @@ export async function enqueueOrderFulfillment(orderId: unknown): Promise<number>
       status: string;
       items: Line[];
       subOrders?: Consignment[];
+      total?: number;
+      customerId?: unknown;
+      guestEmail?: string | null;
     } | null>();
   if (!order || order.paymentStatus !== PAYMENT_STATUS.PAID || order.status === ORDER_STATUS.CANCELLED) {
     return 0;
@@ -70,6 +75,8 @@ export async function enqueueOrderFulfillment(orderId: unknown): Promise<number>
   );
 
   const now = new Date();
+  const reasons = await holdReasons(order);
+  const held = reasons.length > 0;
   const writes = order.items.flatMap((item, lineIndex) => {
     const published = candidatesByVariant.get(String(item.variantId ?? ""));
     const candidates = published?.candidates;
@@ -88,9 +95,10 @@ export async function enqueueOrderFulfillment(orderId: unknown): Promise<number>
             variantId: item.variantId as mongoose.Types.ObjectId,
             candidates,
             durationDays,
-            state: "queued" as const,
+            state: held ? ("review" as const) : ("queued" as const),
             nextAttemptAt: now,
-            history: [{ at: now, event: "queued" }],
+            review: held ? { reasons, heldAt: now, decision: null, decidedAt: null, decidedBy: null } : null,
+            history: [{ at: now, event: held ? "held" : "queued", ...(held ? { detail: reasons.join("; ").slice(0, 300) } : {}) }],
           },
         },
         upsert: true,
@@ -99,7 +107,37 @@ export async function enqueueOrderFulfillment(orderId: unknown): Promise<number>
   });
   if (!writes.length) return 0;
   const result = await EsimFulfillment.bulkWrite(writes, { ordered: false });
+  if (held && result.upsertedCount) {
+    // Settlement must not wait on the notice.
+    void import("@/lib/notifications/notifications")
+      .then(({ notifyAdminsPaymentAnomaly }) =>
+        notifyAdminsPaymentAnomaly({
+          title: "eSIM order held for review",
+          message: `Order ${order.orderNumber}: ${reasons.join("; ")}. Approve or reject it under eSIM → Problems.`,
+          dedupeKey: `esim-review:${order._id}`,
+        }),
+      )
+      .catch(console.error);
+  }
   return result.upsertedCount;
+}
+
+/** Why this order should wait for a person (ORD-13); empty when the rules are off or it passes. */
+async function holdReasons(order: { _id: mongoose.Types.ObjectId; total?: number; customerId?: unknown; guestEmail?: string | null }) {
+  const risk = (await getEsimSettings()).risk;
+  if (!risk || (!risk.reviewOverMinor && !risk.maxOrders)) return [];
+  let recentOrders = 0;
+  const buyer = order.guestEmail
+    ? { guestEmail: order.guestEmail }
+    : mongoose.isValidObjectId(order.customerId)
+      ? { customerId: order.customerId }
+      : null;
+  if (risk.maxOrders && buyer) {
+    const since = new Date(Date.now() - risk.windowHours * 3_600_000);
+    const orderIds = await EsimFulfillment.distinct("order", { createdAt: { $gte: since }, order: { $ne: order._id } });
+    recentOrders = orderIds.length ? await Order.countDocuments({ _id: { $in: orderIds }, ...buyer }) : 0;
+  }
+  return reviewReasons({ totalMinor: Math.round((order.total ?? 0) * 100), recentOrders }, risk);
 }
 
 async function claim(filter: Record<string, unknown>, owner: string) {
@@ -431,6 +469,7 @@ async function adminJob(jobId: string) {
   const job = await EsimFulfillment.findById(jobId);
   if (!job) throw new JobActionError("Unknown job");
   if (job.state === "fulfilled") throw new JobActionError("This eSIM was already issued");
+  if (job.state === "review") throw new JobActionError("This order is held for review: approve or reject it first");
   if (job.refund && job.refund.state !== "manual") {
     throw new JobActionError("This eSIM was already refunded; place a new order instead");
   }
@@ -487,6 +526,48 @@ export async function adminFailJob(jobId: string, actor?: string) {
     },
   );
   return { orderId: String(job.order) };
+}
+
+/**
+ * A person's decision on an order held for review (ORD-13), for every held
+ * eSIM of the job's order at once. Approved: they are bought now. Rejected:
+ * nothing is bought, and the payment is to be refunded in Storify to where it
+ * came from — never to store credit, as the order is suspected fraud — so the
+ * jobs are marked for a refund by hand with each unit's share.
+ */
+export async function adminReviewOrder(jobId: string, decision: "approved" | "rejected", actor?: string) {
+  if (!mongoose.isValidObjectId(jobId)) throw new JobActionError("Unknown job");
+  const job = await EsimFulfillment.findById(jobId).select({ order: 1, state: 1 }).lean();
+  if (!job) throw new JobActionError("Unknown job");
+  if (job.state !== "review") throw new JobActionError("This order is not waiting for review");
+  const now = new Date();
+  const held = await EsimFulfillment.find({ order: job.order, state: "review" }).select({ lineIndex: 1 }).lean();
+  const decided = { "review.decision": decision, "review.decidedAt": now, "review.decidedBy": actor ?? null };
+  if (decision === "approved") {
+    await EsimFulfillment.updateMany(
+      { _id: { $in: held.map((entry) => entry._id) }, state: "review" },
+      { $set: { state: "queued", nextAttemptAt: now, ...decided }, $push: { history: { at: now, event: "review_approved", detail: actor } } },
+    );
+    return { orderId: String(job.order), count: held.length };
+  }
+  const order = await Order.findById(job.order).select({ total: 1, "items.price": 1, "items.quantity": 1 }).lean<{ total?: number; items?: Array<{ price: number; quantity: number }> } | null>();
+  for (const entry of held) {
+    const share = unitSaleMinor({ total: order?.total ?? 0, items: order?.items ?? [] }, entry.lineIndex) / 100;
+    await EsimFulfillment.updateOne(
+      { _id: entry._id, state: "review" },
+      {
+        $set: {
+          state: "failed",
+          lease: null,
+          lastError: { code: "review_rejected", message: "Rejected at review", at: now },
+          refund: { state: "manual", amount: share, at: now, note: "Rejected at review: refund the payment in Storify (Orders → Refund)" },
+          ...decided,
+        },
+        $push: { history: { at: now, event: "review_rejected", detail: actor } },
+      },
+    );
+  }
+  return { orderId: String(job.order), count: held.length };
 }
 
 /** A refund a person made outside the store (a guest's gateway refund), recorded on the job. */

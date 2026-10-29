@@ -11,12 +11,14 @@ import { EsimPlan } from "@/models/esim-plan.model";
  * - failed: every supplier refused, or an admin stopped it; shows whether
  *   the shopper was refunded (store credit) or still waits for a refund by
  *   hand (a guest order).
+ * - review: a paid order held before anything was bought (ORD-13), waiting
+ *   for a person to approve or reject it.
  * - stuck: still being tried longer than it should — waiting on a supplier
  *   for over 30 minutes, retried three times or more, or overdue by over 10
  *   minutes (the cron is not running).
  */
 
-export type QueueView = "attention" | "failed" | "stuck" | "all";
+export type QueueView = "attention" | "review" | "failed" | "stuck" | "all";
 
 const STUCK_PENDING_MS = 30 * 60_000;
 const OVERDUE_MS = 10 * 60_000;
@@ -34,10 +36,12 @@ function viewQuery(view: QueueView): Record<string, unknown> {
   // A failed job still needs a person while its refund is missing or waits for one.
   const failed = { state: "failed" };
   const failedOpen = { state: "failed", $or: [{ refund: null }, { "refund.state": { $in: ["pending", "manual"] } }] };
+  const review = { state: "review" };
+  if (view === "review") return review;
   if (view === "failed") return failed;
   if (view === "stuck") return stuck;
   if (view === "all") return {};
-  return { $or: [failedOpen, stuck] };
+  return { $or: [review, failedOpen, stuck] };
 }
 
 export interface QueueRow {
@@ -53,6 +57,7 @@ export interface QueueRow {
   providerOrderId: string | null;
   lastError: { code: string; message: string; at: string } | null;
   refund: { state: string; amount: number; at: string; note: string | null } | null;
+  review: { reasons: string[]; decision: string | null; decidedBy: string | null } | null;
   nextAttemptAt: string | null;
   pendingSince: string | null;
   createdAt: string;
@@ -68,7 +73,7 @@ export async function listQueue(view: QueueView, options: { page?: number; pageS
   const [jobs, total, counts] = await Promise.all([
     EsimFulfillment.find(match).sort({ updatedAt: -1 }).skip((page - 1) * pageSize).limit(pageSize).lean(),
     EsimFulfillment.countDocuments(match),
-    Promise.all((["attention", "failed", "stuck"] as const).map((name) => EsimFulfillment.countDocuments(viewQuery(name)))),
+    Promise.all((["attention", "review", "failed", "stuck"] as const).map((name) => EsimFulfillment.countDocuments(viewQuery(name)))),
   ]);
   const plans = await EsimPlan.find({ _id: { $in: jobs.flatMap((job) => job.candidates) } }).select({ name: 1, providerCode: 1 }).lean();
   const planById = new Map(plans.map((plan) => [String(plan._id), plan]));
@@ -101,6 +106,7 @@ export async function listQueue(view: QueueView, options: { page?: number; pageS
       providerOrderId: job.providerOrderId,
       lastError: job.lastError ? { code: job.lastError.code, message: job.lastError.message, at: iso(job.lastError.at)! } : null,
       refund: job.refund ? { state: job.refund.state, amount: job.refund.amount, at: iso(job.refund.at)!, note: job.refund.note ?? null } : null,
+      review: job.review ? { reasons: job.review.reasons, decision: job.review.decision ?? null, decidedBy: job.review.decidedBy ?? null } : null,
       nextAttemptAt: iso(job.nextAttemptAt),
       pendingSince: iso(job.pendingSince),
       createdAt: iso(job.createdAt)!,
@@ -109,7 +115,7 @@ export async function listQueue(view: QueueView, options: { page?: number; pageS
   });
   return {
     rows,
-    counts: { attention: counts[0], failed: counts[1], stuck: counts[2] },
+    counts: { attention: counts[0], review: counts[1], failed: counts[2], stuck: counts[3] },
     pagination: { page, pageSize, total, totalPages: Math.max(1, Math.ceil(total / pageSize)) },
   };
 }

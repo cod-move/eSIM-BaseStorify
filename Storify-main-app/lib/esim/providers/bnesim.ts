@@ -61,7 +61,8 @@ export interface BnesimOptions {
 export class BnesimAdapter implements EsimProviderAdapter {
   readonly code = "bnesim";
   readonly displayName = "BNESIM";
-  readonly capabilities = { listPlans: true, purchase: true, usage: true, topup: true, cancel: false } as const;
+  // getPlan reads the whole product list.
+  readonly capabilities = { listPlans: true, purchase: true, usage: true, topup: true, cancel: false, planLookup: false } as const;
   readonly nonIdempotent = { topup: true } as const;
 
   private readonly apiKey: string;

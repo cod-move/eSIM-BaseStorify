@@ -10,13 +10,14 @@ const { Schema, models, model } = mongoose;
  *   purchasing/provider_pending → queued (retry, same supplier, same key)
  *   rejected by a supplier → queued on the next candidate (failover)
  *   no candidate left, or a supplier's answer unknowable → failed (needs a person)
+ *   review (ORD-13): held before anything is bought → queued (approved) | failed (rejected)
  *
  * Each candidate gets its own idempotency key, derived from this job and the
  * plan, so a retry against the same supplier can never buy twice, and a
  * failover to another supplier is a fresh, separate purchase. A job never
  * fails over after an `uncertain` error: the supplier may have sold the eSIM.
  */
-export type FulfillmentState = "queued" | "purchasing" | "provider_pending" | "fulfilled" | "failed";
+export type FulfillmentState = "review" | "queued" | "purchasing" | "provider_pending" | "fulfilled" | "failed";
 
 export interface IEsimFulfillment extends mongoose.Document {
   order: mongoose.Types.ObjectId;
@@ -42,6 +43,14 @@ export interface IEsimFulfillment extends mongoose.Document {
   lastError: { code: string; message: string; at: Date } | null;
   history: Array<{ at: Date; event: string; detail?: string }>;
   deliveredAt: Date | null;
+  /** Why the order was held for review (ORD-13), and what a person decided. */
+  review: {
+    reasons: string[];
+    heldAt: Date;
+    decision: "approved" | "rejected" | null;
+    decidedAt: Date | null;
+    decidedBy: string | null;
+  } | null;
   /**
    * What became of the shopper's money for a failed job (ORD-09).
    * pending: claimed by a refund in progress; done: credited; manual: a
@@ -69,7 +78,7 @@ const EsimFulfillmentSchema = new Schema<IEsimFulfillment>(
     candidateIndex: { type: Number, default: 0 },
     state: {
       type: String,
-      enum: ["queued", "purchasing", "provider_pending", "fulfilled", "failed"],
+      enum: ["review", "queued", "purchasing", "provider_pending", "fulfilled", "failed"],
       default: "queued",
     },
     attempts: { type: Number, default: 0 },
@@ -92,6 +101,19 @@ const EsimFulfillmentSchema = new Schema<IEsimFulfillment>(
       default: [],
     },
     deliveredAt: { type: Date, default: null },
+    review: {
+      type: new Schema(
+        {
+          reasons: { type: [String], default: [] },
+          heldAt: { type: Date, required: true },
+          decision: { type: String, enum: ["approved", "rejected", null], default: null },
+          decidedAt: { type: Date, default: null },
+          decidedBy: { type: String, default: null },
+        },
+        { _id: false },
+      ),
+      default: null,
+    },
     refund: {
       type: new Schema(
         {

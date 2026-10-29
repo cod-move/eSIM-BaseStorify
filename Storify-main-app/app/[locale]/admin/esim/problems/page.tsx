@@ -9,7 +9,7 @@ interface PageProps {
 }
 
 const one = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value) || undefined;
-const VIEWS: QueueView[] = ["attention", "failed", "stuck", "all"];
+const VIEWS: QueueView[] = ["attention", "review", "failed", "stuck", "all"];
 
 /** Admin → eSIM → Problems (ADM-08): fulfilment that needs a person. */
 export default async function AdminEsimProblemsPage({ params, searchParams }: PageProps) {

@@ -49,7 +49,8 @@ export interface MobiMatterOptions {
 export class MobiMatterAdapter implements EsimProviderAdapter {
   readonly code = "mobimatter";
   readonly displayName = "MobiMatter";
-  readonly capabilities = { listPlans: true, purchase: true, usage: true, topup: true, cancel: true } as const;
+  // getPlan reads the whole product list.
+  readonly capabilities = { listPlans: true, purchase: true, usage: true, topup: true, cancel: true, planLookup: false } as const;
 
   private readonly merchantId: string;
   private readonly apiKey: string;

@@ -843,7 +843,21 @@
       "reportDestination": "Destination",
       "reportByDay": "By day",
       "reportByMonth": "By month",
-      "reportPeriod": "Period"
+      "reportPeriod": "Period",
+      "heldForReview": "Held for review",
+      "reviewApproved": "Approved",
+      "reviewRejected": "Rejected",
+      "approve": "Approve",
+      "reject": "Reject",
+      "confirmApprove": "Buy every eSIM of this order now?",
+      "confirmReject": "Buy nothing for this order? Then refund the payment in Storify (Orders → Refund) to where it came from.",
+      "approvedDone": "Approved; the eSIMs are being bought",
+      "rejectedDone": "Rejected; refund the payment in Storify",
+      "riskTitle": "Order review",
+      "riskHint": "Hold a paid order's eSIMs for a person before anything is bought from a supplier. Held orders appear under eSIM → Problems, to approve or reject. 0 turns a rule off.",
+      "riskOver": "Review orders of at least",
+      "riskOrders": "Review once a buyer already has this many orders",
+      "riskWindow": "…within this many hours"
     },
     "sidebar": {
       "esim": "eSIM",

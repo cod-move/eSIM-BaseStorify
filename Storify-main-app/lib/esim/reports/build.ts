@@ -20,7 +20,7 @@ export interface SaleRow {
 }
 
 export interface JobRow {
-  state: "queued" | "purchasing" | "provider_pending" | "fulfilled" | "failed";
+  state: "review" | "queued" | "purchasing" | "provider_pending" | "fulfilled" | "failed";
   createdAt: Date;
   /** When it was issued; null unless fulfilled. */
   doneAt: Date | null;

@@ -843,7 +843,21 @@
       "reportDestination": "目的地",
       "reportByDay": "按天",
       "reportByMonth": "按月",
-      "reportPeriod": "期间"
+      "reportPeriod": "期间",
+      "heldForReview": "待人工审核",
+      "reviewApproved": "已通过",
+      "reviewRejected": "已拒绝",
+      "approve": "通过",
+      "reject": "拒绝",
+      "confirmApprove": "现在为这个订单购买全部 eSIM？",
+      "confirmReject": "这个订单不再购买任何 eSIM？之后请在 Storify 里（订单 → 退款）原路退款。",
+      "approvedDone": "已通过，正在购买 eSIM",
+      "rejectedDone": "已拒绝，请在 Storify 里退款",
+      "riskTitle": "订单审核",
+      "riskHint": "满足以下条件的已付款订单，先由人工审核，再向供应商购买 eSIM。待审订单在「eSIM → 问题」里通过或拒绝。填 0 表示关闭该规则。",
+      "riskOver": "订单金额达到",
+      "riskOrders": "同一买家已有订单数达到",
+      "riskWindow": "……统计时间范围（小时）"
     },
     "sidebar": {
       "esim": "eSIM",

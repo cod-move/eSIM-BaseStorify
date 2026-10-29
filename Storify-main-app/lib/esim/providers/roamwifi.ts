@@ -74,6 +74,8 @@ export class RoamWifiAdapter implements EsimProviderAdapter {
     usage: true,
     topup: true,
     cancel: true,
+    // getPlan walks the whole catalogue.
+    planLookup: false,
   } as const;
 
   private readonly phoneNumber: string;

@@ -21,6 +21,7 @@ import { isWalletVariant } from "@/lib/esim/wallet/product";
 import { walletFeeMinor } from "@/lib/esim/wallet/booking";
 import { getEsimSettings } from "@/models/esim-pricing.model";
 import { kycState, variantsNeedingKyc } from "@/lib/esim/kyc/service";
+import { unsellableVariants } from "@/lib/esim/cart/plan-check";
 
 /**
  * The eSIM side of patch point P10: what Storify's cart and checkout ask about
@@ -185,6 +186,13 @@ export async function esimLinePrices<T extends { variantId?: unknown; lineAttrib
   }
   const info = await variantInfo(items.map((item) => item.variantId));
   if (!info.size) return prices;
+  // CAT-09: a plan the suppliers no longer sell is refused like an item out of stock.
+  const gone = await unsellableVariants([...info.keys()]);
+  if (gone.size) {
+    throw new ValidationError({
+      stock: [`No longer available: ${[...gone.values()].join(", ")}. Remove it from your cart and choose another plan.`],
+    });
+  }
   // KYC-03: plans that need identity verification are paid for only by a verified shopper.
   if ((await variantsNeedingKyc([...info.keys()])).size) {
     const verified = context.userId ? (await kycState(context.userId)).status === "approved" : false;

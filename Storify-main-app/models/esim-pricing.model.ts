@@ -77,6 +77,13 @@ export interface IEsimSettings extends mongoose.Document {
   reminders: { enabled: boolean; lowDataPercent: number; expiringHours: number; installDays: number };
   /** Shopper cancellation (USR-07): on/off, the fee kept, where the rest goes. */
   cancellation: { enabled: boolean; feeFixedMinor: number; feePercent: number; refundTo: "balance" | "original" };
+  /**
+   * Order review (ORD-13): a paid order's eSIMs wait for a person before
+   * anything is bought when the order is over `reviewOverMinor`, or when the
+   * same buyer already paid for `maxOrders` eSIM orders in `windowHours`.
+   * 0 switches a rule off.
+   */
+  risk: { reviewOverMinor: number; maxOrders: number; windowHours: number };
   updatedAt: Date;
 }
 
@@ -128,6 +135,11 @@ const EsimSettingsSchema = new Schema<IEsimSettings>(
       feeFixedMinor: { type: Number, default: 0, min: 0 },
       feePercent: { type: Number, default: 0, min: 0, max: 100 },
       refundTo: { type: String, enum: ["balance", "original"], default: "balance" },
+    },
+    risk: {
+      reviewOverMinor: { type: Number, default: 0, min: 0 },
+      maxOrders: { type: Number, default: 0, min: 0, max: 1000 },
+      windowHours: { type: Number, default: 24, min: 1, max: 720 },
     },
   },
   { timestamps: true },
