@@ -12,7 +12,7 @@ import { JsonLd } from "@/lib/site-config/seo";
 import { getLocaleRouting } from "@/lib/i18n/locale-routing";
 import { getStorefrontMetadataSettings } from "@/lib/storefront/storefront-metadata";
 import { flagEmoji } from "@/lib/esim/storefront/continents";
-import { regionNamesFor, type DestinationDetail } from "@/lib/esim/storefront/catalog";
+import { refreshMissingNetworks, regionNamesFor, type DestinationDetail } from "@/lib/esim/storefront/catalog";
 
 /**
  * A destination's page (WEB-31..33): what it covers, the plan selector, the
@@ -57,6 +57,8 @@ export async function DestinationPage({
   const countryCodes = destination.countries.map((country) => country.code);
   const regionNames = regionNamesFor(destination, locale);
   const icon = destination.scope === "local" ? flagEmoji(countryCodes[0]) || destination.emoji : destination.emoji || "🌐";
+  // CAT-10: countries without an operator are asked about once this page is sent.
+  refreshMissingNetworks(destination);
   const coverage = coverageByCountry(destination.countries, destination.networks, locale);
   const local = destination.scope === "local";
   const prices = destination.variants.map((variant) => variant.perDay ? variant.perDay.priceMinor * variant.perDay.minDays : variant.priceMinor);

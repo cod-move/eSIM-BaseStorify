@@ -186,6 +186,13 @@ export class MobiMatterAdapter implements EsimProviderAdapter {
     return { status: "cancelled", raw: await this.call("PUT", "/order/refund", { orderId }) };
   }
 
+  /** CAT-10: the catalogue names operators only for a single-country product; this lists them all. */
+  async planNetworks(providerPlanId: string) {
+    const [productId] = providerPlanId.split("|");
+    const response = await this.call("GET", `/products/${encodeURIComponent(productId)}/networks`);
+    return networksOf(Array.isArray(response.result) ? objArray(response.result) : objArray(response.data));
+  }
+
   private async products(query?: Record<string, string>): Promise<JsonObject[]> {
     const response = await this.call("GET", "/products", undefined, query);
     const list = objArray(response.result);
@@ -233,6 +240,21 @@ export class MobiMatterAdapter implements EsimProviderAdapter {
     }
     return response;
   }
+}
+
+/** MobiMatter's network rows → one entry per country and operator, with its fastest generation. */
+export function networksOf(rows: JsonObject[]): Array<{ countryCode: string; operator: string; network: string | null }> {
+  const seen = new Map<string, { countryCode: string; operator: string; network: string | null }>();
+  for (const row of rows) {
+    const countryCode = iso2(str(row.countryCode));
+    const operator = str(row.brand) || str(row.tadig) || str(row.networkId);
+    if (!countryCode || !operator) continue;
+    const network = row.is5G === true || row.is5G === "true" ? "5G" : row.is4G === true || row.is4G === "true" ? "4G" : null;
+    const key = `${countryCode}|${operator}`;
+    const known = seen.get(key);
+    if (!known || (network === "5G" && known.network !== "5G") || (network && !known.network)) seen.set(key, { countryCode, operator, network });
+  }
+  return [...seen.values()];
 }
 
 function result(response: JsonObject): JsonObject {

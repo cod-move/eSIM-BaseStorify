@@ -1,6 +1,7 @@
 import "server-only";
 
-import { unstable_cache } from "next/cache";
+import { revalidateTag, unstable_cache } from "next/cache";
+import { afterResponse } from "@/lib/after-response";
 import { mongoose, connectDB } from "@/lib/db";
 import { PRODUCT_STATUS } from "@/config/app.config";
 import { Product } from "@/models";
@@ -62,8 +63,12 @@ export function destinationPath(destination: Pick<Destination, "slug" | "scope">
 
 type PlanFacts = Pick<
   IEsimPlan,
-  "destination" | "emoji" | "coverage" | "data" | "validityDays" | "topup"
+  "destination" | "emoji" | "coverage" | "data" | "validityDays" | "topup" | "supplierNetworks"
 > & { _id: mongoose.Types.ObjectId };
+
+/** A plan's operators: the catalogue's, else those fetched on their own (CAT-10). */
+const networksOfPlan = (plan: Pick<IEsimPlan, "coverage" | "supplierNetworks">) =>
+  plan.coverage.networks.length ? plan.coverage.networks : (plan.supplierNetworks?.list ?? []);
 
 async function readCatalog(): Promise<DestinationDetail[]> {
   await connectDB();
@@ -77,7 +82,7 @@ async function readCatalog(): Promise<DestinationDetail[]> {
     productById.has(String(link.product)) ? link.variants.map((variant) => variant.candidates[0]).filter(Boolean) : [],
   );
   const plans = await EsimPlan.find({ _id: { $in: primaryIds } })
-    .select({ destination: 1, emoji: 1, coverage: 1, data: 1, validityDays: 1, topup: 1 })
+    .select({ destination: 1, emoji: 1, coverage: 1, data: 1, validityDays: 1, topup: 1, supplierNetworks: 1 })
     .lean<PlanFacts[]>();
   const planById = new Map(plans.map((plan) => [String(plan._id), plan]));
   // ORD-03: a variant takes a start date when every plan behind it comes from a supplier that schedules.
@@ -107,7 +112,7 @@ async function readCatalog(): Promise<DestinationDetail[]> {
       first ??= plan;
       scopes.set(plan.coverage.scope, (scopes.get(plan.coverage.scope) ?? 0) + 1);
       for (const country of plan.coverage.countries) countries.set(country.code, country.name);
-      for (const network of plan.coverage.networks) {
+      for (const network of networksOfPlan(plan)) {
         networks.set(`${network.countryCode}|${network.operator}|${network.network ?? ""}`, network);
       }
       const cut = variant.name.lastIndexOf(" / ");
@@ -284,13 +289,13 @@ export async function productEsimFacts(productId: string) {
       const link = await EsimProductLink.findOne({ product: new mongoose.Types.ObjectId(productId) }).select({ variants: 1 }).lean();
       if (!link) return null;
       const plans = await EsimPlan.find({ _id: { $in: link.variants.map((variant) => variant.candidates[0]).filter(Boolean) } })
-        .select({ coverage: 1, data: 1, speed: 1, tethering: 1, activation: 1, topup: 1, bundles: 1, extras: 1 })
+        .select({ coverage: 1, data: 1, speed: 1, tethering: 1, activation: 1, topup: 1, bundles: 1, extras: 1, supplierNetworks: 1 })
         .lean<IEsimPlan[]>();
       return summarizeFacts(
         plans.map((plan) => ({
           scope: plan.coverage.scope,
           countries: plan.coverage.countries,
-          networks: plan.coverage.networks,
+          networks: networksOfPlan(plan),
           breakoutIp: plan.coverage.breakoutIp ?? [],
           dataType: plan.data.type,
           speed: plan.speed ?? [],
@@ -307,4 +312,26 @@ export async function productEsimFacts(productId: string) {
     ["esim-product-facts", productId],
     { revalidate: 300, tags: [STOREFRONT_TAG] },
   )();
+}
+
+/**
+ * After a destination page is sent (CAT-10): when some covered country has no
+ * operator, ask the suppliers that can say, and refresh the storefront's cache
+ * if any answered. Never delays the page.
+ */
+export function refreshMissingNetworks(destination: Pick<DestinationDetail, "productId" | "countries" | "networks">) {
+  const covered = new Set(destination.networks.map((network) => network.countryCode));
+  if (destination.countries.every((country) => covered.has(country.code))) return;
+  afterResponse(async () => {
+    const link = await EsimProductLink.findOne({ product: new mongoose.Types.ObjectId(destination.productId) }).select({ variants: 1 }).lean();
+    if (!link) return;
+    const { fillMissingNetworks } = await import("@/lib/esim/catalog/networks");
+    const gained = await fillMissingNetworks(link.variants.map((variant) => variant.candidates[0]).filter(Boolean));
+    if (!gained) return;
+    try {
+      revalidateTag(STOREFRONT_TAG, { expire: 0 });
+    } catch {
+      // Not allowed from where this ran: the cache lapses within minutes.
+    }
+  });
 }

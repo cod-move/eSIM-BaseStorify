@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { MobiMatterAdapter, detailsOf, mapProduct, preInstallDays, reducedSpeedMbps } from "../mobimatter";
+import { MobiMatterAdapter, detailsOf, mapProduct, networksOf, preInstallDays, reducedSpeedMbps } from "../mobimatter";
 import { fakeFetch } from "./helpers";
 import type { JsonObject, JsonValue } from "../types";
 
@@ -164,5 +164,32 @@ describe("MobiMatter usage and top-ups", () => {
     const esim = await mm.getEsim({ providerEsimId: null, simId: null, iccid: "8944" });
     assert.equal(esim.providerEsimId, "ORD-7");
     await assert.rejects(() => mm.probe(), (error: Error & { code?: string }) => error.code === "credentials_missing");
+  });
+});
+
+describe("MobiMatter plan networks (CAT-10)", () => {
+  it("keeps one entry per country and operator, at its fastest generation", () => {
+    assert.deepEqual(
+      networksOf([
+        { countryCode: "fr", brand: "Orange", is4G: true, is5G: false },
+        { countryCode: "FR", brand: "Orange", is4G: true, is5G: true },
+        { countryCode: "DE", brand: "", tadig: "DEUD1", is4G: true },
+        { countryCode: "XX1", brand: "Nowhere" },
+        { countryCode: "IT", brand: "TIM" },
+      ]),
+      [
+        { countryCode: "FR", operator: "Orange", network: "5G" },
+        { countryCode: "DE", operator: "DEUD1", network: "4G" },
+        { countryCode: "IT", operator: "TIM", network: null },
+      ],
+    );
+  });
+
+  it("asks for the product's networks without its category", async () => {
+    const { mm, sent } = adapter({
+      "GET /mobimatter/api/v2/products/MM-EU-10/networks": () => ({ body: { isSuccess: true, result: [{ countryCode: "ES", brand: "Movistar", is5G: true }] } }),
+    });
+    assert.deepEqual(await mm.planNetworks("MM-EU-10|esim_realtime"), [{ countryCode: "ES", operator: "Movistar", network: "5G" }]);
+    assert.equal(sent[0].headers["api-key"], "k1");
   });
 });

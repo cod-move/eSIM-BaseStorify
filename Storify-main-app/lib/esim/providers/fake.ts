@@ -118,6 +118,15 @@ export class FakeAdapter implements EsimProviderAdapter {
     };
   }
 
+  /** CAT-10: two French operators for any plan, none for an id holding "nonets". */
+  async planNetworks(providerPlanId: string) {
+    if (providerPlanId.includes("nonets")) return [];
+    return [
+      { countryCode: "FR", operator: "Fake Orange", network: "5G" },
+      { countryCode: "FR", operator: "Fake SFR", network: "4G" },
+    ];
+  }
+
   async purchase(input: PurchaseInput): Promise<PurchaseResult> {
     switch (this.options.mode) {
       case "reject":

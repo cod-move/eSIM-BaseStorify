@@ -253,6 +253,11 @@ export interface EsimProviderAdapter {
   listPlans(): AsyncIterable<ProviderPlan>;
   /** One plan's live state; null when the provider no longer has it. */
   getPlan(providerPlanId: string): Promise<ProviderPlan | null>;
+  /**
+   * The operators a plan uses in each country, from a call of its own (CAT-10),
+   * for suppliers whose catalogue leaves them out. Absent where there is none.
+   */
+  planNetworks?(providerPlanId: string): Promise<Array<{ countryCode: string; operator: string; network: string | null }>>;
   purchase(input: PurchaseInput): Promise<PurchaseResult>;
   queryPurchase(providerOrderId: string, context?: PurchaseContext): Promise<PurchaseResult>;
   getEsim(ref: EsimRef): Promise<ProviderEsim>;

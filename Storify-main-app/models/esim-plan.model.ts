@@ -69,6 +69,12 @@ export interface IEsimPlan extends mongoose.Document {
   } | null;
   /** null = follow the provider's default. */
   kycRequired: boolean | null;
+  /**
+   * Operators fetched on their own for a plan whose catalogue entry has none
+   * (CAT-10, `planNetworks`), and when they were last asked for. Kept apart
+   * from `coverage` so a catalogue sync never wipes them.
+   */
+  supplierNetworks: { list: Array<{ countryCode: string; operator: string; network: string | null }>; checkedAt: Date } | null;
   productId: mongoose.Types.ObjectId | null;
   variantId: mongoose.Types.ObjectId | null;
   createdAt: Date;
@@ -182,6 +188,16 @@ const EsimPlanSchema = new Schema<IEsimPlan>(
       default: null,
     },
     kycRequired: { type: Boolean, default: null },
+    supplierNetworks: {
+      type: new Schema(
+        {
+          list: { type: [new Schema({ countryCode: String, operator: String, network: { type: String, default: null } }, { _id: false })], default: [] },
+          checkedAt: { type: Date, required: true },
+        },
+        { _id: false },
+      ),
+      default: null,
+    },
     productId: { type: Schema.Types.ObjectId, ref: "Product", default: null },
     variantId: { type: Schema.Types.ObjectId, default: null },
   },
