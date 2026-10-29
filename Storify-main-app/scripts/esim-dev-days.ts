@@ -197,7 +197,7 @@ async function cleanup() {
   await EsimPackage.deleteMany({ esim: { $in: profiles.map((profile) => profile._id) } });
   await EsimProfile.deleteMany({ order: { $in: orders } });
   await EsimFulfillment.deleteMany({ order: { $in: orders } });
-  await EsimProviderLog.deleteMany({ $or: [{ "refs.orderId": { $in: orders.map(String) } }, ...(created.provider ? [{ provider: created.provider }] : [])] });
+  await EsimProviderLog.deleteMany({ $or: [{ "refs.orderId": { $in: orders.map(String) } }, ...(created.provider ? [{ provider: created.provider }] : []), ...(created.plan ? [{ "refs.planId": String(created.plan) }] : [])] });
   await Order.collection.deleteMany({ _id: { $in: orders } });
   await Cart.collection.deleteMany({ sessionId: tag });
   const byTag = new RegExp(tag);

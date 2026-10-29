@@ -23,6 +23,8 @@ interface ProviderDefinition {
   credentialKeys: readonly string[];
   /** Keys that must stay encrypted at rest. */
   secretKeys: readonly string[];
+  /** The shopper may pick the day the plan starts (ORD-03): the date is sent with the purchase. */
+  scheduledActivation?: boolean;
   create(credentials: ProviderCredentials, settlementCurrency: string): EsimProviderAdapter;
 }
 
@@ -70,6 +72,8 @@ export const PROVIDER_DEFINITIONS = {
     displayName: "BNESIM",
     credentialKeys: ["apiKey", "apiSecret", "type", "baseUrl"],
     secretKeys: ["apiSecret"],
+    // add-esim takes scheduled_activation_date.
+    scheduledActivation: true,
     create: (credentials, settlementCurrency) =>
       new BnesimAdapter({
         apiKey: required(credentials, "apiKey", "BNESIM"),
@@ -98,6 +102,12 @@ export const PROVIDER_CODES = Object.keys(PROVIDER_DEFINITIONS) as ProviderCode[
 
 export function isProviderCode(code: string): code is ProviderCode {
   return Object.hasOwn(PROVIDER_DEFINITIONS, code);
+}
+
+/** Whether a supplier takes a start date with the purchase (ORD-03); the fake does, for tests. */
+export function supportsScheduledActivation(code: string): boolean {
+  if (/^fake(-[a-z0-9]+)?$/.test(code)) return fakeEnabled();
+  return isProviderCode(code) && (PROVIDER_DEFINITIONS[code] as ProviderDefinition).scheduledActivation === true;
 }
 
 /** The testing supplier exists only where a developer switched it on. */

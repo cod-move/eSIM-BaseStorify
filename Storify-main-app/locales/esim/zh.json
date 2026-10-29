@@ -128,7 +128,12 @@
       "buyNow": "立即购买",
       "added": "已加入购物车",
       "addFailed": "加入购物车失败",
-      "none": "这个目的地目前没有在售套餐。"
+      "none": "这个目的地目前没有在售套餐。",
+      "start": "什么时候开始生效？",
+      "startNow": "按套餐默认",
+      "startOnDate": "指定日期",
+      "startDate": "开始日期",
+      "startHint": "套餐将在这一天（UTC）开始生效，而不是安装时。"
     },
     "product": {
       "days": "天数",

@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import {
   LineAttributesError,
+  activationDateBounds,
+  lineActivationDate,
   lineDays,
   linePriceMinor,
   lineVariantName,
@@ -84,5 +86,40 @@ describe("pricing and naming a line", () => {
     });
     assert.equal(withLineDays({}, snapshot), snapshot);
     assert.deepEqual(withLineDays({ lineAttributes: { days: 2 } }, {}), {});
+  });
+});
+
+describe("start date (ORD-03)", () => {
+  const now = new Date("2026-10-29T15:00:00Z");
+
+  it("takes a real calendar day only", () => {
+    assert.deepEqual(parseLineAttributes({ activateOn: "2026-11-10" }), { activateOn: "2026-11-10" });
+    assert.throws(() => parseLineAttributes({ activateOn: "2026-02-30" }), /start date/);
+    assert.throws(() => parseLineAttributes({ activateOn: "10/11/2026" }), /start date/);
+    assert.throws(() => parseLineAttributes({ activateOn: "2026-11-10", topup: "a".repeat(24) }), /top-up takes no start date/);
+    assert.throws(() => parseLineAttributes({ activateOn: "2026-11-10", wallet: 500 }), /wallet top-up/);
+  });
+
+  it("is from tomorrow up to 180 days ahead", () => {
+    assert.deepEqual(activationDateBounds(now), { min: "2026-10-30", max: "2027-04-27" });
+  });
+
+  it("goes only with a variant whose suppliers schedule, inside the window", () => {
+    assert.deepEqual(resolveLineAttributes({ activateOn: "2026-11-10" }, null, { scheduled: true, now }), { activateOn: "2026-11-10" });
+    assert.deepEqual(resolveLineAttributes({ activateOn: "2026-11-10", days: 7 }, perDay, { scheduled: true, now }), { days: 7, activateOn: "2026-11-10" });
+    assert.throws(() => resolveLineAttributes({ activateOn: "2026-11-10" }, null, { now }), /cannot be given a start date/);
+    assert.throws(() => resolveLineAttributes({ activateOn: "2026-10-29" }, null, { scheduled: true, now }), /between 2026-10-30/);
+    assert.throws(() => resolveLineAttributes({ activateOn: "2027-06-01" }, null, { scheduled: true, now }), /and 2027-04-27/);
+  });
+
+  it("reads back from a stored line and names it on the order", () => {
+    assert.equal(lineActivationDate({ activateOn: "2026-11-10" }), "2026-11-10");
+    assert.equal(lineActivationDate({ activateOn: "soon" }), null);
+    assert.equal(lineActivationDate(undefined), null);
+    assert.equal(
+      withLineDays({ lineAttributes: { days: 7, activateOn: "2026-11-10" } }, { variantLabel: "Unlimited / 1–30 days" }).variantLabel,
+      "Unlimited / 7 days · starts 2026-11-10",
+    );
+    assert.equal(withLineDays({ lineAttributes: { activateOn: "2026-11-10" } }, { variantLabel: "5GB / 30 days" }).variantLabel, "5GB / 30 days · starts 2026-11-10");
   });
 });

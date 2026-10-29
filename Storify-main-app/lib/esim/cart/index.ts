@@ -5,13 +5,18 @@ import { CartRefusal } from "@/lib/cart/cart-refusal";
 import { ValidationError } from "@/lib/api/errors";
 import type { PerDayPricing } from "@/lib/esim/catalog/variants";
 import { EsimProductLink } from "@/models/esim-product-link.model";
+import { EsimPlan } from "@/models/esim-plan.model";
+import { supportsScheduledActivation } from "@/lib/esim/providers/registry";
 import {
   LineAttributesError,
+  activationDateBounds,
+  lineActivationDate,
   lineDays,
   linePriceMinor,
   lineVariantName,
   parseLineAttributes,
   resolveLineAttributes,
+  withStartDate,
   type EsimLineAttributes,
 } from "@/lib/esim/cart/line-attributes";
 import { isTopupVariant } from "@/lib/esim/topup/product";
@@ -40,7 +45,8 @@ export { withLineDays } from "@/lib/esim/cart/line-attributes";
 
 const toUnits = (minor: number) => Math.round(minor) / 100;
 
-type VariantInfo = { name: string; perDay: PerDayPricing | null };
+/** `scheduled`: every plan behind the variant comes from a supplier that takes a start date (ORD-03). */
+type VariantInfo = { name: string; perDay: PerDayPricing | null; scheduled: boolean };
 
 /** The published eSIM variants among these ids; others are not in the map. */
 async function variantInfo(variantIds: unknown[]): Promise<Map<string, VariantInfo>> {
@@ -50,10 +56,18 @@ async function variantInfo(variantIds: unknown[]): Promise<Map<string, VariantIn
   const links = await EsimProductLink.find({ "variants.variantId": { $in: ids.map((id) => new mongoose.Types.ObjectId(id)) } })
     .select({ variants: 1 })
     .lean();
-  for (const link of links) {
-    for (const variant of link.variants) {
-      result.set(String(variant.variantId), { name: variant.name, perDay: variant.perDay ?? null });
-    }
+  const wanted = links.flatMap((link) => link.variants).filter((variant) => ids.includes(String(variant.variantId)));
+  const plans = await EsimPlan.find({ _id: { $in: wanted.flatMap((variant) => variant.candidates) } })
+    .select({ providerCode: 1 })
+    .lean<Array<{ _id: mongoose.Types.ObjectId; providerCode: string }>>();
+  const providerOf = new Map(plans.map((plan) => [String(plan._id), plan.providerCode]));
+  for (const variant of wanted) {
+    const codes = variant.candidates.map((id) => providerOf.get(String(id)));
+    result.set(String(variant.variantId), {
+      name: variant.name,
+      perDay: variant.perDay ?? null,
+      scheduled: codes.length > 0 && codes.every((code) => code !== undefined && supportsScheduledActivation(code)),
+    });
   }
   return result;
 }
@@ -102,7 +116,7 @@ async function walletLine(amountMinor: number | undefined, userId: string | unde
 export async function esimCartLine(
   line: { variantId?: unknown; quantity?: number; lineAttributes?: unknown },
   context: { userId?: string } = {},
-): Promise<{ lineAttributes: EsimLineAttributes & Record<string, unknown>; price: number; variantName: string; singleUnit?: boolean } | null> {
+): Promise<{ lineAttributes: EsimLineAttributes & Record<string, unknown>; price?: number; variantName: string; singleUnit?: boolean } | null> {
   try {
     const requested = parseLineAttributes(line.lineAttributes);
     if (await isTopupVariant(line.variantId)) {
@@ -129,13 +143,16 @@ export async function esimCartLine(
     if (!context.userId && (await variantsNeedingKyc([line.variantId])).size) {
       throw new LineAttributesError("Sign in to buy this eSIM: it needs identity verification");
     }
-    const lineAttributes = resolveLineAttributes(requested, info.perDay);
-    if (!lineAttributes || !info.perDay) return null;
+    const lineAttributes = resolveLineAttributes(requested, info.perDay, { scheduled: info.scheduled });
+    if (!lineAttributes) return null;
+    const dated = (name: string) => (lineAttributes.activateOn ? withStartDate(name, lineAttributes.activateOn) : name);
+    // A fixed-price variant with a start date (ORD-03): Storify's own price.
+    if (!info.perDay) return { lineAttributes: { ...lineAttributes }, variantName: dated(info.name) };
     const days = lineAttributes.days ?? info.perDay.defaultDays;
     return {
       lineAttributes: { ...lineAttributes },
       price: toUnits(linePriceMinor(info.perDay, days)),
-      variantName: lineVariantName(info.name, days),
+      variantName: dated(lineVariantName(info.name, days)),
     };
   } catch (error) {
     // Storify's refusal reasons are a closed list; the message says what is wrong.
@@ -204,15 +221,25 @@ export async function esimLinePrices<T extends { variantId?: unknown; lineAttrib
       });
     }
   }
+  const bounds = activationDateBounds();
   for (const item of items) {
     const variant = info.get(String(item.variantId ?? ""));
     if (!variant) continue;
+    // ORD-03: a start date stays only where it can still be kept.
+    const activateOn = lineActivationDate(item.lineAttributes);
+    if (activateOn && !variant.scheduled) {
+      throw new ValidationError({ stock: ["An eSIM in your cart can no longer be given a start date: add it to your cart again."] });
+    }
+    if (activateOn && (activateOn < bounds.min || activateOn > bounds.max)) {
+      throw new ValidationError({ stock: [`The start date ${activateOn} of an eSIM in your cart has passed: choose a new one between ${bounds.min} and ${bounds.max}.`] });
+    }
+    const dated = activateOn ? { activateOn } : {};
     if (!variant.perDay) {
-      if (item.lineAttributes) item.lineAttributes = undefined;
+      item.lineAttributes = activateOn ? dated : undefined;
       continue;
     }
     const days = lineDays(item.lineAttributes, variant.perDay);
-    item.lineAttributes = { days } satisfies EsimLineAttributes;
+    item.lineAttributes = { days, ...dated } satisfies EsimLineAttributes;
     prices.set(item, toUnits(linePriceMinor(variant.perDay, days)));
   }
   return prices;

@@ -10,6 +10,8 @@ import { clampDays, validityValue, type PerDayPricing } from "@/lib/esim/catalog
  *   from the quote; whatever a request sends for those two is ignored.
  * - `wallet`: the amount a wallet top-up adds to the balance, in cents. The
  *   server adds `walletFee` and `label`; a request's own are ignored.
+ * - `activateOn`: the day the plan should start (YYYY-MM-DD, ORD-03), for a
+ *   variant whose suppliers all schedule activation; absent = as usual.
  *
  * A cart holds one line per variant, as Storify's cart does. Adding the same
  * variant again with other days replaces the days (the shopper changed their
@@ -24,7 +26,20 @@ export interface EsimLineAttributes {
   label?: string;
   wallet?: number;
   walletFee?: number;
+  activateOn?: string;
 }
+
+/** The earliest and latest start date a shopper may pick: from tomorrow, up to 180 days ahead (UTC days). */
+export const ACTIVATION_WINDOW_DAYS = 180;
+
+export function activationDateBounds(now = new Date()): { min: string; max: string } {
+  const day = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+  const iso = (offset: number) => new Date(day + offset * 86_400_000).toISOString().slice(0, 10);
+  return { min: iso(1), max: iso(ACTIVATION_WINDOW_DAYS) };
+}
+
+const isCalendarDay = (value: string) =>
+  /^\d{4}-\d{2}-\d{2}$/.test(value) && new Date(`${value}T00:00:00Z`).toISOString().slice(0, 10) === value;
 
 export class LineAttributesError extends Error {
   constructor(message: string) {
@@ -54,6 +69,9 @@ export function parseLineAttributes(input: unknown): EsimLineAttributes | null {
         throw new LineAttributesError("The amount must be a whole number of cents");
       }
       parsed.wallet = value;
+    } else if (key === "activateOn") {
+      if (typeof value !== "string" || !isCalendarDay(value)) throw new LineAttributesError("Choose a start date");
+      parsed.activateOn = value;
     } else if (key === "topup") {
       if (typeof value !== "string" || !/^[a-f0-9]{24}$/i.test(value)) throw new LineAttributesError("Unknown top-up");
       parsed.topup = value;
@@ -64,30 +82,48 @@ export function parseLineAttributes(input: unknown): EsimLineAttributes | null {
   if (parsed.days !== undefined && parsed.topup !== undefined) {
     throw new LineAttributesError("A top-up takes no number of days");
   }
-  if (parsed.wallet !== undefined && (parsed.days !== undefined || parsed.topup !== undefined)) {
+  if (parsed.wallet !== undefined && (parsed.days !== undefined || parsed.topup !== undefined || parsed.activateOn !== undefined)) {
     throw new LineAttributesError("A wallet top-up takes no other options");
+  }
+  if (parsed.activateOn !== undefined && parsed.topup !== undefined) {
+    throw new LineAttributesError("A top-up takes no start date");
   }
   return Object.keys(parsed).length ? parsed : null;
 }
 
 /**
- * The attributes a day-priced line is stored with: the requested days, which
- * must lie in the variant's range, or its default. A line for a variant that
- * is not day-priced takes none.
+ * The attributes an eSIM line is stored with: for a day-priced variant the
+ * requested days, which must lie in its range, or its default; and a start
+ * date, only where the variant's suppliers schedule activation
+ * (`scheduled`), within `activationDateBounds`. Null when the line has none.
  */
 export function resolveLineAttributes(
   requested: EsimLineAttributes | null,
   perDay: PerDayPricing | null,
+  options: { scheduled?: boolean; now?: Date } = {},
 ): EsimLineAttributes | null {
+  const activateOn = requested?.activateOn;
+  if (activateOn !== undefined) {
+    if (!options.scheduled) throw new LineAttributesError("This eSIM cannot be given a start date");
+    const { min, max } = activationDateBounds(options.now);
+    if (activateOn < min || activateOn > max) throw new LineAttributesError(`Choose a start date between ${min} and ${max}`);
+  }
+  const dated = activateOn !== undefined ? { activateOn } : {};
   if (!perDay) {
-    if (requested) throw new LineAttributesError("This option takes no number of days");
-    return null;
+    if (requested?.days !== undefined) throw new LineAttributesError("This option takes no number of days");
+    return activateOn !== undefined ? dated : null;
   }
   const days = requested?.days ?? perDay.defaultDays;
   if (days < perDay.minDays || days > perDay.maxDays) {
     throw new LineAttributesError(`Choose between ${perDay.minDays} and ${perDay.maxDays} days`);
   }
-  return { days };
+  return { days, ...dated };
+}
+
+/** The start date a stored line carries, when it is a well-formed day; null otherwise. */
+export function lineActivationDate(attributes: unknown): string | null {
+  const value = attributes && typeof attributes === "object" ? (attributes as EsimLineAttributes).activateOn : undefined;
+  return typeof value === "string" && isCalendarDay(value) ? value : null;
 }
 
 /** The days a stored day-priced line is charged and bought for. */
@@ -134,16 +170,25 @@ export function withLineDays<S extends VariantSnapshot>(line: { lineAttributes?:
     };
   }
   const days = attributes?.days;
-  if (typeof days !== "number") return snapshot;
-  return {
-    ...snapshot,
-    ...(snapshot.variantLabel ? { variantLabel: lineVariantName(snapshot.variantLabel, days) } : {}),
-    ...(snapshot.variantOptions
-      ? {
-          variantOptions: snapshot.variantOptions.map((option) =>
-            option.name === "Validity" ? { ...option, value: validityValue(days) } : option,
-          ),
-        }
-      : {}),
-  };
+  const activateOn = lineActivationDate(attributes);
+  const dayed: S = typeof days !== "number"
+    ? snapshot
+    : {
+        ...snapshot,
+        ...(snapshot.variantLabel ? { variantLabel: lineVariantName(snapshot.variantLabel, days) } : {}),
+        ...(snapshot.variantOptions
+          ? {
+              variantOptions: snapshot.variantOptions.map((option) =>
+                option.name === "Validity" ? { ...option, value: validityValue(days) } : option,
+              ),
+            }
+          : {}),
+      };
+  // ORD-03: the start date is part of what was sold.
+  return activateOn && dayed.variantLabel ? { ...dayed, variantLabel: withStartDate(dayed.variantLabel, activateOn) } : dayed;
+}
+
+/** "1GB / 7 days" → "1GB / 7 days · starts 2026-11-10". */
+export function withStartDate(name: string, activateOn: string): string {
+  return `${name} · starts ${activateOn}`;
 }

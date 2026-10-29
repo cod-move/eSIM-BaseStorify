@@ -14,7 +14,8 @@ import { adapterFor } from "@/lib/esim/provider-service";
 import { withProviderLog } from "@/lib/esim/provider-log";
 import { decide, idempotencyKey, type Outcome } from "@/lib/esim/fulfillment/policy";
 import { ProviderError, type ProviderEsim, type PurchaseResult } from "@/lib/esim/providers/types";
-import { lineDays } from "@/lib/esim/cart/line-attributes";
+import { lineActivationDate, lineDays } from "@/lib/esim/cart/line-attributes";
+import { supportsScheduledActivation } from "@/lib/esim/providers/registry";
 import type { PerDayPricing } from "@/lib/esim/catalog/variants";
 import { alertSupplierProblem, looksLikeBalanceProblem } from "@/lib/esim/alerts";
 import { currentRates } from "@/lib/esim/pricing/fx-service";
@@ -82,6 +83,8 @@ export async function enqueueOrderFulfillment(orderId: unknown): Promise<number>
     const candidates = published?.candidates;
     // A day-priced line is bought for the days it was charged for (P10).
     const durationDays = published?.perDay ? lineDays(item.lineAttributes, published.perDay) : null;
+    // ORD-03: the start date the line was checked out with.
+    const activationDate = lineActivationDate(item.lineAttributes);
     if (!candidates?.length || cancelledSellers.has(String(item.vendorId ?? ""))) return [];
     return Array.from({ length: Math.max(1, item.quantity ?? 1) }, (_, offset) => ({
       updateOne: {
@@ -95,6 +98,7 @@ export async function enqueueOrderFulfillment(orderId: unknown): Promise<number>
             variantId: item.variantId as mongoose.Types.ObjectId,
             candidates,
             durationDays,
+            activationDate,
             state: held ? ("review" as const) : ("queued" as const),
             nextAttemptAt: now,
             review: held ? { reasons, heldAt: now, decision: null, decidedAt: null, decidedBy: null } : null,
@@ -313,6 +317,8 @@ async function processOne(job: IEsimFulfillment, owner: string): Promise<IEsimFu
     const pendingOrder = job.state === "provider_pending" ? job.providerOrderId : null;
     // A day-priced plan is bought for the days the line was charged for.
     const durationDays = plan.duration.configurable ? (job.durationDays ?? plan.duration.defaultDays) : null;
+    // A start date goes only to a supplier that schedules; checkout offers one only when every candidate does.
+    const activationDate = job.activationDate && supportsScheduledActivation(plan.providerCode) ? job.activationDate : null;
     try {
       const adapter = adapterFor(provider);
       result = await withProviderLog(
@@ -321,14 +327,17 @@ async function processOne(job: IEsimFulfillment, owner: string): Promise<IEsimFu
           providerCode: provider.code,
           operation: pendingOrder ? "purchase.query" : "purchase",
           refs: { orderId: String(job.order), planId: String(plan._id) },
-          request: pendingOrder ? { providerOrderId: pendingOrder } : { providerPlanId: plan.providerPlanId, durationDays },
+          request: pendingOrder
+            ? { providerOrderId: pendingOrder, ...(activationDate ? { activationDate } : {}) }
+            : { providerPlanId: plan.providerPlanId, durationDays, ...(activationDate ? { activationDate } : {}) },
         },
         () =>
           pendingOrder
-            ? adapter.queryPurchase(pendingOrder)
+            ? adapter.queryPurchase(pendingOrder, { activationDate })
             : adapter.purchase({
                 providerPlanId: plan.providerPlanId,
                 durationDays,
+                activationDate,
                 idempotencyKey: idempotencyKey(String(job._id), String(plan._id)),
               }),
         (value) => ({ status: value.status, providerOrderId: value.providerOrderId, charged: value.charged }),

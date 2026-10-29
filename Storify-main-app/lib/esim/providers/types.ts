@@ -168,6 +168,16 @@ export interface PurchaseInput {
   durationDays: number | null;
   /** Stable per order line + unit; a retry with the same key must not buy twice. */
   idempotencyKey: string;
+  /**
+   * The day the plan should start (YYYY-MM-DD), for a supplier that schedules
+   * activation (`supportsScheduledActivation`); null or absent = as usual.
+   */
+  activationDate?: string | null;
+}
+
+/** What a purchase still in progress needs to finish as it was asked (ORD-03). */
+export interface PurchaseContext {
+  activationDate?: string | null;
 }
 
 export interface PurchaseResult {
@@ -244,7 +254,7 @@ export interface EsimProviderAdapter {
   /** One plan's live state; null when the provider no longer has it. */
   getPlan(providerPlanId: string): Promise<ProviderPlan | null>;
   purchase(input: PurchaseInput): Promise<PurchaseResult>;
-  queryPurchase(providerOrderId: string): Promise<PurchaseResult>;
+  queryPurchase(providerOrderId: string, context?: PurchaseContext): Promise<PurchaseResult>;
   getEsim(ref: EsimRef): Promise<ProviderEsim>;
   getUsage(ref: EsimRef): Promise<ProviderUsage>;
   listTopupPlans(ref: EsimRef): Promise<ProviderTopupPlan[]>;

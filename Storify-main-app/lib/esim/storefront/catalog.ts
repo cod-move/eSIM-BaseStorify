@@ -10,6 +10,7 @@ import { EsimProfile } from "@/models/esim-profile.model";
 import { EsimDestination } from "@/models/esim-destination.model";
 import { continentOf, type Continent } from "@/lib/esim/storefront/continents";
 import { fromPriceMinor, type StorefrontVariant } from "@/lib/esim/storefront/selector";
+import { supportsScheduledActivation } from "@/lib/esim/providers/registry";
 import { summarizeFacts } from "@/lib/esim/storefront/product-facts";
 import type { CoverageScope } from "@/lib/esim/providers/types";
 
@@ -79,6 +80,17 @@ async function readCatalog(): Promise<DestinationDetail[]> {
     .select({ destination: 1, emoji: 1, coverage: 1, data: 1, validityDays: 1, topup: 1 })
     .lean<PlanFacts[]>();
   const planById = new Map(plans.map((plan) => [String(plan._id), plan]));
+  // ORD-03: a variant takes a start date when every plan behind it comes from a supplier that schedules.
+  const candidateIds = links.flatMap((link) => (productById.has(String(link.product)) ? link.variants.flatMap((variant) => variant.candidates) : []));
+  const providerOf = new Map(
+    (await EsimPlan.find({ _id: { $in: candidateIds } }).select({ providerCode: 1 }).lean<Array<{ _id: mongoose.Types.ObjectId; providerCode: string }>>())
+      .map((plan) => [String(plan._id), plan.providerCode]),
+  );
+  const scheduled = (candidates: unknown[]) =>
+    candidates.length > 0 && candidates.every((id) => {
+      const code = providerOf.get(String(id));
+      return code !== undefined && supportsScheduledActivation(code);
+    });
 
   const result: DestinationDetail[] = [];
   for (const link of links) {
@@ -110,6 +122,7 @@ async function readCatalog(): Promise<DestinationDetail[]> {
         perDay: variant.perDay ?? null,
         topupMode: plan.topup.supported ? plan.topup.mode : "none",
         breakoutIp: plan.coverage.breakoutIp ?? [],
+        scheduledActivation: scheduled(variant.candidates),
       });
     }
     if (!first || !variants.length) continue;

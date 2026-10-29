@@ -16,6 +16,7 @@ import {
   type ProviderTopupPlan,
   type ProviderUsage,
   type PurchaseInput,
+  type PurchaseContext,
   type PurchaseResult,
   type TopupInput,
   type TopupResult,
@@ -109,7 +110,7 @@ export class BnesimAdapter implements EsimProviderAdapter {
     return { status: "processing", providerOrderId: `${transaction}#${input.providerPlanId}`, charged: null, esim: null, raw: activation };
   }
 
-  async queryPurchase(providerOrderId: string): Promise<PurchaseResult> {
+  async queryPurchase(providerOrderId: string, context: PurchaseContext = {}): Promise<PurchaseResult> {
     const ref = parseOrderId(providerOrderId);
     const status = await this.activationStatus(ref.transaction);
     const pending = (raw: JsonObject, id = providerOrderId): PurchaseResult => ({ status: "processing", providerOrderId: id, charged: null, esim: null, raw });
@@ -123,7 +124,12 @@ export class BnesimAdapter implements EsimProviderAdapter {
       if (!licenseCli) return pending(status.raw);
       const existing = findCard(await this.cards(licenseCli), ref.planId);
       if (!existing) {
-        const added = await this.call("/enterprise/simcard/add-esim", { license_cli: licenseCli, product_id: ref.planId });
+        // A start date the shopper chose (ORD-03) goes with the eSIM, not the license.
+        const added = await this.call("/enterprise/simcard/add-esim", {
+          license_cli: licenseCli,
+          product_id: ref.planId,
+          ...(context.activationDate ? { scheduled_activation_date: context.activationDate } : {}),
+        });
         return pending(added, `${transactionOf(added)}|${licenseCli}#${ref.planId}`);
       }
     }

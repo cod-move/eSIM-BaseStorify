@@ -13,6 +13,7 @@ import { useCurrency } from "@/providers/currency-provider";
 import { cn } from "@/lib/utils";
 import { FLEX_DAYS, keyOf, resolveSelection, type SelectorChoice, type StorefrontVariant } from "@/lib/esim/storefront/selector";
 import { PLAN_CHOOSE_EVENT } from "@/lib/esim/storefront/compare";
+import { activationDateBounds } from "@/lib/esim/cart/line-attributes";
 
 /**
  * The plan selector (WEB-13): days → data → top-up → exit IP → price, then
@@ -45,6 +46,9 @@ export function PlanSelector({ productId, name, variants, countryCodes, regionNa
   const [choice, setChoice] = useState<SelectorChoice>({});
   const [days, setDays] = useState<number | null>(null);
   const [busy, setBusy] = useState<"cart" | "buy" | null>(null);
+  // ORD-03: start as the plan does, or on a day the shopper picks.
+  const [onDate, setOnDate] = useState(false);
+  const [startDate, setStartDate] = useState("");
   const selection = useMemo(() => resolveSelection(variants, choice), [variants, choice]);
   const variant = selection.variant;
   const perDay = variant?.perDay ?? null;
@@ -94,8 +98,15 @@ export function PlanSelector({ productId, name, variants, countryCodes, regionNa
     breakout: t("esim.selector.breakout", "IP address"),
   };
 
+  const dated = Boolean(variant?.scheduledActivation && onDate);
+  const missingDate = dated && !startDate;
+
   async function add(then: "cart" | "buy") {
-    if (!variant || priceMinor === null) return;
+    if (!variant || priceMinor === null || missingDate) return;
+    const attributes = {
+      ...(perDay && chosenDays ? { days: chosenDays } : {}),
+      ...(dated ? { activateOn: startDate } : {}),
+    };
     setBusy(then);
     try {
       await addItem({
@@ -105,7 +116,7 @@ export function PlanSelector({ productId, name, variants, countryCodes, regionNa
         price: priceMinor / 100,
         name,
         image: image ?? undefined,
-        lineAttributes: perDay && chosenDays ? { days: chosenDays } : undefined,
+        lineAttributes: Object.keys(attributes).length ? attributes : undefined,
       });
       if (then === "buy") router.push("/checkout");
       else toast.success(t("esim.selector.added", "Added to cart"));
@@ -190,6 +201,42 @@ export function PlanSelector({ productId, name, variants, countryCodes, regionNa
         </div>
       ) : null}
 
+      {variant?.scheduledActivation ? (
+        <div className="space-y-2">
+          <div className="text-sm font-semibold">{t("esim.selector.start", "When should it start?")}</div>
+          <div className="flex flex-wrap gap-2">
+            {[false, true].map((choice) => (
+              <button
+                key={String(choice)}
+                type="button"
+                onClick={() => setOnDate(choice)}
+                className={cn(
+                  "rounded-lg border px-3 py-2 text-start text-sm transition-colors",
+                  onDate === choice ? "border-primary bg-primary/10 font-medium" : "hover:border-foreground/40",
+                )}
+              >
+                {choice ? t("esim.selector.startOnDate", "On a date") : t("esim.selector.startNow", "As usual")}
+              </button>
+            ))}
+          </div>
+          {onDate ? (
+            <div className="space-y-1">
+              <Input
+                type="date"
+                value={startDate}
+                min={activationDateBounds().min}
+                max={activationDateBounds().max}
+                onChange={(event) => setStartDate(event.target.value)}
+                onClick={(event) => event.currentTarget.showPicker?.()}
+                className="w-48"
+                aria-label={t("esim.selector.startDate", "Start date")}
+              />
+              <p className="text-xs text-muted-foreground">{t("esim.selector.startHint", "The plan starts on this day (UTC), not when you install it.")}</p>
+            </div>
+          ) : null}
+        </div>
+      ) : null}
+
       <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border bg-muted/30 p-4">
         <div>
           <div className="text-xs text-muted-foreground">
@@ -198,11 +245,11 @@ export function PlanSelector({ productId, name, variants, countryCodes, regionNa
           <div className="text-2xl font-bold">{priceMinor !== null ? formatPrice(priceMinor / 100) : "—"}</div>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => add("cart")} disabled={!variant || busy !== null}>
+          <Button variant="outline" onClick={() => add("cart")} disabled={!variant || busy !== null || missingDate}>
             {busy === "cart" ? <Loader2 className="me-2 h-4 w-4 animate-spin" /> : <ShoppingCart className="me-2 h-4 w-4" />}
             {t("common.addToCart", "Add to cart")}
           </Button>
-          <Button onClick={() => add("buy")} disabled={!variant || busy !== null}>
+          <Button onClick={() => add("buy")} disabled={!variant || busy !== null || missingDate}>
             {busy === "buy" ? <Loader2 className="me-2 h-4 w-4 animate-spin" /> : <Zap className="me-2 h-4 w-4" />}
             {t("esim.selector.buyNow", "Buy now")}
           </Button>

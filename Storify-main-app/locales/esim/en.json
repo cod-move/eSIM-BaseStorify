@@ -128,7 +128,12 @@
       "buyNow": "Buy now",
       "added": "Added to cart",
       "addFailed": "Could not add to cart",
-      "none": "No plans are on sale for this destination right now."
+      "none": "No plans are on sale for this destination right now.",
+      "start": "When should it start?",
+      "startNow": "As usual",
+      "startOnDate": "On a date",
+      "startDate": "Start date",
+      "startHint": "The plan starts on this day (UTC), not when you install it."
     },
     "product": {
       "days": "Days",

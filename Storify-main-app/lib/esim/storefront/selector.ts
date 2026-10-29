@@ -25,6 +25,8 @@ export interface StorefrontVariant {
   topupMode: TopupMode;
   /** Countries the traffic exits from (ISO codes); empty when unknown. */
   breakoutIp: string[];
+  /** The shopper may pick the day it starts (ORD-03). */
+  scheduledActivation?: boolean;
 }
 
 export interface SelectorChoice {
