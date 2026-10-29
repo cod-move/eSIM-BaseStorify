@@ -799,7 +799,32 @@
       "cancelFeePercent": "手续费比例 %",
       "cancelRefundTo": "退款到",
       "cancelToBalance": "顾客余额",
-      "cancelToOriginal": "原支付方式（手动）"
+      "cancelToOriginal": "原支付方式（手动）",
+      "reportsHint": "按每张 eSIM 购买时记录的售价和供应商成本统计销售额与毛利。金额为 USD，日期按 UTC。",
+      "reportSales": "销售额",
+      "reportUnits": "{esims} 张 eSIM · {topups} 笔充值",
+      "reportMargin": "毛利",
+      "reportMarginNote": "占已知成本销售额的 {percent}",
+      "reportSuccess": "开卡成功率",
+      "reportSuccessNote": "成功 {fulfilled} · 失败 {failed} · 进行中 {open}",
+      "reportTime": "开卡耗时",
+      "reportTimeNote": "平均值 · 中位数 {median}",
+      "reportSeconds": "{count} 秒",
+      "reportMinutes": "{count} 分钟",
+      "reportCostUnknown": "{count} 笔销售没有 USD 成本（当时没有汇率），未计入毛利。",
+      "reportNoSnapshot": "本期间有 {count} 张 eSIM 是在开始记录销售快照前购买或从旧系统导入的，未计入统计。",
+      "reportVoided": "{count} 张 eSIM（{amount}）已取消或退款，不计入销售额。",
+      "reportColUnits": "销量",
+      "reportColCost": "成本",
+      "reportNoSales": "该期间没有销售。",
+      "reportApply": "查看",
+      "reportLastDays": "最近 {days} 天",
+      "reportBySupplier": "按供应商",
+      "reportTopDestinations": "热门目的地",
+      "reportDestination": "目的地",
+      "reportByDay": "按天",
+      "reportByMonth": "按月",
+      "reportPeriod": "期间"
     },
     "sidebar": {
       "esim": "eSIM",
@@ -816,7 +841,8 @@
       "esimReferrals": "推荐返佣",
       "esimKyc": "身份认证",
       "esimPayments": "支付",
-      "esimMigration": "数据迁移"
+      "esimMigration": "数据迁移",
+      "esimReports": "报表"
     }
   },
   "finance": {

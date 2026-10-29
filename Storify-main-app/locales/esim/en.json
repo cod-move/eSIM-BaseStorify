@@ -799,7 +799,32 @@
       "cancelFeePercent": "Fee % kept",
       "cancelRefundTo": "Refund to",
       "cancelToBalance": "The shopper's balance",
-      "cancelToOriginal": "The original payment (by hand)"
+      "cancelToOriginal": "The original payment (by hand)",
+      "reportsHint": "eSIM sales and gross margin at the prices and supplier costs recorded when each eSIM was bought. Amounts in USD; days in UTC.",
+      "reportSales": "Sales",
+      "reportUnits": "{esims} eSIMs · {topups} top-ups",
+      "reportMargin": "Gross margin",
+      "reportMarginNote": "{percent} of sales with a known cost",
+      "reportSuccess": "Issued first time",
+      "reportSuccessNote": "{fulfilled} issued · {failed} failed · {open} in progress",
+      "reportTime": "Time to issue",
+      "reportTimeNote": "average · median {median}",
+      "reportSeconds": "{count} s",
+      "reportMinutes": "{count} min",
+      "reportCostUnknown": "{count} sales have no supplier cost in USD (no exchange rate at the time) and are left out of the margin.",
+      "reportNoSnapshot": "{count} eSIMs issued in this range were bought before sale records were kept, or imported, and are not counted.",
+      "reportVoided": "{count} eSIMs ({amount}) were cancelled or refunded and are not counted as sales.",
+      "reportColUnits": "Sold",
+      "reportColCost": "Cost",
+      "reportNoSales": "No sales in this range.",
+      "reportApply": "Show",
+      "reportLastDays": "Last {days} days",
+      "reportBySupplier": "By supplier",
+      "reportTopDestinations": "Top destinations",
+      "reportDestination": "Destination",
+      "reportByDay": "By day",
+      "reportByMonth": "By month",
+      "reportPeriod": "Period"
     },
     "sidebar": {
       "esim": "eSIM",
@@ -816,7 +841,8 @@
       "esimReferrals": "Referrals",
       "esimKyc": "KYC",
       "esimPayments": "Payments",
-      "esimMigration": "Migration"
+      "esimMigration": "Migration",
+      "esimReports": "Reports"
     }
   },
   "finance": {

@@ -37,6 +37,8 @@ export interface IEsimTopup extends mongoose.Document {
   /** What the shopper paid for it, in cents. */
   priceMinor: number;
   cost: { currency: string; amountMinor: number };
+  /** The cost in USD cents at the rate of the day it was paid (ORD-04); null when no rate was known. */
+  costUsdMinor: number | null;
   state: TopupState;
   attempts: number;
   /** Uncertain answers in a row, for the retry policy. */
@@ -81,6 +83,7 @@ const EsimTopupSchema = new Schema<IEsimTopup>(
       currency: { type: String, default: "USD" },
       amountMinor: { type: Number, default: 0 },
     },
+    costUsdMinor: { type: Number, default: null },
     state: { type: String, enum: ["queued", "processing", "completed", "failed"], default: "queued" },
     attempts: { type: Number, default: 0 },
     candidateAttempts: { type: Number, default: 0 },

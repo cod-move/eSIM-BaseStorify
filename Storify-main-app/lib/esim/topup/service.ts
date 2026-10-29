@@ -17,6 +17,8 @@ import { ProviderError, type TopupResult } from "@/lib/esim/providers/types";
 import type { EsimLineAttributes } from "@/lib/esim/cart/line-attributes";
 import { findTopupProduct } from "@/lib/esim/topup/product";
 import { alertSupplierProblem, looksLikeBalanceProblem } from "@/lib/esim/alerts";
+import { currentRates } from "@/lib/esim/pricing/fx-service";
+import { usdMinorOf } from "@/lib/esim/reports/snapshot";
 
 /**
  * Paid top-up lines → supplier top-ups (TOP-04/05).
@@ -34,6 +36,12 @@ import { alertSupplierProblem, looksLikeBalanceProblem } from "@/lib/esim/alerts
 
 const LEASE_MS = 5 * 60_000;
 type Line = { variantId?: unknown; price?: number; quantity?: number; lineAttributes?: unknown };
+
+/** The supplier's price for a top-up in USD cents at today's rate, for the margin report (ORD-04). */
+async function costInUsd(cost: { currency: string; amountMinor: number }) {
+  const rate = (await currentRates([cost.currency])).get(cost.currency.toUpperCase());
+  return usdMinorOf(cost.amountMinor, rate?.usdPerUnit);
+}
 
 /** The idempotency key every attempt of a top-up uses (the spec's `provider-topup:{id}`). */
 export function topupIdempotencyKey(topupId: string): string {
@@ -97,6 +105,7 @@ export async function enqueueOrderTopups(orderId: unknown): Promise<number> {
       mode: quote?.mode ?? "stack",
       priceMinor,
       cost: quote?.cost ?? { currency: "USD", amountMinor: 0 },
+      costUsdMinor: quote ? await costInUsd(quote.cost) : null,
       nextAttemptAt: now,
       ...(problem
         ? {

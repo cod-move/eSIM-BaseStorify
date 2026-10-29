@@ -96,9 +96,34 @@ export interface IEsimProfile extends mongoose.Document {
   };
   /** When the usage sync (lib/esim/usage) last looked at this eSIM, whatever the answer. */
   usageSyncedAt: Date | null;
+  /**
+   * The sale as it was (ORD-04), written once when the eSIM is bought: the
+   * supplier plan, what the shopper paid for this unit and what the supplier
+   * charged, so a later catalogue sync or re-pricing never rewrites history.
+   * `cost.usdMinor` is the supplier price at that day's rate, without the
+   * pricing buffer; null when no rate was known. Null on eSIMs bought before
+   * snapshots existed and on imported ones.
+   */
+  snapshot: EsimSaleSnapshot | null;
   raw: unknown;
   createdAt: Date;
   updatedAt: Date;
+}
+
+export interface EsimSaleSnapshot {
+  providerCode: string;
+  providerPlanId: string;
+  planName: string;
+  destination: string;
+  scope: string;
+  countries: string[];
+  megabytes: number;
+  dataType: string;
+  validityDays: number;
+  durationDays: number | null;
+  sale: { currency: string; amountMinor: number };
+  cost: { currency: string; amountMinor: number; usdMinor: number | null; usdPerUnit: number | null };
+  takenAt: Date;
 }
 
 const date = { type: Date, default: null };
@@ -208,6 +233,7 @@ const EsimProfileSchema = new Schema<IEsimProfile>(
       installDeadlineFor: date,
     },
     usageSyncedAt: date,
+    snapshot: { type: Schema.Types.Mixed, default: null },
     raw: { type: Schema.Types.Mixed, select: false },
   },
   { timestamps: true },
@@ -218,6 +244,7 @@ EsimProfileSchema.index({ iccid: 1 }, { sparse: true });
 EsimProfileSchema.index({ simId: 1 }, { sparse: true });
 EsimProfileSchema.index({ email: 1 }, { sparse: true });
 EsimProfileSchema.index({ status: 1, usageSyncedAt: 1 });
+EsimProfileSchema.index({ fulfilledAt: -1 });
 
 if (models.EsimProfile) delete models.EsimProfile;
 export const EsimProfile = model<IEsimProfile>("EsimProfile", EsimProfileSchema);

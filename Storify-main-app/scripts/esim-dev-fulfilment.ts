@@ -161,6 +161,13 @@ async function main() {
   assert.ok(profiles1.every((profile) => profile.installation.activationCode?.startsWith("LPA:1$")));
   assert.equal(profiles1[0].email, "guest@esim.test");
   assert.equal(await EsimPackage.countDocuments({ esim: { $in: profiles1.map((profile) => profile._id) }, kind: "base" }), 2);
+  // The sale as it was (ORD-04): the supplier that sold it, what the unit fetched, what it cost.
+  for (const profile of profiles1) {
+    assert.equal(profile.snapshot?.providerCode, profile.providerCode);
+    assert.equal(profile.snapshot?.sale.amountMinor, 199);
+    assert.deepEqual([profile.snapshot?.cost.currency, profile.snapshot?.cost.amountMinor, profile.snapshot?.cost.usdMinor], ["USD", 100, 100]);
+    assert.deepEqual(profile.snapshot?.countries, ["JP"]);
+  }
   const order1Doc = await Order.findById(order1).lean<{ status: string; subOrders: Array<{ status: string }> }>();
   assert.equal(order1Doc?.status, "delivered");
   assert.equal(order1Doc?.subOrders[0].status, "delivered");
@@ -217,6 +224,8 @@ async function main() {
   await fulfilment.esimFulfilOrder(order6);
   const jobs6 = await EsimFulfillment.find({ order: order6 }).sort({ lineIndex: 1 }).lean();
   assert.equal(jobs6[0].state, "fulfilled");
+  // 4.99 of 14.98 lines, charged 11.98: the issued unit fetched 3.99.
+  assert.equal((await EsimProfile.findOne({ order: order6, lineIndex: 0 }).lean())?.snapshot?.sale.amountMinor, 399);
   assert.ok(jobs6[0].deliveredAt, "the issued eSIM went out despite the other failing");
   assert.equal(jobs6[1].state, "failed");
   assert.equal(jobs6[1].refund?.state, "done");

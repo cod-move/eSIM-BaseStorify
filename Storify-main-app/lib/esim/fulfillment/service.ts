@@ -17,6 +17,9 @@ import { ProviderError, type ProviderEsim, type PurchaseResult } from "@/lib/esi
 import { lineDays } from "@/lib/esim/cart/line-attributes";
 import type { PerDayPricing } from "@/lib/esim/catalog/variants";
 import { alertSupplierProblem, looksLikeBalanceProblem } from "@/lib/esim/alerts";
+import { currentRates } from "@/lib/esim/pricing/fx-service";
+import { purchaseCostMinor, unitSaleMinor, usdMinorOf } from "@/lib/esim/reports/snapshot";
+import type { EsimSaleSnapshot } from "@/models/esim-profile.model";
 
 /**
  * Paid order → one supplier purchase per eSIM unit (ORD-05..09).
@@ -134,11 +137,49 @@ function deadlines(plan: IEsimPlan, expiresAt: Date | null) {
   };
 }
 
+/** The sale as it was when the eSIM was bought (ORD-04); written once per eSIM. */
+async function saleSnapshot(
+  job: IEsimFulfillment,
+  plan: IEsimPlan,
+  order: { currency?: string; total?: number; items?: Array<{ price: number; quantity: number }> } | null,
+  charged: PurchaseResult["charged"],
+): Promise<EsimSaleSnapshot> {
+  const durationDays = plan.duration.configurable ? job.durationDays : null;
+  // What the supplier says it charged, else its list price for what was bought.
+  const costCurrency = (charged?.currency || plan.cost.currency).toUpperCase();
+  const costMinor = charged ? charged.amountMinor : purchaseCostMinor(plan.cost, durationDays);
+  const rate = (await currentRates([costCurrency])).get(costCurrency);
+  const usdPerUnit = rate?.usdPerUnit ?? (costCurrency === plan.cost.currency.toUpperCase() ? plan.pricing?.usdPerUnit : null) ?? null;
+  return {
+    providerCode: plan.providerCode,
+    providerPlanId: plan.providerPlanId,
+    planName: plan.name,
+    destination: plan.destination,
+    scope: plan.coverage.scope,
+    countries: plan.coverage.countries.map((country) => country.code),
+    megabytes: plan.data.megabytes,
+    dataType: plan.data.type,
+    validityDays: durationDays ?? plan.validityDays,
+    durationDays,
+    sale: {
+      currency: order?.currency || "USD",
+      amountMinor: unitSaleMinor({ total: order?.total ?? 0, items: order?.items ?? [] }, job.lineIndex),
+    },
+    cost: { currency: costCurrency, amountMinor: costMinor, usdMinor: usdMinorOf(costMinor, usdPerUnit), usdPerUnit },
+    takenAt: new Date(),
+  };
+}
+
 async function recordEsim(job: IEsimFulfillment, plan: IEsimPlan, result: PurchaseResult, esim: ProviderEsim) {
-  const order = await Order.findById(job.order).select({ customerId: 1, guestEmail: 1 }).lean<{
-    customerId?: unknown;
-    guestEmail?: string;
-  } | null>();
+  const order = await Order.findById(job.order)
+    .select({ customerId: 1, guestEmail: 1, currency: 1, total: 1, "items.price": 1, "items.quantity": 1 })
+    .lean<{
+      customerId?: unknown;
+      guestEmail?: string;
+      currency?: string;
+      total?: number;
+      items?: Array<{ price: number; quantity: number }>;
+    } | null>();
   const customer = order?.customerId && mongoose.isValidObjectId(order.customerId) && !order.guestEmail
     ? new mongoose.Types.ObjectId(String(order.customerId))
     : null;
@@ -180,6 +221,11 @@ async function recordEsim(job: IEsimFulfillment, plan: IEsimPlan, result: Purcha
     { $set: fields, $setOnInsert: { order: job.order, lineIndex: job.lineIndex, unit: job.unit } },
     { upsert: true, returnDocument: "after" },
   );
+  if (!profile!.snapshot) {
+    const snapshot = await saleSnapshot(job, plan, order, result.charged);
+    await EsimProfile.updateOne({ _id: profile!._id, snapshot: null }, { $set: { snapshot } });
+    profile!.snapshot = snapshot;
+  }
   await EsimPackage.updateOne(
     { esim: profile!._id, kind: "base" },
     {
