@@ -323,6 +323,19 @@
       "destinations": "Destinations in this offer",
       "noDestinations": "The destinations of this offer are not on sale right now.",
       "howTo": "Enter the code {code} at checkout. It works on eSIMs for these destinations until the offer ends."
+    },
+    "order": {
+      "title": "eSIMs in this order",
+      "topup": "Top-up",
+      "issued": "Ready to install",
+      "preparing": "Being prepared",
+      "topupDone": "Added",
+      "topupPreparing": "Being added",
+      "refunded": "Could not be issued · refunded {amount}",
+      "refundPending": "Could not be issued · refund on its way",
+      "cancelled": "Cancelled",
+      "openProblems": "Open eSIM → Problems",
+      "installHint": "Open an eSIM for its QR code and install steps. The same details were emailed to you."
     }
   },
   "admin": {

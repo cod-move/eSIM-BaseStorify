@@ -26,6 +26,8 @@ import {
 } from "@/lib/returns/return-plan";
 import { ORDER_STATUS } from "@/config/app.config";
 import { orderStoreCreditRefundProblem } from "@/lib/store-credit/refund-to-credit";
+// [esim-patch] P13 the order's eSIMs and top-ups (components/esim/order-esim-panel.tsx).
+import { OrderEsimPanel } from "@/components/esim/order-esim-panel";
 
 interface PageProps {
   params: Promise<{ locale: string; id: string }>;
@@ -147,6 +149,12 @@ export default async function OrderDetailsPage({ params }: PageProps) {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
           <OrderItems order={order} />
+          {/* [esim-patch] P13 the eSIMs bought for this order; supplier details, so full admins only. */}
+          {isFullAdmin ? (
+            <Suspense fallback={null}>
+              <OrderEsimPanel orderId={String(order._id)} locale={locale} audience="admin" />
+            </Suspense>
+          ) : null}
           {/* Split orders only: each seller's part, and cancelling one of them. */}
           <OrderConsignments
             order={order}

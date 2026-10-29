@@ -16,7 +16,8 @@ import { orderContactEmail } from "@/lib/orders/order-contact-email";
 import { buildOrderStatusUpdates, subOrderUpdateOptions } from "@/lib/orders/order-status-apply";
 import { advanceOrderStatusTo, type OrderStatusValue } from "@/lib/orders/order-status-workflow";
 import { DELIVERY_ATTESTED_BY } from "@/lib/orders/delivery-attestation";
-import { notifyAdminsPaymentAnomaly, notifyOrderStatus } from "@/lib/notifications/notifications";
+import { createNotification, notifyAdminsPaymentAnomaly, notifyOrderStatus } from "@/lib/notifications/notifications";
+import { NotificationType } from "@/models/notification.model";
 import { createSystemAuditContext } from "@/lib/audit";
 import { auditOrderStatus } from "@/lib/orders/audit-order";
 import { installLinks } from "@/lib/esim/fulfillment/install-links";
@@ -74,7 +75,31 @@ function esimBlock(profile: IEsimProfile, planName: string, index: number, attac
     </div>`;
 }
 
+/**
+ * The same news in the shopper's notifications and as an app push (NTF-01/02/06),
+ * for a registered shopper; a guest has only the email. Once per key.
+ */
+async function noticeToShopper(order: OrderView, notice: { title: string; message: string; link: string; key: string }) {
+  if (order.guestEmail || !mongoose.isValidObjectId(order.customerId)) return;
+  await createNotification({
+    userId: String(order.customerId),
+    type: NotificationType.SYSTEM,
+    title: notice.title,
+    message: notice.message,
+    link: notice.link,
+    data: { esimOrder: String(order._id), key: notice.key },
+    dedupe: { "data.key": notice.key },
+    sendPush: true,
+  }).catch((error) => console.error("eSIM notice failed:", error));
+}
+
 async function sendDelivery(order: OrderView, profiles: IEsimProfile[], dedupeKey: string) {
+  await noticeToShopper(order, {
+    title: profiles.length > 1 ? "Your eSIMs are ready" : "Your eSIM is ready",
+    message: `Order ${order.orderNumber}: open it to install before you travel.`,
+    link: profiles.length === 1 ? `/account/esims/${profiles[0]._id}` : "/account/esims",
+    key: dedupeKey,
+  });
   const to = await orderContactEmail(order);
   if (!to) return false;
   const settings = await getSettings();
@@ -138,12 +163,18 @@ export async function markOrderDelivered(order: OrderView) {
 }
 
 async function sendTopupDone(order: OrderView, topups: IEsimTopup[]) {
+  const batch = createHash("sha1").update(topups.map((topup) => String(topup._id)).sort().join(",")).digest("hex").slice(0, 12);
+  await noticeToShopper(order, {
+    title: "Your top-up is on your eSIM",
+    message: topups.map((topup) => topup.name).join(", ").slice(0, 200),
+    link: topups.length === 1 && topups[0].esim ? `/account/esims/${topups[0].esim}` : "/account/esims",
+    key: `esim-topup-done:${order._id}:${batch}`,
+  });
   const to = await orderContactEmail(order);
   if (!to) return false;
   const items = topups
     .map((topup) => `<li><b>${escapeHtml(topup.name)}</b>${topup.iccid ? ` — eSIM ${escapeHtml(topup.iccid)}` : ""}</li>`)
     .join("");
-  const batch = createHash("sha1").update(topups.map((topup) => String(topup._id)).sort().join(",")).digest("hex").slice(0, 12);
   return sendEmail({
     to,
     subject: `Your eSIM top-up for order ${order.orderNumber} is done`,
@@ -159,10 +190,18 @@ async function sendTopupDone(order: OrderView, topups: IEsimTopup[]) {
 }
 
 async function sendFailureNotice(order: OrderView, failedCount: number, total: number, refund: EsimRefundResult, kind: "eSIM" | "top-up" | "item") {
-  const to = await orderContactEmail(order);
-  if (!to) return;
   const which = failedCount === total ? `your ${kind}` : `${failedCount} of your ${total} ${kind}s`;
   const verb = kind === "eSIM" ? "issue" : "complete";
+  await noticeToShopper(order, {
+    title: refund.state === "refunded" ? `Refund for order ${order.orderNumber}` : `Your ${kind} is delayed`,
+    message: refund.state === "refunded"
+      ? `We could not ${verb} ${which}; ${refund.amount.toFixed(2)} ${refund.currency} is back in your balance.`
+      : `We could not ${verb} ${which} right away. We will complete it or refund you shortly.`,
+    link: `/account/orders/${order._id}`,
+    key: `esim-failed:${order._id}:${refund.state}`,
+  });
+  const to = await orderContactEmail(order);
+  if (!to) return;
   const body =
     refund.state === "refunded"
       ? `We could not ${verb} ${which} for order <b>${escapeHtml(order.orderNumber)}</b>, so we have refunded <b>${escapeHtml(refund.amount.toFixed(2))} ${escapeHtml(refund.currency)}</b> to your account balance. You can use it on your next purchase.`

@@ -240,7 +240,20 @@ async function main() {
   assert.equal(JSON.stringify(balance).includes("7.98"), true, `store credit shows 7.98: ${JSON.stringify(balance)}`);
   assert.equal(await settleOrderDelivery(order6), "partial");
   assert.equal((await Order.findById(order6).lean<{ refundedTotal: number }>())?.refundedTotal, 7.98, "settling again refunds nothing more");
-  console.log("   ok — delivered one, credited 7.98, no double refund");
+  // The order pages' eSIM part (ORD-11): the shopper's own order only, supplier details for admins.
+  const { orderEsimUnits } = await import("@/lib/esim/orders/order-panel");
+  const shown = await orderEsimUnits(order6, { shopperId: String(shopper) });
+  assert.deepEqual(shown?.map((unit) => [unit.outcome, unit.refundAmount, unit.jobState]), [["issued", null, null], ["refunded", 7.98, null]]);
+  assert.ok(shown?.[0].esimId, "the issued eSIM links to its page");
+  assert.equal(await orderEsimUnits(order6, { shopperId: String(new ObjectId()) }), null, "another shopper sees nothing");
+  assert.deepEqual((await orderEsimUnits(order6))?.map((unit) => unit.jobState), ["fulfilled", "failed"]);
+  // NTF-01/02: the registered shopper also gets both notices in the store and as a push.
+  const { Notification } = await import("@/models/notification.model");
+  const notices = await Notification.find({ "data.esimOrder": order6 }).select({ title: 1 }).lean<Array<{ title: string }>>();
+  const order6Number = (await Order.findById(order6).select({ orderNumber: 1 }).lean<{ orderNumber: string }>())!.orderNumber;
+  assert.deepEqual(notices.map((notice) => notice.title).sort(), [`Refund for order ${order6Number}`, "Your eSIM is ready"].sort());
+  await Notification.deleteMany({ "data.esimOrder": order6 });
+  console.log("   ok — delivered one, credited 7.98, no double refund; the order page shows both");
 
   console.log("7. a registered shopper's order fails completely: full refund to store credit");
   const order7 = await paidOrderOf([{ variantId: badVariant, quantity: 2, price: 4.99 }], { guest: false, customerId: shopper });

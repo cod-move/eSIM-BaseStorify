@@ -8,6 +8,9 @@ import {
 } from "@/components/account/order-details";
 import { PageMessages } from "@/components/language/page-messages";
 import { setRequestLocale, getTranslations } from "next-intl/server";
+// [esim-patch] P13 the order's eSIMs and top-ups (components/esim/order-esim-panel.tsx).
+import { Suspense } from "react";
+import { OrderEsimPanel } from "@/components/esim/order-esim-panel";
 
 interface PageProps {
   params: Promise<{ locale: string; id: string }>;
@@ -38,6 +41,13 @@ export default async function OrderDetailPage({ params }: PageProps) {
           <OrderDetails orderId={id} locale={locale} />
         </ClientSuspense>
       </PageMessages>
+
+      {/* [esim-patch] P13 the eSIMs in this order, with where each stands; nothing for other orders. */}
+      <div className="mt-6">
+        <Suspense fallback={null}>
+          <OrderEsimPanel orderId={id} locale={locale} audience="shopper" />
+        </Suspense>
+      </div>
     </div>
   );
 }

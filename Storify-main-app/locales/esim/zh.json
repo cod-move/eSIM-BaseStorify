@@ -323,6 +323,19 @@
       "destinations": "参加活动的目的地",
       "noDestinations": "本活动的目的地目前没有在售。",
       "howTo": "结账时输入优惠码 {code}，活动结束前购买这些目的地的 eSIM 均可使用。"
+    },
+    "order": {
+      "title": "本订单的 eSIM",
+      "topup": "充值",
+      "issued": "可以安装",
+      "preparing": "正在准备",
+      "topupDone": "已到账",
+      "topupPreparing": "正在充值",
+      "refunded": "未能开通 · 已退款 {amount}",
+      "refundPending": "未能开通 · 退款处理中",
+      "cancelled": "已取消",
+      "openProblems": "打开「eSIM → 问题」",
+      "installHint": "打开 eSIM 可查看二维码和安装步骤，相同内容也已发送到你的邮箱。"
     }
   },
   "admin": {
