@@ -938,7 +938,8 @@
   },
   "finance": {
     "account": {
-      "opening_balance_equity": "Opening balance equity"
+      "opening_balance_equity": "Opening balance equity",
+      "esim_supplier_prepaid": "eSIM supplier balance (prepaid)"
     }
   }
 }

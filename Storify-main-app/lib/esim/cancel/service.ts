@@ -72,6 +72,16 @@ export async function cancelAtSupplier(profile: IEsimProfile): Promise<{ cancell
   if (result.status !== "cancelled") return { cancelled: false, message: `The supplier answered: ${result.status}` };
   await EsimProfile.updateOne({ _id: profile._id }, { $set: { "lifecycle.status": "cancelled", "lifecycle.lastStatusUpdateAt": new Date() } });
   await EsimPackage.updateMany({ esim: profile._id }, { $set: { status: "cancelled" } });
+  // ORD-12: the supplier took it back, so its cost returns to the supplier balance.
+  const { reverseEsimCost } = await import("@/lib/esim/finance/cost");
+  await reverseEsimCost({
+    orderId: profile.order,
+    orderNumber: profile.orderNumber,
+    unitId: profile._id as mongoose.Types.ObjectId,
+    kind: "esim",
+    costUsdMinor: profile.snapshot?.cost.usdMinor,
+    at: new Date(),
+  }).catch((error) => console.error("[esim] cost reversal failed:", error));
   return { cancelled: true, message: "Cancelled at the supplier" };
 }
 

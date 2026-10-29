@@ -339,6 +339,8 @@ async function cleanup() {
   }).catch(() => undefined);
   await db.collection("emailjobs").deleteMany({ $or: [{ subject: byTag }, { to: byTag }] }).catch(() => undefined);
   await Cart.collection.deleteMany({ $or: [{ userId: { $in: [...created.users, ...created.users.map(String)] } }, { sessionId: tag }] });
+  // ORD-12: the cost postings of the eSIMs and top-ups bought for these orders.
+  await mongoose.connection.db!.collection("ledgerentries").deleteMany({ "source.id": { $in: orders } });
   await Order.collection.deleteMany({ _id: { $in: orders } });
   await User.collection.deleteMany({ _id: { $in: created.users } });
   if (created.product) {

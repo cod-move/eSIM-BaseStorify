@@ -23,6 +23,7 @@ import { purchaseCostMinor, unitSaleMinor, usdMinorOf } from "@/lib/esim/reports
 import type { EsimSaleSnapshot } from "@/models/esim-profile.model";
 import { getEsimSettings } from "@/models/esim-pricing.model";
 import { reviewReasons } from "@/lib/esim/fulfillment/risk";
+import { postEsimCost } from "@/lib/esim/finance/cost";
 
 /**
  * Paid order → one supplier purchase per eSIM unit (ORD-05..09).
@@ -268,6 +269,15 @@ async function recordEsim(job: IEsimFulfillment, plan: IEsimPlan, result: Purcha
     await EsimProfile.updateOne({ _id: profile!._id, snapshot: null }, { $set: { snapshot } });
     profile!.snapshot = snapshot;
   }
+  // ORD-12: the eSIM draws down the supplier balance in the books; once, by its key.
+  await postEsimCost({
+    orderId: job.order,
+    orderNumber: job.orderNumber,
+    unitId: profile!._id as mongoose.Types.ObjectId,
+    kind: "esim",
+    costUsdMinor: profile!.snapshot?.cost.usdMinor,
+    at: profile!.fulfilledAt ?? new Date(),
+  }).catch((error) => console.error("[esim] cost posting failed:", error));
   await EsimPackage.updateOne(
     { esim: profile!._id, kind: "base" },
     {

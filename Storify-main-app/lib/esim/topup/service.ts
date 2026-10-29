@@ -19,6 +19,7 @@ import { findTopupProduct } from "@/lib/esim/topup/product";
 import { alertSupplierProblem, looksLikeBalanceProblem } from "@/lib/esim/alerts";
 import { currentRates } from "@/lib/esim/pricing/fx-service";
 import { usdMinorOf } from "@/lib/esim/reports/snapshot";
+import { postEsimCost } from "@/lib/esim/finance/cost";
 
 /**
  * Paid top-up lines → supplier top-ups (TOP-04/05).
@@ -243,7 +244,12 @@ async function processOne(job: IEsimTopup, owner: string): Promise<IEsimTopup["s
           $push: event("completed", job.providerCode),
         },
       );
-      if (moved.modifiedCount) await applyTopup(job);
+      if (moved.modifiedCount) {
+        await applyTopup(job);
+        // ORD-12: the top-up draws down the supplier balance in the books.
+        await postEsimCost({ orderId: job.order, orderNumber: job.orderNumber, unitId: job._id as mongoose.Types.ObjectId, kind: "topup", costUsdMinor: job.costUsdMinor, at: now })
+          .catch((error) => console.error("[esim] top-up cost posting failed:", error));
+      }
       return "completed";
     }
     case "poll":

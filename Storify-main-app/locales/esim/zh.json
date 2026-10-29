@@ -938,7 +938,8 @@
   },
   "finance": {
     "account": {
-      "opening_balance_equity": "期初余额权益"
+      "opening_balance_equity": "期初余额权益",
+      "esim_supplier_prepaid": "eSIM 供应商预付余额"
     }
   }
 }
