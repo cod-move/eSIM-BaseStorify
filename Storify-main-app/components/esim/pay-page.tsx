@@ -79,7 +79,7 @@ export function EsimPayPage({ initial, appReturn }: { initial: PaymentPageView; 
     return (
       <Card>
         <CardContent className="flex flex-col items-center gap-3 py-10 text-center">
-          <CheckCircle2 className="h-10 w-10 text-green-600" />
+          <CheckCircle2 className="h-10 w-10 text-green-600 dark:text-green-400" />
           <p className="font-medium">{t("esim.pay.paid", "Payment received")}</p>
           <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
         </CardContent>

@@ -44,7 +44,7 @@ export default async function AccountEsimsPage({ params }: PageProps) {
             </span>
             <span className="inline-flex items-center gap-1 font-medium text-primary">
               {tr("esim.wallet.add", "Add money")}
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRight className="h-4 w-4 rtl:rotate-180" />
             </span>
           </CardContent>
         </Card>
@@ -53,7 +53,7 @@ export default async function AccountEsimsPage({ params }: PageProps) {
         <Card className="transition-colors hover:bg-muted/40">
           <CardContent className="flex items-center justify-between gap-4 p-4 text-sm">
             <span>{tr("esim.referral.teaser", "Invite friends and earn a reward on their orders")}</span>
-            <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+            <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground rtl:rotate-180" />
           </CardContent>
         </Card>
       </Link>
@@ -99,7 +99,7 @@ export default async function AccountEsimsPage({ params }: PageProps) {
                         </div>
                       ) : null}
                     </div>
-                    <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+                    <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground rtl:rotate-180" />
                   </CardContent>
                 </Card>
               </Link>

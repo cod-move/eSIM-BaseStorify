@@ -46,7 +46,7 @@ export function RefreshUsageButton({ esimId }: { esimId: string }) {
 
   return (
     <Button variant="outline" size="sm" onClick={refresh} disabled={busy || pending}>
-      <RefreshCw className={`mr-2 h-4 w-4 ${busy || pending ? "animate-spin" : ""}`} />
+      <RefreshCw className={`me-2 h-4 w-4 ${busy || pending ? "animate-spin" : ""}`} />
       {t("esim.account.refresh", "Refresh usage")}
     </Button>
   );

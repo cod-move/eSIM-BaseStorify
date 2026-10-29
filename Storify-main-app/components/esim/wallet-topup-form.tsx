@@ -83,7 +83,7 @@ export function WalletTopupForm({ product, minMinor, maxMinor, fee }: Props) {
         <div className="flex justify-between font-semibold"><span>{t("esim.wallet.pay", "You pay")}</span><span>{valid ? formatPrice((amountMinor + feeMinor) / 100) : "—"}</span></div>
       </div>
       <Button size="lg" onClick={buy} disabled={!valid || busy}>
-        {busy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+        {busy ? <Loader2 className="me-2 h-4 w-4 animate-spin" /> : null}
         {t("esim.wallet.checkout", "Continue to checkout")}
       </Button>
     </div>

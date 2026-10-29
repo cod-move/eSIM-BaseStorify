@@ -83,7 +83,7 @@ export function EsimTopupPicker({ esimId, offers }: { esimId: string; offers: To
               role="radio"
               aria-checked={active}
               onClick={() => setSelected(offer.topupPlanId)}
-              className={`rounded-lg border p-4 text-left transition-colors ${active ? "border-primary bg-primary/5 ring-1 ring-primary" : "hover:bg-muted/50"}`}
+              className={`rounded-lg border p-4 text-start transition-colors ${active ? "border-primary bg-primary/5 ring-1 ring-primary" : "hover:bg-muted/50"}`}
             >
               <div className="flex items-baseline justify-between gap-3">
                 <span className="text-lg font-semibold">{offer.megabytes ? dataLabel(offer.megabytes) : offer.name}</span>
@@ -99,7 +99,7 @@ export function EsimTopupPicker({ esimId, offers }: { esimId: string; offers: To
         })}
       </div>
       <Button size="lg" onClick={buy} disabled={!selected || busy} className="w-full sm:w-auto">
-        {busy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+        {busy ? <Loader2 className="me-2 h-4 w-4 animate-spin" /> : null}
         {t("esim.topup.buy", "Continue to checkout")}
       </Button>
     </div>

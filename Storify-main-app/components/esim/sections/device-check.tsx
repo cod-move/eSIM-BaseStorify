@@ -45,13 +45,13 @@ export function DeviceCheck({ devices }: { devices: DeviceBrand[] }) {
         ))}
       </div>
       <div className="relative">
-        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <Search className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           placeholder={t("esim.devices.search", "Type your model, e.g. iPhone 15")}
           aria-label={t("esim.devices.search", "Type your model, e.g. iPhone 15")}
-          className="h-11 pl-9"
+          className="h-11 ps-9"
         />
       </div>
       {results.length ? (
@@ -63,7 +63,7 @@ export function DeviceCheck({ devices }: { devices: DeviceBrand[] }) {
                 {model.supported === false ? (
                   <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
                 ) : (
-                  <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
+                  <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
                 )}
                 <div>
                   <div className={model.supported === false ? "text-muted-foreground line-through" : ""}>{model.name}</div>

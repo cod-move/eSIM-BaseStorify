@@ -33,7 +33,7 @@ export default async function AccountVerificationPage({ params }: PageProps) {
   return (
     <div className="space-y-6">
       <Link href="/account/esims" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
-        <ChevronLeft className="h-4 w-4" />
+        <ChevronLeft className="h-4 w-4 rtl:rotate-180" />
         {tr("esim.account.back", "My eSIMs")}
       </Link>
       <div className="space-y-1">
@@ -42,9 +42,9 @@ export default async function AccountVerificationPage({ params }: PageProps) {
       </div>
 
       {state.status === "approved" ? (
-        <Card><CardContent className="flex items-center gap-3 pt-6 text-sm"><CheckCircle2 className="h-5 w-5 text-green-600" />{tr("esim.kyc.approved", "Your identity is verified.")}</CardContent></Card>
+        <Card><CardContent className="flex items-center gap-3 pt-6 text-sm"><CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400" />{tr("esim.kyc.approved", "Your identity is verified.")}</CardContent></Card>
       ) : state.status === "pending" ? (
-        <Card><CardContent className="flex items-center gap-3 pt-6 text-sm"><Clock className="h-5 w-5 text-amber-600" />{tr("esim.kyc.pending", "Sent on {date}. We are checking it and will let you know.", { date: state.submittedAt ? date.format(state.submittedAt) : "" })}</CardContent></Card>
+        <Card><CardContent className="flex items-center gap-3 pt-6 text-sm"><Clock className="h-5 w-5 text-amber-600 dark:text-amber-400" />{tr("esim.kyc.pending", "Sent on {date}. We are checking it and will let you know.", { date: state.submittedAt ? date.format(state.submittedAt) : "" })}</CardContent></Card>
       ) : state.status === "rejected" ? (
         <Card><CardContent className="flex items-start gap-3 pt-6 text-sm"><XCircle className="mt-0.5 h-5 w-5 shrink-0 text-destructive" /><div>{tr("esim.kyc.rejected", "Not passed: {reason}. Please send your details again.", { reason: state.reason ?? "" })}</div></CardContent></Card>
       ) : null}

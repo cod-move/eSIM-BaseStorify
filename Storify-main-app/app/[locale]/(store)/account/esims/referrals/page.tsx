@@ -40,7 +40,7 @@ export default async function AccountReferralsPage({ params }: PageProps) {
   return (
     <div className="space-y-6">
       <Link href="/account/esims" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
-        <ChevronLeft className="h-4 w-4" />
+        <ChevronLeft className="h-4 w-4 rtl:rotate-180" />
         {tr("esim.account.back", "My eSIMs")}
       </Link>
       <div className="space-y-1">
@@ -110,7 +110,7 @@ export default async function AccountReferralsPage({ params }: PageProps) {
                   <div className="font-medium">{money(entry.amount)}</div>
                   <div className="text-xs text-muted-foreground">{tr("esim.account.order", "Order {number}", { number: entry.orderNumber })} · {date.format(entry.createdAt)}</div>
                 </div>
-                <div className="text-right text-xs text-muted-foreground">
+                <div className="text-end text-xs text-muted-foreground">
                   {tr(`esim.referral.status.${entry.status}`, STATUS_TEXT[entry.status])}
                   {entry.status === "pending" ? ` · ${tr("esim.referral.payableOn", "from {date}", { date: date.format(entry.payableAt) })}` : ""}
                 </div>

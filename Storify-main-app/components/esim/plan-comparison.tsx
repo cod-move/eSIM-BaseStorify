@@ -59,14 +59,14 @@ export function PlanComparison({ variants }: { variants: StorefrontVariant[] }) 
               <tr key={row.variant.variantId} className="border-t">
                 <td className="px-3 py-2 whitespace-nowrap">{days(row.variant)}</td>
                 <td className="px-3 py-2">{row.variant.dataValue}</td>
-                <td className="hidden px-3 py-2 text-muted-foreground sm:table-cell">{topup(row.variant)}</td>
+                <td className="hidden px-3 py-2 whitespace-nowrap text-muted-foreground sm:table-cell">{topup(row.variant)}</td>
                 <td className="px-3 py-2 text-end font-medium tabular-nums whitespace-nowrap">
                   {row.variant.perDay ? t("esim.selector.from", "from {price}", { price: formatPrice(row.priceMinor / 100) }) : formatPrice(row.priceMinor / 100)}
                 </td>
                 <td className="hidden px-3 py-2 text-end tabular-nums md:table-cell">
                   {row.perGbMinor === null ? "—" : formatPrice(row.perGbMinor / 100)}
                   {row.bestPerGb ? (
-                    <span className="ms-2 rounded-full bg-primary/10 px-2 py-0.5 text-xs text-primary">{t("esim.compare.bestValue", "Best value")}</span>
+                    <span className="mt-1 block w-fit ms-auto whitespace-nowrap rounded-full bg-primary/10 px-2 py-0.5 text-xs text-primary">{t("esim.compare.bestValue", "Best value")}</span>
                   ) : null}
                 </td>
                 <td className="hidden px-3 py-2 text-end tabular-nums md:table-cell">

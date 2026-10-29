@@ -36,7 +36,7 @@ export default async function AccountBalancePage({ params }: PageProps) {
   return (
     <div className="space-y-6">
       <Link href="/account/esims" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
-        <ChevronLeft className="h-4 w-4" />
+        <ChevronLeft className="h-4 w-4 rtl:rotate-180" />
         {tr("esim.account.back", "My eSIMs")}
       </Link>
       <div className="space-y-1">

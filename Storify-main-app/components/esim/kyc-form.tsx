@@ -73,7 +73,7 @@ export function KycForm({ fields }: { fields: KycField[] }) {
       })}
       <p className="text-xs text-muted-foreground">{t("esim.kyc.privacy", "Your documents are stored privately and seen only by our staff checking them.")}</p>
       <Button type="submit" disabled={busy}>
-        {busy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+        {busy ? <Loader2 className="me-2 h-4 w-4 animate-spin" /> : null}
         {t("esim.kyc.submit", "Send for review")}
       </Button>
     </form>

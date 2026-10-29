@@ -87,13 +87,13 @@ export function DestinationBrowser({
     <div className="space-y-6">
       {search ? (
         <div className="relative max-w-xl">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder={t("esim.browse.search", "Where are you going?")}
             aria-label={t("esim.browse.search", "Where are you going?")}
-            className="h-11 pl-9"
+            className="h-11 ps-9"
           />
         </div>
       ) : null}
@@ -141,7 +141,7 @@ export function DestinationBrowser({
           )}
           {viewAllHref ? (
             <Link href={viewAllHref} className="inline-flex items-center gap-1 text-sm font-medium text-store-link hover:underline">
-              {t("esim.browse.viewAll", "View all destinations")} <ArrowRight className="h-4 w-4" />
+              {t("esim.browse.viewAll", "View all destinations")} <ArrowRight className="h-4 w-4 rtl:rotate-180" />
             </Link>
           ) : null}
         </>

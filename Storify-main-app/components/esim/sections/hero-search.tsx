@@ -56,7 +56,7 @@ export function HeroSearch({
           else router.push("/esim");
         }}
       >
-        <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
+        <Search className="pointer-events-none absolute start-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
         <input
           value={query}
           onChange={(event) => {
@@ -67,10 +67,10 @@ export function HeroSearch({
           onBlur={() => setTimeout(() => setOpen(false), 150)}
           placeholder={placeholder}
           aria-label={placeholder}
-          className="h-14 w-full rounded-full border bg-background pl-12 pr-4 text-base text-foreground shadow-lg outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          className="h-14 w-full rounded-full border bg-background ps-12 pe-4 text-base text-foreground shadow-lg outline-none focus-visible:ring-2 focus-visible:ring-primary"
         />
         {open && needle ? (
-          <ul className="absolute inset-x-0 top-full z-20 mt-2 max-h-80 overflow-y-auto rounded-2xl border bg-popover p-1 text-left text-popover-foreground shadow-xl">
+          <ul className="absolute inset-x-0 top-full z-20 mt-2 max-h-80 overflow-y-auto rounded-2xl border bg-popover p-1 text-start text-popover-foreground shadow-xl">
             {matches.length ? (
               matches.map((destination) => (
                 <li key={destination.path}>

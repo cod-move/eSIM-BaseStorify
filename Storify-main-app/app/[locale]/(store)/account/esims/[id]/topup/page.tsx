@@ -41,7 +41,7 @@ export default async function AccountEsimTopupPage({ params }: PageProps) {
   return (
     <div className="space-y-6">
       <Link href={`/account/esims/${esim.id}`} className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
-        <ChevronLeft className="h-4 w-4" />
+        <ChevronLeft className="h-4 w-4 rtl:rotate-180" />
         {esim.emoji ? `${esim.emoji} ` : ""}
         {esim.planName}
       </Link>

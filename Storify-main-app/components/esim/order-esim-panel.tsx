@@ -82,7 +82,7 @@ export async function OrderEsimPanel({ orderId, locale, audience }: { orderId: s
               </div>
               <div className="flex items-center gap-2">
                 <Badge variant={TONE[unit.outcome]}>{outcome(unit)}</Badge>
-                {link ? <ChevronRight className="h-4 w-4 text-muted-foreground" /> : null}
+                {link ? <ChevronRight className="h-4 w-4 text-muted-foreground rtl:rotate-180" /> : null}
               </div>
             </div>
           );

@@ -51,7 +51,7 @@ export function ReferralCode({ code, link }: { code: string; link: string }) {
             setTimeout(() => setCopied(false), 1500);
           }}
         >
-          {copied ? <Check className="mr-2 h-4 w-4" /> : <Copy className="mr-2 h-4 w-4" />}
+          {copied ? <Check className="me-2 h-4 w-4" /> : <Copy className="me-2 h-4 w-4" />}
           {copied ? t("esim.referral.copied", "Copied") : t("esim.referral.copy", "Copy link")}
         </Button>
       </div>
@@ -59,7 +59,7 @@ export function ReferralCode({ code, link }: { code: string; link: string }) {
         <div className="flex max-w-sm items-center gap-2">
           <Input value={value} maxLength={16} autoFocus onChange={(event) => setValue(event.target.value.toUpperCase())} aria-label={t("esim.referral.code", "Your code")} />
           <Button size="sm" onClick={save} disabled={saving}>
-            {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+            {saving ? <Loader2 className="me-2 h-4 w-4 animate-spin" /> : null}
             {t("common.save", "Save")}
           </Button>
           <Button size="sm" variant="ghost" onClick={() => { setEditing(false); setValue(code); }}>

@@ -137,7 +137,7 @@ export function PlanSelector({ productId, name, variants, countryCodes, regionNa
                     aria-pressed={active}
                     onClick={() => pick(step, option.value)}
                     className={cn(
-                      "rounded-lg border px-3 py-2 text-left text-sm transition-colors",
+                      "rounded-lg border px-3 py-2 text-start text-sm transition-colors",
                       active ? "border-primary bg-primary/10 font-medium" : "hover:border-foreground/40",
                     )}
                   >
@@ -199,11 +199,11 @@ export function PlanSelector({ productId, name, variants, countryCodes, regionNa
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => add("cart")} disabled={!variant || busy !== null}>
-            {busy === "cart" ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ShoppingCart className="mr-2 h-4 w-4" />}
+            {busy === "cart" ? <Loader2 className="me-2 h-4 w-4 animate-spin" /> : <ShoppingCart className="me-2 h-4 w-4" />}
             {t("common.addToCart", "Add to cart")}
           </Button>
           <Button onClick={() => add("buy")} disabled={!variant || busy !== null}>
-            {busy === "buy" ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Zap className="mr-2 h-4 w-4" />}
+            {busy === "buy" ? <Loader2 className="me-2 h-4 w-4 animate-spin" /> : <Zap className="me-2 h-4 w-4" />}
             {t("esim.selector.buyNow", "Buy now")}
           </Button>
         </div>

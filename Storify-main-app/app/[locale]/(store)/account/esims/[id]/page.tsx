@@ -52,14 +52,14 @@ export default async function AccountEsimPage({ params }: PageProps) {
     value ? (
       <div className="flex justify-between gap-4 py-1.5 text-sm">
         <span className="text-muted-foreground">{label}</span>
-        <span className="text-right">{value}</span>
+        <span className="text-end">{value}</span>
       </div>
     ) : null;
 
   return (
     <div className="space-y-6">
       <Link href="/account/esims" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
-        <ChevronLeft className="h-4 w-4" />
+        <ChevronLeft className="h-4 w-4 rtl:rotate-180" />
         {tr("esim.account.back", "My eSIMs")}
       </Link>
 
@@ -192,7 +192,7 @@ export default async function AccountEsimPage({ params }: PageProps) {
                         {date.format(entry.createdAt)} · {tr("esim.account.order", "Order {number}", { number: entry.orderNumber })}
                       </div>
                     </div>
-                    <div className="text-right">
+                    <div className="text-end">
                       <div>{formatStorePrice(entry.priceMinor, locale)}</div>
                       <div className={`text-xs ${entry.status === "failed" ? "text-destructive" : "text-muted-foreground"}`}>
                         {tr(`esim.topup.status.${entry.status}`, TOPUP_STATUS_TEXT[entry.status])}
