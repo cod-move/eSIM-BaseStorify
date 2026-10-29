@@ -1,5 +1,8 @@
 import { translator } from "@/lib/esim/i18n/server";
 import { Globe2, QrCode, ShoppingBag, Signal, Wifi } from "lucide-react";
+import { CoverageList } from "@/components/esim/coverage-list";
+import { PlanComparison } from "@/components/esim/plan-comparison";
+import { coverageByCountry } from "@/lib/esim/storefront/compare";
 import Link from "@/components/language/link";
 import { StoreBreadcrumb } from "@/components/store/store-breadcrumb";
 import { PlanSelector } from "@/components/esim/plan-selector";
@@ -51,7 +54,8 @@ export async function DestinationPage({
   const countryCodes = destination.countries.map((country) => country.code);
   const regionNames = regionNamesFor(destination, locale);
   const icon = destination.scope === "local" ? flagEmoji(countryCodes[0]) || destination.emoji : destination.emoji || "🌐";
-  const operators = [...new Set(destination.networks.map((network) => network.operator))];
+  const coverage = coverageByCountry(destination.countries, destination.networks, locale);
+  const local = destination.scope === "local";
   const prices = destination.variants.map((variant) => variant.perDay ? variant.perDay.priceMinor * variant.perDay.minDays : variant.priceMinor);
   const faq = [
     {
@@ -94,40 +98,19 @@ export async function DestinationPage({
             </div>
           </header>
 
-          {destination.scope !== "local" ? (
+          {!local || coverage[0]?.operators.length ? (
             <section className="space-y-3">
               <h2 className="flex items-center gap-2 text-lg font-semibold">
-                <Globe2 className="h-5 w-5" /> {tr("esim.page.coverage", "Countries covered")}
+                {local ? <Signal className="h-5 w-5" /> : <Globe2 className="h-5 w-5" />}
+                {local
+                  ? tr("esim.page.networks", "Networks")
+                  : tr("esim.page.coverageCount", "{count} countries covered", { count: coverage.length })}
               </h2>
-              <ul className="flex flex-wrap gap-2">
-                {destination.countries.map((country) => (
-                  <li key={country.code} className="rounded-full border px-3 py-1 text-sm">
-                    <span aria-hidden="true">{flagEmoji(country.code)} </span>
-                    {country.name}
-                  </li>
-                ))}
-              </ul>
+              <CoverageList countries={coverage} local={local} />
             </section>
           ) : null}
 
-          {operators.length ? (
-            <section className="space-y-3">
-              <h2 className="flex items-center gap-2 text-lg font-semibold">
-                <Signal className="h-5 w-5" /> {tr("esim.page.networks", "Networks")}
-              </h2>
-              <ul className="grid gap-2 sm:grid-cols-2">
-                {destination.networks.slice(0, 40).map((network) => (
-                  <li key={`${network.countryCode}-${network.operator}-${network.network}`} className="flex items-center justify-between rounded-lg border px-3 py-2 text-sm">
-                    <span>
-                      {destination.scope !== "local" ? <span aria-hidden="true">{flagEmoji(network.countryCode)} </span> : null}
-                      {network.operator}
-                    </span>
-                    {network.network ? <span className="text-xs text-muted-foreground">{network.network}</span> : null}
-                  </li>
-                ))}
-              </ul>
-            </section>
-          ) : null}
+          <PlanComparison variants={destination.variants} />
 
           <section className="space-y-3">
             <h2 className="text-lg font-semibold">{tr("esim.page.how", "How it works")}</h2>
@@ -164,7 +147,7 @@ export async function DestinationPage({
           </section>
         </div>
 
-        <aside className="rounded-2xl border bg-card p-5 shadow-sm lg:sticky lg:top-24">
+        <aside id="esim-plan-selector" className="scroll-mt-24 rounded-2xl border bg-card p-5 shadow-sm lg:sticky lg:top-24">
           <PlanSelector
             productId={destination.productId}
             name={tr("esim.page.title", "{name} eSIM", { name: destination.name })}

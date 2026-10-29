@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Loader2, Minus, Plus, ShoppingCart, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -11,7 +11,8 @@ import { useRouter } from "@/hooks/use-locale-navigation";
 import { useFallbackTranslator } from "@/hooks/use-fallback-translator";
 import { useCurrency } from "@/providers/currency-provider";
 import { cn } from "@/lib/utils";
-import { FLEX_DAYS, resolveSelection, type SelectorChoice, type StorefrontVariant } from "@/lib/esim/storefront/selector";
+import { FLEX_DAYS, keyOf, resolveSelection, type SelectorChoice, type StorefrontVariant } from "@/lib/esim/storefront/selector";
+import { PLAN_CHOOSE_EVENT } from "@/lib/esim/storefront/compare";
 
 /**
  * The plan selector (WEB-13): days → data → top-up → exit IP → price, then
@@ -51,6 +52,19 @@ export function PlanSelector({ productId, name, variants, countryCodes, regionNa
   const priceMinor = variant ? (perDay && chosenDays ? perDay.priceMinor * chosenDays : variant.priceMinor) : null;
 
   const pick = (step: Step, value: string) => setChoice((current) => ({ ...current, [step]: value }));
+
+  // A plan chosen in the comparison table (WEB-14) becomes the selection.
+  useEffect(() => {
+    const onChoose = (event: Event) => {
+      const chosen = variants.find((entry) => entry.variantId === (event as CustomEvent<{ variantId: string }>).detail?.variantId);
+      if (!chosen) return;
+      setChoice({ days: keyOf.days(chosen), data: keyOf.data(chosen), topup: keyOf.topup(chosen), breakout: keyOf.breakout(chosen) });
+      setDays(null);
+      document.getElementById("esim-plan-selector")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    };
+    window.addEventListener(PLAN_CHOOSE_EVENT, onChoose);
+    return () => window.removeEventListener(PLAN_CHOOSE_EVENT, onChoose);
+  }, [variants]);
 
   const label = {
     days: (value: string) =>

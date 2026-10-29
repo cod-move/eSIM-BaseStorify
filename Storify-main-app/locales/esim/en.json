@@ -89,7 +89,8 @@
       "networks": "Networks",
       "how": "How it works",
       "faq": "Questions",
-      "allPlans": "See every plan for {name}"
+      "allPlans": "See every plan for {name}",
+      "coverageCount": "{count} countries covered"
     },
     "how": {
       "pick": "Pick a plan",
@@ -293,6 +294,24 @@
       "supplierRefused": "The network did not accept the cancellation. Please contact us.",
       "failed": "This eSIM can no longer be cancelled.",
       "done": "Cancelled. Your refund is on its way."
+    },
+    "compare": {
+      "title": "Compare plans",
+      "days": "Days",
+      "data": "Data",
+      "price": "Price",
+      "perGb": "Per GB",
+      "perDay": "Per day",
+      "choose": "Choose",
+      "bestValue": "Best value",
+      "flexDays": "{min}–{max} days"
+    },
+    "coverage": {
+      "search": "Find a country or operator",
+      "notFound": "This plan does not cover that country.",
+      "bestAvailable": "The best network available locally",
+      "showAll": "Show all {count} countries",
+      "showLess": "Show fewer"
     }
   },
   "admin": {

@@ -89,7 +89,8 @@
       "networks": "运营商网络",
       "how": "使用流程",
       "faq": "常见问题",
-      "allPlans": "查看 {name} 的全部套餐"
+      "allPlans": "查看 {name} 的全部套餐",
+      "coverageCount": "覆盖 {count} 个国家和地区"
     },
     "how": {
       "pick": "选套餐",
@@ -293,6 +294,24 @@
       "supplierRefused": "运营商未接受取消，请联系我们。",
       "failed": "这张 eSIM 已无法取消。",
       "done": "已取消，退款处理中。"
+    },
+    "compare": {
+      "title": "套餐对比",
+      "days": "天数",
+      "data": "流量",
+      "price": "价格",
+      "perGb": "每 GB",
+      "perDay": "每天",
+      "choose": "选择",
+      "bestValue": "最划算",
+      "flexDays": "{min}–{max} 天"
+    },
+    "coverage": {
+      "search": "搜索国家或运营商",
+      "notFound": "此套餐不覆盖该国家或地区。",
+      "bestAvailable": "使用当地最佳网络",
+      "showAll": "显示全部 {count} 个国家和地区",
+      "showLess": "收起"
     }
   },
   "admin": {
