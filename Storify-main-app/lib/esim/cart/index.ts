@@ -255,3 +255,12 @@ export async function esimDayPricing(productId: string): Promise<Record<string, 
   }
   return result;
 }
+
+/** The product's variants that take a start date (ORD-03), for the product page's buy box. */
+export async function esimStartDateVariants(productId: string): Promise<string[]> {
+  if (!mongoose.isValidObjectId(productId)) return [];
+  const link = await EsimProductLink.findOne({ product: new mongoose.Types.ObjectId(productId) }).select({ variants: 1 }).lean();
+  if (!link) return [];
+  const info = await variantInfo(link.variants.map((variant) => variant.variantId));
+  return [...info].filter(([, variant]) => variant.scheduled).map(([variantId]) => variantId);
+}
