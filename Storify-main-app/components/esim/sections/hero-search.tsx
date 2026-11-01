@@ -7,7 +7,8 @@ import Link from "@/components/language/link";
 import { useRouter } from "@/hooks/use-locale-navigation";
 import { useFallbackTranslator } from "@/hooks/use-fallback-translator";
 import { useCurrency } from "@/providers/currency-provider";
-import { destinationIcon, type BrowserDestination } from "@/components/esim/destination-card";
+import type { BrowserDestination } from "@/components/esim/destination-card";
+import { DestinationIcon } from "@/components/esim/flag";
 
 /**
  * The destination search of the hero block (WEB-10): matches as you type,
@@ -75,7 +76,7 @@ export function HeroSearch({
               matches.map((destination) => (
                 <li key={destination.path}>
                   <Link href={destination.path} className="flex items-center gap-3 rounded-xl px-3 py-2 hover:bg-muted">
-                    <span className="text-xl" aria-hidden="true">{destinationIcon(destination)}</span>
+                    <DestinationIcon destination={destination} className="text-xl" />
                     <span className="flex-1 truncate">{destination.name}</span>
                     {destination.fromPriceMinor !== null ? (
                       <span className="text-xs text-muted-foreground">
@@ -99,9 +100,9 @@ export function HeroSearch({
             <Link
               key={destination.path}
               href={destination.path}
-              className="rounded-full border bg-background/80 px-3 py-1.5 text-sm text-foreground backdrop-blur hover:border-primary"
+              className="inline-flex items-center gap-1.5 rounded-full border bg-background/80 px-3 py-1.5 text-sm text-foreground backdrop-blur hover:border-primary"
             >
-              <span aria-hidden="true">{destinationIcon(destination)} </span>
+              <DestinationIcon destination={destination} />
               {destination.name}
             </Link>
           ))}

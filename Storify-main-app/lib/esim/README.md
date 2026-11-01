@@ -35,6 +35,7 @@ Everything eSIM-specific lives here and in the files named below; official Stori
 
 | `storefront/catalog.ts` | Published, active destinations with their variants for the destination pages; 5-minute cache tagged `esim-storefront` (publishing clears it) |
 | `storefront/selector.ts`, `storefront/continents.ts` | Plan selector steps (days → data → top-up → exit IP) and continent grouping (pure) |
+| `storefront/flags.ts`, `components/esim/flag.tsx`, `public/esim/flags/` | Flags drawn as SVG pictures (Windows shows flag emoji as two letters): a country's own, or a region's when its emoji is a flag (EU); files from country-flag-icons (MIT, licence beside them) |
 | `app/[locale]/(store)/esim/` | `/esim` overview, `/esim/<country>`, `/esim/region/<slug>`, `/esim/global`; in the sitemap via patch P17 |
 | `components/esim/{destination-browser,destination-page,plan-selector}.tsx` | Overview search and tabs; a destination's page; the selector that adds straight to the cart |
 

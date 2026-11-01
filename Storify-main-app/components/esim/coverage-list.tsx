@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useFallbackTranslator } from "@/hooks/use-fallback-translator";
-import { flagEmoji } from "@/lib/esim/storefront/continents";
+import { Flag } from "@/components/esim/flag";
 import { searchCountries, type CoveredCountry } from "@/lib/esim/storefront/compare";
 
 /**
@@ -60,8 +60,8 @@ export function CoverageList({ countries, local }: { countries: CoveredCountry[]
         <ul className="grid gap-2 sm:grid-cols-2">
           {shown.map((country) => (
             <li key={country.code} className="rounded-lg border px-3 py-2 text-sm">
-              <div className="font-medium">
-                <span aria-hidden="true">{flagEmoji(country.code)} </span>
+              <div className="flex items-center gap-2 font-medium">
+                <Flag code={country.code} />
                 {country.name}
               </div>
               <div className="text-xs text-muted-foreground">

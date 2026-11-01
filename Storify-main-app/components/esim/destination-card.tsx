@@ -4,7 +4,8 @@ import { useTranslations } from "next-intl";
 import Link from "@/components/language/link";
 import { useFallbackTranslator } from "@/hooks/use-fallback-translator";
 import { useCurrency } from "@/providers/currency-provider";
-import { flagEmoji, type Continent } from "@/lib/esim/storefront/continents";
+import type { Continent } from "@/lib/esim/storefront/continents";
+import { DestinationIcon } from "@/components/esim/flag";
 import { campaignPriceMinor } from "@/lib/esim/campaigns/rules";
 
 /** A destination as the overview, the blocks and search draw it. Serialisable. */
@@ -19,12 +20,6 @@ export interface BrowserDestination {
   countryCodes: string[];
   path: string;
   fromPriceMinor: number | null;
-}
-
-export function destinationIcon(destination: Pick<BrowserDestination, "scope" | "countryCodes" | "emoji">): string {
-  return destination.scope === "local"
-    ? flagEmoji(destination.countryCodes[0]) || destination.emoji || "📍"
-    : destination.emoji || "🌐";
 }
 
 /**
@@ -57,9 +52,7 @@ export function DestinationCard({
       href={destination.path}
       className="flex items-center gap-3 rounded-xl border bg-card p-3 transition-colors hover:border-primary/50 hover:bg-muted/40"
     >
-      <span className="text-2xl leading-none" aria-hidden="true">
-        {destinationIcon(destination)}
-      </span>
+      <DestinationIcon destination={destination} className="text-2xl leading-none" />
       <span className="min-w-0 flex-1">
         <span className="block truncate font-medium">{destination.name}</span>
         {coverage || price ? (

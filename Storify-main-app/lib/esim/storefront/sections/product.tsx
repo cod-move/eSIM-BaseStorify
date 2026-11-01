@@ -4,7 +4,7 @@ import { sectionEmptyState } from "@/components/store/sections/section-empty-sta
 import { lt } from "@/lib/storefront/sections/localized";
 import type { LocalizedText, SectionDefinition } from "@/lib/storefront/sections/types";
 import { productEsimFacts } from "@/lib/esim/storefront/catalog";
-import { flagEmoji } from "@/lib/esim/storefront/continents";
+import { Flag } from "@/components/esim/flag";
 import { translator } from "@/lib/esim/i18n/server";
 
 /**
@@ -63,7 +63,10 @@ export const esimProductDetails: SectionDefinition = {
         label: tr("esim.details.coverage", "Coverage"),
         body:
           facts.scope === "local" && facts.countries.length === 1 ? (
-            `${flagEmoji(facts.countries[0].code)} ${facts.countries[0].name}`
+            <span className="inline-flex items-center gap-1.5">
+              <Flag code={facts.countries[0].code} />
+              {facts.countries[0].name}
+            </span>
           ) : (
             <details>
               <summary className="cursor-pointer">{tr("esim.browse.countries", "{count} countries", { count: facts.countries.length })}</summary>

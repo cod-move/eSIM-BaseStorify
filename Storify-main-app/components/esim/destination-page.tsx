@@ -11,7 +11,7 @@ import { PlanSelector } from "@/components/esim/plan-selector";
 import { JsonLd } from "@/lib/site-config/seo";
 import { getLocaleRouting } from "@/lib/i18n/locale-routing";
 import { getStorefrontMetadataSettings } from "@/lib/storefront/storefront-metadata";
-import { flagEmoji } from "@/lib/esim/storefront/continents";
+import { DestinationIcon } from "@/components/esim/flag";
 import { refreshMissingNetworks, regionNamesFor, type DestinationDetail } from "@/lib/esim/storefront/catalog";
 
 /**
@@ -56,7 +56,6 @@ export async function DestinationPage({
   ]);
   const countryCodes = destination.countries.map((country) => country.code);
   const regionNames = regionNamesFor(destination, locale);
-  const icon = destination.scope === "local" ? flagEmoji(countryCodes[0]) || destination.emoji : destination.emoji || "🌐";
   // CAT-10: countries without an operator are asked about once this page is sent.
   refreshMissingNetworks(destination);
   const coverage = coverageByCountry(destination.countries, destination.networks, locale);
@@ -95,7 +94,7 @@ export async function DestinationPage({
         <div className="space-y-8">
           <header className="space-y-3">
             <div className="flex items-center gap-3">
-              <span className="text-5xl leading-none" aria-hidden="true">{icon}</span>
+              <DestinationIcon destination={{ scope: destination.scope, countryCodes, emoji: destination.emoji }} className="text-5xl leading-none" />
               <div>
                 <h1 className="text-3xl font-bold tracking-tight">
                   {tr("esim.page.title", "{name} eSIM", { name: destination.name })}
