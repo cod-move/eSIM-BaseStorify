@@ -5,18 +5,22 @@ import { useTranslations } from 'use-intl';
 
 import { useTabBarHeight } from '@/components/shell/tab-bar';
 import { Button } from '@/components/ui/button';
+import { Chip } from '@/components/ui/chip';
 import { Price } from '@/components/ui/price';
 import { Stepper } from '@/components/ui/stepper';
 import { Text } from '@/components/ui/text';
 import { useToast } from '@/components/ui/toast';
 import type { EsimDestinationDetail, EsimPlanOption } from '@/contracts/mobile/shop/v1/esim';
 import { useSetCartLine } from '@/features/cart/use-cart';
+import { addDays, daysBetween, readableDay } from '@/features/esim/start-date';
+import { useLocale } from '@/i18n/locale-store';
 import { useErrorMessage } from '@/i18n/use-error-message';
 import { cn } from '@/lib/cn';
 
 /**
  * A destination's plans (APP-02): pick one — and for a day-priced plan the
- * days — and add it to the cart. The cart prices the choice; the app shows
+ * days, for one that takes it the day it starts (ORD-03) — and add it to the
+ * cart. The cart prices the choice; the app shows
  * only the prices the store sent.
  */
 export function DestinationPlans({ destination }: { destination: EsimDestinationDetail }) {
@@ -29,10 +33,16 @@ export function DestinationPlans({ destination }: { destination: EsimDestination
   const [selected, setSelected] = useState<string | null>(destination.plans[0]?.variantId ?? null);
   const plan = destination.plans.find((option) => option.variantId === selected) ?? null;
   const [days, setDays] = useState<number>(plan?.perDay?.minDays ?? 1);
+  const locale = useLocale();
+  // Days after the earliest start the store allows; null = starts as usual.
+  const [startOffset, setStartOffset] = useState<number | null>(null);
+  const startDate =
+    plan?.startDate && startOffset !== null ? addDays(plan.startDate.min, startOffset) : null;
 
   const choose = (option: EsimPlanOption) => {
     setSelected(option.variantId);
     if (option.perDay) setDays(option.perDay.minDays);
+    if (!option.startDate) setStartOffset(null);
   };
 
   const add = () => {
@@ -42,7 +52,14 @@ export function DestinationPlans({ destination }: { destination: EsimDestination
         productId: destination.productId,
         variantId: plan.variantId,
         quantity: 1,
-        ...(plan.perDay ? { lineAttributes: { days } } : {}),
+        ...(plan.perDay || startDate
+          ? {
+              lineAttributes: {
+                ...(plan.perDay ? { days } : {}),
+                ...(startDate ? { activateOn: startDate } : {}),
+              },
+            }
+          : {}),
       },
       {
         onSuccess: () =>
@@ -107,6 +124,40 @@ export function DestinationPlans({ destination }: { destination: EsimDestination
                 perDay: plan.perDay.pricePerDay.formatted,
               })}
             </Text>
+          </View>
+        ) : null}
+
+        {plan?.startDate ? (
+          <View className="gap-2 rounded-xl bg-surface p-4">
+            <Text variant="subheading">{t('startWhen')}</Text>
+            <View className="flex-row flex-wrap gap-2" accessibilityRole="radiogroup">
+              <Chip
+                label={t('startAsUsual')}
+                accessibilityRole="radio"
+                selected={startOffset === null}
+                onPress={() => setStartOffset(null)}
+              />
+              <Chip
+                label={t('startOnDate')}
+                accessibilityRole="radio"
+                selected={startOffset !== null}
+                onPress={() => setStartOffset((current) => current ?? 0)}
+              />
+            </View>
+            {startDate && plan.startDate ? (
+              <>
+                <View className="flex-row items-center justify-between gap-3">
+                  <Text>{readableDay(startDate, locale)}</Text>
+                  <Stepper
+                    value={startOffset ?? 0}
+                    min={0}
+                    max={daysBetween(plan.startDate.min, plan.startDate.max)}
+                    onChange={setStartOffset}
+                  />
+                </View>
+                <Text variant="caption">{t('startHint')}</Text>
+              </>
+            ) : null}
           </View>
         ) : null}
 

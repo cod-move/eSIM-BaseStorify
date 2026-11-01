@@ -148,8 +148,10 @@ export type EsimRefreshInput = z.infer<typeof EsimRefreshInput>;
  * plans, `scope` being `local` for a country and `multi` for a region or the
  * global plan. A plan is bought by adding its `productId` and `variantId` to
  * the cart (PUT /cart/lines); a day-priced plan sends the days chosen as
- * `lineAttributes.days`, between `perDay.minDays` and `perDay.maxDays`. The
- * cart prices it: the app works out no price.
+ * `lineAttributes.days`, between `perDay.minDays` and `perDay.maxDays`; a plan
+ * with `startDate` may send the day it starts as `lineAttributes.activateOn`
+ * (YYYY-MM-DD), between `startDate.min` and `startDate.max`. The cart prices
+ * it: the app works out no price.
  */
 
 export const EsimScope = z.enum(["local", "regional", "global"]);
@@ -201,6 +203,8 @@ export const EsimPlanOption = z.object({
     .optional(),
   /** stack: a top-up adds to it; addon: a separate package; none: no top-ups. */
   topupMode: z.string(),
+  /** The shopper may pick the day it starts (UTC days, YYYY-MM-DD); left out when it starts as usual only. */
+  startDate: z.object({ min: z.string(), max: z.string() }).optional(),
 });
 export type EsimPlanOption = z.infer<typeof EsimPlanOption>;
 

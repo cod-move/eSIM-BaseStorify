@@ -139,6 +139,10 @@
     "cancelKeep": "Keep it",
     "cancelDone": "Cancelled. Your refund is on its way.",
     "cancelFailed": "This eSIM can no longer be cancelled.",
-    "cancelSupplierRefused": "The network did not accept the cancellation. Please contact us."
+    "cancelSupplierRefused": "The network did not accept the cancellation. Please contact us.",
+    "startWhen": "When should it start?",
+    "startAsUsual": "As usual",
+    "startOnDate": "On a date",
+    "startHint": "The plan starts on this day (UTC), not when you install it."
   }
 }
