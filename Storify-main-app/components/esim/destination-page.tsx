@@ -1,6 +1,5 @@
 import { translator } from "@/lib/esim/i18n/server";
-import { Globe2, QrCode, ShoppingBag, Signal, Wifi } from "lucide-react";
-import { CoverageList } from "@/components/esim/coverage-list";
+import { QrCode, ShoppingBag, Wifi } from "lucide-react";
 import { coverageByCountry } from "@/lib/esim/storefront/compare";
 import { CampaignBanner } from "@/components/esim/campaign-banner";
 import { bannerData, campaignForPage } from "@/lib/esim/campaigns/service";
@@ -14,10 +13,10 @@ import { DestinationIcon } from "@/components/esim/flag";
 import { refreshMissingNetworks, regionNamesFor, type DestinationDetail } from "@/lib/esim/storefront/catalog";
 
 /**
- * A destination's page (WEB-31..33): its plans as filters over cards, what it
- * covers and the networks, how it works and the usual questions. The country, region and
- * global routes all draw it; they differ in the breadcrumb and the coverage
- * list.
+ * A destination's page (WEB-31..33): its plans as filters over cards (each
+ * card opens its countries and networks), how it works and the usual
+ * questions. The country, region and global routes all draw it; they differ
+ * in the breadcrumb.
  */
 
 /** Title and description for the page's metadata. */
@@ -119,18 +118,6 @@ export async function DestinationPage({
             image={destination.image}
           />
         </section>
-
-        {!local || coverage[0]?.operators.length ? (
-          <section className="space-y-3">
-            <h2 className="flex items-center gap-2 text-lg font-semibold">
-              {local ? <Signal className="h-5 w-5" /> : <Globe2 className="h-5 w-5" />}
-              {local
-                ? tr("esim.page.networks", "Networks")
-                : tr("esim.page.coverageCount", "{count} countries covered", { count: coverage.length })}
-            </h2>
-            <CoverageList countries={coverage} local={local} />
-          </section>
-        ) : null}
 
         <section className="space-y-3">
           <h2 className="text-lg font-semibold">{tr("esim.page.how", "How it works")}</h2>

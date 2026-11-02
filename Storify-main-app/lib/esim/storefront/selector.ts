@@ -1,4 +1,4 @@
-import type { DataType, TopupMode } from "@/lib/esim/providers/types";
+import type { BillingStart, DataType, TopupMode, TopupStackTarget, TopupWindow } from "@/lib/esim/providers/types";
 import type { PerDayPricing } from "@/lib/esim/catalog/variants";
 
 /**
@@ -23,10 +23,30 @@ export interface StorefrontVariant {
   days: number | null;
   perDay: PerDayPricing | null;
   topupMode: TopupMode;
+  /** How a top-up works, for the card's rules; absent where it cannot be topped up. */
+  topupRule?: { stackTarget: TopupStackTarget | null; window: TopupWindow | null; retentionDays: number | null } | null;
   /** Countries the traffic exits from (ISO codes); empty when unknown. */
   breakoutIp: string[];
   /** The shopper may pick the day it starts (ORD-03). */
   scheduledActivation?: boolean;
+  /** What the plan card's details show; absent where the catalogue did not say. */
+  details?: PlanDetails | null;
+}
+
+/** One plan's facts for its details dialog; null where the supplier does not say. */
+export interface PlanDetails {
+  /** The fastest generation, "5G" or "4G". */
+  speed: string | null;
+  hotspot: boolean | null;
+  billingStarts: BillingStart | null;
+  /** Days after purchase the eSIM must be installed by. */
+  installWithinDays: number | null;
+  /** Daily full-speed allowance and the speed after it. */
+  highSpeedGbPerDay: number | null;
+  reducedSpeedMbps: number | null;
+  vpn: boolean;
+  voiceMinutes: number;
+  smsCount: number;
 }
 
 export interface SelectorChoice {

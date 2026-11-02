@@ -12,7 +12,7 @@ import { EsimDestination } from "@/models/esim-destination.model";
 import { continentOf, type Continent } from "@/lib/esim/storefront/continents";
 import { fromPriceMinor, type StorefrontVariant } from "@/lib/esim/storefront/selector";
 import { supportsScheduledActivation } from "@/lib/esim/providers/registry";
-import { summarizeFacts } from "@/lib/esim/storefront/product-facts";
+import { summarizeFacts, topSpeedOf } from "@/lib/esim/storefront/product-facts";
 import type { CoverageScope } from "@/lib/esim/providers/types";
 
 /**
@@ -63,7 +63,8 @@ export function destinationPath(destination: Pick<Destination, "slug" | "scope">
 
 type PlanFacts = Pick<
   IEsimPlan,
-  "destination" | "emoji" | "coverage" | "data" | "validityDays" | "topup" | "supplierNetworks"
+  | "destination" | "emoji" | "coverage" | "data" | "validityDays" | "topup" | "supplierNetworks"
+  | "fairUse" | "speed" | "tethering" | "activation" | "bundles" | "extras"
 > & { _id: mongoose.Types.ObjectId };
 
 /** A plan's operators: the catalogue's, else those fetched on their own (CAT-10). */
@@ -82,7 +83,10 @@ async function readCatalog(): Promise<DestinationDetail[]> {
     productById.has(String(link.product)) ? link.variants.map((variant) => variant.candidates[0]).filter(Boolean) : [],
   );
   const plans = await EsimPlan.find({ _id: { $in: primaryIds } })
-    .select({ destination: 1, emoji: 1, coverage: 1, data: 1, validityDays: 1, topup: 1, supplierNetworks: 1 })
+    .select({
+      destination: 1, emoji: 1, coverage: 1, data: 1, validityDays: 1, topup: 1, supplierNetworks: 1,
+      fairUse: 1, speed: 1, tethering: 1, activation: 1, bundles: 1, extras: 1,
+    })
     .lean<PlanFacts[]>();
   const planById = new Map(plans.map((plan) => [String(plan._id), plan]));
   // ORD-03: a variant takes a start date when every plan behind it comes from a supplier that schedules.
@@ -126,8 +130,22 @@ async function readCatalog(): Promise<DestinationDetail[]> {
         days: variant.perDay ? null : plan.validityDays,
         perDay: variant.perDay ?? null,
         topupMode: plan.topup.supported ? plan.topup.mode : "none",
+        topupRule: plan.topup.supported
+          ? { stackTarget: plan.topup.stackTarget ?? null, window: plan.topup.window ?? null, retentionDays: plan.topup.profileRetentionDays ?? null }
+          : null,
         breakoutIp: plan.coverage.breakoutIp ?? [],
         scheduledActivation: scheduled(variant.candidates),
+        details: {
+          speed: topSpeedOf([...(plan.speed ?? []), ...networksOfPlan(plan).map((network) => network.network ?? "")]),
+          hotspot: plan.tethering ?? null,
+          billingStarts: plan.activation?.billingStarts ?? null,
+          installWithinDays: plan.activation?.preInstallDays || null,
+          highSpeedGbPerDay: plan.fairUse?.highSpeedGbPerDay ?? null,
+          reducedSpeedMbps: plan.fairUse?.reducedSpeedMbps ?? null,
+          vpn: (plan.bundles ?? []).some((bundle) => bundle.type === "vpn"),
+          voiceMinutes: plan.extras?.voiceMinutes ?? 0,
+          smsCount: plan.extras?.smsCount ?? 0,
+        },
       });
     }
     if (!first || !variants.length) continue;

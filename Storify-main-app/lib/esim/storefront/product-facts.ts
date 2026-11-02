@@ -53,6 +53,12 @@ function rank(network: string | null | undefined): number {
 
 const unique = <T,>(values: T[]) => [...new Set(values)];
 
+/** The fastest generation among speeds and network names ("5G", "4G"…), or null. */
+export function topSpeedOf(speeds: string[]): string | null {
+  const best = speeds.filter(Boolean).sort((a, b) => rank(a) - rank(b))[0];
+  return best ? (GENERATIONS.find((generation) => best.toUpperCase().includes(generation)) ?? best) : null;
+}
+
 export function summarizeFacts(plans: FactPlan[]): ProductFacts | null {
   if (!plans.length) return null;
   const countries = new Map<string, string>();
@@ -65,8 +71,7 @@ export function summarizeFacts(plans: FactPlan[]): ProductFacts | null {
       if (!known || rank(network.network) < rank(known.network)) networks.set(key, network);
     }
   }
-  const speeds = plans.flatMap((plan) => [...plan.speed, ...plan.networks.map((network) => network.network ?? "")]);
-  const best = speeds.filter(Boolean).sort((a, b) => rank(a) - rank(b))[0] ?? null;
+  const best = topSpeedOf(plans.flatMap((plan) => [...plan.speed, ...plan.networks.map((network) => network.network ?? "")]));
   const hotspot = unique(plans.map((plan) => plan.tethering));
   const vpnCount = plans.filter((plan) => plan.vpn).length;
   const windows = plans.map((plan) => plan.preInstallDays).filter((days): days is number => typeof days === "number" && days > 0);
@@ -75,7 +80,7 @@ export function summarizeFacts(plans: FactPlan[]): ProductFacts | null {
     scope: scopes.includes("global") ? "global" : scopes.includes("regional") ? "regional" : "local",
     countries: [...countries].map(([code, name]) => ({ code, name })).sort((a, b) => a.name.localeCompare(b.name)),
     networks: [...networks.values()].sort((a, b) => a.countryCode.localeCompare(b.countryCode) || a.operator.localeCompare(b.operator)),
-    topSpeed: best ? GENERATIONS.find((generation) => best.toUpperCase().includes(generation)) ?? best : null,
+    topSpeed: best,
     dataTypes: unique(plans.map((plan) => plan.dataType)),
     hotspot: hotspot.length === 1 ? hotspot[0] : null,
     billingStarts: unique(plans.map((plan) => plan.billingStarts).filter((value): value is BillingStart => value !== null)),
