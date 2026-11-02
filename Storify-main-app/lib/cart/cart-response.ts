@@ -1,5 +1,6 @@
 import type { CartProductFacts } from "@/lib/cart/cart-products";
 import type { CartView } from "@/lib/cart/cart-service";
+import { isPaymentFeeLine, withoutPaymentFee } from "@/lib/esim/payments/fee-display"; // [esim-patch] P30
 
 /**
  * A cart as an API response may show it: its id and its lines.
@@ -13,7 +14,9 @@ import type { CartView } from "@/lib/cart/cart-service";
 export function cartResponse<T extends { _id: unknown; items?: unknown }>(
   cart: T,
 ): { _id: string; items: T["items"] | [] } {
-  return { _id: String(cart._id), items: cart.items ?? [] };
+  // [esim-patch] P30 the payment fee is not an item: the checkout shows it as a row.
+  const items = Array.isArray(cart.items) ? cart.items.filter((line) => !isPaymentFeeLine(line)) : cart.items;
+  return { _id: String(cart._id), items: (items ?? []) as T["items"] | [] };
 }
 
 /**
@@ -37,7 +40,8 @@ export function withLineFacts<T extends object>(item: T, fact: CartProductFacts 
 }
 
 /** `GET /api/cart`'s answer for a shopper with a cart identity. */
-export function cartViewResponse(view: CartView) {
+export function cartViewResponse(storedView: CartView) {
+  const view = withoutPaymentFee(storedView); // [esim-patch] P30 the payment fee is shown as a row, not an item.
   if (view.cartId === undefined) {
     return {
       items: [],

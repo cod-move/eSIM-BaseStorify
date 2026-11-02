@@ -4,6 +4,8 @@ import { useStoreDefaultLocale } from "@/hooks/use-locale-navigation";
 import { type CSSProperties, FormEvent, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { isPaymentFeeLine, paymentFeeIn } from "@/lib/esim/payments/fee-display"; // [esim-patch] P30
+import { useEsimPaymentFeeLabel } from "@/components/esim/payment-fee-label"; // [esim-patch] P30
 import { format } from "date-fns";
 import {
   AlertCircle,
@@ -103,6 +105,7 @@ type TrackedOrder = {
     price: number;
     quantity: number;
     image?: string;
+    lineAttributes?: Record<string, unknown>; // [esim-patch] P30
   }>;
   pickup?: {
     pickupAddress?: string;
@@ -180,6 +183,7 @@ export function TrackOrderContent({
   initialOrderNumber = "",
 }: TrackOrderContentProps) {
   const t = useTranslations();
+  const esimFeeLabel = useEsimPaymentFeeLabel(); // [esim-patch] P30
   const storeDefault = useStoreDefaultLocale();
   const locale = useParams().locale as string;
   const { formatPrice } = useCurrency();
@@ -571,7 +575,7 @@ export function TrackOrderContent({
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {order.items.map((item, index) => (
+                    {order.items.map((item, index) => isPaymentFeeLine(item) ? null /* [esim-patch] P30 */ : (
                       <TableRow key={`${item.name}-${index}`}>
                         <TableCell>
                           <div className="flex min-w-0 items-center gap-3 sm:gap-4">
@@ -621,14 +625,25 @@ export function TrackOrderContent({
             <section className="grid gap-4 md:grid-cols-2">
               <div className="rounded-lg border bg-card p-5 shadow-sm">
                 <TotalRow label="Discount" value={`-${formatPrice(order.discount)}`} />
-                <Separator className="my-3" />
-                <TotalRow
-                  label={order.pickup ? "Local pickup" : "Delivery"}
-                  value={formatPrice(order.shippingCost)}
-                />
+                {/* [esim-patch] P30 no delivery row when nothing is charged for it; the payment fee beside it. */}
+                {order.pickup || order.shippingCost > 0 ? (
+                  <>
+                    <Separator className="my-3" />
+                    <TotalRow
+                      label={order.pickup ? "Local pickup" : "Delivery"}
+                      value={formatPrice(order.shippingCost)}
+                    />
+                  </>
+                ) : null}
+                {paymentFeeIn(order.items) > 0 ? (
+                  <>
+                    <Separator className="my-3" />
+                    <TotalRow label={esimFeeLabel} value={formatPrice(paymentFeeIn(order.items))} />
+                  </>
+                ) : null}
               </div>
               <div className="rounded-lg border bg-card p-5 shadow-sm">
-                <TotalRow label="Subtotal" value={formatPrice(order.subtotal)} />
+                <TotalRow label="Subtotal" value={formatPrice(order.subtotal - paymentFeeIn(order.items)) /* [esim-patch] P30 */} />
                 {order.tax > 0 ? (
                   <>
                     <Separator className="my-3" />
@@ -724,7 +739,7 @@ function PackageCard({
           <ul className="space-y-3">
             {shipment.itemIndexes.map((itemIndex) => {
               const item = items[itemIndex];
-              if (!item) return null;
+              if (!item || isPaymentFeeLine(item)) return null; // [esim-patch] P30
               return (
                 <li key={itemIndex} className="flex min-w-0 items-center gap-3">
                   <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-md bg-muted">

@@ -4,6 +4,7 @@ import { MobileApiError } from "@/lib/api-core/errors";
 import type { MobileSession } from "@/lib/api-core/ports";
 import { imageSet } from "@/lib/api-core/shop/images";
 import { toMoney } from "@/lib/api-core/shop/money";
+import { withoutPaymentFee } from "@/lib/esim/payments/fee-display"; // [esim-patch] P30
 import type { AdmitCartLine } from "@/lib/cart/cart-item-quantity";
 import {
   CART_LINE_QUANTITY_LIMIT,
@@ -172,7 +173,8 @@ function toCartLine(line: CartViewLine, ctx: AppCartContext): CartLine {
 }
 
 /** The cart as the contract sends it (`Cart`), from the cart service's view. */
-export function toAppCart(view: CartView, ctx: AppCartContext): CartDto {
+export function toAppCart(storedView: CartView, ctx: AppCartContext): CartDto {
+  const view = withoutPaymentFee(storedView); // [esim-patch] P30 the payment fee is shown as a row, not an item.
   return {
     lines: view.lines.map((line) => toCartLine(line, ctx)),
     itemCount: view.totalItems,

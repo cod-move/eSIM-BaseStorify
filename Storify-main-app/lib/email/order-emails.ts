@@ -13,6 +13,7 @@ import { trackingUrlForOrder } from "@/lib/orders/order-shipment-view";
 import { appBaseUrl } from "@/lib/app-url";
 import type { OrderInvoiceSource } from "@/lib/orders/order-invoice";
 import { Order } from "@/models";
+import { isPaymentFeeLine, paymentFeeIn } from "@/lib/esim/payments/fee-display"; // [esim-patch] P30
 import {
   isOrderEntitledToDownloads,
   orderHasDigitalItems,
@@ -96,7 +97,10 @@ export async function sendOrderConfirmationEmail(
       items: order.items.map((item, index) => ({
         ...item,
         finalSale: saved?.items?.[index]?.finalSale === true,
-      })),
+      // [esim-patch] P30 the payment fee is a row of its own, not an item.
+      })).filter((_, index) => !isPaymentFeeLine(saved?.items?.[index])),
+      subtotal: order.subtotal - paymentFeeIn(saved?.items), // [esim-patch] P30
+      paymentFee: paymentFeeIn(saved?.items), // [esim-patch] P30
       // Read off the saved order: the finalizers hand this function their own
       // order shape, and none of them carries the checkout answers.
       customerNote: saved?.customerNote,

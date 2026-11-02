@@ -36,6 +36,7 @@ interface OrderEmailData {
   tax: number;
   /** Import duties collected at checkout (DDP); part of `total`. */
   duty?: number;
+  paymentFee?: number; // [esim-patch] P30 the fee for the way it was paid; part of `total`.
   total: number;
   shippingAddress: ShippingAddress;
   paymentMethod: string;
@@ -236,14 +237,23 @@ export function orderConfirmationTemplate(
             locale,
           )}</span>
         </div>
-        <div class="summary-row">
+        ${
+          // [esim-patch] P30 no shipping row when nothing is charged for it; the payment fee beside it.
+          data.shipping > 0
+            ? `<div class="summary-row">
           <span class="summary-label">Shipping</span>
-          <span class="summary-value">${
-            data.shipping === 0
-              ? "Free"
-              : formatPrice(data.shipping, currency, locale)
-          }</span>
-        </div>
+          <span class="summary-value">${formatPrice(data.shipping, currency, locale)}</span>
+        </div>`
+            : ""
+        }
+        ${
+          data.paymentFee && data.paymentFee > 0
+            ? `<div class="summary-row">
+          <span class="summary-label">Payment fee</span>
+          <span class="summary-value">${formatPrice(data.paymentFee, currency, locale)}</span>
+        </div>`
+            : ""
+        }
         ${
           data.discount && data.discount > 0
             ? `<div class="summary-row">

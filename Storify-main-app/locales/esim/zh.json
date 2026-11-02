@@ -297,7 +297,8 @@
       "backToCart": "返回购物车",
       "none": "暂时没有可用的支付方式，请稍后再试。",
       "note": "付款确认后订单会立即生成。同一订单请勿重复付款。",
-      "backToApp": "返回 App"
+      "backToApp": "返回 App",
+      "feeRow": "支付手续费"
     },
     "cancel": {
       "button": "取消并退款",

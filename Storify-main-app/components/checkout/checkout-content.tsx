@@ -179,6 +179,7 @@ import {
   type ShipmentItemSummary,
 } from "@/components/checkout/shipping-method-selector";
 import { EsimBalanceTopupLink, useEsimBalanceText, useEsimCheckoutBalance, useEsimOnlyCart, useEsimPaymentFee } from "@/components/esim/checkout-balance"; // [esim-patch] P27 P28 P29
+import { EsimPaymentFeeLabel } from "@/components/esim/payment-fee-label"; // [esim-patch] P30
 import {
   reconcileVendorSelections,
   sameSelections,
@@ -1752,7 +1753,11 @@ function CheckoutForm({
   const shippingDiscount = totals.shippingDiscount;
   const discountedShippingCost = totals.discountedShippingCost;
   const tax = totals.tax;
-  const total = totals.total + customsDutyAmount;
+  // [esim-patch] P29 P30 the chosen method's fee: a line of the cart that the cart
+  // view leaves out, so it is added here and shown as a row; the balance carries none.
+  const esimSelectedPayment = useWatch({ control: form.control, name: "paymentMethod" });
+  const esimFeeInCart = useEsimPaymentFee(esimSelectedPayment, subtotal);
+  const total = totals.total + customsDutyAmount + esimFeeInCart; // [esim-patch] P30
   // What each pre-order line leaves for later once the coupon is shared
   // between its deposit and its balance — the split checkout charges by.
   const preorderOutstandingByLine = hasPreorderItems
@@ -1787,9 +1792,6 @@ function CheckoutForm({
   // credit itself, to the currency's own precision.
   // [esim-patch] P27 a balance that covers the order is a method of its own,
   // chosen by default; one that falls short is spent by the tick instead.
-  const esimSelectedPayment = useWatch({ control: form.control, name: "paymentMethod" });
-  // [esim-patch] P29 the chosen method's fee, a line of the cart; the balance carries none.
-  const esimFeeInCart = useEsimPaymentFee(esimSelectedPayment, subtotal);
   const balanceCovers =
     !hasPreorderItems && !esimBalance.walletCart && storeCreditAvailable > 0 && storeCreditAvailable + 0.005 >= Math.max(0, total - esimFeeInCart);
   const creditOn = !esimBalance.walletCart && (balanceCovers ? esimSelectedPayment === "store_credit" : useStoreCredit);
@@ -5158,6 +5160,8 @@ function CheckoutForm({
                         <span>-{formatPrice(discount)}</span>
                       </div>
                     ) : null}
+                    {/* [esim-patch] P30 no shipping row when nothing is charged for it. */}
+                    {shippingCost > 0 ? (
                     <div className="flex items-center justify-between">
                       <span className="text-muted-foreground">
                         {t("common.shipping")}
@@ -5181,6 +5185,16 @@ function CheckoutForm({
                         )}
                       </span>
                     </div>
+                    ) : null}
+                    {/* [esim-patch] P30 the payment fee, beside shipping rather than among the items. */}
+                    {esimFeeInCart > 0 ? (
+                      <div className="flex items-center justify-between">
+                        <span className="text-muted-foreground">
+                          <EsimPaymentFeeLabel />
+                        </span>
+                        <span>{formatPrice(esimFeeInCart)}</span>
+                      </div>
+                    ) : null}
                     <div className="flex items-center justify-between">
                       <span className="text-muted-foreground">
                         {t("checkout.estimatedTax")}

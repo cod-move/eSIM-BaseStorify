@@ -111,6 +111,8 @@ import { OrderCheckoutAnswers } from "@/components/common/order-checkout-answers
 import type { OrderCheckoutField } from "@/types";
 import type { OrderReviewState } from "@/lib/catalog/review-eligibility";
 import { formatPreorderReleaseDate } from "@/lib/products/preorder-date";
+import { isPaymentFeeLine, paymentFeeIn } from "@/lib/esim/payments/fee-display"; // [esim-patch] P30
+import { EsimPaymentFeeLabel } from "@/components/esim/payment-fee-label"; // [esim-patch] P30
 
 interface OrderItem {
   productId:
@@ -120,6 +122,7 @@ interface OrderItem {
   quantity: number;
   price: number;
   image?: string;
+  lineAttributes?: Record<string, unknown>; // [esim-patch] P30
 }
 
 interface ShippingAddress {
@@ -928,6 +931,9 @@ export function OrderDetails({ orderId, locale }: OrderDetailsProps) {
       order.paymentStatus === "partially_paid" ||
       order.paymentStatus === "partially_refunded");
   const shippingAmount = order.shipping ?? order.shippingCost ?? 0;
+  // [esim-patch] P30 the payment fee is a row beside shipping, not an item.
+  const esimFee = paymentFeeIn(order.items);
+  const esimItemCount = order.items.filter((item) => !isPaymentFeeLine(item)).length;
   const discountAmount = order.discount ?? 0;
   const dutyAmount = Number(order.customs?.dutyAmount || 0);
   const billingAddress = order.billingAddress || order.shippingAddress;
@@ -1526,7 +1532,7 @@ export function OrderDetails({ orderId, locale }: OrderDetailsProps) {
             <CardDescription>
               {isSplitOrder
                 ? t("orders.shipmentsDescription")
-                : `${order.items.length} ${order.items.length === 1 ? "item" : "items"}`}
+                : `${esimItemCount} ${esimItemCount === 1 ? "item" : "items"}` /* [esim-patch] P30 */}
             </CardDescription>
           </div>
           {shipmentProgress && !pickup ? (
@@ -1642,7 +1648,7 @@ export function OrderDetails({ orderId, locale }: OrderDetailsProps) {
                 ) : null}
                 {group.indexes.map((index) => {
                   const item = order.items[index];
-                  if (!item) return null;
+                  if (!item || isPaymentFeeLine(item)) return null; // [esim-patch] P30
                   const {
                     productId,
                     name: productName,
@@ -1724,8 +1730,10 @@ export function OrderDetails({ orderId, locale }: OrderDetailsProps) {
               <span className="text-muted-foreground">
                 {t("common.subtotal")}
               </span>
-              <span>{formatPrice(order.subtotal)}</span>
+              <span>{formatPrice(order.subtotal - esimFee) /* [esim-patch] P30 */}</span>
             </div>
+            {/* [esim-patch] P30 no shipping row when nothing is charged for it; the payment fee beside it. */}
+            {pickup || shippingAmount > 0 ? (
             <div className="flex justify-between">
               <span className="text-muted-foreground">
                 {pickup ? t("checkout.pickup.localPickup") : t("common.shipping")}
@@ -1736,6 +1744,15 @@ export function OrderDetails({ orderId, locale }: OrderDetailsProps) {
                   : formatPrice(shippingAmount)}
               </span>
             </div>
+            ) : null}
+            {esimFee > 0 ? (
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">
+                  <EsimPaymentFeeLabel />
+                </span>
+                <span>{formatPrice(esimFee)}</span>
+              </div>
+            ) : null}
             {discountAmount > 0 && (
               <div className="flex justify-between">
                 <span className="text-muted-foreground">
@@ -2033,6 +2050,7 @@ export function OrderDetails({ orderId, locale }: OrderDetailsProps) {
             <div className="grid gap-3">
               <Label>{tf("orders.returns.dialog.items", "Items")}</Label>
               {order.items.map((item, index) => {
+                if (isPaymentFeeLine(item)) return null; // [esim-patch] P30
                 const productName = describeItem(item).name;
                 const returnableQuantity = getReturnableQuantity(index);
                 return (

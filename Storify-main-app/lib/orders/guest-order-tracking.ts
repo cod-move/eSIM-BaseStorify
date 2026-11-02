@@ -10,6 +10,7 @@ import { sanitizeOrderForCustomer } from "@/lib/orders/order-customer-view";
 import { generateOrderInvoicePdf } from "@/lib/orders/order-invoice";
 import { loadOrderShipmentTracking } from "@/lib/orders/order-shipment-view";
 import { RETURN_REFUND_STATUS, RETURN_STATUS } from "@/lib/returns/returns";
+import { isPaymentFeeLine } from "@/lib/esim/payments/fee-display"; // [esim-patch] P30
 
 /**
  * Finding an order without an account: its number, and the email address or
@@ -568,13 +569,15 @@ export async function buildGuestTrackingView(found: TrackedOrder) {
     tax: order.tax || 0,
     discount: order.discount || 0,
     total: order.total,
-    itemCount: order.items.reduce((sum, item) => sum + item.quantity, 0),
+    // [esim-patch] P30 the payment fee is marked so the page shows it as a row, not an item.
+    itemCount: order.items.reduce((sum, item) => sum + (isPaymentFeeLine(item) ? 0 : item.quantity), 0),
     items: order.items.map((item) => ({
       name: item.name,
       sku: item.sku,
       price: item.price,
       quantity: item.quantity,
       image: item.image,
+      ...(isPaymentFeeLine(item) ? { lineAttributes: { paymentFee: true } } : {}),
     })),
     shippingAddress: {
       name: trackedCustomerName(order),

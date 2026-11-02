@@ -16,6 +16,8 @@ import { Badge } from "@/components/ui/badge";
 import { AppImage } from "@/components/ui/app-image";
 import { useCurrency } from "@/providers/currency-provider";
 import { IOrder } from "@/types";
+import { isPaymentFeeLine, paymentFeeIn } from "@/lib/esim/payments/fee-display"; // [esim-patch] P30
+import { EsimPaymentFeeLabel } from "@/components/esim/payment-fee-label"; // [esim-patch] P30
 
 interface OrderItemsProps {
   order: IOrder;
@@ -31,6 +33,8 @@ export function OrderItems({ order }: OrderItemsProps) {
   const discount = Number(order.discount || 0);
   const dutyAmount = Number(order.customs?.dutyAmount || 0);
   const refundedTotal = Number(order.refundedTotal || 0);
+  // [esim-patch] P30 the payment fee is a row beside shipping, not an item.
+  const esimFee = paymentFeeIn(order.items);
 
   return (
     <Card className="gap-4 p-0">
@@ -56,7 +60,7 @@ export function OrderItems({ order }: OrderItemsProps) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {order.items.map((item, index) => (
+            {order.items.map((item, index) => isPaymentFeeLine(item) ? null /* [esim-patch] P30 */ : (
               <TableRow key={index}>
                 <TableCell>
                   <div className="flex items-start gap-4">
@@ -114,8 +118,10 @@ export function OrderItems({ order }: OrderItemsProps) {
         <div className="p-6 border-t bg-muted/50 space-y-2">
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">{t("orderDetails.subtotal")}</span>
-            <span>{formatPrice(order.subtotal)}</span>
+            <span>{formatPrice(order.subtotal - esimFee) /* [esim-patch] P30 */}</span>
           </div>
+          {/* [esim-patch] P30 no shipping row when nothing is charged for it; the payment fee beside it. */}
+          {Number(order.shippingCost || 0) > 0 ? (
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">
               {t("orderDetails.shipping")}
@@ -123,6 +129,15 @@ export function OrderItems({ order }: OrderItemsProps) {
             </span>
             <span>{formatPrice(order.shippingCost)}</span>
           </div>
+          ) : null}
+          {esimFee > 0 ? (
+            <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground">
+                <EsimPaymentFeeLabel />
+              </span>
+              <span>{formatPrice(esimFee)}</span>
+            </div>
+          ) : null}
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">{t("orderDetails.tax")}</span>
             <span>{formatPrice(order.tax)}</span>
