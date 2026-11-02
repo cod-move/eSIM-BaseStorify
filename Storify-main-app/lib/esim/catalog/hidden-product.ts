@@ -34,7 +34,7 @@ export interface HiddenProductRef {
 
 export interface HiddenProductSpec {
   productType: string;
-  settingsKey: "topupProductId" | "walletProductId" | "migratedProductId";
+  settingsKey: "topupProductId" | "walletProductId" | "migratedProductId" | "paymentFeeProductId";
   name: string;
   handle: string;
   shortDescription: string;
@@ -42,6 +42,8 @@ export interface HiddenProductSpec {
   sku: string;
   optionName: string;
   variantName: string;
+  /** Whether sales tax applies (Storify's default: yes). */
+  chargeTax?: boolean;
 }
 
 const CACHE_MS = 60_000;
@@ -110,6 +112,7 @@ export function hiddenProduct(spec: HiddenProductSpec) {
       publishing: { onlineStore: false, pointOfSale: false },
       returns: { finalSale: true },
       shipping: { isPhysicalProduct: false },
+      ...(spec.chargeTax === false ? { chargeTax: false } : {}),
       inventory: { tracked: false, continueSellingWhenOutOfStock: false },
       options: [{ _id: optionId, name: spec.optionName, position: 0, values: [{ _id: valueId, value: spec.variantName, position: 0 }] }],
       variants: [

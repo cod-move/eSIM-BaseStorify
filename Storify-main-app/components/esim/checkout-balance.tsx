@@ -92,3 +92,30 @@ export function useEsimOnlyCart(productIds: readonly string[]): boolean {
   }, [key]);
   return answer.key === key && answer.esimOnly;
 }
+
+/**
+ * Keeps the cart's payment fee line in step with the chosen method (patch
+ * P29) and reads the cart again when it changed. Returns the fee in the cart,
+ * in the store's units, so the balance can be judged against the order
+ * without it (the balance carries no fee).
+ */
+export function useEsimPaymentFee(method: string | undefined, subtotal: number): number {
+  const { refreshCart } = useCartActions();
+  const [feeMinor, setFeeMinor] = useState(0);
+  useEffect(() => {
+    if (!method) return;
+    let cancelled = false;
+    fetch("/api/esim/checkout/fee", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ method }) })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (cancelled || !data?.success) return;
+        setFeeMinor(Number(data.data.feeMinor) || 0);
+        if (data.data.changed) void refreshCart(true);
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [method, subtotal, refreshCart]);
+  return feeMinor / 100;
+}

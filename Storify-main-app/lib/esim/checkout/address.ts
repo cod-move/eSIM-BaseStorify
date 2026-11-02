@@ -3,6 +3,7 @@ import "server-only";
 import { Product } from "@/models";
 import { TOPUP_PRODUCT_TYPE } from "@/lib/esim/topup/product";
 import { WALLET_PRODUCT_TYPE } from "@/lib/esim/wallet/product";
+import { PAYMENT_FEE_PRODUCT_TYPE } from "@/lib/esim/payments/fee-line";
 import type { CheckoutShippingAddress } from "@/lib/checkout/checkout-order-document";
 
 /**
@@ -12,12 +13,12 @@ import type { CheckoutShippingAddress } from "@/lib/checkout/checkout-order-docu
  * store's country.
  */
 
-const ESIM_PRODUCT_TYPES = ["esim", TOPUP_PRODUCT_TYPE, WALLET_PRODUCT_TYPE];
+const ESIM_PRODUCT_TYPES = ["esim", TOPUP_PRODUCT_TYPE, WALLET_PRODUCT_TYPE, PAYMENT_FEE_PRODUCT_TYPE];
 
 const idOf = (value: unknown) =>
   String(value && typeof value === "object" && "_id" in value ? (value as { _id: unknown })._id : (value ?? ""));
 
-/** Whether every line is an eSIM, an eSIM top-up or a balance top-up. */
+/** Whether every line is an eSIM, an eSIM top-up, a balance top-up or a payment fee. */
 export async function isEsimOnlyCart(items: readonly { productId?: unknown }[]): Promise<boolean> {
   const ids = [...new Set(items.map((item) => idOf(item.productId)).filter(Boolean))];
   if (!ids.length) return false;

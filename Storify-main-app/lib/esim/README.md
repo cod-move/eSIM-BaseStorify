@@ -83,9 +83,12 @@ Everything eSIM-specific lives here and in the files named below; official Stori
 | `wallet/park.ts`, `models/esim-parked-cart.model.ts`, `app/api/esim/me/wallet` | Topping up mid-checkout: the top-up is bought alone, so the cart's other lines are set aside as stored and go back once it is credited or the shopper returns to checkout without it (never while the top-up is still in the cart, never doubled) |
 | `components/esim/checkout-balance.tsx` | The balance as a payment method (patch P27): "Account balance" first in the list, chosen when it covers the order; short of it, greyed out with "Top up" (the tick still spends part). Never on a wallet top-up |
 | `checkout/address.ts`, `app/api/esim/catalog/esim-only` | An eSIM-only cart (eSIMs, top-ups, balance) is asked no address at checkout (patch P28); its order keeps a stand-in: the shopper's name or email and the store's ship-from country |
+| `payments/fee-rules.ts`, `payments/fee-line.ts`, `app/api/esim/checkout/fee` | Payment fees (patch P29): a fixed amount plus a percent of the goods per checkout method, charged as a "Payment fee" line of the cart (a hidden, untaxed product) kept in step with the chosen method and priced from the other lines; none on the balance or a wallet top-up |
+| `admin/payment-fees.ts`, `components/esim/admin/payment-fees-card.tsx` | Each method's fee, on Admin → eSIM → Payments |
 | `admin/wallet.ts`, `components/esim/admin/wallet-settings-card.tsx` | Wallet top-up on/off, amounts and fee, on Admin → eSIM → Pricing |
 | `scripts/esim-dev-wallet.ts` | End-to-end check: cart, checkout, booking through Storify's posting rules, refund ceiling, credit once |
 | `scripts/esim-dev-park.ts` | Check of setting the cart aside for a top-up and putting it back |
+| `scripts/esim-dev-fees.ts` | Check of the payment fee line: added, kept, removed, priced from the other lines |
 
 | `referral/rules.ts` | Referral codes, the commission (percent or fixed), what an order earns on (paid less refunds and wallet top-ups), validity and order limit (pure) |
 | `referral/service.ts`, `app/[locale]/(store)/esim/invite/[code]` | Codes (made on first ask, changeable), the invite link's 30-day cookie, recording the referral at sign-up (patch P14) and the friend's one-use welcome coupon (REF-01/06) |

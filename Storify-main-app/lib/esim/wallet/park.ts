@@ -4,6 +4,7 @@ import { mongoose } from "@/lib/db";
 import { Cart } from "@/models";
 import { EsimParkedCart } from "@/models/esim-parked-cart.model";
 import { findWalletProduct } from "@/lib/esim/wallet/product";
+import { findPaymentFeeProduct } from "@/lib/esim/payments/fee-line";
 
 /**
  * Topping up the balance in the middle of a checkout (WAL-01). The top-up is
@@ -26,12 +27,14 @@ export async function isWalletCart(items: readonly { variantId?: unknown }[]): P
   return Boolean(variantId) && items.some((item) => String(item.variantId ?? "") === variantId);
 }
 
-/** Sets the cart's lines other than a top-up aside; how many. */
+/** Sets the cart's lines other than a top-up aside; how many. A payment fee is dropped: checkout adds it again. */
 export async function parkCartForTopup(userId: string): Promise<number> {
   const variantId = await walletVariantId();
+  const feeVariantId = (await findPaymentFeeProduct())?.variantId;
   const cart = await Cart.findOne({ userId }).select({ items: 1 }).lean<{ _id: unknown; items: Line[] } | null>();
-  const others = (cart?.items ?? []).filter((line) => String(line.variantId ?? "") !== variantId);
-  if (!cart || !others.length) return 0;
+  const leaving = (cart?.items ?? []).filter((line) => String(line.variantId ?? "") !== variantId);
+  const others = leaving.filter((line) => String(line.variantId ?? "") !== feeVariantId);
+  if (!cart || !leaving.length) return 0;
   const parked = await EsimParkedCart.findOne({ user: userId }).select({ items: 1 }).lean<{ items: Line[] } | null>();
   const kept = new Set((parked?.items ?? []).map(keyOf));
   // Set aside before taking out: a failure in between leaves a line in both places, never in neither.
@@ -40,7 +43,7 @@ export async function parkCartForTopup(userId: string): Promise<number> {
     { $push: { items: { $each: others.filter((line) => !kept.has(keyOf(line))) } }, $set: { parkedAt: new Date() } },
     { upsert: true },
   );
-  await Cart.updateOne({ _id: cart._id }, { $pull: { items: { _id: { $in: others.map((line) => line._id) } } } });
+  await Cart.updateOne({ _id: cart._id }, { $pull: { items: { _id: { $in: leaving.map((line) => line._id) } } } });
   return others.length;
 }
 

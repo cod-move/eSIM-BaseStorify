@@ -178,7 +178,7 @@ import {
   ShippingMethodSelector,
   type ShipmentItemSummary,
 } from "@/components/checkout/shipping-method-selector";
-import { EsimBalanceTopupLink, useEsimBalanceText, useEsimCheckoutBalance, useEsimOnlyCart } from "@/components/esim/checkout-balance"; // [esim-patch] P27 P28
+import { EsimBalanceTopupLink, useEsimBalanceText, useEsimCheckoutBalance, useEsimOnlyCart, useEsimPaymentFee } from "@/components/esim/checkout-balance"; // [esim-patch] P27 P28 P29
 import {
   reconcileVendorSelections,
   sameSelections,
@@ -1788,8 +1788,10 @@ function CheckoutForm({
   // [esim-patch] P27 a balance that covers the order is a method of its own,
   // chosen by default; one that falls short is spent by the tick instead.
   const esimSelectedPayment = useWatch({ control: form.control, name: "paymentMethod" });
+  // [esim-patch] P29 the chosen method's fee, a line of the cart; the balance carries none.
+  const esimFeeInCart = useEsimPaymentFee(esimSelectedPayment, subtotal);
   const balanceCovers =
-    !hasPreorderItems && !esimBalance.walletCart && storeCreditAvailable > 0 && storeCreditAvailable + 0.005 >= Math.max(0, total);
+    !hasPreorderItems && !esimBalance.walletCart && storeCreditAvailable > 0 && storeCreditAvailable + 0.005 >= Math.max(0, total - esimFeeInCart);
   const creditOn = !esimBalance.walletCart && (balanceCovers ? esimSelectedPayment === "store_credit" : useStoreCredit);
   const esimBalanceDefaulted = useRef(false);
   useEffect(() => {

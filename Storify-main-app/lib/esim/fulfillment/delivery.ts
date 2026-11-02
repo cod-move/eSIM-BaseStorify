@@ -279,6 +279,10 @@ export async function settleOrderDelivery(orderId: string) {
     const product = await findTopupProduct();
     if (product) done.add(product.variantId);
   }
+  // A payment fee line (patch P29) has nothing to deliver.
+  const { findPaymentFeeProduct } = await import("@/lib/esim/payments/fee-line");
+  const feeProduct = await findPaymentFeeProduct();
+  if (feeProduct) done.add(feeProduct.variantId);
   if (order.items.every((item) => done.has(String(item.variantId ?? "")))) {
     await markOrderDelivered(order);
   }

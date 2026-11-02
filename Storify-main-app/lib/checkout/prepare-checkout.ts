@@ -116,6 +116,7 @@ import {
 import { esimLinePrices } from "@/lib/esim/cart"; // [esim-patch] P10
 import { isWalletCart } from "@/lib/esim/wallet/park"; // [esim-patch] P27
 import { esimStandInAddress, isEsimOnlyCart } from "@/lib/esim/checkout/address"; // [esim-patch] P28
+import { syncPaymentFeeLine } from "@/lib/esim/payments/fee-line"; // [esim-patch] P29
 
 type StockCheckVariant = {
   _id: { toString: () => string };
@@ -329,6 +330,8 @@ async function runCheckout(
       : null;
   // The cart (customer or guest) is read alongside the settings: neither
   // needs the other. Awaited below, after the store-level checks.
+  // [esim-patch] P29 the chosen method's fee is a line of the cart, put in step before the cart is read.
+  if (cartQuery && paymentMethod) await syncPaymentFeeLine(cartQuery, paymentMethod);
   const cartRead = cartQuery
     ? Cart.findOne(cartQuery)
         .populate({

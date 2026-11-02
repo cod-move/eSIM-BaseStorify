@@ -922,7 +922,12 @@
       "campaignSeoTitle": "SEO title (optional)",
       "campaignSeoDescription": "SEO description (optional)",
       "campaignActive": "Active: the page and the code work between the dates",
-      "edit": "Edit"
+      "edit": "Edit",
+      "feesTitle": "Payment fees",
+      "feesHint": "Added to an order for the way it is paid: a fixed amount plus a percent of the goods, shown at checkout as a \"Payment fee\" line and refunded with the order. Paying from the balance, and wallet top-ups, carry no fee.",
+      "feesMethod": "Method",
+      "feesFixed": "Fixed ($)",
+      "feesPercent": "Percent (%)"
     },
     "sidebar": {
       "esim": "eSIM",

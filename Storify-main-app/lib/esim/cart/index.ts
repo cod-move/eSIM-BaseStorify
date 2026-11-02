@@ -27,6 +27,7 @@ import { walletFeeMinor } from "@/lib/esim/wallet/booking";
 import { getEsimSettings } from "@/models/esim-pricing.model";
 import { kycState, variantsNeedingKyc } from "@/lib/esim/kyc/service";
 import { unsellableVariants } from "@/lib/esim/cart/plan-check";
+import { feeLineMethod, isPaymentFeeVariant, paymentFeeFor } from "@/lib/esim/payments/fee-line";
 
 /**
  * The eSIM side of patch point P10: what Storify's cart and checkout ask about
@@ -118,6 +119,8 @@ export async function esimCartLine(
   context: { userId?: string } = {},
 ): Promise<{ lineAttributes: EsimLineAttributes & Record<string, unknown>; price?: number; variantName: string; singleUnit?: boolean } | null> {
   try {
+    // Patch P29: the fee is added by the checkout, never through the cart.
+    if (await isPaymentFeeVariant(line.variantId)) throw new LineAttributesError("The payment fee is added at checkout");
     const requested = parseLineAttributes(line.lineAttributes);
     if (await isTopupVariant(line.variantId)) {
       if (!context.userId) throw new LineAttributesError("Sign in to top up an eSIM");
@@ -173,14 +176,20 @@ export async function esimCartLine(
  * and refused (a validation error, as for an item out of stock) when the
  * quote is gone, expired or not the shopper's, or the line is not one unit:
  * its variant's own price is a placeholder that must never be charged.
+ * A payment fee line (patch P29) is priced last, from the other lines.
  */
-export async function esimLinePrices<T extends { variantId?: unknown; lineAttributes?: unknown; quantity?: number }>(
-  items: readonly T[],
+export async function esimLinePrices<T extends { variantId?: unknown; lineAttributes?: unknown; quantity?: number; price?: number }>(
+  allItems: readonly T[],
   context: { userId?: string | null } = {},
 ): Promise<Map<T, number>> {
   const prices = new Map<T, number>();
+  const fees: T[] = [];
+  for (const item of allItems) if (await isPaymentFeeVariant(item.variantId)) fees.push(item);
+  const items = allItems.filter((item) => !fees.includes(item));
+  let walletCart = false;
   for (const item of items) {
     if (!(await isWalletVariant(item.variantId))) continue;
+    walletCart = true;
     // Balance is bought on its own: its order is booked and credited as a whole (patch P19).
     const wallet = items.length !== 1
       ? "Check out a wallet top-up on its own: remove the other items from your cart, or the top-up"
@@ -202,7 +211,7 @@ export async function esimLinePrices<T extends { variantId?: unknown; lineAttrib
     prices.set(item, toUnits(topup.priceMinor));
   }
   const info = await variantInfo(items.map((item) => item.variantId));
-  if (!info.size) return prices;
+  if (!info.size) return withPaymentFees(prices, items, fees, walletCart);
   // CAT-09: a plan the suppliers no longer sell is refused like an item out of stock.
   const gone = await unsellableVariants([...info.keys()]);
   if (gone.size) {
@@ -242,6 +251,26 @@ export async function esimLinePrices<T extends { variantId?: unknown; lineAttrib
     item.lineAttributes = { days, ...dated } satisfies EsimLineAttributes;
     prices.set(item, toUnits(linePriceMinor(variant.perDay, days)));
   }
+  return withPaymentFees(prices, items, fees, walletCart);
+}
+
+/** Prices each payment fee line for the method it was added for, from what the other lines cost (patch P29). */
+async function withPaymentFees<T extends { variantId?: unknown; lineAttributes?: unknown; quantity?: number; price?: number }>(
+  prices: Map<T, number>,
+  others: readonly T[],
+  fees: readonly T[],
+  walletCart: boolean,
+): Promise<Map<T, number>> {
+  if (!fees.length) return prices;
+  if (fees.length > 1 || fees.some((fee) => (fee.quantity ?? 1) !== 1)) {
+    throw new ValidationError({ stock: ["The payment fee in your cart is out of date: reload the checkout."] });
+  }
+  const baseMinor = others.reduce((sum, item) => sum + Math.round((prices.get(item) ?? Number(item.price ?? 0)) * 100) * (item.quantity ?? 1), 0);
+  const fee = fees[0];
+  const method = feeLineMethod(fee);
+  const feeMinor = others.length ? await paymentFeeFor(method, baseMinor, walletCart) : 0;
+  fee.lineAttributes = { paymentFee: { method, fee: feeMinor } };
+  prices.set(fee, toUnits(feeMinor));
   return prices;
 }
 
