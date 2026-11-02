@@ -363,8 +363,6 @@
       "count": "{count} plans",
       "clear": "Clear filters",
       "none": "No plans match these filters.",
-      "data": "Data",
-      "validity": "Validity",
       "countries": "{count} countries",
       "networks": "Networks",
       "coverageTitle": "Coverage and networks",
@@ -372,7 +370,8 @@
       "previous": "Previous page",
       "next": "Next page",
       "more": "+{count} more",
-      "fewer": "Fewer"
+      "fewer": "Fewer",
+      "perDay": "{price} per day"
     }
   },
   "admin": {

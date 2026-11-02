@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { FLEX_DAYS, type StorefrontVariant } from "../selector";
-import { dataKindOf, filterPlans, pageOf, planFilterOptions } from "../plan-filter";
+import { chooseFilter, dataKindOf, filterPlans, pageOf, planFilterOptions } from "../plan-filter";
 
 const v = (id: string, over: Partial<StorefrontVariant>): StorefrontVariant => ({
   variantId: id,
@@ -59,6 +59,13 @@ describe("plan filters", () => {
     const options = planFilterOptions(variants, { kind: "daily", days: "30" });
     assert.ok(options.days.some((option) => option.value === "30"));
     assert.deepEqual(filterPlans(variants, { kind: "daily", days: "30" }), []);
+  });
+
+  it("clears the other filters a choice leaves without plans, and only those", () => {
+    assert.deepEqual(chooseFilter(variants, { days: "30", topup: "stack" }, "kind", "daily"), { kind: "daily" });
+    assert.deepEqual(chooseFilter(variants, { kind: "daily" }, "breakout", "SG"), { kind: "daily", breakout: "SG" });
+    assert.deepEqual(chooseFilter(variants, { kind: "total", days: "7" }, "data", "5GB"), { kind: "total", data: "5GB" });
+    assert.deepEqual(chooseFilter(variants, { kind: "total", days: "7" }, "days", undefined), { kind: "total" });
   });
 
   it("lists what is left, shortest first and day-priced last", () => {

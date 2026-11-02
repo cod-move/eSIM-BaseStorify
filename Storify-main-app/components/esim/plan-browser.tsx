@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
-import { ChevronLeft, ChevronRight, Loader2, ShoppingCart } from "lucide-react";
+import { ChevronLeft, ChevronRight, Globe2, Loader2, MapPin, RefreshCw, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/toast-notification";
 import { useCart } from "@/hooks/use-cart";
@@ -11,6 +11,7 @@ import { useCurrency } from "@/providers/currency-provider";
 import { cn } from "@/lib/utils";
 import { FLEX_DAYS, type StorefrontVariant } from "@/lib/esim/storefront/selector";
 import {
+  chooseFilter,
   dataKindOf,
   filterPlans,
   lowestPriceMinor,
@@ -27,17 +28,21 @@ import { PlanBuyDialog } from "@/components/esim/plan-buy-dialog";
 
 /**
  * A destination's plans (WEB-13/14): filters — data kind, days, data, top-up,
- * exit IP — over a paged grid of compact cards. A card's price button puts
+ * exit IP — over a paged grid of plan cards. Every filter keeps all its values
+ * in place; one that no plan has alongside the other choices is shown faded,
+ * and choosing it clears the choices it cannot go with. A card's button puts
  * the plan in the cart; a plan with days or a start date to choose opens a
  * small dialog first. Its coverage opens the countries and their networks.
  */
 
 const PAGE_SIZE = 12;
-const SHOWN_FLAGS = 4;
+const SHOWN_FLAGS = 3;
 const COLLAPSED_OPTIONS = 12;
 /** Fewer hidden than this, and a filter shows them all. */
 const MIN_HIDDEN = 3;
 const collapses = (count: number) => count - COLLAPSED_OPTIONS >= MIN_HIDDEN;
+/** The filters whose values show the lowest price they lead to. */
+const PRICED: ReadonlySet<PlanFilterKey> = new Set(["kind", "days", "data"]);
 
 interface PlanBrowserProps {
   productId: string;
@@ -62,14 +67,16 @@ export function PlanBrowser({ productId, destinationName, variants, countryCodes
   const [buying, setBuying] = useState<StorefrontVariant | null>(null);
   const [coverageOpen, setCoverageOpen] = useState(false);
   const [expanded, setExpanded] = useState<Partial<Record<PlanFilterKey, boolean>>>({});
-  const options = useMemo(() => planFilterOptions(variants, filters), [variants, filters]);
+  // Every value a filter has, and those the other choices leave open (with their lowest price).
+  const allValues = useMemo(() => planFilterOptions(variants, {}), [variants]);
+  const open = useMemo(() => planFilterOptions(variants, filters), [variants, filters]);
   const plans = useMemo(() => filterPlans(variants, filters), [variants, filters]);
   const shown = pageOf(plans, page, PAGE_SIZE);
   const name = t("esim.page.title", "{name} eSIM", { name: destinationName });
 
   // A long filter shows its first values, and the chosen one, until opened.
   const visibleValues = (key: PlanFilterKey) => {
-    const values = options[key].map((option) => option.value);
+    const values = allValues[key].map((option) => option.value);
     if (expanded[key] || !collapses(values.length)) return values;
     const first = values.slice(0, COLLAPSED_OPTIONS);
     const chosen = filters[key];
@@ -77,7 +84,7 @@ export function PlanBrowser({ productId, destinationName, variants, countryCodes
   };
 
   const choose = (key: PlanFilterKey, value: string | undefined) => {
-    setFilters((current) => ({ ...current, [key]: value }));
+    setFilters((current) => chooseFilter(variants, current, key, value));
     setPage(1);
   };
 
@@ -120,10 +127,10 @@ export function PlanBrowser({ productId, destinationName, variants, countryCodes
   };
   const titles: Record<PlanFilterKey, string> = {
     kind: t("esim.plans.kind", "Data type"),
-    days: t("esim.compare.days", "Days"),
-    data: t("esim.compare.data", "Data"),
+    days: t("esim.selector.days", "How long is your trip?"),
+    data: t("esim.selector.data", "How much data?"),
     topup: t("esim.selector.topup", "Top-up"),
-    breakout: t("esim.plans.ip", "IP exit"),
+    breakout: t("esim.selector.breakout", "IP address"),
   };
 
   async function addToCart(variant: StorefrontVariant) {
@@ -152,16 +159,20 @@ export function PlanBrowser({ productId, destinationName, variants, countryCodes
     : t("esim.plans.countries", "{count} countries", { count: coverage.length });
 
   return (
-    <div className="space-y-4">
-      <div className="space-y-2.5 rounded-xl border bg-card p-3 sm:p-4">
-        {PLAN_FILTERS.map((key) =>
-          // A filter with one value left is a fact of every card, not a choice.
-          options[key].length > 1 || filters[key] ? (
-            <div key={key} className="flex flex-col gap-1.5 sm:flex-row sm:items-start sm:gap-3">
-              <div className="shrink-0 pt-1 text-xs font-semibold text-muted-foreground sm:w-20">{titles[key]}</div>
-              <div className="flex flex-wrap gap-1.5">
+    <div className="space-y-5">
+      <div className="space-y-4 rounded-2xl border bg-card p-4 shadow-sm sm:p-5">
+        {PLAN_FILTERS.map((key) => {
+          // A filter with one value in all the plans is a fact of every card, not a choice.
+          if (allValues[key].length < 2) return null;
+          const openPrice = new Map(open[key].map((option) => [option.value, option.fromPriceMinor]));
+          return (
+            <fieldset key={key} className="space-y-2">
+              <legend className="text-sm font-semibold">{titles[key]}</legend>
+              <div className="flex flex-wrap gap-2">
                 {[undefined, ...visibleValues(key)].map((value) => {
                   const active = filters[key] === value;
+                  const price = value === undefined ? undefined : openPrice.get(value);
+                  const faded = value !== undefined && (price === undefined || !Number.isFinite(price));
                   return (
                     <button
                       key={value ?? "all"}
@@ -169,30 +180,36 @@ export function PlanBrowser({ productId, destinationName, variants, countryCodes
                       aria-pressed={active}
                       onClick={() => choose(key, value)}
                       className={cn(
-                        "rounded-full border px-3 py-1 text-xs transition-colors",
-                        active ? "border-primary bg-primary/10 font-medium text-primary" : "hover:border-foreground/40",
+                        "rounded-lg border px-3 py-1.5 text-start text-sm transition-colors",
+                        active ? "border-primary bg-primary/10 font-medium" : "hover:border-foreground/40",
+                        faded && !active && "border-dashed text-muted-foreground/70",
                       )}
                     >
-                      {value === undefined ? t("esim.plans.all", "All") : optionLabel[key](value)}
+                      <span className="block">{value === undefined ? t("esim.plans.all", "All") : optionLabel[key](value)}</span>
+                      {PRICED.has(key) && value !== undefined && !faded ? (
+                        <span className="block text-xs text-muted-foreground">
+                          {t("esim.selector.from", "from {price}", { price: formatPrice(price! / 100) })}
+                        </span>
+                      ) : null}
                     </button>
                   );
                 })}
-                {collapses(options[key].length) ? (
+                {collapses(allValues[key].length) ? (
                   <button
                     type="button"
                     onClick={() => setExpanded((current) => ({ ...current, [key]: !current[key] }))}
-                    className="rounded-full px-2 py-1 text-xs font-medium text-store-link hover:underline"
+                    className="self-center px-1 text-sm font-medium text-store-link hover:underline"
                   >
                     {expanded[key]
                       ? t("esim.plans.fewer", "Fewer")
-                      : t("esim.plans.more", "+{count} more", { count: options[key].length - COLLAPSED_OPTIONS })}
+                      : t("esim.plans.more", "+{count} more", { count: allValues[key].length - COLLAPSED_OPTIONS })}
                   </button>
                 ) : null}
               </div>
-            </div>
-          ) : null,
-        )}
-        <div className="flex items-center justify-between gap-3 border-t pt-2.5 text-xs text-muted-foreground">
+            </fieldset>
+          );
+        })}
+        <div className="flex items-center justify-between gap-3 border-t pt-3 text-sm text-muted-foreground">
           <span>{t("esim.plans.count", "{count} plans", { count: plans.length })}</span>
           {chosenCount ? (
             <button
@@ -214,50 +231,63 @@ export function PlanBrowser({ productId, destinationName, variants, countryCodes
           {t("esim.plans.none", "No plans match these filters.")}
         </p>
       ) : (
-        <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {shown.items.map((variant) => (
-            <li key={variant.variantId} className="flex flex-col gap-2.5 rounded-xl border bg-card p-3 shadow-sm">
-              <div className="flex items-start justify-between gap-2">
-                <h3 className="text-sm font-semibold leading-snug">
-                  {destinationName} {variant.dataValue}
-                </h3>
-                <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-[11px] text-muted-foreground">{kind(dataKindOf(variant))}</span>
-              </div>
-              <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-lg border bg-border text-xs">
-                {[
-                  [t("esim.plans.data", "Data"), variant.dataValue],
-                  [t("esim.plans.validity", "Validity"), days(variant)],
-                  [t("esim.plans.ip", "IP exit"), breakout([...variant.breakoutIp].sort().join(","))],
-                  [t("esim.selector.topup", "Top-up"), topup(variant.topupMode)],
-                ].map(([label, value]) => (
-                  <div key={label} className="min-w-0 bg-muted/40 px-2.5 py-1.5">
-                    <dt className="text-muted-foreground">{label}</dt>
-                    <dd className="truncate font-medium" title={value}>{value}</dd>
+            <li key={variant.variantId} className="flex flex-col rounded-2xl border bg-card p-4 transition-shadow hover:shadow-md">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="line-clamp-2 text-lg font-bold leading-snug" title={variant.dataValue}>
+                    {variant.dataValue}
                   </div>
-                ))}
-              </dl>
-              <button
-                type="button"
-                onClick={() => setCoverageOpen(true)}
-                className="flex min-w-0 items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-start text-xs hover:border-foreground/40"
-              >
-                <span className="flex shrink-0 items-center gap-1">
-                  {coverage.slice(0, SHOWN_FLAGS).map((country) => (
-                    <Flag key={country.code} code={country.code} className="text-sm" />
-                  ))}
-                </span>
-                <span className="min-w-0 flex-1 truncate">
-                  {local ? coverageLabel : coverage.slice(0, SHOWN_FLAGS).map((country) => country.code).join(", ")}
-                  {!local && coverage.length > SHOWN_FLAGS ? ` +${coverage.length - SHOWN_FLAGS}` : ""}
-                </span>
-                <span className="shrink-0 font-medium text-primary">{local ? t("esim.plans.networks", "Networks") : coverageLabel}</span>
-              </button>
-              <Button className="mt-auto w-full" onClick={() => addToCart(variant)} disabled={adding !== null}>
-                {adding === variant.variantId ? <Loader2 className="me-2 h-4 w-4 animate-spin" /> : <ShoppingCart className="me-2 h-4 w-4" />}
-                {variant.perDay
-                  ? t("esim.selector.from", "from {price}", { price: formatPrice(lowestPriceMinor(variant) / 100) })
-                  : formatPrice(variant.priceMinor / 100)}
-              </Button>
+                  <div className="text-sm text-muted-foreground">{days(variant)}</div>
+                </div>
+                <span className="shrink-0 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">{kind(dataKindOf(variant))}</span>
+              </div>
+
+              <ul className="mt-3 space-y-1.5 text-sm text-muted-foreground">
+                <li className="flex min-w-0 items-center gap-2">
+                  <Globe2 className="h-4 w-4 shrink-0" />
+                  <span className="truncate">
+                    {t("esim.plans.ip", "IP exit")}: {breakout([...variant.breakoutIp].sort().join(","))}
+                  </span>
+                </li>
+                <li className="flex min-w-0 items-center gap-2">
+                  <RefreshCw className="h-4 w-4 shrink-0" />
+                  <span className="truncate">{topup(variant.topupMode)}</span>
+                </li>
+                <li>
+                  <button type="button" onClick={() => setCoverageOpen(true)} className="flex w-full min-w-0 items-center gap-2 text-start hover:text-foreground">
+                    <MapPin className="h-4 w-4 shrink-0" />
+                    <span className="flex shrink-0 items-center gap-1">
+                      {coverage.slice(0, SHOWN_FLAGS).map((country) => (
+                        <Flag key={country.code} code={country.code} />
+                      ))}
+                    </span>
+                    <span className="truncate text-store-link underline-offset-2 hover:underline">
+                      {local ? `${coverageLabel} · ${t("esim.plans.networks", "Networks")}` : coverageLabel}
+                    </span>
+                  </button>
+                </li>
+              </ul>
+
+              <div className="mt-4 flex items-center justify-between gap-3 border-t pt-3">
+                <div className="min-w-0">
+                  <div className="text-xl font-bold tabular-nums">
+                    {variant.perDay
+                      ? t("esim.selector.from", "from {price}", { price: formatPrice(lowestPriceMinor(variant) / 100) })
+                      : formatPrice(variant.priceMinor / 100)}
+                  </div>
+                  {variant.perDay ? (
+                    <div className="text-xs text-muted-foreground">
+                      {t("esim.plans.perDay", "{price} per day", { price: formatPrice(variant.perDay.priceMinor / 100) })}
+                    </div>
+                  ) : null}
+                </div>
+                <Button size="sm" onClick={() => addToCart(variant)} disabled={adding !== null}>
+                  {adding === variant.variantId ? <Loader2 className="me-1.5 h-4 w-4 animate-spin" /> : <ShoppingCart className="me-1.5 h-4 w-4" />}
+                  {variant.perDay || variant.scheduledActivation ? t("esim.compare.choose", "Choose") : t("common.addToCart", "Add to cart")}
+                </Button>
+              </div>
             </li>
           ))}
         </ul>

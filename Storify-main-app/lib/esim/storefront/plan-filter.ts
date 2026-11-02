@@ -74,6 +74,26 @@ export function planFilterOptions(variants: StorefrontVariant[], filters: PlanFi
   return result;
 }
 
+/**
+ * The filters once `key` is set to `value` (undefined is "all"): any other
+ * filter whose value no plan has alongside it is cleared, so a choice never
+ * leaves an empty list.
+ */
+export function chooseFilter(variants: StorefrontVariant[], filters: PlanFilters, key: PlanFilterKey, value: string | undefined): PlanFilters {
+  const next: PlanFilters = { ...filters, [key]: value };
+  if (value === undefined) delete next[key];
+  // First what cannot go with the new value at all, then, while nothing is left, the rest in order.
+  for (const other of PLAN_FILTERS) {
+    if (other === key || !next[other] || value === undefined) continue;
+    if (!variants.some((variant) => matches(variant, { [key]: value, [other]: next[other] }))) delete next[other];
+  }
+  for (const other of PLAN_FILTERS) {
+    if (other === key || !next[other]) continue;
+    if (!variants.some((variant) => matches(variant, next))) delete next[other];
+  }
+  return next;
+}
+
 /** The plans the filters leave, shortest first, then by kind, data and price. */
 export function filterPlans(variants: StorefrontVariant[], filters: PlanFilters): StorefrontVariant[] {
   const days = (variant: StorefrontVariant) => (variant.perDay ? Number.MAX_SAFE_INTEGER : (variant.days ?? 0));
