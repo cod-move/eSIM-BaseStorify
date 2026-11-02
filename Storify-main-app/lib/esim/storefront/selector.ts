@@ -74,11 +74,11 @@ function options(variants: StorefrontVariant[], step: Step, order: (a: string, b
   return [...cheapest].map(([value, fromPriceMinor]) => ({ value, fromPriceMinor })).sort((a, b) => order(a.value, b.value));
 }
 
-const byDays = (a: string, b: string) =>
+export const byDays = (a: string, b: string) =>
   a === FLEX_DAYS ? 1 : b === FLEX_DAYS ? -1 : Number(a) - Number(b);
-const TOPUP_ORDER: Record<string, number> = { stack: 0, addon: 1, none: 2 };
+export const TOPUP_ORDER: Record<string, number> = { stack: 0, addon: 1, none: 2 };
 /** As the product's variants are ordered (lib/esim/catalog/variants.ts). */
-const TYPE_ORDER: Record<string, number> = { total: 0, daily_throttled: 1, daily_cutoff: 2, unlimited: 3, lifetime: 4 };
+export const TYPE_ORDER: Record<string, number> = { total: 0, daily_throttled: 1, daily_cutoff: 2, unlimited: 3, lifetime: 4 };
 
 export function resolveSelection(variants: StorefrontVariant[], choice: SelectorChoice = {}): Selection {
   let open = variants;

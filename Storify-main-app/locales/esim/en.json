@@ -350,6 +350,29 @@
       "cancelled": "Cancelled",
       "openProblems": "Open eSIM → Problems",
       "installHint": "Open an eSIM for its QR code and install steps. The same details were emailed to you."
+    },
+    "plans": {
+      "title": "Choose a plan",
+      "kind": "Data type",
+      "kindTotal": "Total data",
+      "kindDaily": "Daily data",
+      "kindUnlimited": "Unlimited",
+      "kindLifetime": "Long-term",
+      "ip": "IP exit",
+      "all": "All",
+      "count": "{count} plans",
+      "clear": "Clear filters",
+      "none": "No plans match these filters.",
+      "data": "Data",
+      "validity": "Validity",
+      "countries": "{count} countries",
+      "networks": "Networks",
+      "coverageTitle": "Coverage and networks",
+      "pages": "Pages",
+      "previous": "Previous page",
+      "next": "Next page",
+      "more": "+{count} more",
+      "fewer": "Fewer"
     }
   },
   "admin": {

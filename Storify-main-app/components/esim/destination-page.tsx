@@ -1,13 +1,12 @@
 import { translator } from "@/lib/esim/i18n/server";
 import { Globe2, QrCode, ShoppingBag, Signal, Wifi } from "lucide-react";
 import { CoverageList } from "@/components/esim/coverage-list";
-import { PlanComparison } from "@/components/esim/plan-comparison";
 import { coverageByCountry } from "@/lib/esim/storefront/compare";
 import { CampaignBanner } from "@/components/esim/campaign-banner";
 import { bannerData, campaignForPage } from "@/lib/esim/campaigns/service";
 import Link from "@/components/language/link";
 import { StoreBreadcrumb } from "@/components/store/store-breadcrumb";
-import { PlanSelector } from "@/components/esim/plan-selector";
+import { PlanBrowser } from "@/components/esim/plan-browser";
 import { JsonLd } from "@/lib/site-config/seo";
 import { getLocaleRouting } from "@/lib/i18n/locale-routing";
 import { getStorefrontMetadataSettings } from "@/lib/storefront/storefront-metadata";
@@ -15,8 +14,8 @@ import { DestinationIcon } from "@/components/esim/flag";
 import { refreshMissingNetworks, regionNamesFor, type DestinationDetail } from "@/lib/esim/storefront/catalog";
 
 /**
- * A destination's page (WEB-31..33): what it covers, the plan selector, the
- * networks, how it works and the usual questions. The country, region and
+ * A destination's page (WEB-31..33): its plans as filters over cards, what it
+ * covers and the networks, how it works and the usual questions. The country, region and
  * global routes all draw it; they differ in the breadcrumb and the coverage
  * list.
  */
@@ -90,83 +89,82 @@ export async function DestinationPage({
         </div>
       ) : null}
 
-      <div className="grid gap-8 lg:grid-cols-[1fr_minmax(0,28rem)] lg:items-start xl:grid-cols-[1fr_minmax(0,32rem)]">
-        <div className="space-y-8">
-          <header className="space-y-3">
-            <div className="flex items-center gap-3">
-              <DestinationIcon destination={{ scope: destination.scope, countryCodes, emoji: destination.emoji }} className="text-5xl leading-none" />
-              <div>
-                <h1 className="text-3xl font-bold tracking-tight">
-                  {tr("esim.page.title", "{name} eSIM", { name: destination.name })}
-                </h1>
-                <p className="text-muted-foreground">
-                  {destination.scope === "local"
-                    ? tr("esim.page.subtitleLocal", "Prepaid data for your trip — install before you fly.")
-                    : tr("esim.page.subtitleMulti", "One eSIM for {count} countries.", { count: destination.countries.length })}
-                </p>
-              </div>
+      <div className="space-y-8">
+        <header className="space-y-3">
+          <div className="flex items-center gap-3">
+            <DestinationIcon destination={{ scope: destination.scope, countryCodes, emoji: destination.emoji }} className="text-5xl leading-none" />
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight">
+                {tr("esim.page.title", "{name} eSIM", { name: destination.name })}
+              </h1>
+              <p className="text-muted-foreground">
+                {destination.scope === "local"
+                  ? tr("esim.page.subtitleLocal", "Prepaid data for your trip — install before you fly.")
+                  : tr("esim.page.subtitleMulti", "One eSIM for {count} countries.", { count: destination.countries.length })}
+              </p>
             </div>
-          </header>
+          </div>
+        </header>
 
-          {!local || coverage[0]?.operators.length ? (
-            <section className="space-y-3">
-              <h2 className="flex items-center gap-2 text-lg font-semibold">
-                {local ? <Signal className="h-5 w-5" /> : <Globe2 className="h-5 w-5" />}
-                {local
-                  ? tr("esim.page.networks", "Networks")
-                  : tr("esim.page.coverageCount", "{count} countries covered", { count: coverage.length })}
-              </h2>
-              <CoverageList countries={coverage} local={local} />
-            </section>
-          ) : null}
-
-          <PlanComparison variants={destination.variants} />
-
-          <section className="space-y-3">
-            <h2 className="text-lg font-semibold">{tr("esim.page.how", "How it works")}</h2>
-            <ol className="grid gap-3 sm:grid-cols-3">
-              {[
-                { icon: ShoppingBag, title: tr("esim.how.pick", "Pick a plan"), text: tr("esim.how.pickText", "Choose your days and data, pay securely.") },
-                { icon: QrCode, title: tr("esim.how.install", "Scan to install"), text: tr("esim.how.installText", "We email a QR code at once. Scan it, or tap the one-tap link.") },
-                { icon: Wifi, title: tr("esim.how.land", "Land and connect"), text: tr("esim.how.landText", "Switch data to the eSIM when you arrive. No roaming bills.") },
-              ].map((step, index) => (
-                <li key={step.title} className="rounded-xl border p-4">
-                  <step.icon className="mb-2 h-5 w-5 text-primary" />
-                  <div className="font-medium">{index + 1}. {step.title}</div>
-                  <p className="text-sm text-muted-foreground">{step.text}</p>
-                </li>
-              ))}
-            </ol>
-          </section>
-
-          <section className="space-y-3">
-            <h2 className="text-lg font-semibold">{tr("esim.page.faq", "Questions")}</h2>
-            <div className="divide-y rounded-xl border">
-              {faq.map((item) => (
-                <details key={item.q} className="group p-4">
-                  <summary className="cursor-pointer list-none font-medium">{item.q}</summary>
-                  <p className="mt-2 text-sm text-muted-foreground">{item.a}</p>
-                </details>
-              ))}
-            </div>
-            <p className="text-sm">
-              <Link href={`/products/${destination.productHandle}`} className="text-store-link underline-offset-2 hover:underline">
-                {tr("esim.page.allPlans", "See every plan for {name}", { name: destination.name })}
-              </Link>
-            </p>
-          </section>
-        </div>
-
-        <aside id="esim-plan-selector" className="scroll-mt-24 rounded-2xl border bg-card p-5 shadow-sm lg:sticky lg:top-24">
-          <PlanSelector
+        <section id="esim-plan-selector" className="scroll-mt-24 space-y-3">
+          <h2 className="text-lg font-semibold">{tr("esim.plans.title", "Choose a plan")}</h2>
+          <PlanBrowser
             productId={destination.productId}
-            name={tr("esim.page.title", "{name} eSIM", { name: destination.name })}
+            destinationName={destination.name}
             variants={destination.variants}
             countryCodes={countryCodes}
             regionNames={regionNames}
+            coverage={coverage}
+            local={local}
             image={destination.image}
           />
-        </aside>
+        </section>
+
+        {!local || coverage[0]?.operators.length ? (
+          <section className="space-y-3">
+            <h2 className="flex items-center gap-2 text-lg font-semibold">
+              {local ? <Signal className="h-5 w-5" /> : <Globe2 className="h-5 w-5" />}
+              {local
+                ? tr("esim.page.networks", "Networks")
+                : tr("esim.page.coverageCount", "{count} countries covered", { count: coverage.length })}
+            </h2>
+            <CoverageList countries={coverage} local={local} />
+          </section>
+        ) : null}
+
+        <section className="space-y-3">
+          <h2 className="text-lg font-semibold">{tr("esim.page.how", "How it works")}</h2>
+          <ol className="grid gap-3 sm:grid-cols-3">
+            {[
+              { icon: ShoppingBag, title: tr("esim.how.pick", "Pick a plan"), text: tr("esim.how.pickText", "Choose your days and data, pay securely.") },
+              { icon: QrCode, title: tr("esim.how.install", "Scan to install"), text: tr("esim.how.installText", "We email a QR code at once. Scan it, or tap the one-tap link.") },
+              { icon: Wifi, title: tr("esim.how.land", "Land and connect"), text: tr("esim.how.landText", "Switch data to the eSIM when you arrive. No roaming bills.") },
+            ].map((step, index) => (
+              <li key={step.title} className="rounded-xl border p-4">
+                <step.icon className="mb-2 h-5 w-5 text-primary" />
+                <div className="font-medium">{index + 1}. {step.title}</div>
+                <p className="text-sm text-muted-foreground">{step.text}</p>
+              </li>
+            ))}
+          </ol>
+        </section>
+
+        <section className="space-y-3">
+          <h2 className="text-lg font-semibold">{tr("esim.page.faq", "Questions")}</h2>
+          <div className="divide-y rounded-xl border">
+            {faq.map((item) => (
+              <details key={item.q} className="group p-4">
+                <summary className="cursor-pointer list-none font-medium">{item.q}</summary>
+                <p className="mt-2 text-sm text-muted-foreground">{item.a}</p>
+              </details>
+            ))}
+          </div>
+          <p className="text-sm">
+            <Link href={`/products/${destination.productHandle}`} className="text-store-link underline-offset-2 hover:underline">
+              {tr("esim.page.allPlans", "See every plan for {name}", { name: destination.name })}
+            </Link>
+          </p>
+        </section>
       </div>
 
       <JsonLd
