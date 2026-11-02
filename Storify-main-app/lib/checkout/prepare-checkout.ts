@@ -114,6 +114,8 @@ import {
   CheckoutQuoteChangedError,
 } from "@/lib/checkout/checkout-quote";
 import { esimLinePrices } from "@/lib/esim/cart"; // [esim-patch] P10
+import { isWalletCart } from "@/lib/esim/wallet/park"; // [esim-patch] P27
+import { esimStandInAddress, isEsimOnlyCart } from "@/lib/esim/checkout/address"; // [esim-patch] P28
 
 type StockCheckVariant = {
   _id: { toString: () => string };
@@ -394,12 +396,17 @@ async function runCheckout(
   const items = cart.items as unknown as CheckoutCartItem[];
   assertWholeQuantities(items);
   options.admitCart?.(items);
+  // [esim-patch] P27 a wallet top-up is never paid from the balance it adds to.
+  const esimWalletCart = await isWalletCart(items);
+  if (esimWalletCart && paymentMethod === "store_credit") {
+    throw new ValidationError({ paymentMethod: ["A balance top-up cannot be paid from the balance"] });
+  }
   // The shopper's spendable store credit (R8), read alongside the product
   // and seller reads that follow: it needs only the shopper, the store
   // currency and this cart. `checkoutStoreCredit` below decides what of it
   // this order takes. A shopper who unticked it, and a guest, read nothing.
   const storeCreditAvailable =
-    user?.id && (useStoreCredit !== false || paymentMethod === "store_credit")
+    user?.id && !esimWalletCart && (useStoreCredit !== false || paymentMethod === "store_credit") // [esim-patch] P27
       ? checkoutCreditAvailable({
           customerId: user.id,
           currency: settings.general?.defaultCurrency || "USD",
@@ -730,7 +737,12 @@ async function runCheckout(
     }
     addressErrors.shippingAddress = ["Shipping address is required"];
   }
-  if (!shippingAddressInput && !billingAddressInput) {
+  // [esim-patch] P28 an eSIM-only cart is asked no address; its order keeps a stand-in.
+  const esimStandIn =
+    !hasShippableItems && !billingAddressInput && (await isEsimOnlyCart(items))
+      ? esimStandInAddress({ name: user?.name, email: customerEmail, phone, country: settings.shipping?.origin?.country })
+      : null;
+  if (!shippingAddressInput && !billingAddressInput && !esimStandIn) {
     if (!quote) {
       throw new ValidationError({
         billingAddress: ["Billing address is required"],
@@ -740,6 +752,7 @@ async function runCheckout(
   }
   const normalizedShippingAddress = (shippingAddressInput ??
     billingAddressInput ??
+    esimStandIn ?? // [esim-patch] P28
     NO_ADDRESS_YET)!;
   const normalizedBillingAddress =
     billingAddressInput ?? normalizedShippingAddress;
@@ -1041,7 +1054,7 @@ async function runCheckout(
   // rest; a cash courier collects the rest.
   const storeCreditApplied = await checkoutStoreCredit({
     userId: user?.id,
-    useStoreCredit,
+    useStoreCredit: esimWalletCart ? false : useStoreCredit, // [esim-patch] P27
     currency: settings.general?.defaultCurrency || "USD",
     cartId: cart._id,
     dueNow: dueBeforeStoreCredit,

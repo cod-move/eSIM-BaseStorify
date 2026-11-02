@@ -225,7 +225,15 @@
       "lineName": "Wallet top-up",
       "failed": "Could not start the top-up",
       "unavailable": "Adding money to your balance is not available at the moment.",
-      "note": "Your balance is used at checkout for eSIMs and top-ups. Money added to your balance is not refunded to your card."
+      "note": "Your balance is used at checkout for eSIMs and top-ups. Money added to your balance is not refunded to your card.",
+      "method": "Account balance",
+      "available": "{amount} available",
+      "short": "Not enough balance: {amount} available",
+      "covers": "Your balance pays for this order — nothing else to pay.",
+      "topUp": "Top up",
+      "backToCheckout": "Back to checkout",
+      "parked": "{count} items from your cart are kept aside while you add money. They go back to your cart once it is paid, or when you return to checkout.",
+      "parkNote": "Adding money is paid on its own. The items in your cart are kept aside meanwhile and go back to your cart afterwards."
     },
     "referral": {
       "title": "Invite friends",

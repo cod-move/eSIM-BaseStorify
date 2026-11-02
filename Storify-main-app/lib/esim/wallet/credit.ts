@@ -13,13 +13,15 @@ import { appBaseUrl } from "@/lib/app-url";
 import { walletAttributesOf, walletCreditOfOrder } from "@/lib/esim/wallet/booking";
 import { findWalletProduct } from "@/lib/esim/wallet/product";
 import { markOrderDelivered } from "@/lib/esim/fulfillment/delivery";
+import { restoreParkedCart } from "@/lib/esim/wallet/park";
 
 /**
  * A paid wallet top-up becomes balance (WAL-01): one store-credit lot with
  * source `wallet_topup` (patch P12), the amount `walletCreditOfOrder` gives —
  * the same figure the ledger booked as owed to the shopper (patch P19).
  * Idempotent on the order: payment settlement and the cron may both ask.
- * The order, made only of the top-up, is then delivered.
+ * The order, made only of the top-up, is then delivered, and the cart lines
+ * set aside for the top-up go back (payment has already emptied the cart).
  */
 
 type WalletOrder = {
@@ -86,6 +88,7 @@ export async function creditWalletTopups(orderId: unknown): Promise<{ credited: 
     idempotencyKey: key,
   });
   const lotId = String(lot._id);
+  await restoreParkedCart(customerId).catch(console.error);
   const formatted = new Intl.NumberFormat("en", { style: "currency", currency }).format(amount);
   await createNotification({
     userId: customerId,

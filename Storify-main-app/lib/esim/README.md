@@ -78,10 +78,14 @@ Everything eSIM-specific lives here and in the files named below; official Stori
 | `wallet/booking.ts` | Wallet top-ups (WAL-01): the fee, and how much of a paid top-up line is balance — read by the ledger and the refund ceiling (patch P19) and the credit (pure) |
 | `wallet/product.ts`, `catalog/hidden-product.ts` | The hidden "Wallet top-up" product (and the top-up product), made by the catalogue publish |
 | `cart/index.ts` (wallet lines) | `lineAttributes.wallet` (cents): signed-in only, within the set amounts, one unit, alone in the cart; priced as amount + fee |
-| `wallet/credit.ts` | Paid → one store-credit lot, source `wallet_topup` (patch P12), once per order; the order is delivered |
+| `wallet/credit.ts` | Paid → one store-credit lot, source `wallet_topup` (patch P12), once per order; the order is delivered and the cart lines set aside for it go back |
 | `app/[locale]/(store)/account/esims/balance`, `components/esim/wallet-topup-form.tsx` | The shopper's balance and Add money (amount, fee, what is paid) |
+| `wallet/park.ts`, `models/esim-parked-cart.model.ts`, `app/api/esim/me/wallet` | Topping up mid-checkout: the top-up is bought alone, so the cart's other lines are set aside as stored and go back once it is credited or the shopper returns to checkout without it (never while the top-up is still in the cart, never doubled) |
+| `components/esim/checkout-balance.tsx` | The balance as a payment method (patch P27): "Account balance" first in the list, chosen when it covers the order; short of it, greyed out with "Top up" (the tick still spends part). Never on a wallet top-up |
+| `checkout/address.ts`, `app/api/esim/catalog/esim-only` | An eSIM-only cart (eSIMs, top-ups, balance) is asked no address at checkout (patch P28); its order keeps a stand-in: the shopper's name or email and the store's ship-from country |
 | `admin/wallet.ts`, `components/esim/admin/wallet-settings-card.tsx` | Wallet top-up on/off, amounts and fee, on Admin → eSIM → Pricing |
 | `scripts/esim-dev-wallet.ts` | End-to-end check: cart, checkout, booking through Storify's posting rules, refund ceiling, credit once |
+| `scripts/esim-dev-park.ts` | Check of setting the cart aside for a top-up and putting it back |
 
 | `referral/rules.ts` | Referral codes, the commission (percent or fixed), what an order earns on (paid less refunds and wallet top-ups), validity and order limit (pure) |
 | `referral/service.ts`, `app/[locale]/(store)/esim/invite/[code]` | Codes (made on first ask, changeable), the invite link's 30-day cookie, recording the referral at sign-up (patch P14) and the friend's one-use welcome coupon (REF-01/06) |

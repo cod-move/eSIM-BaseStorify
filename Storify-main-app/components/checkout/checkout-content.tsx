@@ -178,6 +178,7 @@ import {
   ShippingMethodSelector,
   type ShipmentItemSummary,
 } from "@/components/checkout/shipping-method-selector";
+import { EsimBalanceTopupLink, useEsimBalanceText, useEsimCheckoutBalance, useEsimOnlyCart } from "@/components/esim/checkout-balance"; // [esim-patch] P27 P28
 import {
   reconcileVendorSelections,
   sameSelections,
@@ -402,6 +403,12 @@ function CheckoutForm({
   const [useStoreCredit, setUseStoreCredit] = useState(true);
   // A guest holds none; a shopper who signed out holds none here either.
   const storeCreditAvailable = isAuthenticated ? storeCreditFetched : 0;
+  // [esim-patch] P27 the balance as a payment method; never on a wallet top-up.
+  const esimBalance = useEsimCheckoutBalance(isAuthenticated, items.length);
+  const esimBalanceText = useEsimBalanceText();
+  // [esim-patch] P28 an eSIM-only cart is asked no address: nothing ships, the eSIM is emailed.
+  const esimOnly = useEsimOnlyCart(items.map((item) => getCheckoutProductId(item.productId)));
+  const esimNoAddress = isDigitalOnly && esimOnly;
   useEffect(() => {
     if (!isAuthenticated) return;
     let cancelled = false;
@@ -511,6 +518,7 @@ function CheckoutForm({
         "mtn_momo",
         "extension", // [esim-patch] P15
         "cod",
+        "store_credit", // [esim-patch] P27 the account balance, as a method
       ]),
       iotecChannel: z.enum(["mobile_money", "card"]).optional(),
       iotecPhone: z.string().optional(),
@@ -542,7 +550,7 @@ function CheckoutForm({
         }
       };
       const billingCollected =
-        isDigitalOnly || data.billingSameAsShipping === "different";
+        !esimNoAddress && (isDigitalOnly || data.billingSameAsShipping === "different"); // [esim-patch] P28
 
       // Street, city and country: never configurable, a delivery needs them.
       if (!isDigitalOnly) requireFields([...DELIVERY_DESTINATION_FIELDS]);
@@ -1399,7 +1407,8 @@ function CheckoutForm({
   const deliveryShippingCost = perVendorMode
     ? perVendorShippingCost
     : singleShippingCost;
-  const shippingCost = fulfillmentMethod === "pickup" ? 0 : deliveryShippingCost;
+  // [esim-patch] P28 a cart with nothing to ship pays no shipping, as the server charges.
+  const shippingCost = fulfillmentMethod === "pickup" || isDigitalOnly ? 0 : deliveryShippingCost;
   // Delivery is quoted only once the shopper has said where it is going — the
   // pre-filled default country alone is not that (see hasDeliveryDestination;
   // the cart estimator holds back for the same reason). Pickup and
@@ -1776,8 +1785,20 @@ function CheckoutForm({
   // Never on a pre-order, whose balance is charged later on its own terms.
   // Plain arithmetic: shown here and nothing more — the server works out the
   // credit itself, to the currency's own precision.
+  // [esim-patch] P27 a balance that covers the order is a method of its own,
+  // chosen by default; one that falls short is spent by the tick instead.
+  const esimSelectedPayment = useWatch({ control: form.control, name: "paymentMethod" });
+  const balanceCovers =
+    !hasPreorderItems && !esimBalance.walletCart && storeCreditAvailable > 0 && storeCreditAvailable + 0.005 >= Math.max(0, total);
+  const creditOn = !esimBalance.walletCart && (balanceCovers ? esimSelectedPayment === "store_credit" : useStoreCredit);
+  const esimBalanceDefaulted = useRef(false);
+  useEffect(() => {
+    if (!balanceCovers || esimBalanceDefaulted.current) return;
+    esimBalanceDefaulted.current = true;
+    form.setValue("paymentMethod", "store_credit");
+  }, [balanceCovers, form]);
   const storeCreditApplied =
-    useStoreCredit && !hasPreorderItems
+    creditOn && !hasPreorderItems
       ? Math.min(storeCreditAvailable, Math.max(0, total))
       : 0;
   const amountToPay = Math.max(0, total - storeCreditApplied);
@@ -2233,6 +2254,15 @@ function CheckoutForm({
       icon: typeof CreditCard;
       detail: string;
     }[] = [];
+    // [esim-patch] P27 the account balance first; greyed out, with a top-up link, when short.
+    if (isAuthenticated && !hasPreorderItems && !esimBalance.walletCart) {
+      methods.push({
+        value: "store_credit",
+        label: esimBalanceText.label,
+        icon: Wallet,
+        detail: esimBalanceText.covers,
+      });
+    }
     if (
       paymentConfig.stripeEnabled &&
       paymentConfig.stripeConfigured !== false
@@ -2362,7 +2392,7 @@ function CheckoutForm({
     // a prepaid-only store, and a prepaid collection is the safer of the two
     // orders — see `pickupAvailable`.
     return methods;
-  }, [paymentConfig, fulfillmentMethod, hasPreorderItems, t]);
+  }, [paymentConfig, fulfillmentMethod, hasPreorderItems, t, isAuthenticated, esimBalance.walletCart, esimBalanceText]); // [esim-patch] P27
 
   // A pre-order that leaves a balance can only be placed on a method that can
   // come back for it (`lib/payments/balance-methods.ts`). The rest stay on the
@@ -2407,8 +2437,9 @@ function CheckoutForm({
   const isMethodBlocked = useCallback(
     (value: string) =>
       (owesBalanceLater && !canCollectDeferredBalance(value)) ||
-      (value === "cod" && codOutsideLimits),
-    [owesBalanceLater, codOutsideLimits],
+      (value === "cod" && codOutsideLimits) ||
+      (value === "store_credit" && !balanceCovers), // [esim-patch] P27
+    [owesBalanceLater, codOutsideLimits, balanceCovers],
   );
   const selectablePaymentMethods = useMemo(
     () => paymentMethods.filter((method) => !isMethodBlocked(method.value)),
@@ -2735,8 +2766,9 @@ function CheckoutForm({
         },
         data.contactPhone.trim() || user?.phone || "",
       );
-      const billingAddress =
-        isDigitalOnly || data.billingSameAsShipping === "different"
+      const billingAddress = esimNoAddress // [esim-patch] P28
+        ? undefined
+        : isDigitalOnly || data.billingSameAsShipping === "different"
           ? buildCheckoutAddressPayload(
               {
                 firstName: data.billingFirstName,
@@ -2801,7 +2833,7 @@ function CheckoutForm({
           ? preorderMandateAccepted
           : undefined,
         // Whether the shopper's store credit pays what it can (R8).
-        useStoreCredit: !hasPreorderItems && storeCreditAvailable > 0 ? useStoreCredit : false,
+        useStoreCredit: !hasPreorderItems && storeCreditAvailable > 0 ? creditOn : false, // [esim-patch] P27
       };
 
       // Saved only once the order is accepted, and deliberately not awaited:
@@ -2880,7 +2912,7 @@ function CheckoutForm({
               ? preorderMandateAccepted
               : undefined,
             useStoreCredit:
-              !hasPreorderItems && storeCreditAvailable > 0 ? useStoreCredit : false,
+              !hasPreorderItems && storeCreditAvailable > 0 ? creditOn : false, // [esim-patch] P27
           }),
         });
         const intentJson = await intentRes.json().catch(() => null);
@@ -2920,17 +2952,20 @@ function CheckoutForm({
 
         const cardPaymentMethod = {
           card: cardNumber,
+          // [esim-patch] P28 an eSIM-only order has no billing address: name and email only.
           billing_details: {
-            name: cardholderName || billingAddress.fullName,
+            name: cardholderName || billingAddress?.fullName || data.email.trim() || undefined,
             email: data.email.trim() || undefined,
-            phone: billingAddress.phone,
-            address: {
-              line1: billingAddress.street,
-              line2: billingAddress.apartment || undefined,
-              city: billingAddress.city,
-              state: billingAddress.state || undefined,
-              postal_code: billingAddress.postalCode,
-            },
+            phone: billingAddress?.phone,
+            address: billingAddress
+              ? {
+                  line1: billingAddress.street,
+                  line2: billingAddress.apartment || undefined,
+                  city: billingAddress.city,
+                  state: billingAddress.state || undefined,
+                  postal_code: billingAddress.postalCode,
+                }
+              : undefined,
           },
         };
 
@@ -4372,7 +4407,7 @@ function CheckoutForm({
                       </p>
                     </div>
 
-                    {storeCreditAvailable > 0 && !hasPreorderItems ? (
+                    {storeCreditAvailable > 0 && !hasPreorderItems && !balanceCovers && !esimBalance.walletCart /* [esim-patch] P27 */ ? (
                       <div className="flex items-start gap-3 rounded-lg border px-4 py-3">
                         <Checkbox
                           id="checkout-use-store-credit"
@@ -4391,14 +4426,8 @@ function CheckoutForm({
                       </div>
                     ) : null}
 
-                    {storeCreditCoversAll ? (
-                      <div className="rounded-lg border bg-muted/20 px-4 py-4 text-sm text-muted-foreground">
-                        {tr(
-                          "checkout.storeCreditCoversOrder",
-                          "Your store credit covers this order — nothing else to pay.",
-                        )}
-                      </div>
-                    ) : noPaymentMethodAvailable ? (
+                    {/* [esim-patch] P27 the balance covering the order is a row of the list below */}
+                    {noPaymentMethodAvailable ? (
                       <div className="rounded-lg border bg-muted/20 px-4 py-6 text-center text-sm text-muted-foreground">
                         {noBalanceMethodAvailable
                           ? tr(
@@ -4429,6 +4458,8 @@ function CheckoutForm({
                                 // row can be blocked by either.
                                 const blockedReason = !blocked
                                   ? ""
+                                  : method.value === "store_credit" // [esim-patch] P27
+                                    ? esimBalanceText.short(formatPrice(storeCreditAvailable))
                                   : method.value === "cod" && codOutsideLimits
                                     ? codLimitReason
                                     : tr(
@@ -4470,8 +4501,16 @@ function CheckoutForm({
                                           <span className="text-xs font-normal">
                                             {blockedReason}
                                           </span>
+                                        ) : method.value === "store_credit" ? ( // [esim-patch] P27
+                                          <span className="text-xs font-normal text-muted-foreground">
+                                            {esimBalanceText.available(formatPrice(storeCreditAvailable))}
+                                          </span>
                                         ) : null}
                                       </span>
+                                      {/* [esim-patch] P27 */}
+                                      {method.value === "store_credit" && blocked && esimBalance.walletEnabled ? (
+                                        <EsimBalanceTopupLink />
+                                      ) : null}
                                       <method.icon className="h-4 w-4 shrink-0 text-muted-foreground" />
                                     </Label>
 
@@ -4737,7 +4776,8 @@ function CheckoutForm({
                   </section>
 
                   {/* Billing Address */}
-                  <section className="space-y-3">
+                  {/* [esim-patch] P28 not asked for an eSIM-only cart */}
+                  <section className="space-y-3" hidden={esimNoAddress}>
                     <h2 className="text-lg font-semibold">
                       {t("checkout.billingAddress")}
                     </h2>

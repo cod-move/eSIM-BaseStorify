@@ -25,12 +25,13 @@ const PRESETS = [1000, 2000, 5000, 10_000];
 /**
  * Add money to the balance (WAL-01): choose an amount, see the fee and what
  * is paid, and go to checkout. The server prices the line again; what is
- * shown here is only the preview.
+ * shown here is only the preview. The top-up is checked out on its own, so
+ * the cart's other lines are set aside first and come back after it.
  */
 export function WalletTopupForm({ product, minMinor, maxMinor, fee }: Props) {
   const t = useFallbackTranslator(useTranslations());
   const router = useRouter();
-  const { addItem } = useCart();
+  const { addItem, refreshCart } = useCart();
   const { formatPrice } = useCurrency();
   const presets = PRESETS.filter((value) => value >= minMinor && value <= maxMinor);
   const [text, setText] = useState(((presets[1] ?? presets[0] ?? minMinor) / 100).toFixed(2));
@@ -43,6 +44,13 @@ export function WalletTopupForm({ product, minMinor, maxMinor, fee }: Props) {
     if (!valid) return;
     setBusy(true);
     try {
+      const parked = await fetch("/api/esim/me/wallet", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "park" }),
+      });
+      if (!parked.ok) throw new Error(t("esim.wallet.failed", "Could not start the top-up"));
+      await refreshCart(true);
       await addItem({
         productId: product.productId,
         variantId: product.variantId,
