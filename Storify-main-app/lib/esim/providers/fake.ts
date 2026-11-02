@@ -21,7 +21,8 @@ import {
  *
  * `mode` picks the behaviour: fulfil (instant), pending (processing first,
  * delivered on the next query), reject (refuses), uncertain (times out) —
- * for purchases and top-ups alike.
+ * for purchases and top-ups alike. A plan id holding "broke" is refused for
+ * want of balance whatever the mode.
  * The same idempotency key always yields the same eSIM, like a real supplier.
  */
 
@@ -128,6 +129,8 @@ export class FakeAdapter implements EsimProviderAdapter {
   }
 
   async purchase(input: PurchaseInput): Promise<PurchaseResult> {
+    // A plan id holding "broke": the supplier account cannot pay for it (a balance hold).
+    if (input.providerPlanId.includes("broke")) throw new ProviderError("rejected", "Insufficient balance");
     switch (this.options.mode) {
       case "reject":
         throw new ProviderError("rejected", "Fake supplier refuses every order");

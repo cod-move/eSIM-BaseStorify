@@ -271,6 +271,8 @@ async function processOne(job: IEsimTopup, owner: string): Promise<IEsimTopup["s
         },
       );
       return "queued";
+    // A top-up is never held for a supplier top-up: its outcome is not flagged as a balance refusal.
+    case "hold":
     case "failover":
     case "fail": {
       const reason = decision.reason;

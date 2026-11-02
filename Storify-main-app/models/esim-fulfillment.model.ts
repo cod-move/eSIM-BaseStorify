@@ -42,6 +42,12 @@ export interface IEsimFulfillment extends mongoose.Document {
   lease: { owner: string; until: Date } | null;
   /** First time a supplier said "processing" for this candidate. */
   pendingSince: Date | null;
+  /**
+   * Every supplier refused for want of balance: the job waits for a top-up
+   * and tries them all again each round, from `since`, for up to a day.
+   * `rounds` keeps each round's purchase key fresh. Null otherwise.
+   */
+  balanceHold: { since: Date; rounds: number } | null;
   lastError: { code: string; message: string; at: Date } | null;
   history: Array<{ at: Date; event: string; detail?: string }>;
   deliveredAt: Date | null;
@@ -95,6 +101,10 @@ const EsimFulfillmentSchema = new Schema<IEsimFulfillment>(
       default: null,
     },
     pendingSince: { type: Date, default: null },
+    balanceHold: {
+      type: new Schema({ since: { type: Date, required: true }, rounds: { type: Number, default: 0 } }, { _id: false }),
+      default: null,
+    },
     lastError: {
       type: new Schema({ code: String, message: String, at: Date }, { _id: false }),
       default: null,

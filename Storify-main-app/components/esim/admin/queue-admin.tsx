@@ -31,7 +31,7 @@ type Dialogue = { row: QueueRow; kind: "switch" | "bind" | "refunded" } | null;
 
 interface Props {
   view: QueueView;
-  queue: { rows: QueueRow[]; counts: { attention: number; review: number; failed: number; stuck: number }; pagination: { page: number; totalPages: number; total: number } };
+  queue: { rows: QueueRow[]; counts: { attention: number; review: number; balance: number; failed: number; stuck: number }; pagination: { page: number; totalPages: number; total: number } };
   canManage: boolean;
   search: string;
 }
@@ -78,13 +78,16 @@ export function EsimQueueAdmin({ view, queue, canManage, search: initialSearch }
   const views: Array<{ id: QueueView; label: string; count?: number }> = [
     { id: "attention", label: t("admin.esim.needsAction", "Needs action"), count: queue.counts.attention },
     { id: "review", label: t("admin.esim.heldForReview", "Held for review"), count: queue.counts.review },
+    { id: "balance", label: t("admin.esim.waitingBalance", "Waiting for supplier balance"), count: queue.counts.balance },
     { id: "failed", label: t("admin.esim.failed", "Failed"), count: queue.counts.failed },
     { id: "stuck", label: t("admin.esim.stuck", "Stuck"), count: queue.counts.stuck },
     { id: "all", label: t("admin.esim.allJobs", "All fulfilment") },
   ];
 
   const stateLabel = (row: QueueRow) =>
-    row.state === "review"
+    row.balanceHold && row.state === "queued"
+      ? t("admin.esim.waitingBalance", "Waiting for supplier balance")
+      : row.state === "review"
       ? t("admin.esim.heldForReview", "Held for review")
       : row.state === "failed"
       ? t("admin.esim.failed", "Failed")
@@ -182,6 +185,15 @@ export function EsimQueueAdmin({ view, queue, canManage, search: initialSearch }
                       <b>{row.lastError.code}</b>: {row.lastError.message}
                       <span className="ml-2 text-xs text-muted-foreground">{when(row.lastError.at)}</span>
                     </span>
+                  </div>
+                ) : null}
+                {row.balanceHold && row.state === "queued" ? (
+                  <div className="rounded-lg bg-amber-500/10 p-2 text-sm">
+                    {t(
+                      "admin.esim.balanceHoldHint",
+                      "Every supplier for this eSIM is out of balance. Top one up: it is tried again every 10 minutes (or retry it now) until {until}, then refunded.",
+                      { until: when(row.balanceHold.until) },
+                    )}
                   </div>
                 ) : null}
                 {row.review?.reasons.length ? (

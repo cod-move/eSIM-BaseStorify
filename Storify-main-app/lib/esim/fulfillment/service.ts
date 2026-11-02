@@ -348,7 +348,8 @@ async function processOne(job: IEsimFulfillment, owner: string): Promise<IEsimFu
                 providerPlanId: plan.providerPlanId,
                 durationDays,
                 activationDate,
-                idempotencyKey: idempotencyKey(String(job._id), String(plan._id)),
+                // A fresh key each round of a balance hold: a refused order may have used up the last one.
+                idempotencyKey: idempotencyKey(String(job._id), String(plan._id), job.balanceHold?.rounds ?? 0),
               }),
         (value) => ({ status: value.status, providerOrderId: value.providerOrderId, charged: value.charged }),
       );
@@ -362,12 +363,14 @@ async function processOne(job: IEsimFulfillment, owner: string): Promise<IEsimFu
     }
   }
 
+  if (outcome.kind === "error" && looksLikeBalanceProblem(outcome.message)) outcome = { ...outcome, balance: true };
   const decision = decide(
     {
       candidateIndex: job.candidateIndex,
       candidateCount: job.candidates.length,
       candidateAttempts: job.candidateAttempts,
       pendingSince: job.pendingSince,
+      balanceHoldSince: job.balanceHold?.since ?? null,
     },
     outcome,
     now,
@@ -384,7 +387,7 @@ async function processOne(job: IEsimFulfillment, owner: string): Promise<IEsimFu
       await EsimFulfillment.updateOne(
         { _id: job._id },
         {
-          $set: { state: "fulfilled", profile: profile._id, providerOrderId: result!.providerOrderId, lease: null, lastError: null },
+          $set: { state: "fulfilled", profile: profile._id, providerOrderId: result!.providerOrderId, lease: null, lastError: null, balanceHold: null },
           $push: event("fulfilled", plan!.providerCode),
         },
       );
@@ -430,6 +433,26 @@ async function processOne(job: IEsimFulfillment, owner: string): Promise<IEsimFu
             lastError: error,
           },
           $push: event("failover", decision.reason),
+        },
+      );
+      return "queued";
+    case "hold":
+      // Out of balance at every supplier: wait for a top-up, then try them all again from the first.
+      await EsimFulfillment.updateOne(
+        { _id: job._id },
+        {
+          $set: {
+            state: "queued",
+            candidateIndex: 0,
+            candidateAttempts: 0,
+            providerOrderId: null,
+            pendingSince: null,
+            nextAttemptAt: decision.at,
+            lease: null,
+            lastError: error,
+            balanceHold: { since: decision.since, rounds: (job.balanceHold?.rounds ?? 0) + 1 },
+          },
+          ...(job.balanceHold ? {} : { $push: event("balance_hold", decision.reason) }),
         },
       );
       return "queued";
@@ -523,6 +546,8 @@ export async function adminRetryJob(jobId: string, options: { candidateIndex?: n
         ...(switching ? { providerOrderId: null, pendingSince: null } : job.pendingSince ? { pendingSince: now } : {}),
       },
       $unset: { refund: "" },
+      // A held job retries with a fresh purchase key: the last one was refused.
+      ...(job.balanceHold ? { $inc: { "balanceHold.rounds": 1 } } : {}),
       $push: { history: { at: now, event: switching ? "admin_switch" : "admin_retry", detail: options.actor } },
     },
   );

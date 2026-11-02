@@ -20,6 +20,7 @@ Everything eSIM-specific lives here and in the files named below; official Stori
 | `scripts/esim-catalog.ts` | CLI: fx, settings, rules, reprice, plans activate, publish |
 
 | `fulfillment/policy.ts` | Retry / failover / poll decisions after each supplier answer (pure) |
+| `fulfillment/policy.ts` (balance hold) | Every supplier refused for want of balance: the eSIM waits instead of failing — tried again from the first supplier every 10 minutes with fresh purchase keys, for up to a day, then failed and refunded. Issued eSIMs of the same order go out meanwhile and the shopper is told the rest follow; admins see it under Problems → Waiting for supplier balance |
 | `fulfillment/service.ts` | Paid order → one job per eSIM unit; claims, buys, records `EsimProfile` + base `EsimPackage` |
 | `fulfillment/delivery.ts` | Delivery email (QR attached, manual + one-tap install), eSIM-only orders → delivered; failures → admins + "delayed" email |
 | `fulfillment/index.ts` | `esimQueueOrder` / `esimFulfilOrder` (called from payment settlement, patch P3) and the cron runner |
@@ -89,6 +90,7 @@ Everything eSIM-specific lives here and in the files named below; official Stori
 | `scripts/esim-dev-wallet.ts` | End-to-end check: cart, checkout, booking through Storify's posting rules, refund ceiling, credit once |
 | `scripts/esim-dev-park.ts` | Check of setting the cart aside for a top-up and putting it back |
 | `scripts/esim-dev-fees.ts` | Check of the payment fee line: added, kept, removed, priced from the other lines |
+| `scripts/esim-dev-balance-hold.ts` | Check of the balance hold: part of an order issued, the rest held then bought after a top-up, a day-long hold refunded |
 
 | `referral/rules.ts` | Referral codes, the commission (percent or fixed), what an order earns on (paid less refunds and wallet top-ups), validity and order limit (pure) |
 | `referral/service.ts`, `app/[locale]/(store)/esim/invite/[code]` | Codes (made on first ask, changeable), the invite link's 30-day cookie, recording the referral at sign-up (patch P14) and the friend's one-use welcome coupon (REF-01/06) |

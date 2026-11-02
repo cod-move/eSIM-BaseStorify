@@ -927,7 +927,9 @@
       "feesHint": "按支付方式加到订单上：固定金额加商品金额的百分比，在结账页显示为「Payment fee」一行，退款时一并退回。用账户余额支付和钱包充值不收手续费。",
       "feesMethod": "支付方式",
       "feesFixed": "固定金额（$）",
-      "feesPercent": "百分比（%）"
+      "feesPercent": "百分比（%）",
+      "waitingBalance": "等待上游充值",
+      "balanceHoldHint": "这张 eSIM 的所有供应商余额都不足。给其中一家充值后，系统每 10 分钟自动重试（也可以立即点重试），直到 {until}；仍未成功就退款。"
     },
     "sidebar": {
       "esim": "eSIM",

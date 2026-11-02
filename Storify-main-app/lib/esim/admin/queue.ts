@@ -4,6 +4,7 @@ import { connectDB, mongoose } from "@/lib/db";
 import { Order, User } from "@/models";
 import { EsimFulfillment } from "@/models/esim-fulfillment.model";
 import { EsimPlan } from "@/models/esim-plan.model";
+import { BALANCE_HOLD_MAX_MS } from "@/lib/esim/fulfillment/policy";
 
 /**
  * Admin → eSIM → Problems (ADM-08): the fulfilment jobs that need a person.
@@ -13,12 +14,14 @@ import { EsimPlan } from "@/models/esim-plan.model";
  *   hand (a guest order).
  * - review: a paid order held before anything was bought (ORD-13), waiting
  *   for a person to approve or reject it.
+ * - balance: every supplier refused for want of balance; the job tries again
+ *   every 10 minutes until one is topped up, for up to a day, then fails.
  * - stuck: still being tried longer than it should — waiting on a supplier
  *   for over 30 minutes, retried three times or more, or overdue by over 10
  *   minutes (the cron is not running).
  */
 
-export type QueueView = "attention" | "review" | "failed" | "stuck" | "all";
+export type QueueView = "attention" | "review" | "balance" | "failed" | "stuck" | "all";
 
 const STUCK_PENDING_MS = 30 * 60_000;
 const OVERDUE_MS = 10 * 60_000;
@@ -37,11 +40,13 @@ function viewQuery(view: QueueView): Record<string, unknown> {
   const failed = { state: "failed" };
   const failedOpen = { state: "failed", $or: [{ refund: null }, { "refund.state": { $in: ["pending", "manual"] } }] };
   const review = { state: "review" };
+  const balance = { state: "queued", balanceHold: { $ne: null } };
   if (view === "review") return review;
+  if (view === "balance") return balance;
   if (view === "failed") return failed;
   if (view === "stuck") return stuck;
   if (view === "all") return {};
-  return { $or: [review, failedOpen, stuck] };
+  return { $or: [review, balance, failedOpen, stuck] };
 }
 
 export interface QueueRow {
@@ -60,6 +65,8 @@ export interface QueueRow {
   review: { reasons: string[]; decision: string | null; decidedBy: string | null } | null;
   nextAttemptAt: string | null;
   pendingSince: string | null;
+  /** Waiting for a supplier top-up since then, until it gives up. */
+  balanceHold: { since: string; until: string } | null;
   createdAt: string;
   history: Array<{ at: string; event: string; detail: string | null }>;
 }
@@ -73,7 +80,7 @@ export async function listQueue(view: QueueView, options: { page?: number; pageS
   const [jobs, total, counts] = await Promise.all([
     EsimFulfillment.find(match).sort({ updatedAt: -1 }).skip((page - 1) * pageSize).limit(pageSize).lean(),
     EsimFulfillment.countDocuments(match),
-    Promise.all((["attention", "review", "failed", "stuck"] as const).map((name) => EsimFulfillment.countDocuments(viewQuery(name)))),
+    Promise.all((["attention", "review", "balance", "failed", "stuck"] as const).map((name) => EsimFulfillment.countDocuments(viewQuery(name)))),
   ]);
   const plans = await EsimPlan.find({ _id: { $in: jobs.flatMap((job) => job.candidates) } }).select({ name: 1, providerCode: 1 }).lean();
   const planById = new Map(plans.map((plan) => [String(plan._id), plan]));
@@ -109,13 +116,16 @@ export async function listQueue(view: QueueView, options: { page?: number; pageS
       review: job.review ? { reasons: job.review.reasons, decision: job.review.decision ?? null, decidedBy: job.review.decidedBy ?? null } : null,
       nextAttemptAt: iso(job.nextAttemptAt),
       pendingSince: iso(job.pendingSince),
+      balanceHold: job.balanceHold
+        ? { since: iso(job.balanceHold.since)!, until: new Date(new Date(job.balanceHold.since).getTime() + BALANCE_HOLD_MAX_MS).toISOString() }
+        : null,
       createdAt: iso(job.createdAt)!,
       history: job.history.slice(-12).map((entry) => ({ at: iso(entry.at)!, event: entry.event, detail: entry.detail ?? null })),
     };
   });
   return {
     rows,
-    counts: { attention: counts[0], review: counts[1], failed: counts[2], stuck: counts[3] },
+    counts: { attention: counts[0], review: counts[1], balance: counts[2], failed: counts[3], stuck: counts[4] },
     pagination: { page, pageSize, total, totalPages: Math.max(1, Math.ceil(total / pageSize)) },
   };
 }

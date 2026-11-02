@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { MAX_UNCERTAIN_RETRIES, backoffMs, decide, idempotencyKey, type JobView } from "../policy";
+import { BALANCE_HOLD_MAX_MS, BALANCE_HOLD_RETRY_MS, MAX_UNCERTAIN_RETRIES, backoffMs, decide, idempotencyKey, type JobView } from "../policy";
 
 const now = new Date("2026-10-25T12:00:00Z");
 const job: JobView = { candidateIndex: 0, candidateCount: 2, candidateAttempts: 0, pendingSince: null };
@@ -61,5 +61,29 @@ describe("fulfilment policy", () => {
     assert.equal(key, `esim-${jobId}-ca66dc16`);
     assert.ok(key.replace(/[^a-zA-Z0-9]/g, "").length <= 50);
     assert.notEqual(key, idempotencyKey(jobId, "6addc656e2350584ca66dc17"));
+    const held = idempotencyKey(jobId, "6addc656e2350584ca66dc16", 12);
+    assert.equal(held, `esim-${jobId}-ca66dc16-h12`);
+    assert.ok(held.replace(/[^a-zA-Z0-9]/g, "").length <= 50);
+  });
+
+  it("holds when the last supplier is out of balance, and tries again later", () => {
+    const last = { ...job, candidateIndex: 1 };
+    const refused = { kind: "error" as const, code: "rejected" as const, message: "Insufficient balance", balance: true };
+    assert.deepEqual(decide(last, refused, now), {
+      action: "hold",
+      at: new Date(now.getTime() + BALANCE_HOLD_RETRY_MS),
+      since: now,
+      reason: "Insufficient balance",
+    });
+    const since = new Date(now.getTime() - 60_000);
+    const again = decide({ ...last, balanceHoldSince: since }, refused, now);
+    assert.equal(again.action === "hold" && again.since.getTime(), since.getTime());
+  });
+
+  it("still tries the other suppliers first, and gives up a day into the hold", () => {
+    const refused = { kind: "error" as const, code: "rejected" as const, message: "Insufficient balance", balance: true };
+    assert.equal(decide(job, refused, now).action, "failover");
+    const dayAgo = new Date(now.getTime() - BALANCE_HOLD_MAX_MS);
+    assert.equal(decide({ ...job, candidateIndex: 1, balanceHoldSince: dayAgo }, refused, now).action, "fail");
   });
 });

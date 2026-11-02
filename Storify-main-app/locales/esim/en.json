@@ -927,7 +927,9 @@
       "feesHint": "Added to an order for the way it is paid: a fixed amount plus a percent of the goods, shown at checkout as a \"Payment fee\" line and refunded with the order. Paying from the balance, and wallet top-ups, carry no fee.",
       "feesMethod": "Method",
       "feesFixed": "Fixed ($)",
-      "feesPercent": "Percent (%)"
+      "feesPercent": "Percent (%)",
+      "waitingBalance": "Waiting for supplier balance",
+      "balanceHoldHint": "Every supplier for this eSIM is out of balance. Top one up: it is tried again every 10 minutes (or retry it now) until {until}, then refunded."
     },
     "sidebar": {
       "esim": "eSIM",

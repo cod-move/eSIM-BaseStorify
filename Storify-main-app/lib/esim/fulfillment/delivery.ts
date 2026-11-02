@@ -35,6 +35,9 @@ import { findTopupProduct } from "@/lib/esim/topup/product";
  *   refund by hand. The shopper is told which happened.
  * - Completed top-ups (TOP-04) get a short "your top-up is on your eSIM"
  *   email; failed ones are refunded with the eSIMs (TOP-07).
+ * - eSIMs waiting for a supplier to be topped up (a balance hold) do not hold
+ *   back the issued ones: those go out, the shopper is told the rest follow,
+ *   and the order settles when the held ones are issued or fail.
  * - An order made only of eSIMs and top-ups, all done, moves to delivered the
  *   same way a carrier scan moves it (lib/shipping/tracking-cascade.ts). An
  *   order with physical goods keeps its status for the seller to ship.
@@ -189,6 +192,27 @@ async function sendTopupDone(order: OrderView, topups: IEsimTopup[]) {
   });
 }
 
+/** The shopper is told once that some eSIMs are delayed while a supplier is topped up. */
+async function sendDelayNotice(order: OrderView, heldCount: number, total: number) {
+  const which = heldCount === total ? (total === 1 ? "your eSIM" : "your eSIMs") : `${heldCount} of your ${total} eSIMs`;
+  const key = `esim-held:${order._id}`;
+  await noticeToShopper(order, {
+    title: `Order ${order.orderNumber}: ${which} will follow shortly`,
+    message: "We are completing the rest of your order. We will email the eSIM as soon as it is issued, or refund it.",
+    link: `/account/orders/${order._id}`,
+    key,
+  });
+  const to = await orderContactEmail(order);
+  if (!to) return;
+  await sendEmail({
+    to,
+    subject: `Order ${order.orderNumber}: ${which} will follow shortly`,
+    html: `<div style="font-family:Arial,Helvetica,sans-serif;max-width:640px;margin:0 auto"><p>We are still completing ${which} for order <b>${escapeHtml(order.orderNumber)}</b>. We will email ${heldCount === 1 ? "it" : "them"} as soon as ${heldCount === 1 ? "it is" : "they are"} issued; if we cannot issue ${heldCount === 1 ? "it" : "them"} within a day, we will refund you. There is nothing you need to do.</p></div>`,
+    category: "esim-delivery",
+    dedupeKey: key,
+  }).catch(console.error);
+}
+
 async function sendFailureNotice(order: OrderView, failedCount: number, total: number, refund: EsimRefundResult, kind: "eSIM" | "top-up" | "item") {
   const which = failedCount === total ? `your ${kind}` : `${failedCount} of your ${total} ${kind}s`;
   const verb = kind === "eSIM" ? "issue" : "complete";
@@ -224,7 +248,9 @@ async function sendFailureNotice(order: OrderView, failedCount: number, total: n
 export async function settleOrderDelivery(orderId: string) {
   const [jobs, topups] = await Promise.all([EsimFulfillment.find({ order: orderId }).lean(), EsimTopup.find({ order: orderId })]);
   if (!jobs.length && !topups.length) return "running";
-  if (jobs.some((job) => job.state !== "fulfilled" && job.state !== "failed")) return "running";
+  // A job waiting for a supplier top-up does not hold back what is already issued.
+  const held = jobs.filter((job) => job.state === "queued" && job.balanceHold);
+  if (jobs.some((job) => job.state !== "fulfilled" && job.state !== "failed" && !held.includes(job))) return "running";
   if (topups.some((topup) => topup.state !== "completed" && topup.state !== "failed")) return "running";
   const order = await Order.findById(orderId)
     .select({ orderNumber: 1, status: 1, items: 1, guestEmail: 1, customerId: 1 })
@@ -273,6 +299,10 @@ export async function settleOrderDelivery(orderId: string) {
   // Referral reward (REF-03) on whatever the order delivered; idempotent, and refunds are taken off it.
   const { earnReferralCommission } = await import("@/lib/esim/referral/commission");
   if (fulfilled.length || completedTopups.length) await earnReferralCommission(orderId).catch((error) => console.error("Referral commission failed:", error));
+  if (held.length) {
+    await sendDelayNotice(order, held.length, jobs.length).catch((error) => console.error("eSIM delay notice failed:", error));
+    return "waiting";
+  }
   if (allFailed.length) return fulfilled.length || completedTopups.length ? "partial" : "failed";
   const done = new Set(jobs.map((job) => String(job.variantId)));
   if (topups.length) {

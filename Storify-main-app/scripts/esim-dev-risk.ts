@@ -26,6 +26,7 @@ import { EsimProductLink } from "@/models/esim-product-link.model";
 import { EsimProfile } from "@/models/esim-profile.model";
 import { EsimProvider } from "@/models/esim-provider.model";
 import { EsimProviderLog } from "@/models/esim-provider-log.model";
+import { LedgerEntry } from "@/models/ledger-entry.model";
 import { getEsimSettings } from "@/models/esim-pricing.model";
 
 const { ObjectId } = mongoose.Types;
@@ -211,6 +212,8 @@ async function cleanup() {
   await EsimProfile.deleteMany({ order: { $in: made.orders } });
   await EsimFulfillment.deleteMany({ order: { $in: made.orders } });
   await EsimProviderLog.deleteMany({ $or: [{ "refs.orderId": { $in: made.orders.map(String) } }, { "refs.planId": { $in: made.plans.map(String) } }] });
+  // Supplier costs booked for the eSIMs issued (ORD-12).
+  await LedgerEntry.deleteMany({ "source.id": { $in: made.orders } });
   await Order.collection.deleteMany({ _id: { $in: made.orders } });
   await User.collection.deleteMany({ _id: { $in: made.users } });
   await EsimProductLink.deleteMany({ _id: { $in: made.links } });
