@@ -2,10 +2,11 @@
 
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
-import { ChevronLeft, ChevronRight, Globe2, Loader2, MapPin, RefreshCw, ShoppingCart } from "lucide-react";
+import { ChevronLeft, ChevronRight, Globe2, Loader2, MapPin, RefreshCw, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/toast-notification";
 import { useCart } from "@/hooks/use-cart";
+import { useRouter } from "@/hooks/use-locale-navigation";
 import { useFallbackTranslator } from "@/hooks/use-fallback-translator";
 import { useCurrency } from "@/providers/currency-provider";
 import { cn } from "@/lib/utils";
@@ -31,8 +32,8 @@ import { PlanBuyDialog } from "@/components/esim/plan-buy-dialog";
  * exit IP — over a paged grid of plan cards. Every filter keeps all its values
  * in place; one that no plan has alongside the other choices is shown faded,
  * and choosing it clears the choices it cannot go with. A card's button puts
- * the plan in the cart; a plan with days or a start date to choose opens a
- * small dialog first. Its coverage opens the countries and their networks.
+ * buys the plan now (into the cart, then checkout); a plan with days or a
+ * start date to choose opens a small dialog first. Its coverage opens the countries and their networks.
  */
 
 const PAGE_SIZE = 12;
@@ -61,6 +62,7 @@ export function PlanBrowser({ productId, destinationName, variants, countryCodes
   const t = useFallbackTranslator(useTranslations());
   const { formatPrice } = useCurrency();
   const { addItem } = useCart();
+  const router = useRouter();
   const [filters, setFilters] = useState<PlanFilters>({});
   const [page, setPage] = useState(1);
   const [adding, setAdding] = useState<string | null>(null);
@@ -133,7 +135,7 @@ export function PlanBrowser({ productId, destinationName, variants, countryCodes
     breakout: t("esim.selector.breakout", "IP address"),
   };
 
-  async function addToCart(variant: StorefrontVariant) {
+  async function buyNow(variant: StorefrontVariant) {
     if (variant.perDay || variant.scheduledActivation) {
       setBuying(variant);
       return;
@@ -141,10 +143,9 @@ export function PlanBrowser({ productId, destinationName, variants, countryCodes
     setAdding(variant.variantId);
     try {
       await addItem({ productId, variantId: variant.variantId, quantity: 1, price: variant.priceMinor / 100, name, image: image ?? undefined });
-      toast.success(t("esim.selector.added", "Added to cart"));
+      router.push("/checkout");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : t("esim.selector.addFailed", "Could not add to cart"));
-    } finally {
       setAdding(null);
     }
   }
@@ -283,9 +284,9 @@ export function PlanBrowser({ productId, destinationName, variants, countryCodes
                     </div>
                   ) : null}
                 </div>
-                <Button size="sm" onClick={() => addToCart(variant)} disabled={adding !== null}>
-                  {adding === variant.variantId ? <Loader2 className="me-1.5 h-4 w-4 animate-spin" /> : <ShoppingCart className="me-1.5 h-4 w-4" />}
-                  {variant.perDay || variant.scheduledActivation ? t("esim.compare.choose", "Choose") : t("common.addToCart", "Add to cart")}
+                <Button size="sm" onClick={() => buyNow(variant)} disabled={adding !== null}>
+                  {adding === variant.variantId ? <Loader2 className="me-1.5 h-4 w-4 animate-spin" /> : <Zap className="me-1.5 h-4 w-4" />}
+                  {t("esim.selector.buyNow", "Buy now")}
                 </Button>
               </div>
             </li>
