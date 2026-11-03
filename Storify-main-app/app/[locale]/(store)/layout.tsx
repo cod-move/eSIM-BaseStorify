@@ -39,6 +39,8 @@ import { getLocaleRouting } from "@/lib/i18n/locale-routing";
 import { storeScrollbarCss } from "@/lib/storefront/themes/scrollbar-css";
 import { getAuthPageSettings } from "@/lib/auth/auth-page-settings";
 import { demoLoginCredentials } from "@/lib/auth/demo-login";
+import { storefrontMobileMenu, storefrontMobileTabs } from "@/lib/esim/admin/mobile-nav"; // [esim-patch] P32 P33
+import { EsimMobileMenuProvider } from "@/components/esim/mobile-menu-context"; // [esim-patch] P33
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -84,6 +86,8 @@ export default async function StoreLayout({ children, params }: LayoutProps) {
     footerGroup,
     { enabled: enabledLocales, storeDefault },
     authSettings,
+    esimTabs, // [esim-patch] P32
+    esimMenu, // [esim-patch] P33
   ] = await Promise.all([
     getStorefrontSettings(),
     getGroupSections("header"),
@@ -94,6 +98,8 @@ export default async function StoreLayout({ children, params }: LayoutProps) {
     // get. `getSettings` is request-deduped, so this rides along with the
     // storefront settings read above.
     getAuthPageSettings(),
+    storefrontMobileTabs(), // [esim-patch] P32 — the bottom tab bar the admin set
+    storefrontMobileMenu(), // [esim-patch] P33 — the side menu the admin set
   ]);
 
   // The theme's tokens become CSS custom properties / data attributes on
@@ -265,6 +271,8 @@ export default async function StoreLayout({ children, params }: LayoutProps) {
               dangerouslySetInnerHTML={{ __html: theme.customCss }}
             />
           ) : null}
+          {/* [esim-patch] P33 — the header's side menu reads what the admin set. */}
+          <EsimMobileMenuProvider value={esimMenu}>
           <div data-store-chrome="header" className="contents">
             <StoreSections
               sections={headerGroup.sections}
@@ -272,6 +280,7 @@ export default async function StoreLayout({ children, params }: LayoutProps) {
               className="contents"
             />
           </div>
+          </EsimMobileMenuProvider>
           {/* Measures the chrome above so a full-height hero fills exactly
               the first viewport under it. */}
           <StoreChromeHeight />
@@ -314,6 +323,7 @@ export default async function StoreLayout({ children, params }: LayoutProps) {
               }}
               demoCredentials={demoLoginCredentials(theme.id)}
               emailVerificationRequired={authSettings.emailVerificationRequired}
+              esimTabs={esimTabs} // [esim-patch] P32
             />
           </div>
         </div>

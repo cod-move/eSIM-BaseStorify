@@ -31,6 +31,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useMobileMenu } from "@/stores/mobile-menu";
 import { useHydrated } from "@/hooks/use-client-value";
 import { type Locale } from "@/config/i18n.config";
+// [esim-patch] P32 — the admin's tab layout (Admin → eSIM → Mobile navigation).
+import { arrangeTabs, type MobileNavTab } from "@/lib/esim/storefront/mobile-nav";
+import { esimTabLink } from "@/components/esim/mobile-nav-tab";
 
 interface StoreBottomNavProps {
   locale: Locale;
@@ -43,6 +46,8 @@ interface StoreBottomNavProps {
   /** Empty unless the deployment runs with DEMO_MODE — see `demoLoginCredentials`. */
   demoCredentials: DemoCredential[];
   emailVerificationRequired: boolean;
+  /** [esim-patch] P32 — the tabs, their order and names; empty keeps this bar's own. */
+  esimTabs?: MobileNavTab[];
 }
 
 /**
@@ -99,6 +104,7 @@ export function StoreBottomNav({
   oauthEnabled,
   demoCredentials,
   emailVerificationRequired,
+  esimTabs, // [esim-patch] P32
 }: StoreBottomNavProps) {
   const t = useTranslations();
   const pathname = usePathname();
@@ -284,6 +290,19 @@ export function StoreBottomNav({
             },
   ];
 
+  // [esim-patch] P32 — order, hide and rename the tabs above, and add the
+  // eSIM ones, as the admin set them.
+  const shownItems = arrangeTabs<NavItem>(
+    items,
+    esimTabs,
+    (tab) => {
+      const link = esimTabLink(tab, locale, (key, fallback) => (t.has(key) ? t(key) : fallback));
+      return link && { kind: "link", ...link };
+    },
+    (item, label) => ({ ...item, label }) as NavItem,
+    locale,
+  );
+
   // Every storefront path starts with `/${locale}`, so home has to match
   // exactly or it would light up on every page. Wishlist and Notifications
   // live under /account/, so the account tab has to disclaim those subtrees
@@ -321,7 +340,7 @@ export function StoreBottomNav({
         )}
       >
         <ul className="flex items-stretch">
-          {items.map((item) => {
+          {shownItems.map((item) => { /* [esim-patch] P32 */
             if (item.kind === "placeholder") {
               // Same paddings/sizes as a real tab so the bar height and the
               // neighboring tab positions never move when the tab materializes.

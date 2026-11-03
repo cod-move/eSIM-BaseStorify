@@ -1,6 +1,7 @@
 import { mongoose } from "@/lib/db";
 import type { CoverageScope } from "@/lib/esim/providers/types";
 import type { RoundingMode } from "@/lib/esim/pricing/price";
+import type { MobileMenuSettings, MobileNavTab } from "@/lib/esim/storefront/mobile-nav";
 
 const { Schema, models, model } = mongoose;
 
@@ -88,8 +89,22 @@ export interface IEsimSettings extends mongoose.Document {
    * 0 switches a rule off.
    */
   risk: { reviewOverMinor: number; maxOrders: number; windowHours: number };
+  /** The storefront bottom tab bar (lib/esim/storefront/mobile-nav.ts); empty keeps the store default. */
+  mobileNav: { tabs: MobileNavTab[] };
+  /** The storefront side menu: parts hidden and eSIM links added; empty keeps the store default. */
+  mobileMenu: MobileMenuSettings;
   updatedAt: Date;
 }
+
+/** A bottom-bar tab or a side-menu link (lib/esim/storefront/mobile-nav.ts). */
+const NAV_LINK = {
+  _id: false,
+  key: { type: String, required: true, maxlength: 40 },
+  enabled: { type: Boolean, default: true },
+  href: { type: String, maxlength: 500 },
+  icon: { type: String, maxlength: 20 },
+  labels: { type: Map, of: String },
+};
 
 const EsimSettingsSchema = new Schema<IEsimSettings>(
   {
@@ -156,6 +171,13 @@ const EsimSettingsSchema = new Schema<IEsimSettings>(
       reviewOverMinor: { type: Number, default: 0, min: 0 },
       maxOrders: { type: Number, default: 0, min: 0, max: 1000 },
       windowHours: { type: Number, default: 24, min: 1, max: 720 },
+    },
+    mobileNav: {
+      tabs: { type: [NAV_LINK], default: [] },
+    },
+    mobileMenu: {
+      hidden: { type: [String], default: [] },
+      links: { type: [NAV_LINK], default: [] },
     },
   },
   { timestamps: true },

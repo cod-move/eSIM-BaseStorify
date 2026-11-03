@@ -59,6 +59,10 @@ import type {
   CategoryNode,
   CollectionItem,
 } from "@/components/layout/store-header/types";
+// [esim-patch] P33 — the side menu the admin set (Admin → eSIM → Mobile navigation).
+import { useEsimMobileMenu } from "@/components/esim/mobile-menu-context";
+import { esimTabLink } from "@/components/esim/mobile-nav-tab";
+import type { MenuPart } from "@/lib/esim/storefront/mobile-nav";
 
 // Hard ceiling on the drawer's category dropdown. The admin-facing
 // `categoryMenu.mobileLimit` can be set higher, but a drawer dropdown that
@@ -144,6 +148,21 @@ export function MobileMenuSheet({
   const { theme } = useAppTheme();
   const { currency } = useCurrency();
   const { language, languages } = useLanguage();
+  // [esim-patch] P33 — parts the admin hid are switched off like the store's
+  // own settings would; eSIM links are listed under Home.
+  const esimMenu = useEsimMobileMenu();
+  const esimHides = (part: MenuPart) => esimMenu?.hidden.includes(part) ?? false;
+  if (esimHides("collections")) showCollectionsMenu = false;
+  if (esimHides("more")) showUtilityMenu = false;
+  if (esimHides("categories")) showMobileCategoryShortcuts = false;
+  if (esimHides("collectionsBlock")) showMobileCollections = false;
+  if (esimHides("account")) showAccountMenu = showMobileAccountSummary = false;
+  if (esimHides("market")) showMobileMarketSelectors = false;
+  if (esimHides("theme")) showMobileThemeSelector = false;
+  const esimLinks = (esimMenu?.links ?? [])
+    .filter((link) => link.enabled)
+    .map((link) => esimTabLink(link, locale, (key, fallback) => (t.has(key) ? t(key) : fallback)))
+    .filter((link) => link !== null);
   // Admin menu hrefs arrive locale-prefixed; strip that (plus query/trailing
   // slash) so they can be compared against route slugs.
   const normalizeMenuPath = (href: string) => {
@@ -350,6 +369,7 @@ export function MobileMenuSheet({
               have their own bottom-nav tabs, so repeating them in the drawer
               was dead weight. */}
           <nav className="grid gap-1 px-3 py-4 text-sm font-medium">
+            {!esimHides("home") && ( // [esim-patch] P33
             <MobileNavRow
               href={`/${locale}`}
               icon={Home}
@@ -357,6 +377,20 @@ export function MobileMenuSheet({
               active={pathname === `/${locale}`}
               onNavigate={closeMobileMenu}
             />
+            )}
+            {/* [esim-patch] P33 — the admin's eSIM links. */}
+            {esimLinks.map((link) => (
+              <MobileNavRow
+                key={link.key}
+                href={link.href}
+                icon={link.icon}
+                label={link.label}
+                active={isActivePath(link.href)}
+                onNavigate={closeMobileMenu}
+                target={/^https?:/.test(link.href) ? "_blank" : undefined}
+              />
+            ))}
+            {!esimHides("products") && ( // [esim-patch] P33
             <MobileNavRow
               href={`/${locale}/products`}
               icon={ShoppingBag}
@@ -364,6 +398,7 @@ export function MobileMenuSheet({
               active={isActivePath(`/${locale}/products`)}
               onNavigate={closeMobileMenu}
             />
+            )}
             {showCollectionsMenu && (
               <MobileNavRow
                 href={`/${locale}/collections`}

@@ -389,6 +389,10 @@
       "fairUseOnly": "每天 {amount} 高速流量。",
       "voiceMinutes": "{count} 分钟通话",
       "smsCount": "{count} 条短信"
+    },
+    "nav": {
+      "esim": "eSIM",
+      "myEsims": "我的 eSIM"
     }
   },
   "admin": {
@@ -969,7 +973,36 @@
       "feesFixed": "固定金额（$）",
       "feesPercent": "百分比（%）",
       "waitingBalance": "等待上游充值",
-      "balanceHoldHint": "这张 eSIM 的所有供应商余额都不足。给其中一家充值后，系统每 10 分钟自动重试（也可以立即点重试），直到 {until}；仍未成功就退款。"
+      "balanceHoldHint": "这张 eSIM 的所有供应商余额都不足。给其中一家充值后，系统每 10 分钟自动重试（也可以立即点重试），直到 {until}；仍未成功就退款。",
+      "navTitle": "底部菜单栏",
+      "navHint": "手机和平板上商城底部的菜单栏。可以开关、排序和改名。最多显示 {max} 个；「菜单」不能关，因为手机上只能从它打开侧边菜单。",
+      "navCustom": "商城正在使用这里的设置。",
+      "navDefault": "商城正在使用默认菜单栏，保存后改用这里的设置。",
+      "navPresetEsim": "eSIM 目的地",
+      "navUp": "上移",
+      "navDown": "下移",
+      "navShow": "显示",
+      "navLink": "自定义链接",
+      "navIcon": "图标",
+      "navHref": "链接",
+      "navDefaultName": "默认名称",
+      "navAddLink": "添加链接",
+      "navRestore": "恢复默认菜单栏",
+      "navRestored": "已恢复默认菜单栏",
+      "navCount": "已显示 {shown}/{max} 个",
+      "menuTitle": "侧边菜单",
+      "menuHint": "手机和平板上点「菜单」打开的侧边菜单。可以隐藏不需要的部分，并在「首页」下面加 eSIM 页面或自定义链接。中间的链接仍来自「在线商店 → 导航」里的页眉菜单。",
+      "menuParts": "菜单里显示",
+      "menuLinks": "「首页」下面的链接",
+      "menuHome": "首页",
+      "menuProducts": "全部商品",
+      "menuCollections": "合集",
+      "menuMore": "页眉菜单链接和「更多」",
+      "menuCategories": "商品分类",
+      "menuCollectionsBlock": "合集区块",
+      "menuAccount": "账户（资料、订单、登录）",
+      "menuMarket": "语言和币种",
+      "menuTheme": "浅色/深色切换"
     },
     "sidebar": {
       "esim": "eSIM",
@@ -981,6 +1014,7 @@
       "esimProblems": "开卡异常",
       "esimDestinations": "目的地",
       "esimDevices": "机型表",
+      "esimNavigation": "手机导航",
       "esimJobs": "定时任务",
       "esimTopups": "充值记录",
       "esimReferrals": "推荐返佣",

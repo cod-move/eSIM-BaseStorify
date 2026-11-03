@@ -389,6 +389,10 @@
       "fairUseOnly": "{amount} a day at full speed.",
       "voiceMinutes": "{count} minutes of calls",
       "smsCount": "{count} texts"
+    },
+    "nav": {
+      "esim": "eSIM",
+      "myEsims": "My eSIMs"
     }
   },
   "admin": {
@@ -969,7 +973,36 @@
       "feesFixed": "Fixed ($)",
       "feesPercent": "Percent (%)",
       "waitingBalance": "Waiting for supplier balance",
-      "balanceHoldHint": "Every supplier for this eSIM is out of balance. Top one up: it is tried again every 10 minutes (or retry it now) until {until}, then refunded."
+      "balanceHoldHint": "Every supplier for this eSIM is out of balance. Top one up: it is tried again every 10 minutes (or retry it now) until {until}, then refunded.",
+      "navTitle": "Bottom tab bar",
+      "navHint": "The bar at the bottom of the store on phones and tablets. Turn tabs on or off, put them in order and rename them. At most {max} show; Menu always stays, as it is the only way into the side menu on a phone.",
+      "navCustom": "The store shows the bar set here.",
+      "navDefault": "The store shows its own bar. Save to use the one set here.",
+      "navPresetEsim": "eSIM destinations",
+      "navUp": "Move up",
+      "navDown": "Move down",
+      "navShow": "Show",
+      "navLink": "Own link",
+      "navIcon": "Icon",
+      "navHref": "Link",
+      "navDefaultName": "Default name",
+      "navAddLink": "Add a link",
+      "navRestore": "Use the store's own bar",
+      "navRestored": "The store's own bar is back",
+      "navCount": "{shown} of {max} shown",
+      "menuTitle": "Side menu",
+      "menuHint": "The menu the Menu tab opens on phones and tablets. Hide the parts you do not need, and list eSIM pages or your own links under Home. The links in the middle still come from the header menu under Online store → Navigation.",
+      "menuParts": "Shown in the menu",
+      "menuLinks": "Links under Home",
+      "menuHome": "Home row",
+      "menuProducts": "All products row",
+      "menuCollections": "Collections row",
+      "menuMore": "Header menu links and More",
+      "menuCategories": "Categories",
+      "menuCollectionsBlock": "Collections block",
+      "menuAccount": "Account (profile, orders, sign in)",
+      "menuMarket": "Language and currency",
+      "menuTheme": "Light and dark switch"
     },
     "sidebar": {
       "esim": "eSIM",
@@ -981,6 +1014,7 @@
       "esimProblems": "Problems",
       "esimDestinations": "Destinations",
       "esimDevices": "Devices",
+      "esimNavigation": "Mobile navigation",
       "esimJobs": "Scheduled jobs",
       "esimTopups": "Top-ups",
       "esimReferrals": "Referrals",

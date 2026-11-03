@@ -20,6 +20,7 @@ export const ESIM_ADMIN_NAV = {
     { label: "admin.sidebar.esimPricing", href: "/admin/esim/pricing", icon: "Percent" },
     { label: "admin.sidebar.esimProviders", href: "/admin/esim/providers", icon: "Landmark" },
     { label: "admin.sidebar.esimDevices", href: "/admin/esim/devices", icon: "SlidersHorizontal" },
+    { label: "admin.sidebar.esimNavigation", href: "/admin/esim/navigation", icon: "LayoutGrid" },
     { label: "admin.sidebar.esimJobs", href: "/admin/esim/jobs", icon: "CalendarClock" },
     { label: "admin.sidebar.esimLogs", href: "/admin/esim/logs", icon: "History" },
     { label: "admin.sidebar.esimMigration", href: "/admin/esim/migration", icon: "ArrowLeftRight" },
