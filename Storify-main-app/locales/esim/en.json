@@ -1044,7 +1044,35 @@
       "numberProblemIccid": "ICCID is not 18–22 digits",
       "numberProblemLpa": "no valid LPA",
       "numberProblemPrice": "price is not an amount",
-      "numberProblemDuplicate": "repeated in this batch"
+      "numberProblemDuplicate": "repeated in this batch",
+      "numberPackagesHint": "Data packets a number owner can buy. The cost is TopConnect's price, moved onto the card before the packet is switched on; the price follows the pricing rules unless you set it.",
+      "loadPacketsNeeds": "Needs the TopConnect supplier switched on and a number in stock",
+      "packetsLoaded": "Asked for +{msisdn}: {added} added, {updated} updated, {unchanged} unchanged",
+      "loadPackets": "Load from TopConnect",
+      "addPacket": "Add packet",
+      "editPacket": "Edit data package",
+      "packet": "Packet",
+      "packetData": "Data",
+      "packetCountries": "Countries",
+      "packetDays": "{days} days",
+      "priceManual": "set by hand",
+      "priceAuto": "by the rules",
+      "onSale": "On sale",
+      "packetHidden": "Hidden",
+      "packetOnSale": "On sale",
+      "removePacket": "Remove this data package?",
+      "noPackets": "No data packages yet. Load them from TopConnect or add one by hand.",
+      "packetIdHint": "The packet ID is TopConnect's packet code, the one switched on for the card.",
+      "packetId": "Packet ID",
+      "packetName": "Name",
+      "packetVolumeMb": "Data (MB, empty = unlimited)",
+      "packetValidity": "Valid for (days)",
+      "packetStep": "Billing step (KB)",
+      "packetCost": "TopConnect price",
+      "setPriceByHand": "Set the price by hand",
+      "packetCountriesHint": "Countries where it works (codes, e.g. FR, DE, IT)",
+      "sortOrder": "Sort order",
+      "unlimited": "Unlimited"
     },
     "sidebar": {
       "esim": "eSIM",
@@ -1065,7 +1093,8 @@
       "esimMigration": "Migration",
       "esimReports": "Reports",
       "esimCampaigns": "Campaigns",
-      "esimNumbers": "Numbers"
+      "esimNumbers": "Numbers",
+      "esimNumberPackages": "Number data packages"
     }
   },
   "finance": {

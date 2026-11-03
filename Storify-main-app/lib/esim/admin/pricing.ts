@@ -3,6 +3,7 @@ import "server-only";
 import { connectDB, mongoose } from "@/lib/db";
 import { EsimPlan, type IEsimPlan } from "@/models/esim-plan.model";
 import { EsimFxRate } from "@/models/esim-fx-rate.model";
+import { EsimNumberPackage } from "@/models/esim-number-package.model";
 import { EsimPricingRule, getEsimSettings } from "@/models/esim-pricing.model";
 import { clearManualRate, currentRates, refreshEcbRates, setManualRate } from "@/lib/esim/pricing/fx-service";
 import { loadPricing, repricePlans } from "@/lib/esim/pricing/reprice";
@@ -188,7 +189,12 @@ export async function savePricing(change: PricingChange) {
 /** The rates behind the prices: every currency a plan is costed in. */
 export async function getFxOverview() {
   await connectDB();
-  const currencies = ((await EsimPlan.distinct("cost.currency")) as string[]).filter(Boolean).sort();
+  // Number-card data packages (NUM-02) are costed too, in TopConnect's currency.
+  const [planCurrencies, packageCurrencies] = await Promise.all([
+    EsimPlan.distinct("cost.currency") as Promise<string[]>,
+    EsimNumberPackage.distinct("cost.currency") as Promise<string[]>,
+  ]);
+  const currencies = [...new Set([...planCurrencies, ...packageCurrencies])].filter(Boolean).sort();
   const resolved = await currentRates(currencies);
   const latestEcb = await EsimFxRate.findOne({ source: "ecb" }).sort({ effectiveAt: -1 }).select({ effectiveAt: 1 }).lean();
   const plansPer = new Map(

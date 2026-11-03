@@ -11,6 +11,7 @@ export const ESIM_ADMIN_NAV = {
     { label: "admin.sidebar.esimProblems", href: "/admin/esim/problems", icon: "ShieldCheck" },
     { label: "admin.sidebar.esimTopups", href: "/admin/esim/topups", icon: "CreditCard" },
     { label: "admin.sidebar.esimNumbers", href: "/admin/esim/numbers", icon: "Warehouse" },
+    { label: "admin.sidebar.esimNumberPackages", href: "/admin/esim/number-packages", icon: "Package" },
     { label: "admin.sidebar.esimPayments", href: "/admin/esim/payments", icon: "HandCoins" },
     { label: "admin.sidebar.esimReports", href: "/admin/esim/reports", icon: "BarChart3" },
     { label: "admin.sidebar.esimCampaigns", href: "/admin/esim/campaigns", icon: "Megaphone" },

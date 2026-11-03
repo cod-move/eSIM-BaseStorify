@@ -1044,7 +1044,35 @@
       "numberProblemIccid": "ICCID 不是 18–22 位数字",
       "numberProblemLpa": "LPA 无效",
       "numberProblemPrice": "价格格式不对",
-      "numberProblemDuplicate": "本批次里重复"
+      "numberProblemDuplicate": "本批次里重复",
+      "numberPackagesHint": "号码卡用户可购买的流量包。成本是 TopConnect 的价格，开通前会先充到卡上；售价按定价规则自动计算，也可以手动设置。",
+      "loadPacketsNeeds": "需要先启用 TopConnect 供应商，并且库存里至少有一个号码",
+      "packetsLoaded": "已用 +{msisdn} 查询：新增 {added} 个，更新 {updated} 个，{unchanged} 个无变化",
+      "loadPackets": "从 TopConnect 拉取",
+      "addPacket": "添加流量包",
+      "editPacket": "编辑流量包",
+      "packet": "流量包",
+      "packetData": "流量",
+      "packetCountries": "适用国家",
+      "packetDays": "{days} 天",
+      "priceManual": "手动定价",
+      "priceAuto": "按规则定价",
+      "onSale": "在售",
+      "packetHidden": "已隐藏",
+      "packetOnSale": "已上架",
+      "removePacket": "删除这个流量包？",
+      "noPackets": "还没有流量包。可以从 TopConnect 拉取，或手动添加。",
+      "packetIdHint": "流量包 ID 就是 TopConnect 的 packet 编号，开通时用它。",
+      "packetId": "流量包 ID",
+      "packetName": "名称",
+      "packetVolumeMb": "流量（MB，留空表示不限量）",
+      "packetValidity": "有效期（天）",
+      "packetStep": "计费步长（KB）",
+      "packetCost": "TopConnect 价格",
+      "setPriceByHand": "手动设置售价",
+      "packetCountriesHint": "适用国家（国家代码，如 FR, DE, IT）",
+      "sortOrder": "排序",
+      "unlimited": "不限量"
     },
     "sidebar": {
       "esim": "eSIM",
@@ -1065,7 +1093,8 @@
       "esimMigration": "数据迁移",
       "esimReports": "报表",
       "esimCampaigns": "活动",
-      "esimNumbers": "号码卡"
+      "esimNumbers": "号码卡",
+      "esimNumberPackages": "号码流量包"
     }
   },
   "finance": {
