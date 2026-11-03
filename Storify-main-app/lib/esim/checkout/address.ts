@@ -4,6 +4,7 @@ import { Product } from "@/models";
 import { TOPUP_PRODUCT_TYPE } from "@/lib/esim/topup/product";
 import { WALLET_PRODUCT_TYPE } from "@/lib/esim/wallet/product";
 import { PAYMENT_FEE_PRODUCT_TYPE } from "@/lib/esim/payments/fee-line";
+import { NUMBER_PRODUCT_TYPE } from "@/lib/esim/numbers/product";
 import type { CheckoutShippingAddress } from "@/lib/checkout/checkout-order-document";
 
 /**
@@ -13,7 +14,7 @@ import type { CheckoutShippingAddress } from "@/lib/checkout/checkout-order-docu
  * store's country.
  */
 
-const ESIM_PRODUCT_TYPES = ["esim", TOPUP_PRODUCT_TYPE, WALLET_PRODUCT_TYPE, PAYMENT_FEE_PRODUCT_TYPE];
+const ESIM_PRODUCT_TYPES = ["esim", TOPUP_PRODUCT_TYPE, WALLET_PRODUCT_TYPE, PAYMENT_FEE_PRODUCT_TYPE, NUMBER_PRODUCT_TYPE];
 
 const idOf = (value: unknown) =>
   String(value && typeof value === "object" && "_id" in value ? (value as { _id: unknown })._id : (value ?? ""));

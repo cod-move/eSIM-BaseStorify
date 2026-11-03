@@ -3,6 +3,7 @@ import "server-only";
 import { connectDB, mongoose } from "@/lib/db";
 import { User } from "@/models";
 import { EsimNumber, type EsimNumberStatus } from "@/models/esim-number.model";
+import { ensureNumberProduct } from "@/lib/esim/numbers/product";
 import { parseNumberImport, type NumberImportOptions, type NumberImportProblem } from "@/lib/esim/numbers/import";
 
 /**
@@ -176,6 +177,8 @@ export async function importNumbers(
     if (!Array.isArray(inserted)) throw error;
     imported = inserted.length;
   }
+  // Numbers on sale need the hidden product their cart lines use; made here, in the admin's request.
+  if (imported) await ensureNumberProduct().catch((error) => console.error("[esim] number product could not be created:", error));
   return { imported, existing: rows.length - imported, problems };
 }
 

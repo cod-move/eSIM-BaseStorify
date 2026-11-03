@@ -24,6 +24,8 @@ import { installLinks } from "@/lib/esim/fulfillment/install-links";
 import { refundFailedEsims, type EsimRefundResult } from "@/lib/esim/fulfillment/refund";
 import { planTitle } from "@/lib/esim/account/display";
 import { findTopupProduct } from "@/lib/esim/topup/product";
+import { EsimNumberOrder } from "@/models/esim-number-order.model";
+import { findNumberProduct } from "@/lib/esim/numbers/product";
 
 /**
  * What happens to an order once its eSIM jobs settle (ORD-09/10, NTF-01/02).
@@ -213,9 +215,9 @@ async function sendDelayNotice(order: OrderView, heldCount: number, total: numbe
   }).catch(console.error);
 }
 
-async function sendFailureNotice(order: OrderView, failedCount: number, total: number, refund: EsimRefundResult, kind: "eSIM" | "top-up" | "item") {
+async function sendFailureNotice(order: OrderView, failedCount: number, total: number, refund: EsimRefundResult, kind: "eSIM" | "top-up" | "number" | "item") {
   const which = failedCount === total ? `your ${kind}` : `${failedCount} of your ${total} ${kind}s`;
-  const verb = kind === "eSIM" ? "issue" : "complete";
+  const verb = kind === "eSIM" || kind === "number" ? "issue" : "complete";
   await noticeToShopper(order, {
     title: refund.state === "refunded" ? `Refund for order ${order.orderNumber}` : `Your ${kind} is delayed`,
     message: refund.state === "refunded"
@@ -246,12 +248,17 @@ async function sendFailureNotice(order: OrderView, failedCount: number, total: n
  * again — each step only touches what it has not done yet.
  */
 export async function settleOrderDelivery(orderId: string) {
-  const [jobs, topups] = await Promise.all([EsimFulfillment.find({ order: orderId }).lean(), EsimTopup.find({ order: orderId })]);
-  if (!jobs.length && !topups.length) return "running";
+  const [jobs, topups, numbers] = await Promise.all([
+    EsimFulfillment.find({ order: orderId }).lean(),
+    EsimTopup.find({ order: orderId }),
+    EsimNumberOrder.find({ order: orderId }).lean(),
+  ]);
+  if (!jobs.length && !topups.length && !numbers.length) return "running";
   // A job waiting for a supplier top-up does not hold back what is already issued.
   const held = jobs.filter((job) => job.state === "queued" && job.balanceHold);
   if (jobs.some((job) => job.state !== "fulfilled" && job.state !== "failed" && !held.includes(job))) return "running";
   if (topups.some((topup) => topup.state !== "completed" && topup.state !== "failed")) return "running";
+  if (numbers.some((number) => number.state === "queued")) return "running";
   const order = await Order.findById(orderId)
     .select({ orderNumber: 1, status: 1, items: 1, guestEmail: 1, customerId: 1 })
     .lean<OrderView | null>();
@@ -261,6 +268,9 @@ export async function settleOrderDelivery(orderId: string) {
   const failed = jobs.filter((job) => job.state === "failed");
   const completedTopups = topups.filter((topup) => topup.state === "completed");
   const failedTopups = topups.filter((topup) => topup.state === "failed");
+  // Number cards (NUM-05): handed over or failed; their install email is sent with the number's page (NUM-07).
+  const givenNumbers = numbers.filter((number) => number.state === "fulfilled");
+  const failedNumbers = numbers.filter((number) => number.state === "failed");
 
   // Issued eSIMs go out whatever happened to the rest of the order.
   const undelivered = fulfilled.filter((job) => !job.deliveredAt);
@@ -277,11 +287,11 @@ export async function settleOrderDelivery(orderId: string) {
     await EsimTopup.updateMany({ _id: { $in: unannounced.map((topup) => topup._id) } }, { $set: { notifiedAt: new Date() } });
   }
 
-  const allFailed = [...failed, ...failedTopups];
+  const allFailed = [...failed, ...failedTopups, ...failedNumbers];
   if (allFailed.some((job) => !job.refund)) {
     const refund = await refundFailedEsims(orderId);
     if (refund.state !== "nothing") {
-      const total = jobs.length + topups.length;
+      const total = jobs.length + topups.length + numbers.length;
       await notifyAdminsPaymentAnomaly({
         title: refund.state === "refunded" ? "eSIM failed and was refunded to store credit" : "eSIM failed: refund by hand",
         message: `Order ${order.orderNumber}: ${allFailed.length} of ${total} eSIM(s) / top-up(s) failed — ${allFailed
@@ -291,22 +301,26 @@ export async function settleOrderDelivery(orderId: string) {
           .slice(0, 300)}. ${refund.state === "refunded" ? `${refund.amount.toFixed(2)} ${refund.currency} credited to the shopper.` : `Refund ${refund.amount.toFixed(2)} ${refund.currency} by hand.`}`,
         dedupeKey: `esim-failed:${orderId}:${refund.state}`,
       }).catch(console.error);
-      const kind = !failedTopups.length ? "eSIM" : !failed.length ? "top-up" : "item";
+      const kind = failedNumbers.length === allFailed.length ? "number" : !failedTopups.length && !failedNumbers.length ? "eSIM" : !failed.length && !failedNumbers.length ? "top-up" : "item";
       await sendFailureNotice(order, allFailed.length, total, refund, kind);
     }
   }
 
   // Referral reward (REF-03) on whatever the order delivered; idempotent, and refunds are taken off it.
   const { earnReferralCommission } = await import("@/lib/esim/referral/commission");
-  if (fulfilled.length || completedTopups.length) await earnReferralCommission(orderId).catch((error) => console.error("Referral commission failed:", error));
+  if (fulfilled.length || completedTopups.length || givenNumbers.length) await earnReferralCommission(orderId).catch((error) => console.error("Referral commission failed:", error));
   if (held.length) {
     await sendDelayNotice(order, held.length, jobs.length).catch((error) => console.error("eSIM delay notice failed:", error));
     return "waiting";
   }
-  if (allFailed.length) return fulfilled.length || completedTopups.length ? "partial" : "failed";
+  if (allFailed.length) return fulfilled.length || completedTopups.length || givenNumbers.length ? "partial" : "failed";
   const done = new Set(jobs.map((job) => String(job.variantId)));
   if (topups.length) {
     const product = await findTopupProduct();
+    if (product) done.add(product.variantId);
+  }
+  if (numbers.length) {
+    const product = await findNumberProduct();
     if (product) done.add(product.variantId);
   }
   // A payment fee line (patch P29) has nothing to deliver.

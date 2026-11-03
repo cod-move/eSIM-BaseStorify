@@ -1,4 +1,5 @@
 import { clampDays, validityValue, type PerDayPricing } from "@/lib/esim/catalog/variants";
+import { parseNumberChoice, type NumberLineChoice, type NumberLineSnapshot } from "@/lib/esim/numbers/line";
 
 /**
  * What a cart or order line carries in its generic `lineAttributes` field
@@ -12,6 +13,9 @@ import { clampDays, validityValue, type PerDayPricing } from "@/lib/esim/catalog
  *   server adds `walletFee` and `label`; a request's own are ignored.
  * - `activateOn`: the day the plan should start (YYYY-MM-DD, ORD-03), for a
  *   variant whose suppliers all schedule activation; absent = as usual.
+ * - `number`: a number card (NUM-03): the number, a first recharge and a
+ *   data package (lib/esim/numbers/line.ts). Checkout settles it to the
+ *   priced snapshot and adds `label`.
  *
  * A cart holds one line per variant, as Storify's cart does. Adding the same
  * variant again with other days replaces the days (the shopper changed their
@@ -27,6 +31,7 @@ export interface EsimLineAttributes {
   wallet?: number;
   walletFee?: number;
   activateOn?: string;
+  number?: NumberLineChoice | NumberLineSnapshot;
 }
 
 /** The earliest and latest start date a shopper may pick: from tomorrow, up to 180 days ahead (UTC days). */
@@ -72,6 +77,12 @@ export function parseLineAttributes(input: unknown): EsimLineAttributes | null {
     } else if (key === "activateOn") {
       if (typeof value !== "string" || !isCalendarDay(value)) throw new LineAttributesError("Choose a start date");
       parsed.activateOn = value;
+    } else if (key === "number") {
+      try {
+        parsed.number = parseNumberChoice(value);
+      } catch (error) {
+        throw new LineAttributesError(error instanceof Error ? error.message : "Choose a number");
+      }
     } else if (key === "topup") {
       if (typeof value !== "string" || !/^[a-f0-9]{24}$/i.test(value)) throw new LineAttributesError("Unknown top-up");
       parsed.topup = value;
@@ -84,6 +95,9 @@ export function parseLineAttributes(input: unknown): EsimLineAttributes | null {
   }
   if (parsed.wallet !== undefined && (parsed.days !== undefined || parsed.topup !== undefined || parsed.activateOn !== undefined)) {
     throw new LineAttributesError("A wallet top-up takes no other options");
+  }
+  if (parsed.number !== undefined && Object.keys(parsed).length > 1) {
+    throw new LineAttributesError("A number takes no other options");
   }
   if (parsed.activateOn !== undefined && parsed.topup !== undefined) {
     throw new LineAttributesError("A top-up takes no start date");
@@ -159,7 +173,7 @@ export function withLineDays<S extends VariantSnapshot>(line: { lineAttributes?:
   const attributes = line.lineAttributes && typeof line.lineAttributes === "object"
     ? (line.lineAttributes as EsimLineAttributes)
     : undefined;
-  const label = (attributes?.topup || attributes?.wallet) && typeof attributes.label === "string" ? attributes.label : null;
+  const label = (attributes?.topup || attributes?.wallet || attributes?.number) && typeof attributes.label === "string" ? attributes.label : null;
   if (label) {
     return {
       ...snapshot,

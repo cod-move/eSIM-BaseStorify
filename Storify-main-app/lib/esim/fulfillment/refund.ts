@@ -6,6 +6,7 @@ import { Order } from "@/models";
 import { PaymentTransaction } from "@/models/payment-transaction.model";
 import { EsimFulfillment } from "@/models/esim-fulfillment.model";
 import { EsimTopup } from "@/models/esim-topup.model";
+import { EsimNumberOrder } from "@/models/esim-number-order.model";
 import { getOrderRefundCeiling } from "@/lib/orders/preorder-cancel-refund";
 import { releaseRefundInFlightWrite, logRefundInFlightReleaseError, REFUND_IN_FLIGHT_WINDOW_MS } from "@/lib/orders/refund-in-flight";
 import { settleRefundedPaymentStatus } from "@/lib/orders/refund-payment-status";
@@ -23,8 +24,9 @@ import { refundAmount } from "@/lib/esim/fulfillment/refund-amount";
  * through `refundToStoreCredit` (refund row, credit lot, ledger), then settle
  * the payment status and clear the stamp — rolling the reservation back on any
  * failure. Each failed job is claimed before the money moves, so a cron re-run
- * cannot refund it twice. Failed top-ups (TOP-07) are refunded the same way,
- * in the same refund as the order's failed eSIMs.
+ * cannot refund it twice. Failed top-ups (TOP-07) and number cards that could
+ * not be handed over (NUM-05) are refunded the same way, in the same refund
+ * as the order's failed eSIMs.
  *
  * Not automatic: guest orders (no account to credit; the decision is to send
  * the money back the way it came, which needs the gateway refund flow) and
@@ -62,7 +64,7 @@ async function alreadyRefunded(orderId: mongoose.Types.ObjectId) {
 }
 
 /** Both kinds of job refunded here share the fields this file reads and writes. */
-const JOB_MODELS = [EsimFulfillment, EsimTopup] as unknown as Array<typeof EsimFulfillment>;
+const JOB_MODELS = [EsimFulfillment, EsimTopup, EsimNumberOrder] as unknown as Array<typeof EsimFulfillment>;
 
 async function updateJobs(filter: Record<string, unknown>, update: Record<string, unknown>) {
   for (const model of JOB_MODELS) await model.updateMany(filter, update);

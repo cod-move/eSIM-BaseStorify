@@ -23,6 +23,8 @@ import { isTopupVariant } from "@/lib/esim/topup/product";
 import { priceTopupCosts, quoteStillEligible, quoteWithPlan } from "@/lib/esim/topup/offers";
 import { topupLineLabel } from "@/lib/esim/topup/label";
 import { isWalletVariant } from "@/lib/esim/wallet/product";
+import { isNumberVariant } from "@/lib/esim/numbers/product";
+import { numberCartLine } from "@/lib/esim/numbers/cart-line";
 import { walletFeeMinor } from "@/lib/esim/wallet/booking";
 import { getEsimSettings } from "@/models/esim-pricing.model";
 import { kycState, variantsNeedingKyc } from "@/lib/esim/kyc/service";
@@ -33,8 +35,9 @@ import { feeLineMethod, isPaymentFeeVariant, paymentFeeFor } from "@/lib/esim/pa
  * The eSIM side of patch point P10: what Storify's cart and checkout ask about
  * a line's `lineAttributes`. Storify prices a line from its variant; a
  * day-priced eSIM variant is priced here instead, per day × the chosen days,
- * a top-up line from its quote (lib/esim/topup), and a wallet top-up line as
- * its amount plus the fee (lib/esim/wallet).
+ * a top-up line from its quote (lib/esim/topup), a wallet top-up line as
+ * its amount plus the fee (lib/esim/wallet), and a number card from the
+ * number, its first recharge and data package (lib/esim/numbers).
  *
  * - `esimCartLine` — adding to the cart (`lib/cart/cart-service.ts`).
  * - `esimLinePrices` — every place checkout re-prices lines from the live
@@ -135,6 +138,13 @@ export async function esimCartLine(
       if (typeof wallet === "string") throw new LineAttributesError(wallet);
       return { lineAttributes: { ...wallet.lineAttributes }, price: toUnits(wallet.priceMinor), variantName: wallet.label, singleUnit: true };
     }
+    if (await isNumberVariant(line.variantId)) {
+      if ((line.quantity ?? 1) !== 1) throw new LineAttributesError("A number is bought one at a time");
+      const number = await numberCartLine(requested?.number, context.userId);
+      if (typeof number === "string") throw new LineAttributesError(number);
+      return { lineAttributes: { ...number.lineAttributes }, price: toUnits(number.priceMinor), variantName: number.label, singleUnit: true };
+    }
+    if (requested?.number) throw new LineAttributesError("This product is not a phone number");
     if (requested?.topup) throw new LineAttributesError("This product is not a top-up");
     if (requested?.wallet) throw new LineAttributesError("This product is not a wallet top-up");
     const info = line.variantId ? (await variantInfo([line.variantId])).get(String(line.variantId)) : undefined;
@@ -209,6 +219,17 @@ export async function esimLinePrices<T extends { variantId?: unknown; lineAttrib
     if (typeof topup === "string") throw new ValidationError({ stock: [topup] });
     item.lineAttributes = topup.lineAttributes;
     prices.set(item, toUnits(topup.priceMinor));
+  }
+  for (const item of items) {
+    if (!(await isNumberVariant(item.variantId))) continue;
+    // NUM-04: the number is held for this shopper from here, while they pay.
+    const attributes = item.lineAttributes && typeof item.lineAttributes === "object" ? (item.lineAttributes as EsimLineAttributes) : {};
+    const number = (item.quantity ?? 1) !== 1
+      ? "A number is bought one at a time; remove the extra from your cart"
+      : await numberCartLine(attributes.number, context.userId ?? undefined, { reserve: true });
+    if (typeof number === "string") throw new ValidationError({ stock: [number] });
+    item.lineAttributes = number.lineAttributes;
+    prices.set(item, toUnits(number.priceMinor));
   }
   const info = await variantInfo(items.map((item) => item.variantId));
   if (!info.size) return withPaymentFees(prices, items, fees, walletCart);
