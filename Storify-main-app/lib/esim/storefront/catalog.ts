@@ -11,7 +11,7 @@ import { EsimProfile } from "@/models/esim-profile.model";
 import { EsimDestination } from "@/models/esim-destination.model";
 import { continentOf, type Continent } from "@/lib/esim/storefront/continents";
 import { fromPriceMinor, type StorefrontVariant } from "@/lib/esim/storefront/selector";
-import { supportsScheduledActivation } from "@/lib/esim/providers/registry";
+import { shownBundles, supportsScheduledActivation } from "@/lib/esim/providers/registry";
 import { summarizeFacts, topSpeedOf } from "@/lib/esim/storefront/product-facts";
 import type { CoverageScope } from "@/lib/esim/providers/types";
 
@@ -64,7 +64,7 @@ export function destinationPath(destination: Pick<Destination, "slug" | "scope">
 type PlanFacts = Pick<
   IEsimPlan,
   | "destination" | "emoji" | "coverage" | "data" | "validityDays" | "topup" | "supplierNetworks"
-  | "fairUse" | "speed" | "tethering" | "activation" | "bundles" | "extras"
+  | "fairUse" | "speed" | "tethering" | "activation" | "bundles" | "extras" | "providerCode"
 > & { _id: mongoose.Types.ObjectId };
 
 /** A plan's operators: the catalogue's, else those fetched on their own (CAT-10). */
@@ -85,7 +85,7 @@ async function readCatalog(): Promise<DestinationDetail[]> {
   const plans = await EsimPlan.find({ _id: { $in: primaryIds } })
     .select({
       destination: 1, emoji: 1, coverage: 1, data: 1, validityDays: 1, topup: 1, supplierNetworks: 1,
-      fairUse: 1, speed: 1, tethering: 1, activation: 1, bundles: 1, extras: 1,
+      fairUse: 1, speed: 1, tethering: 1, activation: 1, bundles: 1, extras: 1, providerCode: 1,
     })
     .lean<PlanFacts[]>();
   const planById = new Map(plans.map((plan) => [String(plan._id), plan]));
@@ -142,7 +142,7 @@ async function readCatalog(): Promise<DestinationDetail[]> {
           installWithinDays: plan.activation?.preInstallDays || null,
           highSpeedGbPerDay: plan.fairUse?.highSpeedGbPerDay ?? null,
           reducedSpeedMbps: plan.fairUse?.reducedSpeedMbps ?? null,
-          vpn: (plan.bundles ?? []).some((bundle) => bundle.type === "vpn"),
+          vpn: shownBundles(plan.providerCode, plan.bundles).some((bundle) => bundle.type === "vpn"),
           voiceMinutes: plan.extras?.voiceMinutes ?? 0,
           smsCount: plan.extras?.smsCount ?? 0,
         },
@@ -307,7 +307,7 @@ export async function productEsimFacts(productId: string) {
       const link = await EsimProductLink.findOne({ product: new mongoose.Types.ObjectId(productId) }).select({ variants: 1 }).lean();
       if (!link) return null;
       const plans = await EsimPlan.find({ _id: { $in: link.variants.map((variant) => variant.candidates[0]).filter(Boolean) } })
-        .select({ coverage: 1, data: 1, speed: 1, tethering: 1, activation: 1, topup: 1, bundles: 1, extras: 1, supplierNetworks: 1 })
+        .select({ coverage: 1, data: 1, speed: 1, tethering: 1, activation: 1, topup: 1, bundles: 1, extras: 1, supplierNetworks: 1, providerCode: 1 })
         .lean<IEsimPlan[]>();
       return summarizeFacts(
         plans.map((plan) => ({
@@ -321,7 +321,7 @@ export async function productEsimFacts(productId: string) {
           billingStarts: plan.activation?.billingStarts ?? null,
           preInstallDays: plan.activation?.preInstallDays ?? null,
           topupMode: plan.topup.supported ? plan.topup.mode : "none",
-          vpn: (plan.bundles ?? []).some((bundle) => bundle.type === "vpn"),
+          vpn: shownBundles(plan.providerCode, plan.bundles).some((bundle) => bundle.type === "vpn"),
           voiceMinutes: plan.extras?.voiceMinutes ?? 0,
           smsCount: plan.extras?.smsCount ?? 0,
         })),

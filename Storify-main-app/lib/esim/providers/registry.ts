@@ -25,6 +25,8 @@ interface ProviderDefinition {
   secretKeys: readonly string[];
   /** The shopper may pick the day the plan starts (ORD-03): the date is sent with the purchase. */
   scheduledActivation?: boolean;
+  /** Bundles the supplier includes that the store does not offer, so never shows. */
+  hiddenBundles?: readonly string[];
   create(credentials: ProviderCredentials, settlementCurrency: string): EsimProviderAdapter;
 }
 
@@ -49,6 +51,8 @@ export const PROVIDER_DEFINITIONS = {
     displayName: "Stellar",
     credentialKeys: ["apiKey", "baseUrl"],
     secretKeys: ["apiKey"],
+    // Its free VPN is not part of what the store sells.
+    hiddenBundles: ["vpn"],
     create: (credentials) =>
       new StellarAdapter({
         apiKey: required(credentials, "apiKey", "Stellar"),
@@ -108,6 +112,12 @@ export function isProviderCode(code: string): code is ProviderCode {
 export function supportsScheduledActivation(code: string): boolean {
   if (/^fake(-[a-z0-9]+)?$/.test(code)) return fakeEnabled();
   return isProviderCode(code) && (PROVIDER_DEFINITIONS[code] as ProviderDefinition).scheduledActivation === true;
+}
+
+/** A plan's or eSIM's bundles without those its supplier's are not shown. */
+export function shownBundles<T extends { type: string }>(code: string, bundles: readonly T[] | null | undefined): T[] {
+  const hidden = isProviderCode(code) ? (PROVIDER_DEFINITIONS[code] as ProviderDefinition).hiddenBundles : undefined;
+  return (bundles ?? []).filter((bundle) => !hidden?.includes(bundle.type));
 }
 
 /** The testing supplier exists only where a developer switched it on. */

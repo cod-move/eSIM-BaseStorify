@@ -10,6 +10,7 @@ import { adapterFor } from "@/lib/esim/provider-service";
 import { withProviderLog } from "@/lib/esim/provider-log";
 import { displayOf, planTitle, type Display } from "@/lib/esim/account/display";
 import { ProviderError, type ProviderEsim, type ProviderUsage } from "@/lib/esim/providers/types";
+import { shownBundles } from "@/lib/esim/providers/registry";
 
 /**
  * A shopper's own eSIMs (USR-01..06): listing, one eSIM, refreshing its usage
@@ -83,7 +84,7 @@ function view(profile: IEsimProfile, plan: IEsimPlan | undefined): EsimView {
     topupDeadline: profile.topupDeadline,
     installation: profile.installation,
     customerLink: profile.customerLink,
-    bundles: profile.bundles,
+    bundles: shownBundles(profile.providerCode, profile.bundles),
   };
 }
 

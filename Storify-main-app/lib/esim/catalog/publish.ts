@@ -17,6 +17,7 @@ import { revalidateProductContent } from "@/lib/cache-invalidation";
 import { markProductsForCatalogSync } from "@/lib/meta-catalog/sync-marks";
 import { withInventoryWrite } from "@/lib/inventory/finance-context";
 import { slugify } from "@/lib/esim/providers/json";
+import { shownBundles } from "@/lib/esim/providers/registry";
 import { planProducts, type PlannedProduct, type VariantPlan } from "@/lib/esim/catalog/variants";
 import { ensureCategory } from "@/lib/esim/catalog/category";
 import { ensureTopupProduct } from "@/lib/esim/topup/product";
@@ -99,7 +100,7 @@ function escapeHtml(text: string) {
 async function describe(planned: PlannedProduct) {
   const primaryIds = planned.variants.map((variant) => variant.candidates[0]);
   const plans = await EsimPlan.find({ _id: { $in: primaryIds } })
-    .select({ coverage: 1, speed: 1, tethering: 1, activation: 1, bundles: 1 })
+    .select({ coverage: 1, speed: 1, tethering: 1, activation: 1, bundles: 1, providerCode: 1 })
     .lean<IEsimPlan[]>();
   const countries = new Map<string, string>();
   const networks = new Map<string, Set<string>>();
@@ -129,7 +130,7 @@ async function describe(planned: PlannedProduct) {
     plans.every((plan) => plan.activation.billingStarts === "first_connection")
       ? "Validity starts when the eSIM first connects at your destination."
       : null,
-    plans.every((plan) => plan.bundles.some((bundle) => bundle.type === "vpn")) ? "Includes a VPN subscription." : null,
+    plans.every((plan) => shownBundles(plan.providerCode, plan.bundles).some((bundle) => bundle.type === "vpn")) ? "Includes a VPN subscription." : null,
   ].filter(Boolean);
   const name = `${planned.destination} eSIM`;
   return {

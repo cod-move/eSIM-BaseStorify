@@ -2294,7 +2294,13 @@ function StoreHeaderBar({
                       <ChevronDown className="h-3.5 w-3.5 opacity-55" />
                     </span>
                   </span>
-                ) : null}
+                ) : (
+                  // [esim-patch] P31 — an avatar alone did not read as a menu: the name and an arrow say so.
+                  <span className="hidden items-center gap-1 text-[13px] font-medium leading-none sm:inline-flex">
+                    <span className="max-w-27.5 truncate">{user.name}</span>
+                    <ChevronDown className="h-3.5 w-3.5 opacity-55" />
+                  </span>
+                )}
               </button>
             </DropdownMenuTrigger>
           </div>
@@ -2342,7 +2348,13 @@ function StoreHeaderBar({
                     <ChevronDown className="h-3.5 w-3.5 opacity-55" />
                   </span>
                 </span>
-              ) : null}
+              ) : (
+                // [esim-patch] P31 — as for a member: say what the icon opens.
+                <span className="hidden items-center gap-1 whitespace-nowrap text-[13px] font-medium leading-none sm:inline-flex">
+                  {item.label || t("common.login")}
+                  <ChevronDown className="h-3.5 w-3.5 opacity-55" />
+                </span>
+              )}
             </button>
           </DropdownMenuTrigger>
           {guestMenuContent}
