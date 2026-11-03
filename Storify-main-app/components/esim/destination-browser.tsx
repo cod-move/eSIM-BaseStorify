@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
-import { ArrowRight, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import Link from "@/components/language/link";
 import { Input } from "@/components/ui/input";
 import { useFallbackTranslator } from "@/hooks/use-fallback-translator";
@@ -106,22 +106,28 @@ export function DestinationBrowser({
         )
       ) : active ? (
         <>
-          <div role="tablist" className="flex gap-1 overflow-x-auto border-b">
-            {tabs.map((entry) => (
-              <button
-                key={entry.id}
-                role="tab"
-                type="button"
-                aria-selected={active === entry.id}
-                onClick={() => setTab(entry.id)}
-                className={cn(
-                  "-mb-px shrink-0 border-b-2 px-4 py-2 text-sm font-medium transition-colors",
-                  active === entry.id ? "border-primary text-foreground" : "border-transparent text-muted-foreground hover:text-foreground",
-                )}
-              >
-                {entry.label} <span className="text-xs text-muted-foreground">({entry.count})</span>
-              </button>
-            ))}
+          {/* A pill switch, centred in the home page block. */}
+          <div className={cn("flex", !search && "justify-center")}>
+            <div role="tablist" className="flex max-w-full gap-1 overflow-x-auto rounded-full border bg-card p-1 shadow-sm">
+              {tabs.map((entry) => (
+                <button
+                  key={entry.id}
+                  role="tab"
+                  type="button"
+                  aria-selected={active === entry.id}
+                  onClick={() => setTab(entry.id)}
+                  className={cn(
+                    "shrink-0 rounded-full px-5 py-2 text-sm font-medium transition-colors sm:min-w-32 sm:px-8 sm:text-base",
+                    active === entry.id
+                      ? "bg-gradient-to-r from-primary/85 to-primary text-primary-foreground shadow"
+                      : "text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  {entry.label}
+                  {search ? <span className="ms-1 text-xs opacity-70">({entry.count})</span> : null}
+                </button>
+              ))}
+            </div>
           </div>
           {active === "local" && grouped ? (
             <div className="space-y-8">
@@ -140,9 +146,14 @@ export function DestinationBrowser({
             grid(limit ? byTab(active).slice(0, limit) : byTab(active))
           )}
           {viewAllHref ? (
-            <Link href={viewAllHref} className="inline-flex items-center gap-1 text-sm font-medium text-store-link hover:underline">
-              {t("esim.browse.viewAll", "View all destinations")} <ArrowRight className="h-4 w-4 rtl:rotate-180" />
-            </Link>
+            <div className="flex justify-center pt-2">
+              <Link
+                href={viewAllHref}
+                className="inline-flex h-12 w-full max-w-sm items-center justify-center rounded-full bg-gradient-to-r from-primary/85 to-primary px-8 text-base font-medium text-primary-foreground shadow transition-opacity hover:opacity-90"
+              >
+                {t("esim.browse.viewAll", "View all destinations")}
+              </Link>
+            </div>
           ) : null}
         </>
       ) : (
