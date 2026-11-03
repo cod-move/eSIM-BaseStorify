@@ -86,7 +86,9 @@ function ProviderCard({ provider, canManage }: { provider: AdminProvider; canMan
             </Badge>
           </CardTitle>
           <p className="text-sm text-muted-foreground">
-            {t("admin.esim.planCounts", "{total} plans · {active} switched on · {available} offered", provider.plans)}
+            {provider.numbersOnly
+              ? t("admin.esim.numbersOnlySupplier", "Number cards (stock imported under eSIM → Numbers)")
+              : t("admin.esim.planCounts", "{total} plans · {active} switched on · {available} offered", provider.plans)}
             {" · "}
             {provider.settlementCurrency}
           </p>
@@ -120,10 +122,10 @@ function ProviderCard({ provider, canManage }: { provider: AdminProvider; canMan
               </div>
             );
           })}
-          <div className="space-y-1.5">
+          {provider.numbersOnly ? null : <div className="space-y-1.5">
             <Label htmlFor={`${provider.code}-priority`}>{t("admin.esim.providerPriority", "Priority (lower is preferred when prices tie)")}</Label>
             <Input id={`${provider.code}-priority`} type="number" min={0} disabled={!canManage} value={priority} onChange={(event) => setPriority(event.target.value)} />
-          </div>
+          </div>}
         </div>
 
         <div className="grid gap-3 text-sm sm:grid-cols-2">
@@ -141,7 +143,7 @@ function ProviderCard({ provider, canManage }: { provider: AdminProvider; canMan
               <div className="text-muted-foreground">{t("admin.esim.neverTested", "Not tested yet")}</div>
             )}
           </div>
-          <div className="rounded-lg border p-3">
+          {provider.numbersOnly ? null : <div className="rounded-lg border p-3">
             <div className="mb-1 font-medium">{t("admin.esim.lastSync", "Last catalogue sync")}</div>
             {sync_ ? (
               <div>
@@ -157,7 +159,7 @@ function ProviderCard({ provider, canManage }: { provider: AdminProvider; canMan
             ) : (
               <div className="text-muted-foreground">{t("admin.esim.neverSynced", "Never synced")}</div>
             )}
-          </div>
+          </div>}
         </div>
 
         {canManage ? (
@@ -170,10 +172,10 @@ function ProviderCard({ provider, canManage }: { provider: AdminProvider; canMan
               {busy === "probe" ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <PlugZap className="mr-2 h-4 w-4" />}
               {t("admin.esim.testConnection", "Test connection")}
             </Button>
-            <Button variant="outline" onClick={sync} disabled={busy !== null || !configured || sync_?.status === "running"}>
+            {provider.numbersOnly ? null : <Button variant="outline" onClick={sync} disabled={busy !== null || !configured || sync_?.status === "running"}>
               {busy === "sync" ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
               {t("admin.esim.syncNow", "Sync catalogue")}
-            </Button>
+            </Button>}
           </div>
         ) : null}
       </CardContent>

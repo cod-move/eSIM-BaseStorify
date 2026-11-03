@@ -5,7 +5,7 @@ import { EsimPlan } from "@/models/esim-plan.model";
 import { EsimProvider, type IEsimProvider } from "@/models/esim-provider.model";
 import { adapterFor, applyCredentials, findProvider } from "@/lib/esim/provider-service";
 import { syncProviderCatalog } from "@/lib/esim/catalog/sync";
-import { PROVIDER_DEFINITIONS, isProviderCode } from "@/lib/esim/providers/registry";
+import { PROVIDER_DEFINITIONS, isProviderCode, sellsEsimPlans } from "@/lib/esim/providers/registry";
 
 /**
  * Admin → eSIM → Suppliers (ADM-01): the list, switching a supplier on and
@@ -31,6 +31,8 @@ export interface AdminProvider {
   lastSync: { startedAt: string; finishedAt: string | null; status: string; seen: number; created: number; updated: number; retired: number; error: string | null } | null;
   lastProbe: { at: string; ok: boolean; message: string } | null;
   known: boolean;
+  /** The number-card gateway: no catalogue, so no sync or plan counts. */
+  numbersOnly: boolean;
 }
 
 const iso = (date: Date | null | undefined) => (date ? new Date(date).toISOString() : null);
@@ -68,6 +70,7 @@ function view(provider: IEsimProvider, counts: Map<string, { total: number; acti
       : null,
     lastProbe: provider.lastProbe ? { at: iso(provider.lastProbe.at)!, ok: provider.lastProbe.ok, message: provider.lastProbe.message } : null,
     known: Boolean(definition),
+    numbersOnly: !sellsEsimPlans(provider.code),
   };
 }
 
@@ -109,6 +112,7 @@ export async function listAdminProviders(): Promise<AdminProvider[]> {
       lastSync: null,
       lastProbe: null,
       known: true,
+      numbersOnly: !sellsEsimPlans(code),
     }));
   return [...listed, ...missing];
 }

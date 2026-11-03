@@ -192,3 +192,9 @@ Refunds of these payments are recorded as made by hand (Storify does that for an
 1. Write `providers/<code>.ts` implementing `EsimProviderAdapter`, mapping onto `ProviderPlan` / `ProviderEsim`.
 2. Add an entry to `PROVIDER_DEFINITIONS` in `providers/registry.ts`.
 3. Add tests under `providers/__tests__/` with a faked `fetch`.
+
+| `providers/topconnect.ts` | TopConnect (TravelSim) XML gateway for number cards: card state, data packages, `sbalance` transfers with the account's sequential order id (a wrong one is refused with the expected one, `TopConnectOrderIdError`). Pure TS, amounts in cents. On the Suppliers page for its credentials and connection test only (`numbersOnly`: no catalogue, never synced). The gateway answers only registered IPs and has no test environment |
+| `providers/topconnect-fake.ts` | The gateway in memory, in its own XML: unit tests, and a developer's store with `ESIM_ENABLE_FAKE_PROVIDER=true` and base URL `fake://topconnect` |
+| `numbers/import.ts`, `models/esim-number.model.ts` | Number stock (NUM-01): the supplier's sheet (MSISDN ICCID LPA PIN1 PUK1 PIN2 PUK2 [price premium]) or a CSV → numbers with their country code, price and premium in USD cents; install details (LPA, PIN/PUK) never selected by default |
+| `admin/numbers.ts`, `app/[locale]/admin/esim/numbers` | Admin → eSIM → Numbers: import (check first), free / held / sold / off sale with the customer, search by number, ICCID, batch or email, edit or remove a number never sold |
+| `scripts/esim-dev-numbers.ts` | End-to-end check of the stock and the fake gateway; cleans up its own batch |

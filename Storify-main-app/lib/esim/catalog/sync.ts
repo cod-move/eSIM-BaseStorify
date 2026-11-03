@@ -6,6 +6,7 @@ import { EsimPlan, type IEsimPlan } from "@/models/esim-plan.model";
 import { EsimProvider, type IEsimProvider } from "@/models/esim-provider.model";
 import { EsimProviderLog } from "@/models/esim-provider-log.model";
 import { adapterFor } from "@/lib/esim/provider-service";
+import { sellsEsimPlans } from "@/lib/esim/providers/registry";
 import type { ProviderPlan, TopupRule } from "@/lib/esim/providers/types";
 
 /**
@@ -190,6 +191,7 @@ export async function syncAllCatalogs(): Promise<SyncResult[]> {
   const providers = await EsimProvider.find({ status: "active" }).select("+secretCredentials");
   const results: SyncResult[] = [];
   for (const provider of providers) {
+    if (!sellsEsimPlans(provider.code)) continue;
     results.push(await syncProviderCatalog(provider));
   }
   return results;

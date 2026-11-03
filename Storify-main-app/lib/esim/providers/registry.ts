@@ -4,6 +4,8 @@ import { FakeAdapter, type FakeMode } from "./fake";
 import { MobiMatterAdapter } from "./mobimatter";
 import { RoamWifiAdapter } from "./roamwifi";
 import { StellarAdapter } from "./stellar";
+import { TopConnectAdapter, TopConnectClient } from "./topconnect";
+import { fakeTopConnectFetch } from "./topconnect-fake";
 import { ProviderError, type EsimProviderAdapter } from "./types";
 
 /**
@@ -27,6 +29,8 @@ interface ProviderDefinition {
   scheduledActivation?: boolean;
   /** Bundles the supplier includes that the store does not offer, so never shows. */
   hiddenBundles?: readonly string[];
+  /** Number cards only (TopConnect): no eSIM catalogue to sync. */
+  numbersOnly?: boolean;
   create(credentials: ProviderCredentials, settlementCurrency: string): EsimProviderAdapter;
 }
 
@@ -98,7 +102,28 @@ export const PROVIDER_DEFINITIONS = {
         baseUrl: credentials.baseUrl || undefined,
       }),
   },
+  topconnect: {
+    displayName: "TopConnect",
+    credentialKeys: ["username", "password", "baseUrl"],
+    secretKeys: ["password"],
+    numbersOnly: true,
+    create: (credentials) => new TopConnectAdapter(topConnectClient(credentials)),
+  },
 } satisfies Record<string, ProviderDefinition>;
+
+/** TopConnect's number-card gateway from its credentials; `fake://topconnect` is the in-memory one, for development. */
+export function topConnectClient(credentials: ProviderCredentials): TopConnectClient {
+  const baseUrl = credentials.baseUrl?.trim() || undefined;
+  if (baseUrl?.startsWith("fake://")) {
+    if (!fakeEnabled()) throw new ProviderError("unsupported", "The fake TopConnect gateway is switched off");
+    return new TopConnectClient({ username: "fake", password: "fake", baseUrl: "https://fake.invalid/xmlgate", fetch: fakeTopConnectFetch() });
+  }
+  return new TopConnectClient({
+    username: required(credentials, "username", "TopConnect"),
+    password: required(credentials, "password", "TopConnect"),
+    baseUrl,
+  });
+}
 
 export type ProviderCode = keyof typeof PROVIDER_DEFINITIONS;
 
@@ -112,6 +137,11 @@ export function isProviderCode(code: string): code is ProviderCode {
 export function supportsScheduledActivation(code: string): boolean {
   if (/^fake(-[a-z0-9]+)?$/.test(code)) return fakeEnabled();
   return isProviderCode(code) && (PROVIDER_DEFINITIONS[code] as ProviderDefinition).scheduledActivation === true;
+}
+
+/** Whether a supplier has an eSIM catalogue (every one but the number-card gateway). */
+export function sellsEsimPlans(code: string): boolean {
+  return !(isProviderCode(code) && (PROVIDER_DEFINITIONS[code] as ProviderDefinition).numbersOnly);
 }
 
 /** A plan's or eSIM's bundles without those its supplier's are not shown. */
