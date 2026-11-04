@@ -431,7 +431,8 @@
       "credit": "Credit {amount}",
       "total": "Total",
       "buy": "Buy this number",
-      "signInToBuy": "Sign in to buy"
+      "signInToBuy": "Sign in to buy",
+      "entryFrom": "{count} numbers · from {price}"
     },
     "number": {
       "blocked": "Blocked",
@@ -505,6 +506,10 @@
         "esim-product-details": {
           "name": "eSIM: Plan details",
           "description": "Coverage, networks, data type, activation, hotspot, top-up"
+        },
+        "esim-numbers-entry": {
+          "name": "eSIM: phone numbers",
+          "description": "A slim entry to the numbers page, with a few numbers on sale and the starting price"
         }
       },
       "blocks": {
@@ -522,7 +527,8 @@
         "destination": "Destination",
         "icon": "Icon",
         "text": "Text",
-        "platform": "Phone"
+        "platform": "Phone",
+        "sampleCount": "Numbers shown"
       },
       "options": {
         "local": "Countries",

@@ -431,7 +431,8 @@
       "credit": "话费 {amount}",
       "total": "合计",
       "buy": "购买这个号码",
-      "signInToBuy": "登录后购买"
+      "signInToBuy": "登录后购买",
+      "entryFrom": "{count} 个号码 · {price} 起"
     },
     "number": {
       "blocked": "已停用",
@@ -505,6 +506,10 @@
         "esim-product-details": {
           "name": "eSIM：套餐详情",
           "description": "覆盖、网络、流量类型、激活方式、热点、充值"
+        },
+        "esim-numbers-entry": {
+          "name": "eSIM：手机号码入口",
+          "description": "通往选号页的窄条入口，显示几个在售号码和起售价"
         }
       },
       "blocks": {
@@ -522,7 +527,8 @@
         "destination": "目的地",
         "icon": "图标",
         "text": "说明文字",
-        "platform": "手机系统"
+        "platform": "手机系统",
+        "sampleCount": "展示号码数量"
       },
       "options": {
         "local": "国家/地区",

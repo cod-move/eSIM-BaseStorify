@@ -150,3 +150,28 @@ export async function numberShop(filters: ShopNumberFilters): Promise<NumberShop
     product: product ? { productId: product.productId, variantId: product.variantId } : null,
   };
 }
+
+export interface NumbersTeaser {
+  count: number;
+  fromMinor: number;
+  samples: Array<{ dialCode: string; nationalNumber: string; premium: boolean }>;
+}
+
+/** The homepage entry (NUM-03): how many numbers are on sale, from what price, and a few of them (memorable first). Null when none. */
+export async function numbersTeaser(sampleCount: number): Promise<NumbersTeaser | null> {
+  await connectDB();
+  const match: Record<string, unknown> = onSale(new Date());
+  const [count, cheapest, samples] = await Promise.all([
+    EsimNumber.countDocuments(match),
+    EsimNumber.aggregate<{ price: number }>([{ $match: match }, { $project: { price: { $add: ["$priceMinor", "$premiumMinor"] } } }, { $sort: { price: 1 } }, { $limit: 1 }]),
+    sampleCount > 0
+      ? EsimNumber.find(match).select({ dialCode: 1, nationalNumber: 1, premiumMinor: 1 }).sort({ premiumMinor: -1, msisdn: 1 }).limit(sampleCount).lean()
+      : [],
+  ]);
+  if (!count) return null;
+  return {
+    count,
+    fromMinor: cheapest[0]?.price ?? 0,
+    samples: samples.map((row) => ({ dialCode: row.dialCode, nationalNumber: row.nationalNumber, premium: row.premiumMinor > 0 })),
+  };
+}
