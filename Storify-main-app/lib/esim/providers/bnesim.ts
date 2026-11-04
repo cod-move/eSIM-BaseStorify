@@ -88,10 +88,12 @@ export class BnesimAdapter implements EsimProviderAdapter {
     return { message: "BNESIM credentials accepted", metadata: { areas: areas.length } as JsonObject };
   }
 
+  /** Only the plans that never expire are sold from BNESIM; every other product is left out. */
   async *listPlans(): AsyncIterable<ProviderPlan> {
     const [products, areas] = await Promise.all([this.products(), this.areas()]);
     const index = areaIndex(areas);
     for (const product of products) {
+      if (!isLifetime(product)) continue;
       const plan = mapProduct(product, index, this.currency);
       if (plan) yield plan;
     }
@@ -455,7 +457,8 @@ function coverageOf(product: JsonObject, index: AreaIndex): { countries: string[
   return { countries: [...new Set(countries)], regions: [...new Set(regions)] };
 }
 
-function isLifetime(product: JsonObject) {
+/** A plan that never expires: BNESIM says so in its validity label, or it runs 180 days or more (as the old store judged). */
+export function isLifetime(product: JsonObject) {
   const label = str(product.validity_label).toLowerCase();
   return /no expir|lifetime/.test(label) || (int(product.duration) ?? 0) >= 180;
 }

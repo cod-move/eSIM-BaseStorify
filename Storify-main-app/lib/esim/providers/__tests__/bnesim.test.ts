@@ -48,14 +48,24 @@ describe("BNESIM catalogue", () => {
     assert.equal(mapProduct({ name: "no id" }, index, "USD"), null);
   });
 
-  it("lists plans, logging in once", async () => {
+  it("lists only the plans that never expire, logging in once", async () => {
     const { bnesim, sent } = adapter({
-      "POST /v2.0/enterprise/products/get-products": () => ({ body: { products: [{ id: "P1", volume: 1024, duration: 7, product_coverage: [{ country_iso2: "JP" }], price: 2 }] } }),
+      "POST /v2.0/enterprise/products/get-products": () => ({
+        body: {
+          products: [
+            { id: "P1", volume: 1024, duration: 7, product_coverage: [{ country_iso2: "JP" }], price: 2 },
+            { id: "P2", volume: 1024, duration: 30, validity_label: "No expiration", product_coverage: [{ country_iso2: "JP" }], price: 5 },
+            { id: "P3", volume: 2048, duration: 365, product_coverage: [{ country_iso2: "FR" }], price: 9 },
+            { id: "P4", volume: 2048, duration: 90, validity_label: "90 days", product_coverage: [{ country_iso2: "FR" }], price: 6 },
+          ],
+        },
+      }),
       "GET /v2.0/enterprise/products/get-regions-countries": () => ({ body: AREAS }),
     });
     const plans = [];
     for await (const plan of bnesim.listPlans()) plans.push(plan);
-    assert.equal(plans.length, 1);
+    assert.deepEqual(plans.map((plan) => plan.providerPlanId), ["P2", "P3"], "a 7- or 90-day plan is left out");
+    assert.ok(plans.every((plan) => plan.data.type === "lifetime"));
     assert.equal(sent.filter((request) => request.url.pathname.endsWith("/login")).length, 1);
     assert.ok(sent.filter((request) => !request.url.pathname.endsWith("/login")).every((request) => request.headers.Authorization === "Bearer tok"));
   });
