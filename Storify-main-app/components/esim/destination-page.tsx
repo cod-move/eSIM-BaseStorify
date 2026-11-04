@@ -57,6 +57,8 @@ export async function DestinationPage({
   // CAT-10: countries without an operator are asked about once this page is sent.
   refreshMissingNetworks(destination);
   const coverage = coverageByCountry(destination.countries, destination.networks, locale);
+  // Each card's own plan: its countries and operators (older cached catalogues have none: the destination's).
+  const planCoverage = (destination.coverageSets ?? []).map((set) => coverageByCountry(set.countries, set.networks, locale));
   const local = destination.scope === "local";
   const prices = destination.variants.map((variant) => variant.perDay ? variant.perDay.priceMinor * variant.perDay.minDays : variant.priceMinor);
   const faq = [
@@ -114,6 +116,7 @@ export async function DestinationPage({
             countryCodes={countryCodes}
             regionNames={regionNames}
             coverage={coverage}
+            planCoverage={planCoverage}
             local={local}
             image={destination.image}
           />

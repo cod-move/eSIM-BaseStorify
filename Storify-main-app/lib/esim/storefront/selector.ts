@@ -27,6 +27,8 @@ export interface StorefrontVariant {
   topupRule?: { stackTarget: TopupStackTarget | null; window: TopupWindow | null; retentionDays: number | null } | null;
   /** Countries the traffic exits from (ISO codes); empty when unknown. */
   breakoutIp: string[];
+  /** Which of the destination's `coverageSets` this plan covers (its own countries and operators). */
+  coverageSet?: number;
   /** The shopper may pick the day it starts (ORD-03). */
   scheduledActivation?: boolean;
   /** What the plan card's details show; absent where the catalogue did not say. */

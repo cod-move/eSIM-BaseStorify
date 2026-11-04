@@ -45,8 +45,19 @@ export interface DestinationDetail extends Destination {
   variants: StorefrontVariant[];
   /** Operators by country, from the plans that would fulfil the variants. */
   networks: Array<{ countryCode: string; operator: string; network: string | null }>;
+  /**
+   * The countries and operators of each plan behind a variant (its
+   * `coverageSet`), shared between variants that cover the same, so a card
+   * shows its own plan's coverage, not the whole destination's.
+   */
+  coverageSets: CoverageSet[];
   image: string | null;
   updatedAt: string;
+}
+
+export interface CoverageSet {
+  countries: Array<{ code: string; name: string }>;
+  networks: Array<{ countryCode: string; operator: string; network: string | null }>;
 }
 
 const urlSlug = (productSlug: string) => productSlug.replace(/-esim$/, "");
@@ -109,6 +120,18 @@ async function readCatalog(): Promise<DestinationDetail[]> {
     const countries = new Map<string, string>();
     const networks = new Map<string, { countryCode: string; operator: string; network: string | null }>();
     const scopes = new Map<CoverageScope, number>();
+    const coverageSets: CoverageSet[] = [];
+    const coverageIndex = new Map<string, number>();
+    const coverageSetOf = (plan: PlanFacts) => {
+      const set: CoverageSet = { countries: plan.coverage.countries.map(({ code, name }) => ({ code, name })), networks: networksOfPlan(plan).map(({ countryCode, operator, network }) => ({ countryCode, operator, network: network ?? null })) };
+      const key = JSON.stringify(set);
+      let index = coverageIndex.get(key);
+      if (index === undefined) {
+        index = coverageSets.push(set) - 1;
+        coverageIndex.set(key, index);
+      }
+      return index;
+    };
     let first: PlanFacts | undefined;
     for (const variant of link.variants) {
       const plan = planById.get(String(variant.candidates[0]));
@@ -134,6 +157,7 @@ async function readCatalog(): Promise<DestinationDetail[]> {
           ? { stackTarget: plan.topup.stackTarget ?? null, window: plan.topup.window ?? null, retentionDays: plan.topup.profileRetentionDays ?? null }
           : null,
         breakoutIp: plan.coverage.breakoutIp ?? [],
+        coverageSet: coverageSetOf(plan),
         scheduledActivation: scheduled(variant.candidates),
         details: {
           speed: topSpeedOf([...(plan.speed ?? []), ...networksOfPlan(plan).map((network) => network.network ?? "")]),
@@ -164,6 +188,7 @@ async function readCatalog(): Promise<DestinationDetail[]> {
       variantCount: variants.length,
       variants,
       networks: [...networks.values()].sort((a, b) => a.countryCode.localeCompare(b.countryCode) || a.operator.localeCompare(b.operator)),
+      coverageSets,
       image: product.images?.[0] ?? product.media?.[0]?.url ?? null,
       updatedAt: (product.updatedAt ?? link.publishedAt ?? new Date()).toISOString(),
     });
@@ -178,7 +203,7 @@ const cachedCatalog = unstable_cache(readCatalog, ["esim-storefront-catalog"], {
 
 /** Every listed destination, without its variants. */
 export async function listDestinations(): Promise<Destination[]> {
-  return (await cachedCatalog()).map(({ variants: _variants, networks: _networks, image: _image, updatedAt: _updatedAt, ...destination }) => destination);
+  return (await cachedCatalog()).map(({ variants: _variants, networks: _networks, coverageSets: _coverageSets, image: _image, updatedAt: _updatedAt, ...destination }) => destination);
 }
 
 /** One destination with its variants; `scope` keeps a country page from serving a region and back. */

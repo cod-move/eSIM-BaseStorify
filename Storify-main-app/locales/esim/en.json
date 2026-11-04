@@ -124,7 +124,7 @@
       "topupAddon": "Add more packages",
       "topupNone": "No top-up",
       "ipLocal": "Local IP",
-      "ipUnknown": "Standard",
+      "ipUnknown": "Not specified",
       "buyNow": "Buy now",
       "added": "Added to cart",
       "addFailed": "Could not add to cart",
@@ -149,6 +149,7 @@
       "howToCheck": "To be sure: on iPhone open Settings → General → About and look for \"Digital SIM\" or \"Available SIM\"; on Android dial *#06# and look for an EID. The phone must also be carrier-unlocked."
     },
     "details": {
+      "coverageNote": "This plan only works in the countries and regions it covers. Please check before you buy.",
       "title": "About this eSIM",
       "dataTotal": "A fixed amount of data for the whole trip",
       "dataUnlimited": "Unlimited data",
@@ -354,6 +355,8 @@
       "number": "Number"
     },
     "plans": {
+      "coverageLabel": "Coverage:",
+      "viewPlan": "View plan",
       "title": "Choose a plan",
       "kind": "Data type",
       "kindTotal": "Total data",

@@ -43,6 +43,7 @@ const STOREFRONT_TAG = "esim-storefront";
 
 const DATA_OPTION = "esim-data";
 const VALIDITY_OPTION = "esim-validity";
+const PLAN_OPTION = "esim-plan";
 
 export interface PublishResult {
   created: string[];
@@ -65,7 +66,7 @@ async function eligiblePlans(productSlugs?: string[]): Promise<VariantPlan[]> {
   })
     .select({
       providerCode: 1, productSlug: 1, destination: 1, data: 1, validityDays: 1, duration: 1,
-      cost: 1, retailPriceMinor: 1, pricing: 1, fairUse: 1,
+      cost: 1, retailPriceMinor: 1, pricing: 1, fairUse: 1, coverage: 1, supplierNetworks: 1,
     })
     .lean<IEsimPlan[]>();
   // A plan whose days can be picked but that is not priced per day (or the
@@ -89,6 +90,9 @@ async function eligiblePlans(productSlugs?: string[]): Promise<VariantPlan[]> {
     retailPriceMinor: plan.retailPriceMinor ?? 0,
     costUsdMinor: plan.pricing?.costUsdMinor ?? 0,
     highSpeedGbPerDay: plan.fairUse?.highSpeedGbPerDay ?? null,
+    // The catalogue's operators, else those fetched on their own (CAT-10) — as the storefront shows them.
+    networks: plan.coverage?.networks?.length ? plan.coverage.networks : (plan.supplierNetworks?.list ?? []),
+    breakoutIp: plan.coverage?.breakoutIp ?? [],
   }));
 }
 
@@ -146,6 +150,10 @@ function optionsAndVariants(planned: PlannedProduct, existing: IEsimProductLink 
   const valueId = (option: string, value: string) => `${option}-${slugify(value) || "value"}`;
   const dataValues = [...new Set(planned.variants.map((variant) => variant.dataValue))];
   const validityValues = [...new Set(planned.variants.map((variant) => variant.validityValue))];
+  // A third option only where some variants share data and days but differ in networks or exit IP.
+  const distinct = planned.variants.some((variant) => variant.distinction);
+  const planValue = (variant: PlannedProduct["variants"][number]) => variant.distinction ?? "Standard";
+  const planValues = distinct ? [...new Set(planned.variants.map(planValue))] : [];
   const options = [
     {
       _id: DATA_OPTION,
@@ -159,6 +167,16 @@ function optionsAndVariants(planned: PlannedProduct, existing: IEsimProductLink 
       position: 1,
       values: validityValues.map((value, position) => ({ _id: valueId(VALIDITY_OPTION, value), value, position })),
     },
+    ...(distinct
+      ? [
+          {
+            _id: PLAN_OPTION,
+            name: "Network / IP",
+            position: 2,
+            values: planValues.map((value, position) => ({ _id: valueId(PLAN_OPTION, value), value, position })),
+          },
+        ]
+      : []),
   ];
   const known = new Map((existing?.variants ?? []).map((variant) => [variant.key, variant.variantId]));
   const variants = planned.variants.map((variant) => ({
@@ -177,6 +195,7 @@ function optionsAndVariants(planned: PlannedProduct, existing: IEsimProductLink 
       optionValues: [
         { optionId: DATA_OPTION, optionName: "Data", valueId: valueId(DATA_OPTION, variant.dataValue), value: variant.dataValue },
         { optionId: VALIDITY_OPTION, optionName: "Validity", valueId: valueId(VALIDITY_OPTION, variant.validityValue), value: variant.validityValue },
+        ...(distinct ? [{ optionId: PLAN_OPTION, optionName: "Network / IP", valueId: valueId(PLAN_OPTION, planValue(variant)), value: planValue(variant) }] : []),
       ],
     },
   }));

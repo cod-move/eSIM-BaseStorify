@@ -19,6 +19,8 @@ const base: VariantPlan = {
   retailPriceMinor: 999,
   costUsdMinor: 500,
   highSpeedGbPerDay: null,
+  networks: [{ countryCode: "JP", operator: "Docomo", network: "5G" }],
+  breakoutIp: ["JP"],
 };
 
 describe("planProducts", () => {
@@ -82,7 +84,7 @@ describe("planProducts", () => {
     ]);
     assert.deepEqual(product.variants.map((variant) => variant.name), ["Unlimited / 7 days", "Unlimited / 2–30 days"]);
     const perDay = product.variants[1];
-    assert.equal(perDay.key, "unlimited|0|perday");
+    assert.match(perDay.key, /^unlimited\|0\|perday\|n:[0-9a-f]{8}\|ip:JP$/);
     assert.deepEqual(perDay.perDay, { priceMinor: 249, minDays: 2, maxDays: 30, defaultDays: 3 });
     assert.equal(perDay.priceMinor, 498);
     assert.deepEqual(perDay.candidates, ["cheap", "stl"]);
@@ -100,6 +102,31 @@ describe("planProducts", () => {
     ]);
     assert.equal(product.variants.length, 1);
     assert.deepEqual(product.variants[0].candidates, ["b", "a"]);
+  });
+
+  it("keeps plans on other networks or with another exit IP apart, named so they can be told apart", () => {
+    const [product] = planProducts([
+      { ...base, id: "docomo", retailPriceMinor: 499 },
+      { ...base, id: "docomo2", providerCode: "esimaccess", retailPriceMinor: 599, networks: [{ countryCode: "jp", operator: "Docomo ", network: "5g" }] },
+      { ...base, id: "softbank", networks: [{ countryCode: "JP", operator: "SoftBank", network: "5G" }, { countryCode: "JP", operator: "KDDI", network: "4G" }] },
+      { ...base, id: "hk-ip", breakoutIp: ["HK"] },
+      { ...base, id: "no-ip", breakoutIp: [] },
+      { ...base, id: "other", validityDays: 7 },
+      { ...base, id: "docomo-4g", networks: [{ countryCode: "JP", operator: "Docomo", network: "4G" }], breakoutIp: ["SG"] },
+      { ...base, id: "docomo-5g-sg", networks: [{ countryCode: "JP", operator: "Docomo", network: "5G" }, { countryCode: "JP", operator: "Docomo", network: "4G" }], breakoutIp: ["SG"] },
+    ]);
+    const byPrimary = new Map(product.variants.map((variant) => [variant.candidates[0], variant]));
+    assert.deepEqual(byPrimary.get("docomo")!.candidates, ["docomo", "docomo2"], "the same networks and IP, written differently, are one variant");
+    assert.equal(product.variants.length, 7);
+    assert.equal(byPrimary.get("docomo-4g")!.name, "5GB / 30 days (Docomo 4G)", "the same operator on another generation is named with it");
+    assert.equal(byPrimary.get("docomo-5g-sg")!.name, "5GB / 30 days (Docomo 5G)");
+    assert.equal(byPrimary.get("softbank")!.name, "5GB / 30 days (KDDI, SoftBank)");
+    assert.equal(byPrimary.get("hk-ip")!.name, "5GB / 30 days (IP HK)");
+    assert.equal(byPrimary.get("no-ip")!.name, "5GB / 30 days (IP not stated)");
+    assert.equal(byPrimary.get("other")!.name, "5GB / 7 days", "nothing else shares its data and days");
+    assert.equal(byPrimary.get("other")!.distinction, null);
+    assert.equal(new Set(product.variants.map((variant) => variant.name)).size, product.variants.length, "every name is unique");
+    assert.equal(new Set(product.variants.map((variant) => variant.key)).size, product.variants.length);
   });
 
   it("groups by destination", () => {

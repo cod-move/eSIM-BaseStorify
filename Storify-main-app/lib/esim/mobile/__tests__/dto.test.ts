@@ -89,6 +89,7 @@ describe("the mobile destination shapes", () => {
       { variantId: "v2", name: "Unlimited", priceMinor: 600, dataType: "daily_throttled", megabytes: 0, dataValue: "Unlimited", days: null, perDay: { priceMinor: 200, minDays: 3, maxDays: 30, defaultDays: 7 }, topupMode: "none", breakoutIp: [] },
     ],
     networks: [{ countryCode: "JP", operator: "Docomo", network: null }],
+    coverageSets: [],
     image: null,
     updatedAt: "2026-10-27T00:00:00Z",
   };

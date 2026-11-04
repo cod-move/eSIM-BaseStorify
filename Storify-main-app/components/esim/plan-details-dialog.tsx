@@ -93,7 +93,7 @@ export function PlanDetailsDialog({
     details?.smsCount ? t("esim.plans.smsCount", "{count} texts", { count: details.smsCount }) : null,
   ].filter(Boolean);
 
-  const rows: Array<{ icon: LucideIcon; label: string; body: ReactNode }> = [
+  const rows: Array<{ icon: LucideIcon; label: string; body: ReactNode; note?: string }> = [
     { icon: Database, label: t("esim.details.data", "Data"), body: fairUse ?? dataLine },
     { icon: CalendarDays, label: t("esim.plans.validity", "Validity"), body: labels.days },
     ...(starts ? [{ icon: PlugZap, label: t("esim.plans.activation", "Activation"), body: starts }] : []),
@@ -147,6 +147,7 @@ export function PlanDetailsDialog({
           {labels.coverage}
         </button>
       ),
+      note: t("esim.details.coverageNote", "This plan only works in the countries and regions it covers. Please check before you buy."),
     },
   ];
 
@@ -166,7 +167,10 @@ export function PlanDetailsDialog({
             <div key={row.label} className="flex gap-3 py-3 text-sm">
               <row.icon className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
               <dt className="w-24 shrink-0 font-medium">{row.label}</dt>
-              <dd className="min-w-0 flex-1 text-muted-foreground">{row.body}</dd>
+              <dd className="min-w-0 flex-1 text-muted-foreground">
+                {row.body}
+                {row.note ? <p className="mt-1.5 text-xs text-amber-700 dark:text-amber-400">{row.note}</p> : null}
+              </dd>
             </div>
           ))}
         </dl>

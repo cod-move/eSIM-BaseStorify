@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
-import { CalendarDays, ChevronLeft, ChevronRight, Database, Globe2, Info, Layers, Loader2, MapPin, RefreshCw, type LucideIcon } from "lucide-react";
+import { CalendarDays, ChevronLeft, ChevronRight, Database, Globe2, Info, Layers, MapPin, RefreshCw, type LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { toast } from "@/components/ui/toast-notification";
@@ -34,12 +34,11 @@ import { WishlistButton } from "@/components/products/wishlist-button";
  * A destination's plans (WEB-13/14): filters — data kind, days, data, top-up,
  * exit IP — over a paged grid of plan cards. Every filter keeps all its values
  * in place; one that no plan has alongside the other choices is shown faded,
- * and choosing it clears the choices it cannot go with. A card's button buys
- * the plan now (into the cart, then checkout); a plan with days or a start
- * date to choose opens a small dialog first; the heart keeps the destination
- * in the wishlist. Its top-up line explains the top-up rules, its coverage
- * opens the countries and their networks, and a click elsewhere on the card
- * opens the plan's details.
+ * and choosing it clears the choices it cannot go with. A card's button (and
+ * a click anywhere else on it) opens the plan's details, where it is bought;
+ * a plan with days or a start date to choose opens a small dialog first; the
+ * heart keeps the destination in the wishlist. Its top-up line explains the
+ * top-up rules, and its coverage opens the plan's own countries and networks.
  */
 
 const PAGE_SIZE = 12;
@@ -59,11 +58,13 @@ interface PlanBrowserProps {
   /** Exit-IP country names, made on the server in the page's locale. */
   regionNames: Record<string, string>;
   coverage: CoveredCountry[];
+  /** Each plan's own coverage, by the variant's `coverageSet`; the destination's where missing. */
+  planCoverage?: CoveredCountry[][];
   local: boolean;
   image?: string | null;
 }
 
-export function PlanBrowser({ productId, destinationName, variants, countryCodes, regionNames, coverage, local, image }: PlanBrowserProps) {
+export function PlanBrowser({ productId, destinationName, variants, countryCodes, regionNames, coverage, planCoverage, local, image }: PlanBrowserProps) {
   const t = useFallbackTranslator(useTranslations());
   const { formatPrice } = useCurrency();
   const { addItem } = useCart();
@@ -72,7 +73,7 @@ export function PlanBrowser({ productId, destinationName, variants, countryCodes
   const [page, setPage] = useState(1);
   const [adding, setAdding] = useState<string | null>(null);
   const [buying, setBuying] = useState<StorefrontVariant | null>(null);
-  const [coverageOpen, setCoverageOpen] = useState(false);
+  const [coverageShown, setCoverageShown] = useState<CoveredCountry[] | null>(null);
   const [details, setDetails] = useState<StorefrontVariant | null>(null);
   const [expanded, setExpanded] = useState<Partial<Record<PlanFilterKey, boolean>>>({});
   // Every value a filter has, and those the other choices leave open.
@@ -110,7 +111,7 @@ export function PlanBrowser({ productId, destinationName, variants, countryCodes
         : t("esim.selector.topupNone", "No top-up");
   const breakout = (value: string) => {
     const codes = value ? value.split(",") : [];
-    if (!codes.length) return t("esim.selector.ipUnknown", "Standard");
+    if (!codes.length) return t("esim.selector.ipUnknown", "Not specified");
     if (codes.every((code) => countryCodes.includes(code))) return t("esim.selector.ipLocal", "Local IP");
     return codes.map((code) => regionNames[code] ?? code).join(", ");
   };
@@ -176,16 +177,20 @@ export function PlanBrowser({ productId, destinationName, variants, countryCodes
   }
 
   const chosenCount = PLAN_FILTERS.filter((key) => filters[key]).length;
-  const coverageLabel = local
-    ? (coverage[0]?.name ?? destinationName)
-    : t("esim.plans.countries", "{count} countries", { count: coverage.length });
+  // A card shows its own plan's countries and operators.
+  const coverageOf = (variant: StorefrontVariant) =>
+    (variant.coverageSet !== undefined ? planCoverage?.[variant.coverageSet] : undefined) ?? coverage;
+  const coverageLabel = (countries: CoveredCountry[]) =>
+    local || countries.length < 2
+      ? t("esim.plans.networks", "Networks")
+      : t("esim.plans.countries", "{count} countries", { count: countries.length });
   const cardLabels = (variant: StorefrontVariant): PlanCardLabels => ({
     kind: kind(dataKindOf(variant)),
     days: days(variant),
     ip: breakout([...variant.breakoutIp].sort().join(",")),
     topup: topup(variant.topupMode),
     topupRules: topupRules(variant),
-    coverage: local ? `${coverageLabel} · ${t("esim.plans.networks", "Networks")}` : coverageLabel,
+    coverage: coverageLabel(coverageOf(variant)),
   });
   const priceOf = (variant: StorefrontVariant) => (
     <div className="min-w-0">
@@ -289,7 +294,12 @@ export function PlanBrowser({ productId, destinationName, variants, countryCodes
                   </button>
                   <div className="text-sm text-muted-foreground">{days(variant)}</div>
                 </div>
-                <span className="shrink-0 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">{kind(dataKindOf(variant))}</span>
+                <div className="flex shrink-0 flex-col items-end gap-1">
+                  <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">{kind(dataKindOf(variant))}</span>
+                  {variant.details?.speed ? (
+                    <span className="rounded-full border px-2 py-0.5 text-xs font-semibold tabular-nums text-foreground/80">{variant.details.speed}</span>
+                  ) : null}
+                </div>
               </div>
 
               <ul className="mt-3 space-y-1.5 text-sm text-muted-foreground">
@@ -305,16 +315,21 @@ export function PlanBrowser({ productId, destinationName, variants, countryCodes
                   <TopupInfo title={t("esim.plans.topupRules", "Top-up rules")} lines={topupRules(variant)} />
                 </li>
                 <li>
-                  <button type="button" onClick={() => setCoverageOpen(true)} className="relative z-10 flex max-w-full min-w-0 items-center gap-2 text-start hover:text-foreground">
+                  <button
+                    type="button"
+                    onClick={() => setCoverageShown(coverageOf(variant))}
+                    className="group relative z-10 flex max-w-full min-w-0 items-center gap-2 text-start hover:text-foreground"
+                  >
                     <MapPin className="h-4 w-4 shrink-0" />
+                    <span className="shrink-0">{t("esim.plans.coverageLabel", "Coverage:")}</span>
                     <span className="flex shrink-0 items-center gap-1">
-                      {coverage.slice(0, SHOWN_FLAGS).map((country) => (
+                      {coverageOf(variant).slice(0, SHOWN_FLAGS).map((country) => (
                         <Flag key={country.code} code={country.code} />
                       ))}
                     </span>
-                    <span className="truncate text-store-link underline-offset-2 hover:underline">
-                      {local ? `${coverageLabel} · ${t("esim.plans.networks", "Networks")}` : coverageLabel}
-                    </span>
+                    {coverageOf(variant).length > SHOWN_FLAGS ? (
+                      <span className="shrink-0 text-store-link underline-offset-2 group-hover:underline">+{coverageOf(variant).length - SHOWN_FLAGS}</span>
+                    ) : null}
                   </button>
                 </li>
               </ul>
@@ -323,15 +338,8 @@ export function PlanBrowser({ productId, destinationName, variants, countryCodes
                 {priceOf(variant)}
                 <div className="relative z-10 flex shrink-0 items-center gap-1.5">
                   <WishlistButton productId={productId} size="sm" className="shadow-none" />
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="hover:border-primary hover:text-primary"
-                    onClick={() => buyNow(variant)}
-                    disabled={adding !== null}
-                  >
-                    {adding === variant.variantId ? <Loader2 className="me-1.5 h-4 w-4 animate-spin" /> : null}
-                    {t("esim.selector.buyNow", "Buy now")}
+                  <Button size="sm" variant="outline" className="hover:border-primary hover:text-primary" onClick={() => setDetails(variant)}>
+                    {t("esim.plans.viewPlan", "View plan")}
                   </Button>
                 </div>
               </div>
@@ -369,8 +377,8 @@ export function PlanBrowser({ productId, destinationName, variants, countryCodes
         productId={productId}
         labels={details ? cardLabels(details) : null}
         price={details ? priceOf(details) : null}
-        coverage={coverage}
-        onCoverage={() => setCoverageOpen(true)}
+        coverage={details ? coverageOf(details) : coverage}
+        onCoverage={() => details && setCoverageShown(coverageOf(details))}
         onBuy={() => {
           // A plan with a choice left goes on to its own dialog.
           if (details && (details.perDay || details.scheduledActivation)) setDetails(null);
@@ -378,7 +386,7 @@ export function PlanBrowser({ productId, destinationName, variants, countryCodes
         }}
         buying={adding !== null}
       />
-      <CoverageDialog open={coverageOpen} onOpenChange={setCoverageOpen} title={name} countries={coverage} />
+      <CoverageDialog open={coverageShown !== null} onOpenChange={(next) => !next && setCoverageShown(null)} title={name} countries={coverageShown ?? coverage} />
       <PlanBuyDialog
         variant={buying}
         onClose={() => setBuying(null)}

@@ -124,7 +124,7 @@
       "topupAddon": "可加购套餐",
       "topupNone": "不可充值",
       "ipLocal": "本地 IP",
-      "ipUnknown": "标准",
+      "ipUnknown": "不确定",
       "buyNow": "立即购买",
       "added": "已加入购物车",
       "addFailed": "加入购物车失败",
@@ -149,6 +149,7 @@
       "howToCheck": "确认方法：iPhone 打开「设置 → 通用 → 关于本机」，看有没有「数字 SIM」或「可用的 SIM」；安卓手机拨 *#06#，看有没有 EID。手机还必须没有网络锁。"
     },
     "details": {
+      "coverageNote": "该套餐仅在覆盖国家/地区可用，购买前请确认",
       "title": "关于这款 eSIM",
       "dataTotal": "整个行程共用固定流量",
       "dataUnlimited": "不限流量",
@@ -354,6 +355,8 @@
       "number": "号码"
     },
     "plans": {
+      "coverageLabel": "套餐覆盖范围：",
+      "viewPlan": "查看套餐",
       "title": "选择套餐",
       "kind": "流量类型",
       "kindTotal": "总流量",
