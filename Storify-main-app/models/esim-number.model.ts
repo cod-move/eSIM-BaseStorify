@@ -11,10 +11,23 @@ const { Schema, models, model } = mongoose;
  * filter. `install` (LPA, PIN/PUK) is what installs and unlocks the card: it
  * is never selected by default and reaches the owner only after payment
  * (NUM-07). Prices are USD cents: the number's price plus a premium for a
- * memorable one. `card` caches the last `card_stat` answer (NUM-06).
+ * memorable one. `card` caches the last `card_stat` answer (NUM-06):
+ * balance, state, last use and the packages on the card.
  */
 
 export type EsimNumberStatus = "available" | "reserved" | "sold" | "retired";
+
+/** A package on the card as `card_stat` reports it; bytes in TopConnect's own (1 MB = 1,024,000). */
+export interface NumberCardPackage {
+  kind: string;
+  packetId: string | null;
+  name: string | null;
+  activatedAt: Date | null;
+  expiresAt: Date | null;
+  totalBytes: number | null;
+  leftBytes: number | null;
+  status: string | null;
+}
 
 export interface IEsimNumber extends mongoose.Document {
   providerCode: string;
@@ -47,6 +60,7 @@ export interface IEsimNumber extends mongoose.Document {
     currency: string | null;
     blocked: boolean | null;
     lastUsedAt: Date | null;
+    packages?: NumberCardPackage[];
   } | null;
   legacyId?: number | null;
   createdAt: Date;
@@ -102,6 +116,24 @@ const EsimNumberSchema = new Schema<IEsimNumber>(
           currency: { type: String, default: null },
           blocked: { type: Boolean, default: null },
           lastUsedAt: { type: Date, default: null },
+          packages: {
+            type: [
+              new Schema(
+                {
+                  kind: String,
+                  packetId: { type: String, default: null },
+                  name: { type: String, default: null },
+                  activatedAt: { type: Date, default: null },
+                  expiresAt: { type: Date, default: null },
+                  totalBytes: { type: Number, default: null },
+                  leftBytes: { type: Number, default: null },
+                  status: { type: String, default: null },
+                },
+                { _id: false },
+              ),
+            ],
+            default: [],
+          },
         },
         { _id: false },
       ),

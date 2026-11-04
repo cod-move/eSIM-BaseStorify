@@ -6,22 +6,26 @@ import { EsimFulfillment } from "@/models/esim-fulfillment.model";
 import { EsimPlan } from "@/models/esim-plan.model";
 import { EsimProfile, type IEsimProfile } from "@/models/esim-profile.model";
 import { EsimTopup } from "@/models/esim-topup.model";
+import { EsimNumberOrder } from "@/models/esim-number-order.model";
 import { planTitle } from "@/lib/esim/account/display";
 import { esimUnitOutcome, topupUnitOutcome, type UnitOutcome } from "@/lib/esim/orders/unit-status";
 
 /**
  * The eSIM part of an order (ORD-11, patch P13): each eSIM bought for it and
- * each top-up, with where it stands — for the shopper's order page and the
+ * each top-up and number card, with where it stands — for the shopper's order page and the
  * admin's. Null when the order has none, so the page shows nothing.
  */
 
 export interface OrderEsimUnit {
-  kind: "esim" | "topup";
+  kind: "esim" | "topup" | "number";
   /** Plan or top-up name. */
   title: string;
   outcome: UnitOutcome;
   /** The eSIM's page: `/account/esims/<id>` for the shopper, `/admin/esim/esims/<id>` for admins. */
   esimId: string | null;
+  /** A number card's page: `/account/esims/numbers/<id>` for the shopper; admins find it by number. */
+  numberId?: string | null;
+  msisdn?: string | null;
   iccid: string | null;
   refundAmount: number | null;
   /** Admins only. */
@@ -44,11 +48,12 @@ export async function orderEsimUnits(orderId: string, options: { shopperId?: str
     if (!owned) return null;
   }
   const admin = !options.shopperId;
-  const [jobs, topups] = await Promise.all([
+  const [jobs, topups, numbers] = await Promise.all([
     EsimFulfillment.find({ order: orderId }).sort({ lineIndex: 1, unit: 1 }).lean(),
     EsimTopup.find({ order: orderId }).sort({ lineIndex: 1 }).lean(),
+    EsimNumberOrder.find({ order: orderId }).sort({ lineIndex: 1 }).lean(),
   ]);
-  if (!jobs.length && !topups.length) return null;
+  if (!jobs.length && !topups.length && !numbers.length) return null;
 
   const [profiles, plans] = await Promise.all([
     EsimProfile.find({ order: orderId }).select({ lineIndex: 1, unit: 1, iccid: 1, status: 1, cancellation: 1, snapshot: 1, durationDays: 1, plan: 1 }).lean<IEsimProfile[]>(),
@@ -90,6 +95,21 @@ export async function orderEsimUnits(orderId: string, options: { shopperId?: str
       jobState: admin ? topup.state : null,
       providerCode: admin ? topup.providerCode || null : null,
       lastError: admin && topup.lastError ? `${topup.lastError.code}: ${topup.lastError.message}` : null,
+    });
+  }
+  for (const number of numbers) {
+    units.push({
+      kind: "number",
+      title: number.msisdn ? `+${number.msisdn}` : "Phone number",
+      outcome: topupUnitOutcome({ state: number.state === "fulfilled" ? "completed" : number.state, refundState: number.refund?.state ?? null }),
+      esimId: null,
+      numberId: number.state === "fulfilled" && number.number ? String(number.number) : null,
+      msisdn: number.msisdn || null,
+      iccid: null,
+      refundAmount: number.refund?.amount ?? null,
+      jobState: admin ? number.state : null,
+      providerCode: admin ? "topconnect" : null,
+      lastError: admin && number.lastError ? `${number.lastError.code}: ${number.lastError.message}` : null,
     });
   }
   return units;

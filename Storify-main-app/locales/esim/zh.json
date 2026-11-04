@@ -349,7 +349,9 @@
       "refundPending": "未能开通 · 退款处理中",
       "cancelled": "已取消",
       "openProblems": "打开「eSIM → 问题」",
-      "installHint": "打开 eSIM 可查看二维码和安装步骤，相同内容也已发送到你的邮箱。"
+      "installHint": "打开 eSIM 可查看二维码和安装步骤，相同内容也已发送到你的邮箱。",
+      "numberReady": "已归你 · 可安装",
+      "number": "号码"
     },
     "plans": {
       "title": "选择套餐",
@@ -430,6 +432,26 @@
       "total": "合计",
       "buy": "购买这个号码",
       "signInToBuy": "登录后购买"
+    },
+    "number": {
+      "blocked": "已停用",
+      "active": "使用中",
+      "pending": "正在充入号码：{items}，通常几分钟内完成。",
+      "card": "余额和流量",
+      "balance": "话费余额",
+      "packet": "流量包",
+      "packetOrdered": "下次上网时开始生效",
+      "packetUntil": "有效至 {date}",
+      "noPackets": "号码目前没有流量包。",
+      "noCard": "运营商返回后会显示余额，可点刷新查看。",
+      "stale": "运营商刚才没有响应，下面是 {time} 的数据。",
+      "pinHint": "请妥善保管 PIN 和 PUK，手机要求解锁时会用到。",
+      "lastUsed": "最后使用",
+      "validUntil": "号码保留至",
+      "validHint": "号码在最后一次使用后保留一年，请定期使用以免被回收。",
+      "myNumbers": "我的号码",
+      "creditLeft": "余额 {amount}",
+      "keptUntil": "保留至 {date}"
     }
   },
   "admin": {

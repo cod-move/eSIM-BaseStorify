@@ -26,6 +26,9 @@ import { planTitle } from "@/lib/esim/account/display";
 import { findTopupProduct } from "@/lib/esim/topup/product";
 import { EsimNumberOrder } from "@/models/esim-number-order.model";
 import { findNumberProduct } from "@/lib/esim/numbers/product";
+import { EsimNumber } from "@/models/esim-number.model";
+import { parseLpa } from "@/lib/esim/numbers/install";
+import { formatAmount } from "@/lib/esim/numbers/line";
 
 /**
  * What happens to an order once its eSIM jobs settle (ORD-09/10, NTF-01/02).
@@ -37,6 +40,8 @@ import { findNumberProduct } from "@/lib/esim/numbers/product";
  *   refund by hand. The shopper is told which happened.
  * - Completed top-ups (TOP-04) get a short "your top-up is on your eSIM"
  *   email; failed ones are refunded with the eSIMs (TOP-07).
+ * - Numbers handed over (NUM-05/07) are emailed with their QR code and
+ *   manual details; PIN and PUK stay on the number's page in the account.
  * - eSIMs waiting for a supplier to be topped up (a balance hold) do not hold
  *   back the issued ones: those go out, the shopper is told the rest follow,
  *   and the order settles when the held ones are issued or fail.
@@ -133,6 +138,71 @@ async function sendDelivery(order: OrderView, profiles: IEsimProfile[], dedupeKe
   return sendEmail({
     to,
     subject: `Your eSIM for order ${order.orderNumber}`,
+    html,
+    attachments,
+    category: "esim-delivery",
+    dedupeKey,
+    settings,
+  });
+}
+
+/** A number card's delivery (NUM-07): QR attached, manual details, the number's page for PIN/PUK and its balance. */
+async function sendNumberDelivery(order: OrderView, jobs: Array<{ _id: unknown; number: unknown; line?: { recharge?: number; rechargeCurrency?: string; packetName?: string } | null }>, dedupeKey: string) {
+  const numbers = await EsimNumber.find({ _id: { $in: jobs.map((job) => job.number as mongoose.Types.ObjectId) } })
+    .select("+install")
+    .lean<Array<{ _id: mongoose.Types.ObjectId; dialCode: string; nationalNumber: string; iccid: string; install?: { lpa?: string } }>>();
+  if (!numbers.length) return false;
+  await noticeToShopper(order, {
+    title: numbers.length > 1 ? "Your numbers are ready" : "Your number is ready",
+    message: `Order ${order.orderNumber}: ${numbers.map((number) => `+${number.dialCode} ${number.nationalNumber}`).join(", ")}. Open it to install.`,
+    link: numbers.length === 1 ? `/account/esims/numbers/${numbers[0]._id}` : "/account/esims",
+    key: dedupeKey,
+  });
+  const to = await orderContactEmail(order);
+  if (!to) return false;
+  const settings = await getSettings();
+  const storeName = settings.general?.storeName || process.env.NEXT_PUBLIC_APP_NAME || "Our store";
+  const attachments = [];
+  const blocks = [];
+  for (const number of numbers) {
+    const lpa = number.install?.lpa ?? null;
+    const title = `+${number.dialCode} ${number.nationalNumber}`;
+    const file = `number-${number.dialCode}${number.nationalNumber}.png`;
+    if (lpa) attachments.push({ filename: file, content: await qrPng(lpa), contentType: "image/png" });
+    const job = jobs.find((entry) => String(entry.number) === String(number._id));
+    const extras = [
+      job?.line?.recharge ? `${formatAmount(job.line.recharge, job.line.rechargeCurrency ?? "EUR")} credit` : null,
+      job?.line?.packetName ?? null,
+    ].filter(Boolean);
+    const links = installLinks(lpa);
+    const manual = parseLpa(lpa);
+    const row = (label: string, value: string | null | undefined) =>
+      value ? `<tr><td style="padding:4px 12px 4px 0;color:#666">${label}</td><td style="padding:4px 0;font-family:monospace;word-break:break-all">${escapeHtml(value)}</td></tr>` : "";
+    blocks.push(`
+    <div style="border:1px solid #e5e5e5;border-radius:8px;padding:16px;margin:16px 0">
+      <h3 style="margin:0 0 8px;font-family:monospace">${escapeHtml(title)}</h3>
+      ${extras.length ? `<p style="margin:0 0 12px">Also bought: ${escapeHtml(extras.join(", "))} — being added to the number now.</p>` : ""}
+      ${lpa ? `<p style="margin:0 0 12px">Scan the attached QR code <b>${escapeHtml(file)}</b> with the phone that will use this number, or install it by hand with the details below.</p>` : ""}
+      ${links ? `<p style="margin:0 0 12px"><a href="${escapeHtml(links.ios)}">Install on iPhone (iOS 17.4+)</a> &nbsp;·&nbsp; <a href="${escapeHtml(links.android)}">Install on Android</a></p>` : ""}
+      <table style="border-collapse:collapse;font-size:14px">
+        ${row("SM-DP+ address", manual.smdpAddress)}
+        ${row("Activation code", manual.matchingId)}
+        ${row("ICCID", number.iccid)}
+      </table>
+      <p style="margin:12px 0 0">The PIN and PUK, the balance and the data packages are on the number's page in your account (My eSIMs).</p>
+    </div>`);
+  }
+  const html = `
+    <div style="font-family:Arial,Helvetica,sans-serif;max-width:640px;margin:0 auto;color:#222">
+      <h2>Your number${numbers.length > 1 ? "s are" : " is"} ready</h2>
+      <p>Order <b>${escapeHtml(order.orderNumber)}</b>. Install the eSIM while you have Wi-Fi. The number stays yours for a year after it was last used.</p>
+      ${blocks.join("")}
+      <p style="color:#666;font-size:13px">Keep this email: a QR code can usually be installed only once. If you need help, just reply.</p>
+      <p style="color:#666;font-size:13px">${escapeHtml(storeName)}</p>
+    </div>`;
+  return sendEmail({
+    to,
+    subject: `Your number for order ${order.orderNumber}`,
     html,
     attachments,
     category: "esim-delivery",
@@ -268,7 +338,7 @@ export async function settleOrderDelivery(orderId: string) {
   const failed = jobs.filter((job) => job.state === "failed");
   const completedTopups = topups.filter((topup) => topup.state === "completed");
   const failedTopups = topups.filter((topup) => topup.state === "failed");
-  // Number cards (NUM-05): handed over or failed; their install email is sent with the number's page (NUM-07).
+  // Number cards (NUM-05): handed over or failed.
   const givenNumbers = numbers.filter((number) => number.state === "fulfilled");
   const failedNumbers = numbers.filter((number) => number.state === "failed");
 
@@ -280,6 +350,12 @@ export async function settleOrderDelivery(orderId: string) {
     const batch = createHash("sha1").update(undelivered.map((job) => String(job._id)).sort().join(",")).digest("hex").slice(0, 12);
     await sendDelivery(order, profiles, `esim-delivery:${orderId}:${batch}`);
     await EsimFulfillment.updateMany({ _id: { $in: undelivered.map((job) => job._id) } }, { $set: { deliveredAt: new Date() } });
+  }
+  const undeliveredNumbers = givenNumbers.filter((number) => !number.deliveredAt);
+  if (undeliveredNumbers.length) {
+    const batch = createHash("sha1").update(undeliveredNumbers.map((number) => String(number._id)).sort().join(",")).digest("hex").slice(0, 12);
+    await sendNumberDelivery(order, undeliveredNumbers, `esim-number-delivery:${orderId}:${batch}`).catch((error) => console.error("Number email failed:", error));
+    await EsimNumberOrder.updateMany({ _id: { $in: undeliveredNumbers.map((number) => number._id) } }, { $set: { deliveredAt: new Date() } });
   }
   const unannounced = completedTopups.filter((topup) => !topup.notifiedAt);
   if (unannounced.length) {

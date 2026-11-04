@@ -45,7 +45,7 @@ export async function OrderEsimPanel({ orderId, locale, audience }: { orderId: s
   const outcome = (unit: OrderEsimUnit) => {
     switch (unit.outcome) {
       case "issued":
-        return unit.kind === "topup" ? tr("esim.order.topupDone", "Added") : tr("esim.order.issued", "Ready to install");
+        return unit.kind === "topup" ? tr("esim.order.topupDone", "Added") : unit.kind === "number" ? tr("esim.order.numberReady", "Yours · ready to install") : tr("esim.order.issued", "Ready to install");
       case "preparing":
         return unit.kind === "topup" ? tr("esim.order.topupPreparing", "Being added") : tr("esim.order.preparing", "Being prepared");
       case "refunded":
@@ -56,7 +56,13 @@ export async function OrderEsimPanel({ orderId, locale, audience }: { orderId: s
         return tr("esim.order.cancelled", "Cancelled");
     }
   };
-  const href = (unit: OrderEsimUnit) => (unit.esimId ? (admin ? `/admin/esim/esims/${unit.esimId}` : `/account/esims/${unit.esimId}`) : null);
+  const href = (unit: OrderEsimUnit) => {
+    if (unit.kind === "number") {
+      if (admin) return unit.msisdn ? `/admin/esim/numbers?search=${unit.msisdn}` : null;
+      return unit.numberId ? `/account/esims/numbers/${unit.numberId}` : null;
+    }
+    return unit.esimId ? (admin ? `/admin/esim/esims/${unit.esimId}` : `/account/esims/${unit.esimId}`) : null;
+  };
 
   return (
     <Card>
@@ -72,7 +78,7 @@ export async function OrderEsimPanel({ orderId, locale, audience }: { orderId: s
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="min-w-0">
                 <div className="font-medium">
-                  {unit.kind === "topup" ? `${tr("esim.order.topup", "Top-up")}: ` : ""}
+                  {unit.kind === "topup" ? `${tr("esim.order.topup", "Top-up")}: ` : unit.kind === "number" ? `${tr("esim.order.number", "Number")}: ` : ""}
                   {unit.title}
                 </div>
                 <div className="text-xs text-muted-foreground">
@@ -101,7 +107,7 @@ export async function OrderEsimPanel({ orderId, locale, audience }: { orderId: s
             {tr("esim.order.openProblems", "Open eSIM → Problems")}
           </Link>
         ) : null}
-        {!admin && units.some((unit) => unit.outcome === "issued" && unit.kind === "esim") ? (
+        {!admin && units.some((unit) => unit.outcome === "issued" && unit.kind !== "topup") ? (
           <p className="text-xs text-muted-foreground">{tr("esim.order.installHint", "Open an eSIM for its QR code and install steps. The same details were emailed to you.")}</p>
         ) : null}
       </CardContent>

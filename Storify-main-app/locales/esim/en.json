@@ -349,7 +349,9 @@
       "refundPending": "Could not be issued · refund on its way",
       "cancelled": "Cancelled",
       "openProblems": "Open eSIM → Problems",
-      "installHint": "Open an eSIM for its QR code and install steps. The same details were emailed to you."
+      "installHint": "Open an eSIM for its QR code and install steps. The same details were emailed to you.",
+      "numberReady": "Yours · ready to install",
+      "number": "Number"
     },
     "plans": {
       "title": "Choose a plan",
@@ -430,6 +432,26 @@
       "total": "Total",
       "buy": "Buy this number",
       "signInToBuy": "Sign in to buy"
+    },
+    "number": {
+      "blocked": "Blocked",
+      "active": "Active",
+      "pending": "Being added to the number: {items}. This usually takes a few minutes.",
+      "card": "Balance and data",
+      "balance": "credit",
+      "packet": "Data package",
+      "packetOrdered": "Starts with your next data session",
+      "packetUntil": "Until {date}",
+      "noPackets": "No data package on the number right now.",
+      "noCard": "The balance appears once the network answers. Refresh to check.",
+      "stale": "The network did not answer just now; this is from {time}.",
+      "pinHint": "Keep the PIN and PUK private: they unlock the number if the phone asks for them.",
+      "lastUsed": "Last used",
+      "validUntil": "Number kept until",
+      "validHint": "A number stays yours for a year after it was last used. Use it now and then to keep it.",
+      "myNumbers": "My numbers",
+      "creditLeft": "Credit {amount}",
+      "keptUntil": "Kept until {date}"
     }
   },
   "admin": {

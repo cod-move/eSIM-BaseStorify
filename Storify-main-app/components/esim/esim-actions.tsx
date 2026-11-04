@@ -21,7 +21,8 @@ async function readError(response: Response, fallback: string) {
   }
 }
 
-export function RefreshUsageButton({ esimId }: { esimId: string }) {
+/** `endpoint`: a number card's page refreshes from its own route (NUM-06). */
+export function RefreshUsageButton({ esimId, endpoint }: { esimId: string; endpoint?: string }) {
   const t = useFallbackTranslator(useTranslations());
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -30,7 +31,7 @@ export function RefreshUsageButton({ esimId }: { esimId: string }) {
   async function refresh() {
     setBusy(true);
     try {
-      const response = await fetch(`/api/esim/me/esims/${esimId}/refresh`, { method: "POST" });
+      const response = await fetch(endpoint ?? `/api/esim/me/esims/${esimId}/refresh`, { method: "POST" });
       if (!response.ok) {
         toast.error(await readError(response, t("esim.account.refreshFailed", "Could not update usage")));
         return;

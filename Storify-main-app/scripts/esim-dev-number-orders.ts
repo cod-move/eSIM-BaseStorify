@@ -1,6 +1,7 @@
 /**
- * End-to-end check of buying a number card (NUM-03..05) against a development
- * database. Nothing is sent to TopConnect.
+ * End-to-end check of buying a number card (NUM-03..07) against a development
+ * database. Nothing is sent to TopConnect: the account pages read the fake
+ * gateway through a temporary supplier (an existing real one is left alone).
  *
  *   pnpm exec tsx --env-file-if-exists=.env --require ./scripts/lib/finance-cli.cjs \
  *     scripts/esim-dev-number-orders.ts
@@ -11,7 +12,9 @@
  * shopper refused while it is held and served once the hold ran out, paid
  * orders carried out (the number handed over with its recharge and package
  * waiting; a number taken meanwhile → refunded to store credit), and the
- * release of holds nobody paid for. Removes everything it created — the
+ * release of holds nobody paid for; then the buyer's numbers, the number's
+ * page (card read, install details, pending recharge), the delivery email and
+ * the order page's panel. Removes everything it created — the
  * number product too, if it made it — and reports any collection whose
  * document count changed. Refuses to run with NODE_ENV=production.
  */
@@ -22,6 +25,8 @@ import { EsimFxRate } from "@/models/esim-fx-rate.model";
 import { EsimNumber } from "@/models/esim-number.model";
 import { EsimNumberOrder } from "@/models/esim-number-order.model";
 import { EsimNumberPackage } from "@/models/esim-number-package.model";
+import { EsimProvider } from "@/models/esim-provider.model";
+import { EsimProviderLog } from "@/models/esim-provider-log.model";
 import { getEsimSettings } from "@/models/esim-pricing.model";
 
 const tag = `e2e-numbers-${Date.now()}`;
@@ -34,6 +39,7 @@ const created = {
   users: [] as Id[],
   product: null as Id | null,
   fxRate: null as Id | null,
+  provider: null as Id | null,
   settingsNumberProduct: undefined as Id | null | undefined,
 };
 
@@ -196,6 +202,33 @@ async function run() {
   await EsimNumber.updateMany({ _id: { $in: [second, third] } }, { $set: { "reservation.until": new Date(Date.now() - 1000) } });
   assert.ok((await releaseExpiredReservations()) >= 2);
   assert.deepEqual((await EsimNumber.find({ _id: { $in: [first, second, third] } }).sort({ msisdn: 1 }).lean()).map((row) => row.status), ["sold", "available", "available"]);
+  // NUM-06/07: the buyer's numbers and the number's page; never another shopper's.
+  const { listCustomerNumbers, getCustomerNumber } = await import("@/lib/esim/numbers/account");
+  const { orderEsimUnits } = await import("@/lib/esim/orders/order-panel");
+  assert.deepEqual((await listCustomerNumbers(String(alice))).map((row) => row.id), [first]);
+  assert.equal(await getCustomerNumber(String(bob), first), null);
+  const existingProvider = await EsimProvider.findOne({ code: "topconnect" }).lean();
+  const fakeGateway = !existingProvider || (existingProvider.credentials as unknown as Record<string, string> | undefined)?.baseUrl === "fake://topconnect";
+  if (!existingProvider) {
+    created.provider = (await EsimProvider.create({ code: "topconnect", name: "TopConnect (dev check)", status: "active", settlementCurrency: "EUR", credentials: { baseUrl: "fake://topconnect" } }))._id as Id;
+  }
+  const page = await getCustomerNumber(String(alice), first);
+  assert.ok(page);
+  assert.equal(page.install.pin1, "1234");
+  assert.equal(page.install.smdpAddress, "rsp.fake.invalid");
+  assert.deepEqual(page.pending, { recharge: { amountMinor: 1000, currency: "EUR" }, packet: `${tag} EU 5GB` });
+  assert.equal(page.orderNumber, `${tag}-1`);
+  if (fakeGateway) {
+    assert.equal(page.refreshFailed, false);
+    assert.ok(page.card?.checkedAt, "the card was read from the gateway");
+  } else {
+    console.log("Skipped the card read: a real TopConnect supplier is set up here.");
+  }
+  assert.ok((await EsimNumberOrder.findOne({ order: order1 }).lean())!.deliveredAt, "the number was emailed");
+
+  const panel = await orderEsimUnits(order1, { shopperId: String(alice) });
+  assert.deepEqual(panel?.map((unit) => [unit.kind, unit.outcome, unit.numberId]), [["number", "issued", first]]);
+  assert.deepEqual((await orderEsimUnits(order2))?.map((unit) => [unit.kind, unit.outcome]), [["number", "refunded"]]);
   console.log("Number ordering check passed.");
 }
 
@@ -234,10 +267,16 @@ async function cleanup() {
     );
   }
   if (created.fxRate) await EsimFxRate.deleteOne({ _id: created.fxRate });
+  if (created.provider) {
+    await EsimProviderLog.deleteMany({ provider: created.provider });
+    await EsimProvider.deleteOne({ _id: created.provider });
+  }
+  await db.collection("emaildeliveries").deleteMany({ $or: [{ subject: byTag }, { dedupeKey: { $in: orders.map((id) => new RegExp(String(id))) } }] }).catch(() => undefined);
 }
 
 async function main() {
   if (process.env.NODE_ENV === "production") throw new Error("Refusing to run against production");
+  process.env.ESIM_ENABLE_FAKE_PROVIDER = "true";
   await connectDB();
   const before = await counts();
   try {
