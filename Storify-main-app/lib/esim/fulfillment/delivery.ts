@@ -25,7 +25,8 @@ import { refundFailedEsims, type EsimRefundResult } from "@/lib/esim/fulfillment
 import { planTitle } from "@/lib/esim/account/display";
 import { findTopupProduct } from "@/lib/esim/topup/product";
 import { EsimNumberOrder } from "@/models/esim-number-order.model";
-import { findNumberProduct } from "@/lib/esim/numbers/product";
+import { findNumberProduct, findNumberTopupProduct } from "@/lib/esim/numbers/product";
+import { EsimNumberOp, type IEsimNumberOp } from "@/models/esim-number-op.model";
 import { EsimNumber } from "@/models/esim-number.model";
 import { parseLpa } from "@/lib/esim/numbers/install";
 import { formatAmount } from "@/lib/esim/numbers/line";
@@ -42,6 +43,9 @@ import { formatAmount } from "@/lib/esim/numbers/line";
  *   email; failed ones are refunded with the eSIMs (TOP-07).
  * - Numbers handed over (NUM-05/07) are emailed with their QR code and
  *   manual details; PIN and PUK stay on the number's page in the account.
+ *   Recharges and data packages put on a number (NUM-08/09) get a short
+ *   email; failed ones are refunded with the rest, and those a person must
+ *   settle (`manual`) wait for the admins.
  * - eSIMs waiting for a supplier to be topped up (a balance hold) do not hold
  *   back the issued ones: those go out, the shopper is told the rest follow,
  *   and the order settles when the held ones are issued or fail.
@@ -211,6 +215,34 @@ async function sendNumberDelivery(order: OrderView, jobs: Array<{ _id: unknown; 
   });
 }
 
+/** Credit or a data package is on a number (NUM-08/09): a short email and a notice. */
+async function sendNumberOpsDone(order: OrderView, ops: IEsimNumberOp[]) {
+  const batch = createHash("sha1").update(ops.map((op) => String(op._id)).sort().join(",")).digest("hex").slice(0, 12);
+  const what = (op: IEsimNumberOp) => (op.kind === "packet" ? op.packet?.name ?? "Data package" : `${formatAmount(op.amountMinor, op.currency)} credit`);
+  const numbers = [...new Set(ops.map((op) => String(op.number)))];
+  await noticeToShopper(order, {
+    title: "Added to your number",
+    message: ops.map((op) => `+${op.msisdn}: ${what(op)}`).join(", ").slice(0, 200),
+    link: numbers.length === 1 ? `/account/esims/numbers/${numbers[0]}` : "/account/esims",
+    key: `esim-number-ops-done:${order._id}:${batch}`,
+  });
+  const to = await orderContactEmail(order);
+  if (!to) return false;
+  const items = ops.map((op) => `<li><b>${escapeHtml(what(op))}</b> — +${escapeHtml(op.msisdn)}</li>`).join("");
+  return sendEmail({
+    to,
+    subject: `Added to your number for order ${order.orderNumber}`,
+    html: `<div style="font-family:Arial,Helvetica,sans-serif;max-width:640px;margin:0 auto;color:#222">
+      <h2>Added to your number</h2>
+      <p>Order <b>${escapeHtml(order.orderNumber)}</b>:</p>
+      <ul>${items}</ul>
+      <p>Nothing to install: it is on the number already. The number's page in My eSIMs shows the balance and packages.</p>
+    </div>`,
+    category: "esim-delivery",
+    dedupeKey: `esim-number-ops-done:${order._id}:${batch}`,
+  });
+}
+
 /** Mirrors the carrier-scan path: walk the order to delivered, guarded against a concurrent move. Also for a paid wallet top-up. */
 export async function markOrderDelivered(order: OrderView) {
   const path = advanceOrderStatusTo(order.status, ORDER_STATUS.DELIVERED);
@@ -285,7 +317,7 @@ async function sendDelayNotice(order: OrderView, heldCount: number, total: numbe
   }).catch(console.error);
 }
 
-async function sendFailureNotice(order: OrderView, failedCount: number, total: number, refund: EsimRefundResult, kind: "eSIM" | "top-up" | "number" | "item") {
+async function sendFailureNotice(order: OrderView, failedCount: number, total: number, refund: EsimRefundResult, kind: "eSIM" | "top-up" | "number" | "number top-up" | "item") {
   const which = failedCount === total ? `your ${kind}` : `${failedCount} of your ${total} ${kind}s`;
   const verb = kind === "eSIM" || kind === "number" ? "issue" : "complete";
   await noticeToShopper(order, {
@@ -318,12 +350,13 @@ async function sendFailureNotice(order: OrderView, failedCount: number, total: n
  * again — each step only touches what it has not done yet.
  */
 export async function settleOrderDelivery(orderId: string) {
-  const [jobs, topups, numbers] = await Promise.all([
+  const [jobs, topups, numbers, numberOps] = await Promise.all([
     EsimFulfillment.find({ order: orderId }).lean(),
     EsimTopup.find({ order: orderId }),
     EsimNumberOrder.find({ order: orderId }).lean(),
+    EsimNumberOp.find({ order: orderId }),
   ]);
-  if (!jobs.length && !topups.length && !numbers.length) return "running";
+  if (!jobs.length && !topups.length && !numbers.length && !numberOps.length) return "running";
   // A job waiting for a supplier top-up does not hold back what is already issued.
   const held = jobs.filter((job) => job.state === "queued" && job.balanceHold);
   if (jobs.some((job) => job.state !== "fulfilled" && job.state !== "failed" && !held.includes(job))) return "running";
@@ -333,6 +366,14 @@ export async function settleOrderDelivery(orderId: string) {
     .select({ orderNumber: 1, status: 1, items: 1, guestEmail: 1, customerId: 1 })
     .lean<OrderView | null>();
   if (!order) return "missing";
+  // A number is the buyer's once handed over: its install email does not wait for its first recharge or package.
+  const undeliveredNumbers = numbers.filter((number) => number.state === "fulfilled" && !number.deliveredAt);
+  if (undeliveredNumbers.length) {
+    const batch = createHash("sha1").update(undeliveredNumbers.map((number) => String(number._id)).sort().join(",")).digest("hex").slice(0, 12);
+    await sendNumberDelivery(order, undeliveredNumbers, `esim-number-delivery:${orderId}:${batch}`).catch((error) => console.error("Number email failed:", error));
+    await EsimNumberOrder.updateMany({ _id: { $in: undeliveredNumbers.map((number) => number._id) } }, { $set: { deliveredAt: new Date() } });
+  }
+  if (numberOps.some((op) => op.state === "queued" || op.state === "processing")) return "running";
 
   const fulfilled = jobs.filter((job) => job.state === "fulfilled");
   const failed = jobs.filter((job) => job.state === "failed");
@@ -341,6 +382,8 @@ export async function settleOrderDelivery(orderId: string) {
   // Number cards (NUM-05): handed over or failed.
   const givenNumbers = numbers.filter((number) => number.state === "fulfilled");
   const failedNumbers = numbers.filter((number) => number.state === "failed");
+  const doneOps = numberOps.filter((op) => op.state === "completed");
+  const failedOps = numberOps.filter((op) => op.state === "failed");
 
   // Issued eSIMs go out whatever happened to the rest of the order.
   const undelivered = fulfilled.filter((job) => !job.deliveredAt);
@@ -351,11 +394,10 @@ export async function settleOrderDelivery(orderId: string) {
     await sendDelivery(order, profiles, `esim-delivery:${orderId}:${batch}`);
     await EsimFulfillment.updateMany({ _id: { $in: undelivered.map((job) => job._id) } }, { $set: { deliveredAt: new Date() } });
   }
-  const undeliveredNumbers = givenNumbers.filter((number) => !number.deliveredAt);
-  if (undeliveredNumbers.length) {
-    const batch = createHash("sha1").update(undeliveredNumbers.map((number) => String(number._id)).sort().join(",")).digest("hex").slice(0, 12);
-    await sendNumberDelivery(order, undeliveredNumbers, `esim-number-delivery:${orderId}:${batch}`).catch((error) => console.error("Number email failed:", error));
-    await EsimNumberOrder.updateMany({ _id: { $in: undeliveredNumbers.map((number) => number._id) } }, { $set: { deliveredAt: new Date() } });
+  const unannouncedOps = doneOps.filter((op) => !op.notifiedAt);
+  if (unannouncedOps.length) {
+    await sendNumberOpsDone(order, unannouncedOps).catch((error) => console.error("Number top-up email failed:", error));
+    await EsimNumberOp.updateMany({ _id: { $in: unannouncedOps.map((op) => op._id) } }, { $set: { notifiedAt: new Date() } });
   }
   const unannounced = completedTopups.filter((topup) => !topup.notifiedAt);
   if (unannounced.length) {
@@ -363,11 +405,11 @@ export async function settleOrderDelivery(orderId: string) {
     await EsimTopup.updateMany({ _id: { $in: unannounced.map((topup) => topup._id) } }, { $set: { notifiedAt: new Date() } });
   }
 
-  const allFailed = [...failed, ...failedTopups, ...failedNumbers];
+  const allFailed = [...failed, ...failedTopups, ...failedNumbers, ...failedOps];
   if (allFailed.some((job) => !job.refund)) {
     const refund = await refundFailedEsims(orderId);
     if (refund.state !== "nothing") {
-      const total = jobs.length + topups.length + numbers.length;
+      const total = jobs.length + topups.length + numbers.length + numberOps.length;
       await notifyAdminsPaymentAnomaly({
         title: refund.state === "refunded" ? "eSIM failed and was refunded to store credit" : "eSIM failed: refund by hand",
         message: `Order ${order.orderNumber}: ${allFailed.length} of ${total} eSIM(s) / top-up(s) failed — ${allFailed
@@ -377,19 +419,21 @@ export async function settleOrderDelivery(orderId: string) {
           .slice(0, 300)}. ${refund.state === "refunded" ? `${refund.amount.toFixed(2)} ${refund.currency} credited to the shopper.` : `Refund ${refund.amount.toFixed(2)} ${refund.currency} by hand.`}`,
         dedupeKey: `esim-failed:${orderId}:${refund.state}`,
       }).catch(console.error);
-      const kind = failedNumbers.length === allFailed.length ? "number" : !failedTopups.length && !failedNumbers.length ? "eSIM" : !failed.length && !failedNumbers.length ? "top-up" : "item";
+      // Named after what failed when it is one kind; "item" when mixed.
+      const kinds = new Set([failed.length && "eSIM", failedTopups.length && "top-up", failedNumbers.length && "number", failedOps.length && "number top-up"].filter(Boolean));
+      const kind = kinds.size === 1 ? ([...kinds][0] as "eSIM" | "top-up" | "number" | "number top-up") : "item";
       await sendFailureNotice(order, allFailed.length, total, refund, kind);
     }
   }
 
   // Referral reward (REF-03) on whatever the order delivered; idempotent, and refunds are taken off it.
   const { earnReferralCommission } = await import("@/lib/esim/referral/commission");
-  if (fulfilled.length || completedTopups.length || givenNumbers.length) await earnReferralCommission(orderId).catch((error) => console.error("Referral commission failed:", error));
+  if (fulfilled.length || completedTopups.length || givenNumbers.length || doneOps.length) await earnReferralCommission(orderId).catch((error) => console.error("Referral commission failed:", error));
   if (held.length) {
     await sendDelayNotice(order, held.length, jobs.length).catch((error) => console.error("eSIM delay notice failed:", error));
     return "waiting";
   }
-  if (allFailed.length) return fulfilled.length || completedTopups.length || givenNumbers.length ? "partial" : "failed";
+  if (allFailed.length) return fulfilled.length || completedTopups.length || givenNumbers.length || doneOps.length ? "partial" : "failed";
   const done = new Set(jobs.map((job) => String(job.variantId)));
   if (topups.length) {
     const product = await findTopupProduct();
@@ -397,6 +441,10 @@ export async function settleOrderDelivery(orderId: string) {
   }
   if (numbers.length) {
     const product = await findNumberProduct();
+    if (product) done.add(product.variantId);
+  }
+  if (numberOps.some((op) => op.source === "line")) {
+    const product = await findNumberTopupProduct();
     if (product) done.add(product.variantId);
   }
   // A payment fee line (patch P29) has nothing to deliver.

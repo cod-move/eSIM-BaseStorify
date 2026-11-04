@@ -24,6 +24,7 @@ import { Cart, Order, Product, User } from "@/models";
 import { EsimFxRate } from "@/models/esim-fx-rate.model";
 import { EsimNumber } from "@/models/esim-number.model";
 import { EsimNumberOrder } from "@/models/esim-number-order.model";
+import { EsimNumberOp } from "@/models/esim-number-op.model";
 import { EsimNumberPackage } from "@/models/esim-number-package.model";
 import { EsimProvider } from "@/models/esim-provider.model";
 import { EsimProviderLog } from "@/models/esim-provider-log.model";
@@ -184,7 +185,9 @@ async function run() {
   const job1 = await EsimNumberOrder.findOne({ order: order1 }).lean();
   assert.deepEqual([job1!.state, job1!.recharge, job1!.packet], ["fulfilled", "pending", "pending"]);
   assert.equal(job1!.line!.recharge, 1000);
-  assert.equal((await Order.findById(order1).lean<{ status: string }>())!.status, "delivered");
+  // Its first recharge and package are still to be made (no TopConnect supplier yet here): the number is emailed, the order waits.
+  assert.ok((await EsimNumberOrder.findOne({ order: order1 }).lean())!.deliveredAt, "emailed without waiting for the recharge");
+  assert.equal((await Order.findById(order1).lean<{ status: string }>())!.status, "processing");
 
   // Bob holds the third number; alice's payment for it arrives: it is not hers → refunded to her balance.
   await esimLinePrices([{ ...line(third) }], { userId: String(bob) });
@@ -216,7 +219,7 @@ async function run() {
   assert.ok(page);
   assert.equal(page.install.pin1, "1234");
   assert.equal(page.install.smdpAddress, "rsp.fake.invalid");
-  assert.deepEqual(page.pending, { recharge: { amountMinor: 1000, currency: "EUR" }, packet: `${tag} EU 5GB` });
+  assert.deepEqual(page.pending, ["€10 credit", `${tag} EU 5GB`]);
   assert.equal(page.orderNumber, `${tag}-1`);
   if (fakeGateway) {
     assert.equal(page.refreshFailed, false);
@@ -224,7 +227,6 @@ async function run() {
   } else {
     console.log("Skipped the card read: a real TopConnect supplier is set up here.");
   }
-  assert.ok((await EsimNumberOrder.findOne({ order: order1 }).lean())!.deliveredAt, "the number was emailed");
 
   const panel = await orderEsimUnits(order1, { shopperId: String(alice) });
   assert.deepEqual(panel?.map((unit) => [unit.kind, unit.outcome, unit.numberId]), [["number", "issued", first]]);
@@ -237,6 +239,7 @@ async function cleanup() {
   const orders = created.orders;
   const byTag = new RegExp(tag);
   await EsimNumberOrder.deleteMany({ order: { $in: orders } });
+  await EsimNumberOp.deleteMany({ order: { $in: orders } });
   await EsimNumber.deleteMany({ _id: { $in: created.numbers } });
   await EsimNumberPackage.deleteMany({ _id: { $in: created.packages } });
   for (const name of ["paymenttransactions", "ledgerentries", "financeoperations"]) {

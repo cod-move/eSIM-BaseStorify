@@ -25,6 +25,8 @@ import { topupLineLabel } from "@/lib/esim/topup/label";
 import { isWalletVariant } from "@/lib/esim/wallet/product";
 import { isNumberVariant } from "@/lib/esim/numbers/product";
 import { numberCartLine } from "@/lib/esim/numbers/cart-line";
+import { isNumberTopupVariant } from "@/lib/esim/numbers/product";
+import { numberTopupLine } from "@/lib/esim/numbers/topup";
 import { walletFeeMinor } from "@/lib/esim/wallet/booking";
 import { getEsimSettings } from "@/models/esim-pricing.model";
 import { kycState, variantsNeedingKyc } from "@/lib/esim/kyc/service";
@@ -144,6 +146,13 @@ export async function esimCartLine(
       if (typeof number === "string") throw new LineAttributesError(number);
       return { lineAttributes: { ...number.lineAttributes }, price: toUnits(number.priceMinor), variantName: number.label, singleUnit: true };
     }
+    if (await isNumberTopupVariant(line.variantId)) {
+      if ((line.quantity ?? 1) !== 1) throw new LineAttributesError("A number top-up is bought one at a time");
+      const topup = await numberTopupLine(requested?.numberTopup, context.userId);
+      if (typeof topup === "string") throw new LineAttributesError(topup);
+      return { lineAttributes: { ...topup.lineAttributes }, price: toUnits(topup.priceMinor), variantName: topup.label, singleUnit: true };
+    }
+    if (requested?.numberTopup) throw new LineAttributesError("This product is not a number top-up");
     if (requested?.number) throw new LineAttributesError("This product is not a phone number");
     if (requested?.topup) throw new LineAttributesError("This product is not a top-up");
     if (requested?.wallet) throw new LineAttributesError("This product is not a wallet top-up");
@@ -230,6 +239,16 @@ export async function esimLinePrices<T extends { variantId?: unknown; lineAttrib
     if (typeof number === "string") throw new ValidationError({ stock: [number] });
     item.lineAttributes = number.lineAttributes;
     prices.set(item, toUnits(number.priceMinor));
+  }
+  for (const item of items) {
+    if (!(await isNumberTopupVariant(item.variantId))) continue;
+    const attributes = item.lineAttributes && typeof item.lineAttributes === "object" ? (item.lineAttributes as EsimLineAttributes) : {};
+    const topup = (item.quantity ?? 1) !== 1
+      ? "A number top-up is bought one at a time; remove the extra from your cart"
+      : await numberTopupLine(attributes.numberTopup, context.userId ?? undefined);
+    if (typeof topup === "string") throw new ValidationError({ stock: [topup] });
+    item.lineAttributes = topup.lineAttributes;
+    prices.set(item, toUnits(topup.priceMinor));
   }
   const info = await variantInfo(items.map((item) => item.variantId));
   if (!info.size) return withPaymentFees(prices, items, fees, walletCart);

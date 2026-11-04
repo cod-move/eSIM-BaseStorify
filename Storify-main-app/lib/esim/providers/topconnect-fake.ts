@@ -25,6 +25,10 @@ export interface FakeTopConnectState {
   cards: Map<string, FakeCard>;
   /** Calls seen, as `command` → count, for tests. */
   calls: Map<string, number>;
+  /** Accepted transfers, for the card's transfer log. */
+  transfers: Array<{ at: string; orderId: number; msisdn: string; amountMinor: number }>;
+  /** Tests: the next `sbalance` transfers are applied but answered with a server error, as if the answer were lost. */
+  loseAnswers: number;
 }
 
 const PACKETS = [
@@ -34,7 +38,7 @@ const PACKETS = [
 ];
 
 export function newFakeTopConnectState(): FakeTopConnectState {
-  return { accountMinor: 100_000, lastOrderId: 0, cards: new Map(), calls: new Map() };
+  return { accountMinor: 100_000, lastOrderId: 0, cards: new Map(), calls: new Map(), transfers: [], loseAnswers: 0 };
 }
 
 /** The store's one fake gateway, kept while the server process runs. */
@@ -124,7 +128,13 @@ export function fakeTopConnectFetch(state: FakeTopConnectState = shared): FetchL
       case "sbalance": {
         const found = card(params.get("onum"));
         if (!found) return error("sbalance", "Card not found");
-        if (params.get("started")) return xml("<records></records>");
+        if (params.get("started")) {
+          const records = state.transfers
+            .filter((entry) => entry.msisdn === found.msisdn)
+            .map((entry) => `<record><added>${entry.at}</added><orderid>${entry.orderId}</orderid><type>card</type><amount>${formatMinor(entry.amountMinor)}</amount></record>`)
+            .join("");
+          return xml(`<records>${records}</records>`);
+        }
         if (params.get("orderid") !== String(state.lastOrderId + 1)) {
           return error("sbalance", `Incorrect OrderID value, must be: ${state.lastOrderId + 1}`);
         }
@@ -135,6 +145,11 @@ export function fakeTopConnectFetch(state: FakeTopConnectState = shared): FetchL
         state.lastOrderId += 1;
         state.accountMinor -= amount;
         found.balanceMinor += amount;
+        state.transfers.push({ at: iso(new Date()), orderId: state.lastOrderId, msisdn: found.msisdn, amountMinor: amount });
+        if (state.loseAnswers > 0) {
+          state.loseAnswers -= 1;
+          return new Response("gateway timeout", { status: 504 });
+        }
         return xml(
           `<sbalance><onum>${found.msisdn}</onum><amount>${formatMinor(amount)} EUR</amount><orderid>${state.lastOrderId}</orderid><card><balance>${formatMinor(found.balanceMinor)} EUR</balance></card><client><balance>${formatMinor(state.accountMinor)} EUR</balance></client></sbalance>`,
         );
@@ -144,3 +159,6 @@ export function fakeTopConnectFetch(state: FakeTopConnectState = shared): FetchL
     }
   };
 }
+
+/** The store's shared fake gateway, for development scripts that need to steer it (lost answers). */
+export const sharedFakeTopConnectState = (): FakeTopConnectState => shared;

@@ -57,7 +57,7 @@ export async function OrderEsimPanel({ orderId, locale, audience }: { orderId: s
     }
   };
   const href = (unit: OrderEsimUnit) => {
-    if (unit.kind === "number") {
+    if (unit.kind === "number" || unit.numberId) {
       if (admin) return unit.msisdn ? `/admin/esim/numbers?search=${unit.msisdn}` : null;
       return unit.numberId ? `/account/esims/numbers/${unit.numberId}` : null;
     }

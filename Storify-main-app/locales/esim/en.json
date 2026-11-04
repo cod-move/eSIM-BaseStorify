@@ -451,7 +451,16 @@
       "validHint": "A number stays yours for a year after it was last used. Use it now and then to keep it.",
       "myNumbers": "My numbers",
       "creditLeft": "Credit {amount}",
-      "keptUntil": "Kept until {date}"
+      "keptUntil": "Kept until {date}",
+      "chooseAmount": "Choose an amount",
+      "addCredit": "Add credit",
+      "buyPacket": "Buy data package",
+      "topupHint": "Paid at checkout, then added to {number} within a few minutes.",
+      "payFor": "Pay {price}",
+      "cancelPacketTitle": "Cancel {name}?",
+      "cancelPacketHint": "The package stops now. Data left on it is not refunded.",
+      "packetCancelled": "Package cancelled",
+      "cancelPacket": "Cancel"
     }
   },
   "admin": {

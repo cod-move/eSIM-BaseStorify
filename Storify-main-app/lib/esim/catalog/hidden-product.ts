@@ -34,7 +34,7 @@ export interface HiddenProductRef {
 
 export interface HiddenProductSpec {
   productType: string;
-  settingsKey: "topupProductId" | "walletProductId" | "migratedProductId" | "paymentFeeProductId" | "numberProductId";
+  settingsKey: "topupProductId" | "walletProductId" | "migratedProductId" | "paymentFeeProductId" | "numberProductId" | "numberTopupProductId";
   name: string;
   handle: string;
   shortDescription: string;

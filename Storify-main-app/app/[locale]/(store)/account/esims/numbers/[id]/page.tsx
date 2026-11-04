@@ -13,6 +13,8 @@ import { formatAmount } from "@/lib/esim/numbers/line";
 import { installLinks } from "@/lib/esim/fulfillment/install-links";
 import { UsageBar } from "@/components/esim/esim-status-badge";
 import { CopyValue, RefreshUsageButton } from "@/components/esim/esim-actions";
+import { CancelPacketButton, NumberTopupActions } from "@/components/esim/number-actions";
+import { numberTopupOptions } from "@/lib/esim/numbers/storefront";
 
 interface PageProps {
   params: Promise<{ locale: string; id: string }>;
@@ -22,7 +24,9 @@ interface PageProps {
  * One number card (NUM-06/07): "+372 5550 1234" with its balance, state, last
  * use and data packages, read from TopConnect as the page opens (at most once
  * a minute), and how to install it — QR code, one-tap links, the manual
- * details and PIN/PUK. Rendered only for the number's owner, after payment.
+ * details and PIN/PUK. Credit and data packages are bought from here, and a
+ * package listed with its code can be cancelled (NUM-08/09). Rendered only
+ * for the number's owner, after payment.
  */
 export default async function AccountNumberPage({ params }: PageProps) {
   const { locale, id } = await params;
@@ -33,7 +37,7 @@ export default async function AccountNumberPage({ params }: PageProps) {
   const session = await getAccountSession();
   if (!session) notFound();
   await connectDB();
-  const number = await getCustomerNumber(session.user.id, id);
+  const [number, topupOptions] = await Promise.all([getCustomerNumber(session.user.id, id), numberTopupOptions()]);
   if (!number) notFound();
 
   const date = new Intl.DateTimeFormat(locale, { dateStyle: "medium" });
@@ -67,17 +71,12 @@ export default async function AccountNumberPage({ params }: PageProps) {
         )}
       </div>
 
-      {number.pending.recharge || number.pending.packet ? (
+      {number.pending.length ? (
         <div className="flex items-start gap-2 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200">
           <Clock className="mt-0.5 h-4 w-4 shrink-0" />
           <span>
             {tr("esim.number.pending", "Being added to the number: {items}. This usually takes a few minutes.", {
-              items: [
-                number.pending.recharge ? formatAmount(number.pending.recharge.amountMinor, number.pending.recharge.currency) : null,
-                number.pending.packet,
-              ]
-                .filter(Boolean)
-                .join(", "),
+              items: number.pending.join(", "),
             })}
           </span>
         </div>
@@ -105,6 +104,8 @@ export default async function AccountNumberPage({ params }: PageProps) {
                           <span className="font-medium">{entry.name ?? tr("esim.number.packet", "Data package")}</span>
                           {entry.status === "ordered" ? (
                             <Badge variant="outline">{tr("esim.number.packetOrdered", "Starts with your next data session")}</Badge>
+                          ) : entry.packetId && !card.blocked ? (
+                            <CancelPacketButton numberId={number.id} packetId={entry.packetId} name={entry.name ?? tr("esim.number.packet", "Data package")} />
                           ) : null}
                         </div>
                         {percent !== null ? (
@@ -132,6 +133,7 @@ export default async function AccountNumberPage({ params }: PageProps) {
           ) : (
             <p className="text-sm text-muted-foreground">{tr("esim.number.noCard", "The balance appears once the network answers. Refresh to check.")}</p>
           )}
+          {!card?.blocked ? <NumberTopupActions numberId={number.id} title={title} options={topupOptions} /> : null}
           {number.refreshFailed && card?.checkedAt ? (
             <p className="text-xs text-muted-foreground">
               {tr("esim.number.stale", "The network did not answer just now; this is from {time}.", { time: dateTime.format(card.checkedAt) })}

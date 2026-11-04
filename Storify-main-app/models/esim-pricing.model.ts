@@ -64,6 +64,8 @@ export interface IEsimSettings extends mongoose.Document {
   paymentFeeProductId: mongoose.Types.ObjectId | null;
   /** The hidden store product a number card is sold as (lib/esim/numbers/product.ts). */
   numberProductId: mongoose.Types.ObjectId | null;
+  /** The hidden store product a number's recharge or data package is sold as (lib/esim/numbers/product.ts). */
+  numberTopupProductId: mongoose.Types.ObjectId | null;
   /** Payment fees per checkout method (lib/esim/payments/fee-rules.ts): cents and percent. */
   paymentFees: Array<{ method: string; fixedMinor: number; percent: number }>;
   /** Wallet top-ups (WAL-01): on/off, the amounts allowed and the fee, in cents and percent. */
@@ -122,6 +124,7 @@ const EsimSettingsSchema = new Schema<IEsimSettings>(
     migratedProductId: { type: Schema.Types.ObjectId, ref: "Product", default: null },
     paymentFeeProductId: { type: Schema.Types.ObjectId, ref: "Product", default: null },
     numberProductId: { type: Schema.Types.ObjectId, ref: "Product", default: null },
+    numberTopupProductId: { type: Schema.Types.ObjectId, ref: "Product", default: null },
     paymentFees: {
       type: [
         {

@@ -183,6 +183,25 @@ export async function esimOnOrderRefunded(input: { orderId: unknown; metadata?: 
     const stop = { $set: { state: "failed", lastError: { code: "order_refunded", message: "The order was refunded", at: new Date() }, refund: { state: "done", amount: 0, at: new Date(), note: "order refunded in Storify" } } };
     await EsimFulfillment.updateMany({ order: orderId, ...NOT_BOUGHT }, stop);
     await EsimTopup.updateMany({ order: orderId, ...TOPUP_NOT_BOUGHT }, stop);
+    // Number cards (NUM-05/08): nothing more is moved onto them, and a number the order gave is taken back.
+    const { EsimNumberOrder } = await import("@/models/esim-number-order.model");
+    const { EsimNumberOp } = await import("@/models/esim-number-op.model");
+    const { EsimNumber } = await import("@/models/esim-number.model");
+    await EsimNumberOrder.updateMany({ order: orderId, state: "queued" }, stop);
+    // An operation already sending (processing) keeps its order id and finishes: stopping it mid-way could leave money moved and unrecorded.
+    await EsimNumberOp.updateMany({ order: orderId, state: "queued" }, stop);
+    const taken = await EsimNumber.find({ order: orderId, status: "sold" }).select({ msisdn: 1 }).lean();
+    if (taken.length) {
+      await EsimNumber.updateMany(
+        { _id: { $in: taken.map((number) => number._id) } },
+        { $set: { status: "retired", customer: null, order: null, soldAt: null, reservation: null, note: `Taken back: order ${order.orderNumber} was refunded. Check the card's credit before selling it again.` } },
+      );
+      await notifyAdminsPaymentAnomaly({
+        title: "Refunded order: number taken back",
+        message: `Order ${order.orderNumber} was refunded; ${taken.map((number) => `+${number.msisdn}`).join(", ")} is off sale under eSIM → Numbers. Credit moved onto it stays on the card.`,
+        dedupeKey: `esim-number-refund:${orderId}`,
+      }).catch(console.error);
+    }
 
     const stillUsable: string[] = [];
     for (const profile of profiles) {

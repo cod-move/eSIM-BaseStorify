@@ -8,6 +8,7 @@ import { EsimNumberOrder, type IEsimNumberOrder } from "@/models/esim-number-ord
 import { findNumberProduct } from "@/lib/esim/numbers/product";
 import type { EsimLineAttributes } from "@/lib/esim/cart/line-attributes";
 import type { NumberLineSnapshot } from "@/lib/esim/numbers/line";
+import { enqueueFirstOps } from "@/lib/esim/numbers/ops";
 
 /**
  * A paid number card becomes its buyer's (NUM-05). Payment settlement queues
@@ -17,8 +18,8 @@ import type { NumberLineSnapshot } from "@/lib/esim/numbers/line";
  * two orders. A number taken meanwhile fails the job, and the order's
  * settlement refunds it like a failed eSIM.
  *
- * The first recharge and data package are marked `pending` on the job, to be
- * carried out from the line's snapshot (NUM-08/09).
+ * The first recharge and data package are marked `pending` on the job and
+ * queued as operations from the line's snapshot (lib/esim/numbers/ops.ts).
  */
 
 type Line = { variantId?: unknown; price?: number; quantity?: number; lineAttributes?: unknown };
@@ -125,6 +126,7 @@ async function processOne(job: IEsimNumberOrder): Promise<IEsimNumberOrder["stat
         $push: { history: { at: now, event: "fulfilled", detail: `+${job.msisdn} is the buyer's` } },
       },
     );
+    await enqueueFirstOps(job);
     return "fulfilled";
   }
   const message = "The number was taken by another order before this one was paid";

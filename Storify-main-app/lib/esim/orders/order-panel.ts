@@ -7,6 +7,8 @@ import { EsimPlan } from "@/models/esim-plan.model";
 import { EsimProfile, type IEsimProfile } from "@/models/esim-profile.model";
 import { EsimTopup } from "@/models/esim-topup.model";
 import { EsimNumberOrder } from "@/models/esim-number-order.model";
+import { EsimNumberOp } from "@/models/esim-number-op.model";
+import { formatAmount } from "@/lib/esim/numbers/line";
 import { planTitle } from "@/lib/esim/account/display";
 import { esimUnitOutcome, topupUnitOutcome, type UnitOutcome } from "@/lib/esim/orders/unit-status";
 
@@ -48,12 +50,13 @@ export async function orderEsimUnits(orderId: string, options: { shopperId?: str
     if (!owned) return null;
   }
   const admin = !options.shopperId;
-  const [jobs, topups, numbers] = await Promise.all([
+  const [jobs, topups, numbers, numberOps] = await Promise.all([
     EsimFulfillment.find({ order: orderId }).sort({ lineIndex: 1, unit: 1 }).lean(),
     EsimTopup.find({ order: orderId }).sort({ lineIndex: 1 }).lean(),
     EsimNumberOrder.find({ order: orderId }).sort({ lineIndex: 1 }).lean(),
+    EsimNumberOp.find({ order: orderId, source: "line" }).sort({ lineIndex: 1 }).lean(),
   ]);
-  if (!jobs.length && !topups.length && !numbers.length) return null;
+  if (!jobs.length && !topups.length && !numbers.length && !numberOps.length) return null;
 
   const [profiles, plans] = await Promise.all([
     EsimProfile.find({ order: orderId }).select({ lineIndex: 1, unit: 1, iccid: 1, status: 1, cancellation: 1, snapshot: 1, durationDays: 1, plan: 1 }).lean<IEsimProfile[]>(),
@@ -110,6 +113,22 @@ export async function orderEsimUnits(orderId: string, options: { shopperId?: str
       jobState: admin ? number.state : null,
       providerCode: admin ? "topconnect" : null,
       lastError: admin && number.lastError ? `${number.lastError.code}: ${number.lastError.message}` : null,
+    });
+  }
+  // Credit or a package bought for a number later (NUM-08/09); a number's first ones show with the number.
+  for (const op of numberOps) {
+    units.push({
+      kind: "topup",
+      title: `+${op.msisdn} · ${op.kind === "packet" ? op.packet?.name ?? "Data package" : `${formatAmount(op.amountMinor, op.currency)} credit`}`,
+      outcome: topupUnitOutcome({ state: op.state === "manual" ? "processing" : op.state, refundState: op.refund?.state ?? null }),
+      esimId: null,
+      numberId: String(op.number),
+      msisdn: op.msisdn,
+      iccid: null,
+      refundAmount: op.refund?.amount ?? null,
+      jobState: admin ? op.state : null,
+      providerCode: admin ? "topconnect" : null,
+      lastError: admin && op.lastError ? `${op.lastError.code}: ${op.lastError.message}` : null,
     });
   }
   return units;

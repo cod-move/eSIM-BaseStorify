@@ -15,6 +15,11 @@ export interface RefundInput {
   units: number[];
   /** Collected and not yet refunded on the order. */
   refundable: number;
+  /**
+   * Parts of a line, in cents of its price (a number's first recharge or
+   * package, NUM-05): spread like a unit, never "everything left".
+   */
+  parts?: number[];
 }
 
 export function refundAmount(input: RefundInput): number {
@@ -24,9 +29,9 @@ export function refundAmount(input: RefundInput): number {
   const cents = input.units.reduce((sum, lineIndex) => {
     const price = input.items[lineIndex]?.price ?? 0;
     return sum + Math.floor(price * ratio * 100 + 1e-6);
-  }, 0);
+  }, 0) + (input.parts ?? []).reduce((sum, part) => sum + Math.floor(part * ratio + 1e-6), 0);
   // Everything left on the order failed: refund it to the cent, rounding included.
-  const everyUnit = input.units.length === input.items.reduce((sum, item) => sum + item.quantity, 0);
+  const everyUnit = !input.parts?.length && input.units.length === input.items.reduce((sum, item) => sum + item.quantity, 0);
   const amount = everyUnit ? input.refundable : cents / 100;
   return Math.round(Math.min(amount, input.refundable) * 100) / 100;
 }

@@ -7,6 +7,7 @@ import { PaymentTransaction } from "@/models/payment-transaction.model";
 import { EsimFulfillment } from "@/models/esim-fulfillment.model";
 import { EsimTopup } from "@/models/esim-topup.model";
 import { EsimNumberOrder } from "@/models/esim-number-order.model";
+import { EsimNumberOp } from "@/models/esim-number-op.model";
 import { getOrderRefundCeiling } from "@/lib/orders/preorder-cancel-refund";
 import { releaseRefundInFlightWrite, logRefundInFlightReleaseError, REFUND_IN_FLIGHT_WINDOW_MS } from "@/lib/orders/refund-in-flight";
 import { settleRefundedPaymentStatus } from "@/lib/orders/refund-payment-status";
@@ -63,15 +64,25 @@ async function alreadyRefunded(orderId: mongoose.Types.ObjectId) {
   return Number(summary?.total || 0);
 }
 
-/** Both kinds of job refunded here share the fields this file reads and writes. */
-const JOB_MODELS = [EsimFulfillment, EsimTopup, EsimNumberOrder] as unknown as Array<typeof EsimFulfillment>;
+/** Every kind of job refunded here shares the fields this file reads and writes. */
+const JOB_MODELS = [EsimFulfillment, EsimTopup, EsimNumberOrder, EsimNumberOp] as unknown as Array<typeof EsimFulfillment>;
+/** A number operation is part of a line: it gives back its own price, not the line's. */
+const PART_MODEL = JOB_MODELS.length - 1;
 
 async function updateJobs(filter: Record<string, unknown>, update: Record<string, unknown>) {
   for (const model of JOB_MODELS) await model.updateMany(filter, update);
 }
 
 async function findJobs(filter: Record<string, unknown>) {
-  const found = await Promise.all(JOB_MODELS.map((model) => model.find(filter).select({ _id: 1, lineIndex: 1 }).lean()));
+  const found = await Promise.all(
+    JOB_MODELS.map(async (model, index) =>
+      (await model.find(filter).select({ _id: 1, lineIndex: 1, priceMinor: 1 }).lean<Array<{ _id: mongoose.Types.ObjectId; lineIndex: number; priceMinor?: number }>>()).map((job) => ({
+        _id: job._id,
+        lineIndex: job.lineIndex,
+        partMinor: index === PART_MODEL ? Number(job.priceMinor ?? 0) : null,
+      })),
+    ),
+  );
   return found.flat();
 }
 
@@ -106,7 +117,8 @@ export async function refundFailedEsims(orderId: string): Promise<EsimRefundResu
   const amount = refundAmount({
     total: Number(order.total || 0),
     items: order.items.map((item) => ({ price: Number(item.price || 0), quantity: Number(item.quantity || 1) })),
-    units: claimed.map((job) => job.lineIndex),
+    units: claimed.filter((job) => job.partMinor === null).map((job) => job.lineIndex),
+    parts: claimed.filter((job) => job.partMinor !== null).map((job) => job.partMinor ?? 0),
     refundable: Math.max(0, ceiling - refunded),
   });
   if (!(amount > 0)) {

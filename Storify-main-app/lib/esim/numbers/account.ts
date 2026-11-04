@@ -3,6 +3,8 @@ import "server-only";
 import { mongoose } from "@/lib/db";
 import { EsimNumber, type IEsimNumber, type NumberCardPackage } from "@/models/esim-number.model";
 import { EsimNumberOrder } from "@/models/esim-number-order.model";
+import { EsimNumberOp } from "@/models/esim-number-op.model";
+import { formatAmount } from "@/lib/esim/numbers/line";
 import { credentialsOf, findProvider } from "@/lib/esim/provider-service";
 import { withProviderLog } from "@/lib/esim/provider-log";
 import { topConnectClient } from "@/lib/esim/providers/registry";
@@ -13,7 +15,9 @@ import { numberValidUntil, parseLpa } from "@/lib/esim/numbers/install";
  * page. Opening the page asks TopConnect for the card (`card_stat`) — at most
  * once a minute per number — and keeps the answer, so a slow or failing
  * gateway shows the last known state instead of an error. Install details
- * (LPA, PIN/PUK) are read only for the number's owner.
+ * (LPA, PIN/PUK) are read only for the number's owner. The packages come from
+ * the detailed package list, which names each packet, so one can be cancelled
+ * exactly (NUM-09).
  */
 
 const REFRESH_EVERY_MS = 60_000;
@@ -42,8 +46,8 @@ export interface CustomerNumber extends CustomerNumberSummary {
   iccid: string;
   orderNumber: string | null;
   install: { lpa: string; smdpAddress: string | null; matchingId: string | null; pin1: string | null; puk1: string | null; pin2: string | null; puk2: string | null };
-  /** The first recharge and data package bought with the number, while they are still being added. */
-  pending: { recharge: { amountMinor: number; currency: string } | null; packet: string | null };
+  /** Recharges and packages paid for and still being put on the number ("€10 credit", a package's name). */
+  pending: string[];
   /** The last refresh failed: what is shown is from `card.checkedAt`. */
   refreshFailed: boolean;
 }
@@ -99,11 +103,15 @@ export async function refreshNumberCard(numberId: string, options: { force?: boo
   if (!provider || provider.status !== "active") return false;
   try {
     const client = topConnectClient(credentialsOf(provider));
-    const { card, packages } = await withProviderLog(
-      { provider: provider._id as mongoose.Types.ObjectId, providerCode: "topconnect", operation: "numbers.card", request: { msisdn: row.msisdn } },
+    const context = { provider: provider._id as mongoose.Types.ObjectId, providerCode: "topconnect", request: { msisdn: row.msisdn } };
+    const { card, packages: stated } = await withProviderLog(
+      { ...context, operation: "numbers.card" },
       () => client.cardStatus({ msisdn: row.msisdn }),
       (result) => ({ blocked: result.card.blocked, packages: result.packages.length }),
     );
+    // The detailed list carries packet codes (for cancelling); card_stat's is the fallback.
+    const packages = await withProviderLog({ ...context, operation: "numbers.packages" }, () => client.activePackages(row.msisdn), (result) => ({ packages: result.length }))
+      .catch(() => stated);
     await EsimNumber.updateOne(
       { _id: row._id },
       {
@@ -146,9 +154,10 @@ export async function getCustomerNumber(userId: string, numberId: string): Promi
     .select("+install")
     .lean<(NumberRow & Pick<IEsimNumber, "iccid" | "install" | "order">) | null>();
   if (!row) return null;
-  const job = row.order
-    ? await EsimNumberOrder.findOne({ order: row.order, number: row._id }).select({ orderNumber: 1, line: 1, recharge: 1, packet: 1 }).lean()
-    : null;
+  const [job, ops] = await Promise.all([
+    row.order ? EsimNumberOrder.findOne({ order: row.order, number: row._id }).select({ orderNumber: 1 }).lean() : null,
+    EsimNumberOp.find({ number: row._id, state: { $in: ["queued", "processing"] } }).sort({ createdAt: 1 }).select({ kind: 1, amountMinor: 1, currency: 1, packet: 1 }).lean(),
+  ]);
   const lpa = row.install?.lpa ?? "";
   return {
     ...summaryOf(row),
@@ -162,10 +171,7 @@ export async function getCustomerNumber(userId: string, numberId: string): Promi
       pin2: row.install?.pin2 ?? null,
       puk2: row.install?.puk2 ?? null,
     },
-    pending: {
-      recharge: job?.recharge === "pending" && job.line?.recharge ? { amountMinor: job.line.recharge, currency: job.line.rechargeCurrency } : null,
-      packet: job?.packet === "pending" ? (job.line?.packetName ?? "Data package") : null,
-    },
+    pending: ops.map((op) => (op.kind === "packet" ? op.packet?.name ?? "Data package" : `${formatAmount(op.amountMinor, op.currency)} credit`)),
     refreshFailed: !refreshed,
   };
 }
@@ -175,4 +181,32 @@ export async function refreshCustomerNumber(userId: string, numberId: string): P
   if (!mongoose.isValidObjectId(userId) || !mongoose.isValidObjectId(numberId)) return null;
   if (!(await EsimNumber.exists({ _id: numberId, ...owned(userId) }))) return null;
   return refreshNumberCard(numberId, { force: true });
+}
+
+/**
+ * Cancels one data package on the shopper's number (NUM-09): only a package
+ * the last read listed with its packet code, so the cancel is exact; unused
+ * data is not refunded. The card is read again afterwards.
+ */
+export async function cancelCustomerPacket(userId: string, numberId: string, packetId: string): Promise<{ cancelled: boolean; message?: string } | null> {
+  if (!mongoose.isValidObjectId(userId) || !mongoose.isValidObjectId(numberId) || !/^\d{1,9}$/.test(packetId)) return null;
+  const row = await EsimNumber.findOne({ _id: numberId, ...owned(userId) }).select({ msisdn: 1, card: 1 }).lean();
+  if (!row) return null;
+  if (!row.card?.packages?.some((entry) => entry.packetId === packetId)) {
+    return { cancelled: false, message: "This package is not on the number any more; refresh and try again" };
+  }
+  const provider = await findProvider("topconnect");
+  if (!provider || provider.status !== "active") return { cancelled: false, message: "Cancelling is not available right now" };
+  try {
+    const client = topConnectClient(credentialsOf(provider));
+    await withProviderLog(
+      { provider: provider._id as mongoose.Types.ObjectId, providerCode: "topconnect", operation: "numbers.cancel-packet", request: { msisdn: row.msisdn, packetId } },
+      () => client.cancelDataPackage(row.msisdn, packetId),
+    );
+  } catch (error) {
+    return { cancelled: false, message: error instanceof Error ? error.message : "TopConnect refused" };
+  }
+  await EsimNumber.updateOne({ _id: row._id }, { $set: { "card.checkedAt": new Date(0) } });
+  await refreshNumberCard(numberId, { force: true });
+  return { cancelled: true };
 }

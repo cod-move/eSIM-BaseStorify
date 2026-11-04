@@ -6,7 +6,7 @@ import { EsimNumberPackage } from "@/models/esim-number-package.model";
 import { EsimProvider } from "@/models/esim-provider.model";
 import { getEsimSettings } from "@/models/esim-pricing.model";
 import { currentRates } from "@/lib/esim/pricing/fx-service";
-import { findNumberProduct } from "@/lib/esim/numbers/product";
+import { findNumberProduct, findNumberTopupProduct } from "@/lib/esim/numbers/product";
 import { RECHARGE_MAX_MINOR, RECHARGE_MIN_MINOR, RECHARGE_SUGGESTIONS_MINOR } from "@/lib/esim/numbers/line";
 
 /**
@@ -61,6 +61,30 @@ export interface NumberShop {
 
 /** Free numbers, and held ones whose hold ran out (the cron has not released them yet). */
 const onSale = (now: Date) => ({ $or: [{ status: "available" }, { status: "reserved", "reservation.until": { $lt: now } }], customer: null });
+
+/** What can be bought for a number the shopper owns (NUM-08/09): packages, credit, and the product their lines use. */
+export async function numberTopupOptions(): Promise<Pick<NumberShop, "packets" | "recharge" | "product">> {
+  await connectDB();
+  const [packets, provider, product, settings] = await Promise.all([
+    EsimNumberPackage.find({ status: "active", retailPriceMinor: { $gt: 0 } }).sort({ sortOrder: 1, createdAt: 1 }).lean(),
+    EsimProvider.findOne({ code: "topconnect" }).select({ settlementCurrency: 1 }).lean(),
+    findNumberTopupProduct(),
+    getEsimSettings(),
+  ]);
+  const currency = provider?.settlementCurrency ?? "EUR";
+  const rate = (await currentRates([currency])).get(currency);
+  return {
+    packets: packets.map((row) => ({ id: String(row._id), name: row.name, volumeMb: row.volumeMb, validityDays: row.validityDays, countryCodes: row.countryCodes, priceMinor: row.retailPriceMinor })),
+    recharge: {
+      currency,
+      usdPerUnit: rate ? rate.usdPerUnit * (1 + settings.fxBufferPercent / 100) : null,
+      minMinor: RECHARGE_MIN_MINOR,
+      maxMinor: RECHARGE_MAX_MINOR,
+      suggestions: RECHARGE_SUGGESTIONS_MINOR.filter((amount) => amount > 0),
+    },
+    product: product ? { productId: product.productId, variantId: product.variantId } : null,
+  };
+}
 
 export async function numberShop(filters: ShopNumberFilters): Promise<NumberShop> {
   await connectDB();
