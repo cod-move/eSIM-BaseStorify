@@ -1,4 +1,4 @@
-import { countryNameFromCode } from "./countries";
+import { countryCodeFromName, countryNameFromCode } from "./countries";
 import { requestJson, type FetchLike } from "./http";
 import { countryCodes, currency as currencyOf, int, iso2, megabytesLabel, num, obj, objArray, parseLpa, slugify, splitList, str, strOrNull } from "./json";
 import {
@@ -70,8 +70,15 @@ export class MobiMatterAdapter implements EsimProviderAdapter {
     return { message: "MobiMatter credentials accepted", metadata: { products: products.length } as JsonObject };
   }
 
+  /** Only the plans of the networks we sell (`SOLD_PROVIDERS`, 3HK); every other provider's are left out. */
   async *listPlans(): AsyncIterable<ProviderPlan> {
-    for (const product of await this.products()) {
+    const products = await this.products();
+    // A list that names no provider at all cannot be filtered: stop rather than retire every plan.
+    if (products.length && !products.some((product) => providerOf(product))) {
+      throw new ProviderError("invalid_response", "MobiMatter products name no provider, so the 3HK plans cannot be picked out", null, "mobimatter");
+    }
+    for (const product of products) {
+      if (!soldProvider(product)) continue;
       const plan = mapProduct(product);
       if (plan) yield plan;
     }
@@ -345,6 +352,42 @@ function fallbackName(product: JsonObject, details: Record<string, JsonValue>) {
   return str(details.PLAN_DATA_LIMIT) ? `${family} ${str(details.PLAN_DATA_LIMIT)} ${str(details.PLAN_DATA_UNIT).toUpperCase()} / ${days} Days` : family;
 }
 
+/** The providers (networks) whose MobiMatter plans are sold; others are not synced. */
+export const SOLD_PROVIDERS = ["3HK"];
+
+const providerKey = (value: string) => value.replace(/[^a-z0-9]/gi, "").toUpperCase();
+
+/** The provider (network) a MobiMatter product is from, as it names it ("3HK"). */
+export function providerOf(product: JsonObject): string {
+  return str(product.providerName) || str(product.provider) || str(product.providerCode);
+}
+
+export const soldProvider = (product: JsonObject) => SOLD_PROVIDERS.map(providerKey).includes(providerKey(providerOf(product)));
+
+const ISO3: Record<string, string> = {
+  HKG: "HK", SGP: "SG", USA: "US", GBR: "GB", CHN: "CN", JPN: "JP", KOR: "KR", TWN: "TW", MAC: "MO",
+  DEU: "DE", FRA: "FR", NLD: "NL", MYS: "MY", THA: "TH", ARE: "AE", AUS: "AU", CAN: "CA", IND: "IN",
+};
+
+/**
+ * IP_BREAKOUT → exit countries. MobiMatter writes it as codes ("HK", "HKG"),
+ * names ("Hong Kong", "Singapore IP") or a list of them ("HK/SG",
+ * "Hong Kong, Singapore", JSON array); what cannot be read is left out.
+ */
+export function breakoutCountries(value: JsonValue | undefined): string[] {
+  const text = Array.isArray(value) ? value.map((part) => str(part)).join(",") : str(value);
+  const codes = new Set<string>();
+  for (const raw of text.split(/[\/,;|]|\s+(?:and|&)\s+/i)) {
+    const inBrackets = raw.match(/\(([A-Za-z]{2,3})\)/)?.[1];
+    const part = (inBrackets ?? raw).replace(/\b(ip|breakout|exit)\b/gi, " ").replace(/\s+/g, " ").trim();
+    if (!part) continue;
+    const upper = part.toUpperCase();
+    const code = /^[A-Z]{2}$/.test(upper) ? (upper === "UK" ? "GB" : upper) : /^[A-Z]{3}$/.test(upper) ? (ISO3[upper] ?? null) : countryCodeFromName(part);
+    if (code) codes.add(code);
+  }
+  return [...codes];
+}
+
 export function mapProduct(product: JsonObject): ProviderPlan | null {
   const productId = str(product.productId);
   const category = str(product.productCategory);
@@ -360,9 +403,8 @@ export function mapProduct(product: JsonObject): ProviderPlan | null {
   const megabytes = dataMegabytes(details);
   const type: DataType = unlimited ? (megabytes > 0 && slow !== null ? "daily_throttled" : "unlimited") : daily ? (slow !== null ? "daily_throttled" : "daily_cutoff") : "total";
   const days = hoursToDays(details.PLAN_VALIDITY);
-  const operator = str(product.productFamilyName) || str(product.providerName) || "MobiMatter";
   const speeds = splitList(details.NETWORKS_SHORT ?? details.SPEED).map((speed) => speed.toUpperCase()).filter((speed) => /^\dG|LTE/.test(speed));
-  const breakout = splitList(details.IP_BREAKOUT).map((part) => iso2(part)).filter((code): code is string => Boolean(code));
+  const breakout = breakoutCountries(details.IP_BREAKOUT);
   return {
     providerPlanId: `${productId}|${category}`,
     sku: strOrNull(product.productFamilyId),
@@ -374,7 +416,9 @@ export function mapProduct(product: JsonObject): ProviderPlan | null {
     coverage: {
       scope,
       countries: countries.map((code) => ({ code, name: countryNameFromCode(code) })),
-      networks: countries.length === 1 ? [{ countryCode: countries[0], operator, network: speeds.at(-1) ?? null }] : [],
+      // The product list names no operator (productFamilyName is MobiMatter's product line, not a network): left empty.
+      // The operators come from /products/{id}/networks when the storefront asks for them (CAT-10).
+      networks: [],
       breakoutIp: breakout,
     },
     data: { megabytes, label: type === "unlimited" ? "Unlimited" : type.startsWith("daily") ? `${megabytesLabel(megabytes)}/day` : megabytesLabel(megabytes), type },

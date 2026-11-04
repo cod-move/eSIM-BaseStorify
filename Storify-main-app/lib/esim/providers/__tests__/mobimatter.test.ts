@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { MobiMatterAdapter, detailsOf, mapProduct, networksOf, preInstallDays, reducedSpeedMbps } from "../mobimatter";
+import { MobiMatterAdapter, breakoutCountries, detailsOf, mapProduct, networksOf, preInstallDays, reducedSpeedMbps } from "../mobimatter";
 import { fakeFetch } from "./helpers";
 import type { JsonObject, JsonValue } from "../types";
 
@@ -12,6 +12,7 @@ const PRODUCT: JsonObject = {
   productCategory: "esim_realtime",
   productFamilyId: 42,
   productFamilyName: "Docomo",
+  providerName: "3HK",
   countries: ["JP"],
   regions: [],
   retailPrice: 9.9,
@@ -46,6 +47,38 @@ describe("MobiMatter catalogue", () => {
     assert.equal(plan.activation.preInstallDays, 180);
     assert.equal(plan.topup.mode, "addon");
     assert.equal(plan.sku, "42", "the family, which top-ups are bought in");
+    assert.deepEqual(plan.coverage.networks, [], "no operator is named in the product list: productFamilyName is not one");
+    assert.deepEqual(plan.coverage.breakoutIp, []);
+  });
+
+  it("reads the exit IP from IP_BREAKOUT, however it is written", () => {
+    const withIp = (value: JsonValue) => mapProduct({ ...PRODUCT, productDetails: details({ PLAN_VALIDITY: "720", PLAN_DATA_LIMIT: "5", PLAN_DATA_UNIT: "GB", IP_BREAKOUT: value }) })!.coverage.breakoutIp;
+    assert.deepEqual(withIp("HK"), ["HK"]);
+    assert.deepEqual(withIp("Hong Kong"), ["HK"]);
+    assert.deepEqual(withIp("Singapore IP"), ["SG"]);
+    assert.deepEqual(withIp("HK/SG"), ["HK", "SG"]);
+    assert.deepEqual(withIp("Hong Kong (HKG), United Kingdom"), ["HK", "GB"]);
+    assert.deepEqual(withIp(["JP", "Germany"]), ["JP", "DE"]);
+    assert.deepEqual(breakoutCountries(" "), []);
+    assert.deepEqual(breakoutCountries("somewhere"), [], "what cannot be read is left out");
+  });
+
+  it("syncs only 3HK's plans, and refuses a list that names no provider", async () => {
+    const list = (products: JsonObject[]) =>
+      adapter({ "GET /mobimatter/api/v2/products": () => ({ body: { isSuccess: true, result: products } }) }).mm;
+    const products = [
+      PRODUCT,
+      { ...PRODUCT, productId: "MM-JP-6", providerName: "3 hk" },
+      { ...PRODUCT, productId: "MM-JP-7", providerName: "Docomo" },
+      { ...PRODUCT, productId: "MM-JP-8", providerName: "" },
+    ];
+    const synced: string[] = [];
+    for await (const plan of list(products).listPlans()) synced.push(plan.providerPlanId);
+    assert.deepEqual(synced, ["MM-JP-5|esim_realtime", "MM-JP-6|esim_realtime"]);
+    const unnamed = list([{ ...PRODUCT, providerName: undefined as unknown as JsonValue }]);
+    await assert.rejects(async () => {
+      for await (const _plan of unnamed.listPlans()) void _plan;
+    }, /name no provider/);
   });
 
   it("knows unlimited, daily and regional products, and skips add-ons", () => {
