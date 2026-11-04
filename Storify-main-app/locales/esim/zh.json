@@ -432,7 +432,8 @@
       "total": "合计",
       "buy": "购买这个号码",
       "signInToBuy": "登录后购买",
-      "entryFrom": "{count} 个号码 · {price} 起"
+      "entryFrom": "{count} 个号码 · {price} 起",
+      "notReady": "号码暂时无法购买，请稍后再试或联系客服。"
     },
     "number": {
       "blocked": "已停用",
@@ -1146,7 +1147,8 @@
       "setPriceByHand": "手动设置售价",
       "packetCountriesHint": "适用国家（国家代码，如 FR, DE, IT）",
       "sortOrder": "排序",
-      "unlimited": "不限量"
+      "unlimited": "不限量",
+      "numberProductProblem": "号码暂时无法购买：用于销售号码的商品创建失败（{reason}）。"
     },
     "sidebar": {
       "esim": "eSIM",

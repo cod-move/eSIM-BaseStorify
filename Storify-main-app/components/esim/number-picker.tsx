@@ -324,7 +324,10 @@ function NumberDialog({ shop, number, locale, onClose }: { shop: NumberShop; num
           </div>
         ) : null}
 
-        <DialogFooter>
+        <DialogFooter className="flex-col gap-2 sm:flex-col">
+          {!shop.product ? (
+            <p className="text-center text-xs text-destructive">{t("esim.numbers.notReady", "Numbers cannot be bought right now. Please try again later or contact us.")}</p>
+          ) : null}
           <Button className="w-full" size="lg" disabled={busy || !shop.product || Boolean(problem) || rechargeUnpriced} onClick={buy}>
             {busy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
             {session?.user ? t("esim.numbers.buy", "Buy this number") : t("esim.numbers.signInToBuy", "Sign in to buy")}

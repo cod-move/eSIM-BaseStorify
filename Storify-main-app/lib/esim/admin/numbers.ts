@@ -49,6 +49,25 @@ export interface AdminNumberList {
   pages: number;
   counts: Record<EsimNumberStatus, number>;
   dialCodes: string[];
+  /** Why numbers cannot be bought: the hidden store products their cart lines use could not be made. */
+  productProblem: string | null;
+}
+
+/**
+ * Makes the hidden "Phone number eSIM" and "Number top-up" products when
+ * there is stock to sell (an admin's request: the import, the Numbers page),
+ * and says why when it cannot — without them the numbers page cannot add a
+ * number to the cart.
+ */
+export async function ensureNumberProducts(): Promise<string | null> {
+  try {
+    await ensureNumberProduct();
+    await ensureNumberTopupProduct();
+    return null;
+  } catch (error) {
+    console.error("[esim] number products could not be created:", error);
+    return error instanceof Error ? error.message : String(error);
+  }
 }
 
 const escape = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -91,6 +110,8 @@ export async function listNumbersAdmin(filters: AdminNumberFilters): Promise<Adm
   const emailById = new Map(users.map((user) => [String(user._id), user.email]));
   const counts: Record<EsimNumberStatus, number> = { available: 0, reserved: 0, sold: 0, retired: 0 };
   for (const row of statusRows) counts[row._id] = row.count;
+  // Stock imported before the products existed, or a product deleted in the products admin: made again here.
+  const productProblem = statusRows.length ? await ensureNumberProducts() : null;
 
   return {
     rows: rows.map((row) => {
@@ -118,6 +139,7 @@ export async function listNumbersAdmin(filters: AdminNumberFilters): Promise<Adm
     pages: Math.max(1, Math.ceil(total / NUMBERS_PAGE_SIZE)),
     counts,
     dialCodes: dialCodes.sort((a, b) => Number(a) - Number(b)),
+    productProblem,
   };
 }
 
@@ -178,10 +200,7 @@ export async function importNumbers(
     imported = inserted.length;
   }
   // Numbers on sale need the hidden product their cart lines use; made here, in the admin's request.
-  if (imported) {
-    await ensureNumberProduct().catch((error) => console.error("[esim] number product could not be created:", error));
-    await ensureNumberTopupProduct().catch((error) => console.error("[esim] number top-up product could not be created:", error));
-  }
+  if (imported) await ensureNumberProducts();
   return { imported, existing: rows.length - imported, problems };
 }
 

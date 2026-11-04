@@ -432,7 +432,8 @@
       "total": "Total",
       "buy": "Buy this number",
       "signInToBuy": "Sign in to buy",
-      "entryFrom": "{count} numbers · from {price}"
+      "entryFrom": "{count} numbers · from {price}",
+      "notReady": "Numbers cannot be bought right now. Please try again later or contact us."
     },
     "number": {
       "blocked": "Blocked",
@@ -1146,7 +1147,8 @@
       "setPriceByHand": "Set the price by hand",
       "packetCountriesHint": "Countries where it works (codes, e.g. FR, DE, IT)",
       "sortOrder": "Sort order",
-      "unlimited": "Unlimited"
+      "unlimited": "Unlimited",
+      "numberProductProblem": "Numbers cannot be bought yet: the store product they are sold as could not be made ({reason})."
     },
     "sidebar": {
       "esim": "eSIM",

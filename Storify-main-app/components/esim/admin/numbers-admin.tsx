@@ -107,6 +107,12 @@ export function EsimNumbersAdmin({ list, filters, canManage }: { list: AdminNumb
         ) : null}
       </div>
 
+      {list.productProblem ? (
+        <div className="rounded-lg border border-destructive/40 bg-destructive/5 p-3 text-sm text-destructive">
+          {t("admin.esim.numberProductProblem", "Numbers cannot be bought yet: the store product they are sold as could not be made ({reason}).", { reason: list.productProblem })}
+        </div>
+      ) : null}
+
       <div className="flex flex-wrap items-center gap-2">
         <div className="flex flex-wrap gap-1 rounded-lg border p-1">
           {STATUSES.map((status) => (
