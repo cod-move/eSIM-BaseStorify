@@ -25,6 +25,7 @@ function ProviderCard({ provider, canManage }: { provider: AdminProvider; canMan
   const t = useFallbackTranslator(useTranslations());
   const router = useRouter();
   const [priority, setPriority] = useState(String(provider.priority));
+  const [currency, setCurrency] = useState(provider.settlementCurrency);
   const [credentials, setCredentials] = useState<Record<string, string>>(provider.credentialValues);
   const [busy, setBusy] = useState<"save" | "status" | "probe" | "sync" | null>(null);
   const [probe, setProbe] = useState(provider.lastProbe);
@@ -47,7 +48,12 @@ function ProviderCard({ provider, canManage }: { provider: AdminProvider; canMan
       const changed = Object.fromEntries(
         Object.entries(credentials).filter(([key, value]) => provider.secretKeys.includes(key) ? value !== "" : value !== (provider.credentialValues[key] ?? "")),
       );
-      await apiClient.patch(`/api/esim/admin/providers/${provider.code}`, { priority: Number(priority) || 0, credentials: changed });
+      if (!/^[A-Z]{3}$/.test(currency)) throw new Error(t("admin.esim.providerCurrencyInvalid", "Enter a three-letter currency code, such as USD or EUR"));
+      await apiClient.patch(`/api/esim/admin/providers/${provider.code}`, {
+        priority: Number(priority) || 0,
+        credentials: changed,
+        ...(currency !== provider.settlementCurrency ? { settlementCurrency: currency } : {}),
+      });
       setCredentials(provider.credentialValues);
       toast.success(t("admin.esim.saved", "Saved"));
     });
@@ -126,6 +132,21 @@ function ProviderCard({ provider, canManage }: { provider: AdminProvider; canMan
             <Label htmlFor={`${provider.code}-priority`}>{t("admin.esim.providerPriority", "Priority (lower is preferred when prices tie)")}</Label>
             <Input id={`${provider.code}-priority`} type="number" min={0} disabled={!canManage} value={priority} onChange={(event) => setPriority(event.target.value)} />
           </div>}
+          <div className="space-y-1.5">
+            <Label htmlFor={`${provider.code}-currency`}>{t("admin.esim.providerCurrency", "Currency (what the supplier bills in)")}</Label>
+            <Input
+              id={`${provider.code}-currency`}
+              className="w-28 uppercase"
+              maxLength={3}
+              autoComplete="off"
+              disabled={!canManage}
+              value={currency}
+              onChange={(event) => setCurrency(event.target.value.replace(/[^a-z]/gi, "").toUpperCase().slice(0, 3))}
+            />
+            <p className="text-xs text-muted-foreground">
+              {t("admin.esim.providerCurrencyHint", "Costs without a currency of their own are read in this currency and converted to USD at the exchange rate plus the buffer.")}
+            </p>
+          </div>
         </div>
 
         <div className="grid gap-3 text-sm sm:grid-cols-2">

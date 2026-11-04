@@ -1,18 +1,29 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { formatAmount, numberLineLabel, numberLinePriceMinor, parseNumberChoice, rechargeProblem, rechargeUsdMinor } from "../numbers/line";
+import { formatAmount, numberLineLabel, numberLinePriceMinor, parseNumberChoice, rechargePreset, rechargeProblem, rechargeSuggestions, rechargeUsdMinor } from "../numbers/line";
 import { parseLineAttributes, withLineDays } from "../cart/line-attributes";
 
 const ID = "a".repeat(24);
 
 describe("number card line", () => {
-  it("takes a first recharge of none or a whole amount from 3 to 300", () => {
-    assert.equal(rechargeProblem(0), null);
-    assert.equal(rechargeProblem(300), null);
+  it("takes a whole amount from the set minimum (€5 unless changed) to 300, never none", () => {
+    assert.equal(rechargeProblem(500), null);
     assert.equal(rechargeProblem(30_000), null);
-    assert.match(rechargeProblem(200)!, /between 3 and 300/);
-    assert.match(rechargeProblem(30_100)!, /between 3 and 300/);
+    assert.match(rechargeProblem(0)!, /whole amount/);
+    assert.match(rechargeProblem(300)!, /between 5 and 300/);
+    assert.match(rechargeProblem(30_100)!, /between 5 and 300/);
     assert.match(rechargeProblem(550)!, /whole amount/);
+    assert.equal(rechargeProblem(300, 300), null);
+    assert.match(rechargeProblem(1000, 1500)!, /between 15 and 300/);
+  });
+
+  it("offers amounts from the minimum and starts on €5", () => {
+    assert.deepEqual(rechargeSuggestions(500), [500, 1000, 2000, 5000]);
+    assert.deepEqual(rechargeSuggestions(300), [300, 500, 1000, 2000]);
+    assert.deepEqual(rechargeSuggestions(1500), [1500, 2000, 5000]);
+    assert.equal(rechargePreset(300), 500);
+    assert.equal(rechargePreset(500), 500);
+    assert.equal(rechargePreset(1500), 1500);
   });
 
   it("prices a euro recharge at the rate plus the buffer, rounded up", () => {
@@ -31,7 +42,8 @@ describe("number card line", () => {
 
   it("reads the shopper's choice and refuses anything else", () => {
     assert.deepEqual(parseNumberChoice({ id: ID, recharge: 500, packet: "b".repeat(24) }), { id: ID, recharge: 500, packet: "b".repeat(24) });
-    assert.deepEqual(parseNumberChoice({ id: ID, recharge: 0, packet: "" }), { id: ID });
+    assert.deepEqual(parseNumberChoice({ id: ID, packet: "" }), { id: ID });
+    assert.throws(() => parseNumberChoice({ id: ID, recharge: 0 }), /whole amount/);
     assert.throws(() => parseNumberChoice({ id: "x" }), /Choose a number/);
     assert.throws(() => parseNumberChoice({ id: ID, recharge: "5" }), /whole amount/);
     assert.throws(() => parseNumberChoice({ id: ID, packet: 7 }), /Unknown data package/);

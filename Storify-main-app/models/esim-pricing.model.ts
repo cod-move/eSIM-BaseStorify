@@ -84,6 +84,12 @@ export interface IEsimSettings extends mongoose.Document {
   kyc: { countries: string[] };
   /** Shopper reminders (NTF-03/04/05/07) and their thresholds. */
   reminders: { enabled: boolean; lowDataPercent: number; expiringHours: number; installDays: number };
+  /** Number cards (NUM-04/08): the smallest recharge, in cents of TopConnect's currency; a number is always sold with one. */
+  numbers: {
+    rechargeMinMinor: number;
+    /** The network code (MCC-MNC) last used to ask TopConnect for packages (a stock card is on no network). */
+    packetMccmnc: string | null;
+  };
   /** Shopper cancellation (USR-07): on/off, the fee kept, where the rest goes. */
   cancellation: { enabled: boolean; feeFixedMinor: number; feePercent: number; refundTo: "balance" | "original" };
   /**
@@ -166,6 +172,10 @@ const EsimSettingsSchema = new Schema<IEsimSettings>(
       lowDataPercent: { type: Number, default: 20, min: 1, max: 90 },
       expiringHours: { type: Number, default: 24, min: 1, max: 336 },
       installDays: { type: Number, default: 3, min: 1, max: 60 },
+    },
+    numbers: {
+      rechargeMinMinor: { type: Number, default: 500, min: 100, max: 30_000 },
+      packetMccmnc: { type: String, default: null, match: /^\d{5,6}$/ },
     },
     cancellation: {
       enabled: { type: Boolean, default: false },

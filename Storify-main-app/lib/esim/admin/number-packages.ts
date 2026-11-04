@@ -9,6 +9,8 @@ import { currentRates } from "@/lib/esim/pricing/fx-service";
 import { repriceNumberPackages } from "@/lib/esim/pricing/reprice";
 import { mergeSupplierPackets } from "@/lib/esim/numbers/packages";
 import { topConnectClient } from "@/lib/esim/providers/registry";
+import { ProviderError } from "@/lib/esim/providers/types";
+import { getEsimSettings } from "@/models/esim-pricing.model";
 
 /**
  * Admin → eSIM → Number data packages (NUM-02): the price list a number
@@ -42,14 +44,17 @@ export interface AdminNumberPackageList {
   rates: Record<string, number>;
   /** Whether TopConnect is set up and a number is in stock to ask its list for. */
   canLoad: boolean;
+  /** The network code last used to load packages, to start from. */
+  packetMccmnc: string | null;
 }
 
 export async function listNumberPackagesAdmin(): Promise<AdminNumberPackageList> {
   await connectDB();
-  const [rows, provider, anyNumber] = await Promise.all([
+  const [rows, provider, anyNumber, settings] = await Promise.all([
     EsimNumberPackage.find().sort({ sortOrder: 1, createdAt: 1 }).lean(),
     findProvider("topconnect"),
     EsimNumber.exists({}),
+    getEsimSettings(),
   ]);
   const rates = await currentRates(rows.map((row) => row.cost.currency));
   return {
@@ -71,6 +76,7 @@ export async function listNumberPackagesAdmin(): Promise<AdminNumberPackageList>
     })),
     rates: Object.fromEntries([...rates.values()].map((rate) => [rate.currency, rate.usdPerUnit])),
     canLoad: Boolean(provider && provider.status === "active" && anyNumber),
+    packetMccmnc: settings.numbers?.packetMccmnc ?? null,
   };
 }
 
@@ -164,9 +170,11 @@ export interface PacketLoadReport {
  * Asks TopConnect which packets a card can take (`getdiscount`) and folds
  * them in: new ones are added hidden, known ones get TopConnect's current
  * cost, validity and volume (and so a new price). The card asked about is
- * the one named, else any number in stock.
+ * the one named, else any number in stock. TopConnect lists the packets of
+ * the network the card is on, so a stock card (on no network) needs the
+ * network code (`mccmnc`); the one used is remembered for next time.
  */
-export async function loadPacketsFromTopConnect(msisdn?: string): Promise<PacketLoadReport> {
+export async function loadPacketsFromTopConnect(msisdn?: string, mccmnc?: string): Promise<PacketLoadReport> {
   await connectDB();
   const provider = await findProvider("topconnect");
   if (!provider || provider.status !== "active") throw new Error("Set up and switch on the TopConnect supplier first");
@@ -176,8 +184,18 @@ export async function loadPacketsFromTopConnect(msisdn?: string): Promise<Packet
   const client = topConnectClient(credentialsOf(provider));
   const packets = await withProviderLog(
     { provider: provider._id as mongoose.Types.ObjectId, providerCode: "topconnect", operation: "numbers.packets", request: { msisdn: number } },
-    () => client.dataPackages(number),
-  );
+    () => client.dataPackages(number, mccmnc ? { mccmnc } : {}),
+  ).catch((error: unknown) => {
+    if (error instanceof ProviderError && /mccmnc|sgsnip/i.test(error.message)) {
+      throw new Error(
+        mccmnc
+          ? `TopConnect has no packages for network ${mccmnc} on +${number}: check the network code`
+          : `+${number} is not on a network now, so TopConnect needs a network code: enter the MCC-MNC of the network the packages are for (e.g. 24801) and load again`,
+      );
+    }
+    throw error;
+  });
+  if (mccmnc) await getEsimSettings().then((settings) => { settings.set("numbers.packetMccmnc", mccmnc); return settings.save(); });
   const stored = await EsimNumberPackage.find({ providerCode: "topconnect" }).select({ packetId: 1, cost: 1, validityDays: 1, volumeMb: 1 }).lean();
   const merge = mergeSupplierPackets(
     stored.map((row) => ({ id: String(row._id), packetId: row.packetId, cost: row.cost, validityDays: row.validityDays, volumeMb: row.volumeMb })),

@@ -115,6 +115,13 @@ describe("TopConnect client", () => {
     assert.deepEqual(packet, { code: "2", name: "Data package 1 week", volumeBytes: 1024000, durationDays: 7, priceMinor: 500, currency: null });
   });
 
+  it("names the network for getdiscount when given (a stock card is on none)", async () => {
+    const gateway = answering("<discount><packetrequired>false</packetrequired></discount>");
+    await client(gateway.fetch).dataPackages("37282360017", { mccmnc: "24802" });
+    assert.equal(gateway.urls[0]!.searchParams.get("mccmnc"), "24802");
+    await assert.rejects(client(gateway.fetch).dataPackages("37282360017", { mccmnc: "24A02" }), /5 or 6 digits/);
+  });
+
   it("sends a transfer as X.XX with the order id, and reads both balances", async () => {
     const xml = "<sbalance><amount>-10.00 USD</amount><orderid>32</orderid><card><balance>10022.21 USD</balance><amount>-10.00 USD</amount></card><client><balance>499.00 USD</balance><amount>+10.00 USD</amount></client></sbalance>";
     const gateway = answering(xml);
@@ -182,7 +189,8 @@ describe("TopConnect fake gateway", () => {
     const transfer = await fake.transfer({ msisdn: "37255501234", amountMinor: 500, currency: "EUR", orderId: 1 });
     assert.equal(transfer.cardBalanceMinor, 500);
 
-    const packets = await fake.dataPackages("37255501234");
+    await assert.rejects(fake.dataPackages("37255501234"), /mccmnc or sgsnip/);
+    const packets = await fake.dataPackages("37255501234", { mccmnc: "24801" });
     assert.equal(packets[0]!.priceMinor, 500);
     await fake.activateDataPackage("37255501234", "1");
     await assert.rejects(fake.activateDataPackage("37255501234", "1"), /already activated/);

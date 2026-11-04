@@ -7,7 +7,8 @@ import { EsimProvider } from "@/models/esim-provider.model";
 import { getEsimSettings } from "@/models/esim-pricing.model";
 import { currentRates } from "@/lib/esim/pricing/fx-service";
 import { findNumberProduct, findNumberTopupProduct } from "@/lib/esim/numbers/product";
-import { RECHARGE_MAX_MINOR, RECHARGE_MIN_MINOR, RECHARGE_SUGGESTIONS_MINOR } from "@/lib/esim/numbers/line";
+import { RECHARGE_MAX_MINOR, rechargePreset, rechargeSuggestions } from "@/lib/esim/numbers/line";
+import { rechargeMinOf } from "@/lib/esim/numbers/settings";
 
 /**
  * The numbers page (NUM-03): numbers on sale, filtered by country code,
@@ -54,13 +55,19 @@ export interface NumberShop {
   dialCodes: Array<{ code: string; country: string | null; count: number }>;
   packets: ShopPacket[];
   /** First recharge: chosen in the card's currency; `usdPerUnit` already carries the FX buffer, for showing the price only (the cart prices it). */
-  recharge: { currency: string; usdPerUnit: number | null; minMinor: number; maxMinor: number; suggestions: number[] };
+  recharge: { currency: string; usdPerUnit: number | null; minMinor: number; maxMinor: number; suggestions: number[]; presetMinor: number };
   /** The hidden product a number is added to the cart as; null until an admin imports numbers. */
   product: { productId: string; variantId: string } | null;
 }
 
 /** Free numbers, and held ones whose hold ran out (the cron has not released them yet). */
 const onSale = (now: Date) => ({ $or: [{ status: "available" }, { status: "reserved", "reservation.until": { $lt: now } }], customer: null });
+
+/** The recharge amounts on offer, from the minimum the admin set (Admin → eSIM → Numbers). */
+function rechargeBounds(settings: Parameters<typeof rechargeMinOf>[0]) {
+  const minMinor = rechargeMinOf(settings);
+  return { minMinor, maxMinor: RECHARGE_MAX_MINOR, suggestions: rechargeSuggestions(minMinor), presetMinor: rechargePreset(minMinor) };
+}
 
 /** What can be bought for a number the shopper owns (NUM-08/09): packages, credit, and the product their lines use. */
 export async function numberTopupOptions(): Promise<Pick<NumberShop, "packets" | "recharge" | "product">> {
@@ -78,9 +85,7 @@ export async function numberTopupOptions(): Promise<Pick<NumberShop, "packets" |
     recharge: {
       currency,
       usdPerUnit: rate ? rate.usdPerUnit * (1 + settings.fxBufferPercent / 100) : null,
-      minMinor: RECHARGE_MIN_MINOR,
-      maxMinor: RECHARGE_MAX_MINOR,
-      suggestions: RECHARGE_SUGGESTIONS_MINOR.filter((amount) => amount > 0),
+      ...rechargeBounds(settings),
     },
     product: product ? { productId: product.productId, variantId: product.variantId } : null,
   };
@@ -143,9 +148,7 @@ export async function numberShop(filters: ShopNumberFilters): Promise<NumberShop
     recharge: {
       currency,
       usdPerUnit: rate ? rate.usdPerUnit * (1 + settings.fxBufferPercent / 100) : null,
-      minMinor: RECHARGE_MIN_MINOR,
-      maxMinor: RECHARGE_MAX_MINOR,
-      suggestions: RECHARGE_SUGGESTIONS_MINOR,
+      ...rechargeBounds(settings),
     },
     product: product ? { productId: product.productId, variantId: product.variantId } : null,
   };

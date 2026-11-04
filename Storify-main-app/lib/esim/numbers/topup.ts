@@ -7,6 +7,7 @@ import { EsimNumber } from "@/models/esim-number.model";
 import { EsimNumberPackage } from "@/models/esim-number-package.model";
 import { EsimProvider } from "@/models/esim-provider.model";
 import { getEsimSettings } from "@/models/esim-pricing.model";
+import { rechargeMinOf } from "@/lib/esim/numbers/settings";
 import { currentRates } from "@/lib/esim/pricing/fx-service";
 import { findNumberTopupProduct } from "@/lib/esim/numbers/product";
 import { formatAmount, rechargeProblem, rechargeUsdMinor } from "@/lib/esim/numbers/line";
@@ -66,13 +67,14 @@ export async function numberTopupLine(choice: NumberTopupChoice | undefined, use
   }
 
   const recharge = choice.recharge ?? 0;
-  const problem = recharge ? rechargeProblem(recharge) : "Choose a whole amount to put on the number";
+  const settings = await getEsimSettings();
+  const problem = recharge ? rechargeProblem(recharge, rechargeMinOf(settings)) : "Choose a whole amount to put on the number";
   if (problem) return problem;
   const provider = await EsimProvider.findOne({ code: "topconnect" }).select({ settlementCurrency: 1 }).lean();
   const currency = provider?.settlementCurrency ?? "EUR";
   const rate = (await currentRates([currency])).get(currency);
   if (!rate) return "Credit cannot be priced right now: try again later";
-  const priceMinor = rechargeUsdMinor(recharge, rate.usdPerUnit, (await getEsimSettings()).fxBufferPercent);
+  const priceMinor = rechargeUsdMinor(recharge, rate.usdPerUnit, settings.fxBufferPercent);
   const label = `${title} · ${formatAmount(recharge, currency)} credit`;
   return {
     lineAttributes: {

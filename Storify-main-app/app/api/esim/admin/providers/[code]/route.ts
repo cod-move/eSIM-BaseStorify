@@ -4,6 +4,8 @@ import { withApi } from "@/lib/api/handler";
 import { validateBody } from "@/lib/api/validate";
 import { updateProvider } from "@/lib/esim/admin/providers";
 import { ESIM_WRITE, auditEsim } from "@/lib/esim/admin/route";
+import { ValidationError } from "@/lib/api/errors";
+import { currentRates } from "@/lib/esim/pricing/fx-service";
 
 const ProviderSchema = z.object({
   name: z.string().max(80).optional(),
@@ -16,6 +18,11 @@ const ProviderSchema = z.object({
 /** Switch a supplier on or off; its priority and credentials (ADM-01). */
 export const PATCH = withApi<{ code: string }>(ESIM_WRITE, async ({ request, params, session }) => {
   const body = await validateBody(request, ProviderSchema);
+  // A supplier billing in a currency with no rate could not be priced: ask for the rate first.
+  const currency = body.settlementCurrency?.toUpperCase();
+  if (currency && currency !== "USD" && !(await currentRates([currency])).has(currency)) {
+    throw new ValidationError(`No exchange rate for ${currency} yet: add one under eSIM → Exchange rates first`);
+  }
   const { before, after } = await updateProvider(params.code, body);
   await auditEsim(request, session, {
     resourceId: `esim:provider:${params.code}`,

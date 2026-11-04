@@ -137,6 +137,7 @@ async function run() {
   assert.deepEqual((await numberShop({ dialCode: "372", digits: "5559000", premium: "premium" })).rows.map((row) => row.id), [second]);
   assert.ok(listed.packets.some((entry) => entry.id === String(packet._id)));
   assert.equal(listed.recharge.currency, "EUR");
+  assert.deepEqual([listed.recharge.minMinor, listed.recharge.presetMinor, listed.recharge.suggestions], [500, 500, [500, 1000, 2000, 5000]], "€5 minimum by default, €5 picked");
   assert.equal(listed.product?.variantId, product.variantId);
   assert.equal("install" in (listed.rows[0] as object), false, "the page never reads install details");
 
@@ -144,11 +145,12 @@ async function run() {
     productId: product.productId,
     variantId: product.variantId,
     quantity: 1,
-    lineAttributes: { number: { id, ...extra } },
+    lineAttributes: { number: { id, recharge: 500, ...extra } },
   });
 
   await assert.rejects(esimCartLine(line(first), {}), /Sign in/);
-  await assert.rejects(esimCartLine(line(first, { recharge: 200 }), { userId: String(alice) }), /between 3 and 300/);
+  await assert.rejects(esimCartLine(line(first, { recharge: 200 }), { userId: String(alice) }), /between 5 and 300/);
+  await assert.rejects(esimCartLine(line(first, { recharge: undefined }), { userId: String(alice) }), /first credit/);
   const added = await esimCartLine(line(first, { recharge: 1000, packet: String(packet._id) }), { userId: String(alice) });
   const rechargeUsd = Math.ceil(1000 * 1.2 * (1 + buffer / 100) - 1e-9);
   assert.ok(added);

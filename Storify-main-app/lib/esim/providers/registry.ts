@@ -31,6 +31,8 @@ interface ProviderDefinition {
   hiddenBundles?: readonly string[];
   /** Number cards only (TopConnect): no eSIM catalogue to sync. */
   numbersOnly?: boolean;
+  /** The currency the supplier bills in until the admin sets one (USD when not given). */
+  defaultCurrency?: string;
   create(credentials: ProviderCredentials, settlementCurrency: string): EsimProviderAdapter;
 }
 
@@ -107,9 +109,14 @@ export const PROVIDER_DEFINITIONS = {
     credentialKeys: ["username", "password", "baseUrl"],
     secretKeys: ["password"],
     numbersOnly: true,
+    defaultCurrency: "EUR",
     create: (credentials) => new TopConnectAdapter(topConnectClient(credentials)),
   },
 } satisfies Record<string, ProviderDefinition>;
+
+/** The currency a supplier bills in before the admin sets one. */
+export const defaultProviderCurrency = (code: keyof typeof PROVIDER_DEFINITIONS): string =>
+  (PROVIDER_DEFINITIONS[code] as ProviderDefinition).defaultCurrency ?? "USD";
 
 /** TopConnect's number-card gateway from its credentials; `fake://topconnect` is the in-memory one, for development. */
 export function topConnectClient(credentials: ProviderCredentials): TopConnectClient {

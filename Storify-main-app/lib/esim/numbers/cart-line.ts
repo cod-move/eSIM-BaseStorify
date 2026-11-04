@@ -5,6 +5,7 @@ import { EsimNumber } from "@/models/esim-number.model";
 import { EsimNumberPackage } from "@/models/esim-number-package.model";
 import { EsimProvider } from "@/models/esim-provider.model";
 import { getEsimSettings } from "@/models/esim-pricing.model";
+import { rechargeMinOf } from "@/lib/esim/numbers/settings";
 import { currentRates } from "@/lib/esim/pricing/fx-service";
 import {
   numberLineLabel,
@@ -62,7 +63,8 @@ export async function numberCartLine(choice: NumberLineChoice | undefined, userI
   if (!userId || !mongoose.isValidObjectId(userId)) return "Sign in to buy a phone number";
   if (!choice?.id || !mongoose.isValidObjectId(choice.id)) return "Choose a number from the numbers page";
   const recharge = choice.recharge ?? 0;
-  const problem = rechargeProblem(recharge);
+  const settings = await getEsimSettings();
+  const problem = recharge ? rechargeProblem(recharge, rechargeMinOf(settings)) : "Choose the first credit to put on the number";
   if (problem) return problem;
 
   const now = new Date();
@@ -92,8 +94,8 @@ export async function numberCartLine(choice: NumberLineChoice | undefined, userI
   let rechargeUsd = 0;
   if (recharge) {
     const rate = (await currentRates([currency])).get(currency);
-    if (!rate) return "A first recharge cannot be priced right now: try again later, or buy the number without one";
-    rechargeUsd = rechargeUsdMinor(recharge, rate.usdPerUnit, (await getEsimSettings()).fxBufferPercent);
+    if (!rate) return "Credit cannot be priced right now: try again later";
+    rechargeUsd = rechargeUsdMinor(recharge, rate.usdPerUnit, settings.fxBufferPercent);
   }
 
   const snapshot: NumberLineSnapshot = {

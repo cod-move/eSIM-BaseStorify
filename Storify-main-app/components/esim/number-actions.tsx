@@ -32,13 +32,13 @@ export function NumberTopupActions({ numberId, title, options }: { numberId: str
   const { addItem } = useCart();
   const { formatPrice } = useCurrency();
   const [open, setOpen] = useState<"recharge" | "packet" | null>(null);
-  const [amount, setAmount] = useState(options.recharge.suggestions[1] ?? options.recharge.minMinor);
+  const [amount, setAmount] = useState(options.recharge.presetMinor);
   const [custom, setCustom] = useState("");
   const [packet, setPacket] = useState(options.packets[0]?.id ?? "");
   const [busy, setBusy] = useState(false);
   const { currency, usdPerUnit } = options.recharge;
   const rechargeMinor = custom ? Number(custom) * 100 : amount;
-  const problem = rechargeMinor ? rechargeProblem(rechargeMinor) : t("esim.number.chooseAmount", "Choose an amount");
+  const problem = rechargeMinor ? rechargeProblem(rechargeMinor, options.recharge.minMinor) : t("esim.number.chooseAmount", "Choose an amount");
   const priceMinor = open === "packet"
     ? options.packets.find((entry) => entry.id === packet)?.priceMinor ?? 0
     : usdPerUnit && rechargeMinor ? Math.ceil(rechargeMinor * usdPerUnit - 1e-9) : 0;
@@ -119,7 +119,7 @@ export function NumberTopupActions({ numberId, title, options }: { numberId: str
               </div>
               <p className={cn("text-xs", problem ? "text-destructive" : "text-muted-foreground")}>
                 {problem
-                  ? t("esim.numbers.rechargeRange", "Whole amounts from {min} to {max}, or none.", {
+                  ? t("esim.numbers.rechargeAmounts", "Whole amounts from {min} to {max}.", {
                       min: formatAmount(options.recharge.minMinor, currency),
                       max: formatAmount(options.recharge.maxMinor, currency),
                     })

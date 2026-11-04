@@ -17,6 +17,7 @@ import { EsimNumber } from "@/models/esim-number.model";
 import { EsimNumberPackage } from "@/models/esim-number-package.model";
 import { EsimProvider } from "@/models/esim-provider.model";
 import { EsimFxRate } from "@/models/esim-fx-rate.model";
+import { EsimSettings, getEsimSettings } from "@/models/esim-pricing.model";
 
 const MSISDN = "37255599999";
 
@@ -40,6 +41,7 @@ async function main() {
   if (madeProvider) {
     await EsimProvider.create({ code: "topconnect", name: "TopConnect (dev check)", status: "active", settlementCurrency: "EUR", credentials: { baseUrl: "fake://topconnect" } });
   }
+  const savedMccmnc = (await getEsimSettings()).numbers?.packetMccmnc ?? null;
   const manualRate = await EsimFxRate.create({ currency: "EUR", usdPerUnit: 1.1, source: "manual", effectiveAt: new Date() });
   await EsimNumber.create({
     msisdn: MSISDN, dialCode: "372", nationalNumber: "55599999", country: "EE", iccid: "8937299900000099999",
@@ -47,8 +49,11 @@ async function main() {
   });
 
   try {
-    const loaded = await admin.loadPacketsFromTopConnect();
+    // A stock card is on no network: TopConnect wants the network named, and the admin is told so.
+    await assert.rejects(admin.loadPacketsFromTopConnect(), /needs a network code/);
+    const loaded = await admin.loadPacketsFromTopConnect(undefined, "24801");
     assert.equal(loaded.msisdn, MSISDN);
+    assert.equal((await admin.listNumberPackagesAdmin()).packetMccmnc, "24801", "the network code is remembered");
     assert.deepEqual(loaded.added.sort(), ["1", "2", "9"]);
     let list = await admin.listNumberPackagesAdmin();
     assert.ok(list.rows.every((row) => row.status === "hidden"), "loaded packets start hidden");
@@ -77,7 +82,7 @@ async function main() {
     assert.deepEqual(manual!.countryCodes, ["FR", "DE"]);
 
     await EsimNumberPackage.updateOne({ packetId: "1" }, { $set: { "cost.amountMinor": 1 } });
-    const reloaded = await admin.loadPacketsFromTopConnect(MSISDN);
+    const reloaded = await admin.loadPacketsFromTopConnect(MSISDN, "24801");
     assert.deepEqual([reloaded.added, reloaded.updated], [[], ["1"]]);
     assert.equal((await EsimNumberPackage.findOne({ packetId: "2" }).lean())!.name, "Europe 1 GB", "a reload keeps the admin's name");
 
@@ -89,6 +94,7 @@ async function main() {
     await EsimNumber.deleteMany({ batch: "dev-script-packages" });
     await EsimFxRate.deleteOne({ _id: manualRate._id });
     if (madeProvider) await EsimProvider.deleteOne({ code: "topconnect" });
+    await EsimSettings.updateOne({ key: "default" }, { $set: { "numbers.packetMccmnc": savedMccmnc } });
   }
 }
 

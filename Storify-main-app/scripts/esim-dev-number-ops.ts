@@ -146,17 +146,17 @@ async function run() {
   assert.equal((await EsimNumberOp.findOne({ order: order2 }).lean())?.state, "completed");
   assert.equal(balance(), 1500);
 
-  // 3. The answer to a €3 recharge is lost: it waits, then the card's log shows it went through — never sent twice.
+  // 3. The answer to a €6 recharge is lost: it waits, then the card's log shows it went through — never sent twice.
   fake.loseAnswers = 1;
-  const order3 = await topup({ recharge: 300 });
+  const order3 = await topup({ recharge: 600 });
   await esimQueueOrder(order3);
   await esimFulfilOrder(order3);
   assert.equal((await EsimNumberOp.findOne({ order: order3 }).lean())?.state, "processing");
-  assert.equal(balance(), 1800, "applied once");
+  assert.equal(balance(), 2100, "applied once");
   await EsimNumberOp.updateOne({ order: order3 }, { $set: { nextAttemptAt: new Date(0) } });
   await processNumberOps({ orderId: order3 });
   assert.equal((await EsimNumberOp.findOne({ order: order3 }).lean())?.state, "completed");
-  assert.equal(balance(), 1800, "still once");
+  assert.equal(balance(), 2100, "still once");
 
   // 4. Package "9" is refused after its price was moved: moved back, and that part refunded to the balance.
   const order4 = await topup({ packet: String(packet9._id) });
@@ -167,12 +167,12 @@ async function run() {
   assert.equal(refused?.rollback?.done, true);
   assert.equal(refused?.refund?.state, "done");
   assert.equal(refused?.refund?.amount, 1.99);
-  assert.equal(balance(), 1800, "the package price went back");
+  assert.equal(balance(), 2100, "the package price went back");
 
   // 5. The number's page lists the package with its code; cancelling it stops that one package.
   const page = await getCustomerNumber(String(alice), id);
   assert.deepEqual(page?.pending, []);
-  assert.equal(page?.card?.balanceMinor, 1800);
+  assert.equal(page?.card?.balanceMinor, 2100);
   assert.deepEqual(page?.card?.packages.map((entry) => entry.packetId), ["1"]);
   assert.deepEqual(await cancelCustomerPacket(String(alice), id, "1"), { cancelled: true });
   assert.deepEqual((await getCustomerNumber(String(alice), id))?.card?.packages, []);

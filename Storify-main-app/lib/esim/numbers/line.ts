@@ -35,17 +35,32 @@ export interface NumberLineSnapshot extends NumberLineChoice {
   packetUsdMinor: number;
 }
 
-/** A first recharge is none, or a whole amount from 3 to 300 (the old store's range). */
-export const RECHARGE_MIN_MINOR = 300;
+/**
+ * A recharge (the first one bought with a number, and later ones) is a whole
+ * amount from the minimum set under Admin → eSIM → Numbers (€5 unless
+ * changed, never under €1) up to 300. A number is always sold with one.
+ */
+export const RECHARGE_FLOOR_MINOR = 100;
+export const RECHARGE_DEFAULT_MIN_MINOR = 500;
 export const RECHARGE_MAX_MINOR = 30_000;
-export const RECHARGE_SUGGESTIONS_MINOR = [0, 500, 1000, 2000, 5000];
+const RECHARGE_SUGGESTIONS_MINOR = [500, 1000, 2000, 5000];
+/** The amount picked for the shopper to start with: €5, or the minimum when that is higher. */
+const RECHARGE_PRESET_MINOR = 500;
 
-/** Why a first recharge cannot be taken, or null. */
-export function rechargeProblem(minor: number): string | null {
-  if (minor === 0) return null;
-  if (!Number.isInteger(minor) || minor % 100 !== 0) return "Choose a whole amount to put on the number";
-  if (minor < RECHARGE_MIN_MINOR || minor > RECHARGE_MAX_MINOR) {
-    return `Choose a first recharge between ${RECHARGE_MIN_MINOR / 100} and ${RECHARGE_MAX_MINOR / 100}, or none`;
+/** The amounts offered as buttons for a minimum: the usual ones it allows, led by the minimum itself. */
+export function rechargeSuggestions(minMinor: number): number[] {
+  const allowed = RECHARGE_SUGGESTIONS_MINOR.filter((amount) => amount >= minMinor);
+  return allowed[0] === minMinor ? allowed : [minMinor, ...allowed].slice(0, 4);
+}
+
+/** The amount selected when the dialog opens. */
+export const rechargePreset = (minMinor: number) => Math.max(minMinor, RECHARGE_PRESET_MINOR);
+
+/** Why a recharge cannot be taken, or null. */
+export function rechargeProblem(minor: number, minMinor = RECHARGE_DEFAULT_MIN_MINOR): string | null {
+  if (!Number.isInteger(minor) || minor <= 0 || minor % 100 !== 0) return "Choose a whole amount to put on the number";
+  if (minor < minMinor || minor > RECHARGE_MAX_MINOR) {
+    return `Choose an amount between ${minMinor / 100} and ${RECHARGE_MAX_MINOR / 100}`;
   }
   return null;
 }
@@ -87,11 +102,12 @@ export function parseNumberChoice(value: unknown): NumberLineChoice {
   const input = value as Record<string, unknown>;
   if (typeof input.id !== "string" || !OBJECT_ID.test(input.id)) throw new Error("Choose a number");
   const choice: NumberLineChoice = { id: input.id };
+  // The shape only: the cart holds the amount to the minimum the admin set.
   if (input.recharge !== undefined && input.recharge !== null) {
     if (typeof input.recharge !== "number") throw new Error("Choose a whole amount to put on the number");
-    const problem = rechargeProblem(input.recharge);
+    const problem = rechargeProblem(input.recharge, RECHARGE_FLOOR_MINOR);
     if (problem) throw new Error(problem);
-    if (input.recharge) choice.recharge = input.recharge;
+    choice.recharge = input.recharge;
   }
   if (input.packet !== undefined && input.packet !== null && input.packet !== "") {
     if (typeof input.packet !== "string" || !OBJECT_ID.test(input.packet)) throw new Error("Unknown data package");

@@ -5,7 +5,7 @@ import { EsimPlan } from "@/models/esim-plan.model";
 import { EsimProvider, type IEsimProvider } from "@/models/esim-provider.model";
 import { adapterFor, applyCredentials, findProvider } from "@/lib/esim/provider-service";
 import { syncProviderCatalog } from "@/lib/esim/catalog/sync";
-import { PROVIDER_DEFINITIONS, isProviderCode, sellsEsimPlans } from "@/lib/esim/providers/registry";
+import { PROVIDER_DEFINITIONS, defaultProviderCurrency, isProviderCode, sellsEsimPlans } from "@/lib/esim/providers/registry";
 
 /**
  * Admin → eSIM → Suppliers (ADM-01): the list, switching a supplier on and
@@ -103,7 +103,7 @@ export async function listAdminProviders(): Promise<AdminProvider[]> {
       name: definition.displayName,
       status: "disabled",
       priority: 100,
-      settlementCurrency: "USD",
+      settlementCurrency: defaultProviderCurrency(code as keyof typeof PROVIDER_DEFINITIONS),
       credentialKeys: [...definition.credentialKeys],
       secretKeys: [...definition.secretKeys],
       credentialsSet: Object.fromEntries(definition.credentialKeys.map((key) => [key, false])),
@@ -133,7 +133,7 @@ export async function updateProvider(code: string, update: ProviderUpdate) {
   const definition = PROVIDER_DEFINITIONS[code];
   const provider =
     (await findProvider(code)) ??
-    new EsimProvider({ code, name: definition.displayName, status: "disabled", settlementCurrency: update.settlementCurrency ?? "USD" });
+    new EsimProvider({ code, name: definition.displayName, status: "disabled", settlementCurrency: update.settlementCurrency?.toUpperCase() ?? defaultProviderCurrency(code) });
   const before = { name: provider.name, status: provider.status, priority: provider.priority, settlementCurrency: provider.settlementCurrency };
   if (update.name !== undefined) provider.name = update.name.trim() || definition.displayName;
   if (update.status !== undefined) provider.status = update.status;

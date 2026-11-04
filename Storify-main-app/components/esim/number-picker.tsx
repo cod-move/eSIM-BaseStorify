@@ -175,18 +175,18 @@ function NumberDialog({ shop, number, locale, onClose }: { shop: NumberShop; num
   const { addItem } = useCart();
   const { formatPrice } = useCurrency();
   const { data: session } = useSession();
-  const [recharge, setRecharge] = useState(0);
+  const [recharge, setRecharge] = useState(shop.recharge.presetMinor);
   const [custom, setCustom] = useState("");
   const [packet, setPacket] = useState<string>("none");
   const [busy, setBusy] = useState(false);
   const { currency, usdPerUnit } = shop.recharge;
 
   const rechargeMinor = custom ? Number(custom) * 100 : recharge;
-  const problem = rechargeProblem(rechargeMinor);
+  const problem = rechargeProblem(rechargeMinor, shop.recharge.minMinor);
   const chosenPacket = shop.packets.find((entry) => entry.id === packet) ?? null;
   const rechargeUsd = rechargeMinor && usdPerUnit ? Math.ceil(rechargeMinor * usdPerUnit - 1e-9) : 0;
-  const totalMinor = number ? number.priceMinor + number.premiumMinor + rechargeUsd + (chosenPacket?.priceMinor ?? 0) : 0;
-  const rechargeUnpriced = rechargeMinor > 0 && !usdPerUnit;
+  const totalMinor = number ? number.priceMinor + number.premiumMinor + (problem ? 0 : rechargeUsd) + (chosenPacket?.priceMinor ?? 0) : 0;
+  const rechargeUnpriced = !usdPerUnit;
   const label = useMemo(
     () =>
       number
@@ -210,7 +210,7 @@ function NumberDialog({ shop, number, locale, onClose }: { shop: NumberShop; num
         quantity: 1,
         price: totalMinor / 100,
         name: label,
-        lineAttributes: { number: { id: number.id, ...(rechargeMinor ? { recharge: rechargeMinor } : {}), ...(chosenPacket ? { packet: chosenPacket.id } : {}) } },
+        lineAttributes: { number: { id: number.id, recharge: rechargeMinor, ...(chosenPacket ? { packet: chosenPacket.id } : {}) } },
       });
       router.push("/checkout");
     } catch (error) {
@@ -256,7 +256,7 @@ function NumberDialog({ shop, number, locale, onClose }: { shop: NumberShop; num
                       setRecharge(amount);
                     }}
                   >
-                    {amount ? formatAmount(amount, currency) : t("esim.numbers.noCredit", "None")}
+                    {formatAmount(amount, currency)}
                   </Button>
                 ))}
                 <Input
@@ -270,15 +270,13 @@ function NumberDialog({ shop, number, locale, onClose }: { shop: NumberShop; num
               </div>
               <p className={cn("text-xs", problem ? "text-destructive" : "text-muted-foreground")}>
                 {problem
-                  ? t("esim.numbers.rechargeRange", "Whole amounts from {min} to {max}, or none.", {
+                  ? t("esim.numbers.rechargeAmounts", "Whole amounts from {min} to {max}.", {
                       min: formatAmount(shop.recharge.minMinor, currency),
                       max: formatAmount(shop.recharge.maxMinor, currency),
                     })
                   : rechargeUnpriced
-                    ? t("esim.numbers.rechargeUnpriced", "Credit cannot be priced right now; buy the number without it, or try again later.")
-                    : rechargeMinor
-                      ? t("esim.numbers.rechargePrice", "{amount} lands on the number; you pay {price}.", { amount: formatAmount(rechargeMinor, currency), price: formatPrice(rechargeUsd / 100) })
-                      : t("esim.numbers.rechargeLater", "You can add credit later from the number's page.")}
+                    ? t("esim.numbers.creditUnpriced", "Credit cannot be priced right now; please try again later.")
+                    : t("esim.numbers.rechargePrice", "{amount} lands on the number; you pay {price}.", { amount: formatAmount(rechargeMinor, currency), price: formatPrice(rechargeUsd / 100) })}
               </p>
             </fieldset>
 
@@ -312,7 +310,7 @@ function NumberDialog({ shop, number, locale, onClose }: { shop: NumberShop; num
             <dl className="space-y-1 rounded-lg bg-muted/50 p-3 text-sm">
               <Row label={t("esim.numbers.numberPrice", "Number")} value={formatPrice(number.priceMinor / 100)} />
               {number.premiumMinor ? <Row label={t("esim.numbers.premiumFee", "Memorable number")} value={formatPrice(number.premiumMinor / 100)} /> : null}
-              {rechargeMinor && !rechargeUnpriced ? (
+              {!problem && !rechargeUnpriced ? (
                 <Row label={t("esim.numbers.credit", "Credit {amount}", { amount: formatAmount(rechargeMinor, currency) })} value={formatPrice(rechargeUsd / 100)} />
               ) : null}
               {chosenPacket ? <Row label={chosenPacket.name} value={formatPrice(chosenPacket.priceMinor / 100)} /> : null}

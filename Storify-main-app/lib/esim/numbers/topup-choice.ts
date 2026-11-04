@@ -1,4 +1,4 @@
-import { rechargeProblem } from "@/lib/esim/numbers/line";
+import { RECHARGE_FLOOR_MINOR, rechargeProblem } from "@/lib/esim/numbers/line";
 
 /** A number top-up line's option (NUM-08/09), the part with no database: shape and checks. Pure. */
 
@@ -30,7 +30,7 @@ export function parseNumberTopupChoice(value: unknown): NumberTopupChoice {
   if ((recharge === undefined) === (packet === undefined)) throw new Error("Choose either credit or a data package");
   if (recharge !== undefined) {
     if (typeof recharge !== "number" || recharge === 0) throw new Error("Choose a whole amount to put on the number");
-    const problem = rechargeProblem(recharge);
+    const problem = rechargeProblem(recharge, RECHARGE_FLOOR_MINOR); // the cart holds it to the admin minimum
     if (problem) throw new Error(problem);
     return { number: input.number, recharge };
   }

@@ -2,6 +2,8 @@ import { setRequestLocale } from "next-intl/server";
 import { listNumbersAdmin, type AdminNumberFilters } from "@/lib/esim/admin/numbers";
 import { esimPageAccess } from "@/lib/esim/admin/page-access";
 import { EsimNumbersAdmin } from "@/components/esim/admin/numbers-admin";
+import { EsimNumberSettingsCard } from "@/components/esim/admin/number-settings-card";
+import { getNumberSettingsView } from "@/lib/esim/numbers/settings";
 
 interface PageProps {
   params: Promise<{ locale: string }>;
@@ -24,6 +26,11 @@ export default async function AdminEsimNumbersPage({ params, searchParams }: Pag
     search: one(query.search),
     page: Number(one(query.page)) || 1,
   };
-  const list = await listNumbersAdmin(filters);
-  return <EsimNumbersAdmin list={list} filters={filters} canManage={canManage} />;
+  const [list, settings] = await Promise.all([listNumbersAdmin(filters), getNumberSettingsView()]);
+  return (
+    <div className="space-y-6">
+      <EsimNumbersAdmin list={list} filters={filters} canManage={canManage} />
+      <EsimNumberSettingsCard settings={settings} canManage={canManage} />
+    </div>
+  );
 }

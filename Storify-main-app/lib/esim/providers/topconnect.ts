@@ -153,9 +153,18 @@ export class TopConnectClient {
     return { card: parseCard(cardNode), packages: parsePackages(xml) };
   }
 
-  /** Data packages this card can take now. */
-  async dataPackages(msisdn: string): Promise<TopConnectDataPackage[]> {
-    const xml = await this.call("getdiscount", { onum: digitsOnly(msisdn, "msisdn") });
+  /**
+   * Data packages this card can take. TopConnect lists those of the network
+   * the card is on; a card on no network (stock not in use) needs the
+   * network named: `mccmnc` (e.g. "24801") or the SGSN IP.
+   */
+  async dataPackages(msisdn: string, network: { mccmnc?: string; sgsnip?: string } = {}): Promise<TopConnectDataPackage[]> {
+    if (network.mccmnc !== undefined && !/^\d{5,6}$/.test(network.mccmnc)) throw new ProviderError("rejected", "mccmnc must be 5 or 6 digits", null, "topconnect");
+    const xml = await this.call("getdiscount", {
+      onum: digitsOnly(msisdn, "msisdn"),
+      mccmnc: network.mccmnc,
+      sgsnip: network.sgsnip ? identifier(network.sgsnip, "sgsnip") : undefined,
+    });
     return nodes(xml, "datapacket").flatMap((node) => {
       const code = tag(node, "packetcode");
       if (!code) return [];

@@ -28,7 +28,11 @@ const NumberPackagesSchema = z.discriminatedUnion("action", [
   z.object({ action: z.literal("save"), id: id.nullable(), values: PackageSchema }),
   z.object({ action: z.literal("status"), id, status: z.enum(["active", "hidden"]) }),
   z.object({ action: z.literal("delete"), id }),
-  z.object({ action: z.literal("load"), msisdn: z.string().trim().regex(/^\d{5,17}$/).optional() }),
+  z.object({
+    action: z.literal("load"),
+    msisdn: z.string().trim().regex(/^\d{5,17}$/).optional(),
+    mccmnc: z.string().trim().regex(/^\d{5,6}$/).optional(),
+  }),
 ]);
 
 /** Number-card data packages (NUM-02): add or change a packet, show or hide it, remove it, or load TopConnect's list. */
@@ -67,7 +71,7 @@ export const POST = withApi(ESIM_WRITE, async ({ request, session }) => {
       });
       return successResponse({ ok: true });
     }
-    const report = await loadPacketsFromTopConnect(body.msisdn);
+    const report = await loadPacketsFromTopConnect(body.msisdn, body.mccmnc);
     if (report.added.length || report.updated.length) {
       await auditEsim(request, session, {
         resourceId: "esim:number-packages",
@@ -79,7 +83,7 @@ export const POST = withApi(ESIM_WRITE, async ({ request, session }) => {
     return successResponse(report);
   } catch (error) {
     if (error instanceof ProviderError) throw new ValidationError(`TopConnect: ${error.message}`);
-    if (error instanceof Error && /Unknown data package|already on the list|No exchange rate|first/.test(error.message)) throw new ValidationError(error.message);
+    if (error instanceof Error && /Unknown data package|already on the list|No exchange rate|first|network/.test(error.message)) throw new ValidationError(error.message);
     throw error;
   }
 });

@@ -68,6 +68,8 @@ export function EsimNumberPackagesAdmin({ list, canManage }: { list: AdminNumber
   const { confirm } = useConfirmation();
   const [draft, setDraft] = useState<Draft | null>(null);
   const [busy, setBusy] = useState(false);
+  const [loading, setLoading] = useState<{ msisdn: string; mccmnc: string } | null>(null);
+  const loadValid = loading !== null && (loading.msisdn === "" || /^\d{5,17}$/.test(loading.msisdn)) && (loading.mccmnc === "" || /^\d{5,6}$/.test(loading.mccmnc));
 
   async function post<T>(body: Record<string, unknown>, done: string | ((result: T) => string)) {
     setBusy(true);
@@ -135,16 +137,7 @@ export function EsimNumberPackagesAdmin({ list, canManage }: { list: AdminNumber
               variant="outline"
               disabled={busy || !list.canLoad}
               title={list.canLoad ? undefined : t("admin.esim.loadPacketsNeeds", "Needs the TopConnect supplier switched on and a number in stock")}
-              onClick={() =>
-                post<PacketLoadReport>({ action: "load" }, (report) =>
-                  t("admin.esim.packetsLoaded", "Asked for +{msisdn}: {added} added, {updated} updated, {unchanged} unchanged", {
-                    msisdn: report.msisdn,
-                    added: report.added.length,
-                    updated: report.updated.length,
-                    unchanged: report.unchanged,
-                  }),
-                )
-              }
+              onClick={() => setLoading({ msisdn: "", mccmnc: list.packetMccmnc ?? "" })}
             >
               {busy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <DownloadCloud className="mr-2 h-4 w-4" />}
               {t("admin.esim.loadPackets", "Load from TopConnect")}
@@ -250,6 +243,66 @@ export function EsimNumberPackagesAdmin({ list, canManage }: { list: AdminNumber
           )}
         </CardContent>
       </Card>
+
+      <Dialog open={loading !== null} onOpenChange={(open) => !open && setLoading(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t("admin.esim.loadPackets", "Load from TopConnect")}</DialogTitle>
+            <DialogDescription>
+              {t(
+                "admin.esim.packetLoadHint",
+                "TopConnect lists the packages of the network a card is on. A card not in use is on no network, so enter the network code (MCC+MNC) of a network the packages are for, e.g. 24801. The code entered is remembered.",
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          {loading ? (
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="space-y-1.5">
+                <Label htmlFor="packet-load-mccmnc">{t("admin.esim.packetNetwork", "Network code (MCC-MNC)")}</Label>
+                <Input
+                  id="packet-load-mccmnc"
+                  inputMode="numeric"
+                  placeholder="24801"
+                  value={loading.mccmnc}
+                  onChange={(event) => setLoading({ ...loading, mccmnc: event.target.value.replace(/\D/g, "").slice(0, 6) })}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="packet-load-msisdn">{t("admin.esim.packetNumber", "Number to ask about")}</Label>
+                <Input
+                  id="packet-load-msisdn"
+                  inputMode="numeric"
+                  placeholder={t("admin.esim.packetNumberAny", "Any number in stock")}
+                  value={loading.msisdn}
+                  onChange={(event) => setLoading({ ...loading, msisdn: event.target.value.replace(/\D/g, "").slice(0, 17) })}
+                />
+              </div>
+            </div>
+          ) : null}
+          <DialogFooter>
+            <Button
+              disabled={busy || !loadValid}
+              onClick={async () => {
+                if (!loading) return;
+                const done = await post<PacketLoadReport>(
+                  { action: "load", ...(loading.msisdn ? { msisdn: loading.msisdn } : {}), ...(loading.mccmnc ? { mccmnc: loading.mccmnc } : {}) },
+                  (report) =>
+                    t("admin.esim.packetsLoaded", "Asked for +{msisdn}: {added} added, {updated} updated, {unchanged} unchanged", {
+                      msisdn: report.msisdn,
+                      added: report.added.length,
+                      updated: report.updated.length,
+                      unchanged: report.unchanged,
+                    }),
+                );
+                if (done) setLoading(null);
+              }}
+            >
+              {busy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <DownloadCloud className="mr-2 h-4 w-4" />}
+              {t("admin.esim.packetLoadRun", "Load")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={draft !== null} onOpenChange={(open) => !open && setDraft(null)}>
         <DialogContent className="max-w-2xl">
