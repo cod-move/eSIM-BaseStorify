@@ -158,6 +158,7 @@ async function readCatalog(): Promise<DestinationDetail[]> {
           : null,
         breakoutIp: plan.coverage.breakoutIp ?? [],
         coverageSet: coverageSetOf(plan),
+        operators: [...new Set(networksOfPlan(plan).map((network) => network.operator.trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b)),
         scheduledActivation: scheduled(variant.candidates),
         details: {
           speed: topSpeedOf([...(plan.speed ?? []), ...networksOfPlan(plan).map((network) => network.network ?? "")]),

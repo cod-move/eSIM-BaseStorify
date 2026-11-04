@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
-import { CalendarDays, ChevronLeft, ChevronRight, Database, Globe2, Info, Layers, MapPin, RefreshCw, type LucideIcon } from "lucide-react";
+import { CalendarDays, ChevronLeft, ChevronRight, Database, Globe2, Info, Layers, MapPin, RadioTower, RefreshCw, type LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { toast } from "@/components/ui/toast-notification";
@@ -47,7 +47,9 @@ const COLLAPSED_OPTIONS = 12;
 /** Fewer hidden than this, and a filter shows them all. */
 const MIN_HIDDEN = 3;
 const collapses = (count: number) => count - COLLAPSED_OPTIONS >= MIN_HIDDEN;
-const FILTER_ICONS: Record<PlanFilterKey, LucideIcon> = { kind: Layers, days: CalendarDays, data: Database, topup: RefreshCw, breakout: Globe2 };
+const FILTER_ICONS: Record<PlanFilterKey, LucideIcon> = { kind: Layers, days: CalendarDays, data: Database, topup: RefreshCw, breakout: Globe2, operator: RadioTower };
+/** Operators named on a card before "+N". */
+const SHOWN_OPERATORS = 3;
 
 interface PlanBrowserProps {
   productId: string;
@@ -89,7 +91,7 @@ export function PlanBrowser({ productId, destinationName, variants, countryCodes
     if (expanded[key] || !collapses(values.length)) return values;
     const first = values.slice(0, COLLAPSED_OPTIONS);
     const chosen = filters[key];
-    return chosen && !first.includes(chosen) ? [...first, chosen] : first;
+    return chosen !== undefined && !first.includes(chosen) ? [...first, chosen] : first;
   };
 
   const choose = (key: PlanFilterKey, value: string | undefined) => {
@@ -133,6 +135,12 @@ export function PlanBrowser({ productId, destinationName, variants, countryCodes
     data: (value) => value,
     topup,
     breakout,
+    operator: (value) => value || t("esim.selector.ipUnknown", "Not specified"),
+  };
+  const operatorsLine = (variant: StorefrontVariant) => {
+    const names = variant.operators ?? [];
+    if (!names.length) return t("esim.selector.ipUnknown", "Not specified");
+    return names.slice(0, SHOWN_OPERATORS).join(", ") + (names.length > SHOWN_OPERATORS ? ` +${names.length - SHOWN_OPERATORS}` : "");
   };
   const topupRules = (variant: StorefrontVariant) => {
     if (variant.topupMode === "none") return [t("esim.plans.ruleNone", "This plan cannot be topped up. If you need more, buy another plan.")];
@@ -155,6 +163,7 @@ export function PlanBrowser({ productId, destinationName, variants, countryCodes
     data: t("esim.selector.data", "How much data?"),
     topup: t("esim.selector.topup", "Top-up"),
     breakout: t("esim.selector.breakout", "IP address"),
+    operator: t("esim.plans.operator", "Operator"),
   };
 
   async function buyNow(variant: StorefrontVariant) {
@@ -176,7 +185,7 @@ export function PlanBrowser({ productId, destinationName, variants, countryCodes
     return <p className="text-sm text-muted-foreground">{t("esim.selector.none", "No plans are on sale for this destination right now.")}</p>;
   }
 
-  const chosenCount = PLAN_FILTERS.filter((key) => filters[key]).length;
+  const chosenCount = PLAN_FILTERS.filter((key) => filters[key] !== undefined).length;
   // A card shows its own plan's countries and operators.
   const coverageOf = (variant: StorefrontVariant) =>
     (variant.coverageSet !== undefined ? planCoverage?.[variant.coverageSet] : undefined) ?? coverage;
@@ -331,6 +340,12 @@ export function PlanBrowser({ productId, destinationName, variants, countryCodes
                       <span className="shrink-0 text-store-link underline-offset-2 group-hover:underline">+{coverageOf(variant).length - SHOWN_FLAGS}</span>
                     ) : null}
                   </button>
+                </li>
+                <li className="flex min-w-0 items-center gap-2">
+                  <RadioTower className="h-4 w-4 shrink-0" />
+                  <span className="truncate" title={(variant.operators ?? []).join(", ") || undefined}>
+                    {titles.operator}: {operatorsLine(variant)}
+                  </span>
                 </li>
               </ul>
 

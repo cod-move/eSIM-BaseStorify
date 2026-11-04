@@ -74,6 +74,20 @@ describe("plan filters", () => {
     assert.deepEqual(filterPlans(variants, { breakout: "SG" }).map((variant) => variant.variantId), ["daily-5"]);
   });
 
+  it("filters by operator, a plan under each of its operators, and by an unstated value", () => {
+    const plans = [
+      v("cm", { operators: ["China Mobile"], breakoutIp: ["HK"] }),
+      v("cu-ct", { operators: ["China Telecom", "China Unicom"], breakoutIp: ["SG"] }),
+      v("none", { operators: [], breakoutIp: [] }),
+    ];
+    assert.deepEqual(planFilterOptions(plans, {}).operator.map((option) => option.value), ["China Mobile", "China Telecom", "China Unicom", ""], "not stated last");
+    assert.deepEqual(filterPlans(plans, { operator: "China Unicom" }).map((plan) => plan.variantId), ["cu-ct"]);
+    assert.deepEqual(filterPlans(plans, { operator: "" }).map((plan) => plan.variantId), ["none"]);
+    assert.deepEqual(filterPlans(plans, { breakout: "" }).map((plan) => plan.variantId), ["none"], "the unstated IP is a real choice, not \"all\"");
+    assert.deepEqual(planFilterOptions(plans, { breakout: "HK" }).operator.map((option) => [option.value, Number.isFinite(option.fromPriceMinor)]), [["China Mobile", true]]);
+    assert.deepEqual(chooseFilter(plans, { operator: "China Mobile" }, "breakout", "SG"), { breakout: "SG" }, "an operator the new IP rules out is cleared");
+  });
+
   it("pages the list and keeps the page in range", () => {
     const items = Array.from({ length: 25 }, (_, index) => index);
     assert.deepEqual(pageOf(items, 1, 12), { items: items.slice(0, 12), page: 1, pages: 3 });

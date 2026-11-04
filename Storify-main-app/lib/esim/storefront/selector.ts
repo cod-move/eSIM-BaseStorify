@@ -29,6 +29,8 @@ export interface StorefrontVariant {
   breakoutIp: string[];
   /** Which of the destination's `coverageSets` this plan covers (its own countries and operators). */
   coverageSet?: number;
+  /** The operators the plan runs on, by name; empty when the supplier does not say. */
+  operators?: string[];
   /** The shopper may pick the day it starts (ORD-03). */
   scheduledActivation?: boolean;
   /** What the plan card's details show; absent where the catalogue did not say. */

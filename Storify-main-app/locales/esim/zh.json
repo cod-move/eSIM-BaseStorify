@@ -355,6 +355,7 @@
       "number": "号码"
     },
     "plans": {
+      "operator": "运营商",
       "coverageLabel": "套餐覆盖范围：",
       "viewPlan": "查看套餐",
       "title": "选择套餐",

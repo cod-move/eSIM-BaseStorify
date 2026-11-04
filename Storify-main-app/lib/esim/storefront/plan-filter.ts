@@ -9,13 +9,15 @@ import {
 
 /**
  * A destination's plans as filters and a paged list of cards (WEB-13/14):
- * data kind → days → data → top-up → exit IP. Each filter offers what the
+ * data kind → days → data → top-up → exit IP → operator. A plan runs on
+ * several operators, so it shows under each of them; one that names none
+ * shows under "" (not stated). Each filter offers what the
  * other filters leave open, so no choice ends in an empty list; a value the
  * other filters ruled out stays on offer while it is chosen, to be cleared.
  * Pure, so the page and the tests agree.
  */
 
-export const PLAN_FILTERS = ["kind", "days", "data", "topup", "breakout"] as const;
+export const PLAN_FILTERS = ["kind", "days", "data", "topup", "breakout", "operator"] as const;
 export type PlanFilterKey = (typeof PLAN_FILTERS)[number];
 /** The chosen value of each filter; absent is "all". */
 export type PlanFilters = Partial<Record<PlanFilterKey, string>>;
@@ -28,9 +30,14 @@ export const dataKindOf = (variant: Pick<StorefrontVariant, "dataType">): DataKi
 
 const KIND_ORDER: Record<string, number> = { total: 0, daily: 1, unlimited: 2, lifetime: 3 };
 
-const valueOf: Record<PlanFilterKey, (variant: StorefrontVariant) => string> = {
-  kind: dataKindOf,
-  ...keyOf,
+/** A plan's values for each filter: one for most, one per operator for "operator". */
+const valuesOf: Record<PlanFilterKey, (variant: StorefrontVariant) => string[]> = {
+  kind: (variant) => [dataKindOf(variant)],
+  days: (variant) => [keyOf.days(variant)],
+  data: (variant) => [keyOf.data(variant)],
+  topup: (variant) => [keyOf.topup(variant)],
+  breakout: (variant) => [keyOf.breakout(variant)],
+  operator: (variant) => (variant.operators?.length ? variant.operators : [""]),
 };
 
 /** What a plan costs at the least: a day-priced plan at its fewest days. */
@@ -38,15 +45,17 @@ export const lowestPriceMinor = (variant: StorefrontVariant) =>
   variant.perDay ? variant.perDay.priceMinor * variant.perDay.minDays : variant.priceMinor;
 
 function matches(variant: StorefrontVariant, filters: PlanFilters, except?: PlanFilterKey): boolean {
-  return PLAN_FILTERS.every((key) => key === except || !filters[key] || valueOf[key](variant) === filters[key]);
+  return PLAN_FILTERS.every((key) => key === except || filters[key] === undefined || valuesOf[key](variant).includes(filters[key]!));
 }
 
 function order(key: PlanFilterKey, variants: StorefrontVariant[]) {
-  const sample = new Map(variants.map((variant) => [valueOf[key](variant), variant]));
+  const sample = new Map(variants.map((variant) => [valuesOf[key](variant)[0], variant]));
   return (a: string, b: string) => {
     if (key === "kind") return (KIND_ORDER[a] ?? 9) - (KIND_ORDER[b] ?? 9);
     if (key === "days") return byDays(a, b);
     if (key === "topup") return (TOPUP_ORDER[a] ?? 9) - (TOPUP_ORDER[b] ?? 9);
+    // "Not stated" ("") after the named ones.
+    if (key === "operator" || key === "breakout") return Number(a === "") - Number(b === "") || a.localeCompare(b);
     if (key === "data") {
       const va = sample.get(a)!;
       const vb = sample.get(b)!;
@@ -63,11 +72,10 @@ export function planFilterOptions(variants: StorefrontVariant[], filters: PlanFi
     const cheapest = new Map<string, number>();
     for (const variant of variants) {
       if (!matches(variant, filters, key)) continue;
-      const value = valueOf[key](variant);
-      cheapest.set(value, Math.min(cheapest.get(value) ?? Infinity, lowestPriceMinor(variant)));
+      for (const value of valuesOf[key](variant)) cheapest.set(value, Math.min(cheapest.get(value) ?? Infinity, lowestPriceMinor(variant)));
     }
     const chosen = filters[key];
-    if (chosen && !cheapest.has(chosen) && variants.some((variant) => valueOf[key](variant) === chosen)) cheapest.set(chosen, Infinity);
+    if (chosen !== undefined && !cheapest.has(chosen) && variants.some((variant) => valuesOf[key](variant).includes(chosen))) cheapest.set(chosen, Infinity);
     const sort = order(key, variants);
     result[key] = [...cheapest].map(([value, fromPriceMinor]) => ({ value, fromPriceMinor })).sort((a, b) => sort(a.value, b.value));
   }
@@ -84,11 +92,11 @@ export function chooseFilter(variants: StorefrontVariant[], filters: PlanFilters
   if (value === undefined) delete next[key];
   // First what cannot go with the new value at all, then, while nothing is left, the rest in order.
   for (const other of PLAN_FILTERS) {
-    if (other === key || !next[other] || value === undefined) continue;
+    if (other === key || next[other] === undefined || value === undefined) continue;
     if (!variants.some((variant) => matches(variant, { [key]: value, [other]: next[other] }))) delete next[other];
   }
   for (const other of PLAN_FILTERS) {
-    if (other === key || !next[other]) continue;
+    if (other === key || next[other] === undefined) continue;
     if (!variants.some((variant) => matches(variant, next))) delete next[other];
   }
   return next;

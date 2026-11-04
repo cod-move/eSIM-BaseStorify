@@ -355,6 +355,7 @@
       "number": "Number"
     },
     "plans": {
+      "operator": "Operator",
       "coverageLabel": "Coverage:",
       "viewPlan": "View plan",
       "title": "Choose a plan",
