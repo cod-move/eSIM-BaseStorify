@@ -47,6 +47,23 @@ export function redeepayRoute(credentials: Credentials, userAgent: string): [str
 
 const cut = (text: string | undefined, length: number) => String(text ?? "").trim().slice(0, length);
 
+/**
+ * RedeePay requires the bill and ship addresses whole (`address.phone` and the
+ * rest), and an eSIM-only checkout asks for none of it. As the old store did:
+ * the shopper's phone when it is a number, else the merchant's (`billPhone`,
+ * by default the old store's), and "Hong Kong" for an empty state, city or street.
+ */
+export const REDEEPAY_DEFAULT_PHONE = "85252455326";
+const ADDRESS_FALLBACK = "Hong Kong";
+/** The stand-in address of an eSIM-only order (lib/esim/checkout/address.ts) says "-" and "N/A": nothing. */
+const real = (text: string) => (/^(-|n\/?a)$/i.test(text.trim()) ? "" : text);
+
+function billPhone(shopper: string, merchant: string | undefined): string {
+  const digits = shopper.replace(/\D/g, "");
+  if (digits.length >= 6 && digits.length <= 20) return digits;
+  return cut(merchant, 20).replace(/\D/g, "") || REDEEPAY_DEFAULT_PHONE;
+}
+
 function apiBase(url: string) {
   const trimmed = url.trim().replace(/\/+$/, "");
   return trimmed.endsWith("/api") ? trimmed.slice(0, -4) : trimmed;
@@ -78,12 +95,12 @@ export const redeepayPlugin: PaymentPlugin = {
     const address = {
       firstName: cut(request.billing.firstName || request.name.split(/\s+/)[0] || "Customer", 50),
       lastName: cut(request.billing.lastName || "User", 50),
-      email: cut(request.email, 50),
-      phone: cut(request.billing.phone || credentials.billPhone, 20),
+      email: cut(request.email || `${request.reference.toLowerCase()}@${host(credentials.domain)}`, 50),
+      phone: billPhone(request.billing.phone, credentials.billPhone),
       country,
-      state: cut(request.billing.state || request.billing.city, 50),
-      city: cut(request.billing.city, 50),
-      address: cut(request.billing.street, 200),
+      state: cut(real(request.billing.state) || real(request.billing.city) || ADDRESS_FALLBACK, 50),
+      city: cut(real(request.billing.city) || ADDRESS_FALLBACK, 50),
+      address: cut(request.billing.street || ADDRESS_FALLBACK, 200),
       postalCode: cut(request.billing.postalCode || "000000", 20),
     };
     const payload: Record<string, unknown> = {

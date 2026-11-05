@@ -3,7 +3,7 @@ import { createHash } from "node:crypto";
 import { describe, it } from "node:test";
 import { fakeFetch } from "@/lib/esim/providers/__tests__/helpers";
 import { bepusdtPlugin, bepusdtSignature } from "../plugins/bepusdt";
-import { redeepayPlugin, redeepayRoute, redeepaySignature } from "../plugins/redeepay";
+import { REDEEPAY_DEFAULT_PHONE, redeepayPlugin, redeepayRoute, redeepaySignature } from "../plugins/redeepay";
 import { fakeNoticeBody, fakePaymentPlugin } from "../plugins/fake";
 import { stripeMethodTypes, stripePlugin, stripeSignatureHeader } from "../plugins/stripe";
 import { IGNORED_NOTICE, type PayNotice, type PayRequest } from "../plugins/types";
@@ -105,6 +105,24 @@ describe("RedeePay", () => {
     assert.equal(body.country, "GB");
     assert.equal(body.device.language, "ZH");
     assert.equal(body.sign, redeepaySignature(body, "key"));
+    // No phone or state at checkout (an eSIM-only cart asks for none): the old store's values fill them.
+    assert.equal(body.bill.phone, REDEEPAY_DEFAULT_PHONE);
+    assert.equal(body.bill.state, "London", "the city stands in for a missing state");
+    assert.equal(body.ship.phone, REDEEPAY_DEFAULT_PHONE);
+
+    const bare = { ...request, billing: { firstName: "", lastName: "", phone: "+44 20 7946 0000", state: "", city: "", street: "", postalCode: "" } };
+    const { fetch: bareFetch, sent: bareSent } = fakeFetch({ "POST /api/order/create": () => ({ body: { code: 0, data: answer } }) });
+    await redeepayPlugin.start(bare, { ...credentials, billPhone: "" }, bareFetch);
+    const bill = JSON.parse(bareSent[0].body!).bill;
+    assert.equal(bill.phone, "442079460000", "the shopper's number, digits only");
+    assert.deepEqual([bill.state, bill.city, bill.address, bill.postalCode], ["Hong Kong", "Hong Kong", "Hong Kong", "000000"]);
+    const { fetch: merchantFetch, sent: merchantSent } = fakeFetch({ "POST /api/order/create": () => ({ body: { code: 0, data: answer } }) });
+    await redeepayPlugin.start({ ...bare, billing: { ...bare.billing, phone: "n/a" } }, { ...credentials, billPhone: "852 1234 5678" }, merchantFetch);
+    assert.equal(JSON.parse(merchantSent[0].body!).bill.phone, "85212345678", "else the merchant's number");
+    const { fetch: standInFetch, sent: standInSent } = fakeFetch({ "POST /api/order/create": () => ({ body: { code: 0, data: answer } }) });
+    await redeepayPlugin.start({ ...bare, billing: { ...bare.billing, state: "N/A", city: "-", street: "Digital delivery (eSIM)" } }, credentials, standInFetch);
+    const standIn = JSON.parse(standInSent[0].body!).bill;
+    assert.deepEqual([standIn.state, standIn.city], ["Hong Kong", "Hong Kong"], "an eSIM-only order's stand-in address counts as none");
 
     const forged = { ...answer, amount: 1 };
     const { fetch: forgedFetch } = fakeFetch({ "POST /api/order/create": () => ({ body: { code: 0, data: forged } }) });
