@@ -16,6 +16,10 @@ import xhMessages from "@/locales/esim/xh.json";
 import yoMessages from "@/locales/esim/yo.json";
 import zhMessages from "@/locales/esim/zh.json";
 import zuMessages from "@/locales/esim/zu.json";
+import arStore from "@/locales/esim/store/ar.json";
+import bnStore from "@/locales/esim/store/bn.json";
+import jaStore from "@/locales/esim/store/ja.json";
+import zhStore from "@/locales/esim/store/zh.json";
 import { isRecord } from "@/lib/utils";
 
 /**
@@ -26,6 +30,12 @@ import { isRecord } from "@/lib/utils";
  * locale's eSIM file over it, and Storify's messages over both — a key both
  * define keeps Storify's wording, so the module can never change an official
  * label. Built once per locale.
+ *
+ * One exception: `locales/esim/store/<locale>.json` translates Storify's own
+ * strings that its locale file leaves missing or in English (the checkout's,
+ * where the page otherwise shows English in every language). Those go over
+ * Storify's messages; only such strings belong there, never one Storify
+ * translates.
  */
 
 type Messages = Record<string, unknown>;
@@ -60,6 +70,14 @@ function mergeDeep(base: Messages, override: Messages): Messages {
   return result;
 }
 
+/** Storify's own strings it leaves untranslated, for the store's languages (see above). */
+const STORE: Record<string, Messages> = {
+  ar: arStore as Messages,
+  bn: bnStore as Messages,
+  ja: jaStore as Messages,
+  zh: zhStore as Messages,
+};
+
 const merged = new Map<string, Messages>();
 
 export function withEsimMessages(locale: string, official: Messages): Messages {
@@ -67,6 +85,7 @@ export function withEsimMessages(locale: string, official: Messages): Messages {
   if (!result) {
     const esim = locale === "en" || !ESIM[locale] ? ESIM.en : mergeDeep(ESIM.en, ESIM[locale]);
     result = mergeDeep(esim, official);
+    if (STORE[locale]) result = mergeDeep(result, STORE[locale]);
     merged.set(locale, result);
   }
   return result;

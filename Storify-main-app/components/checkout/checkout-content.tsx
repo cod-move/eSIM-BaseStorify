@@ -5087,7 +5087,10 @@ function CheckoutForm({
                             provider={redirectPaymentProvider}
                           />
                         ) : null}
-                        <span>Continue with {redirectPaymentProviderName}</span>
+                        <span>
+                          {/* [esim-patch] P15 in the page's language */}
+                          {tr("checkout.continueWith", "Continue with {name}", { name: redirectPaymentProviderName })}
+                        </span>
                       </>
                     ) : (
                       t("checkout.completeOrder")
