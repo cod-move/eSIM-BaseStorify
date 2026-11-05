@@ -5,6 +5,7 @@ import { ValidationError } from "@/lib/api/errors";
 import { validateBody } from "@/lib/api/validate";
 import { updatePaymentMethod } from "@/lib/esim/admin/payments";
 import { ESIM_WRITE, auditEsim } from "@/lib/esim/admin/route";
+import { CACHE_TAGS, revalidateCacheTags } from "@/lib/cache-invalidation";
 
 const MethodSchema = z.object({
   name: z.string().max(80).optional(),
@@ -22,6 +23,8 @@ export const PATCH = withApi<{ code: string }>(ESIM_WRITE, async ({ request, par
   } catch (error) {
     throw new ValidationError(error instanceof Error ? error.message : String(error));
   }
+  // The methods checkout offers come with Storify's public settings, cached under "settings".
+  revalidateCacheTags([CACHE_TAGS.settings]);
   await auditEsim(request, session, {
     resourceId: `esim:payment-method:${params.code}`,
     resourceName: `eSIM payment method ${params.code}`,

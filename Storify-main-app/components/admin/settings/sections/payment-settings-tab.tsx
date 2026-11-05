@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { Loader2, TestTube, Banknote, Webhook } from "lucide-react";
+import { EsimCheckoutDisplayCard, EsimGatewaysSection } from "@/components/esim/admin/payment-settings"; // [esim-patch] P34
 import {
   StripeLogo,
   PayPalLogo,
@@ -238,6 +239,9 @@ export function PaymentSettingsTab(props: {
             </Badge>
           }
         />
+
+        {/* [esim-patch] P34 how checkout lists every method: order, default, icons */}
+        <EsimCheckoutDisplayCard />
 
         {/* Stripe */}
         <ProviderCard
@@ -1048,6 +1052,9 @@ export function PaymentSettingsTab(props: {
             })}
           </p>
         </ProviderCard>
+
+        {/* [esim-patch] P34 the eSIM payment gateways and the payment fees */}
+        <EsimGatewaysSection />
 
         {/* Cash on Delivery */}
         <ProviderCard

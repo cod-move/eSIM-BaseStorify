@@ -19,16 +19,15 @@ import { apiClient } from "@/lib/api/client";
 import type { AdminPayment, AdminPaymentMethod } from "@/lib/esim/admin/payments";
 
 /**
- * The payment methods behind Storify's "More ways to pay" (PAY, patch P15)
- * and the payments made with them. A secret is never sent back to the page —
- * its field shows whether one is set, and stays untouched unless typed into.
+ * The eSIM payment gateways (PAY, patch P15) — each a card on Storify's own
+ * payment settings page (patch P34) — and, on Admin → eSIM → Payments, the
+ * payments made with them. A secret is never sent back to the page — its
+ * field shows whether one is set, and stays untouched unless typed into.
  */
 
-function MethodCard({ method, canManage }: { method: AdminPaymentMethod; canManage: boolean }) {
+export function EsimGatewayCard({ method, canManage, onChanged }: { method: AdminPaymentMethod; canManage: boolean; onChanged: () => void }) {
   const t = useFallbackTranslator(useTranslations());
-  const router = useRouter();
   const [name, setName] = useState(method.name === method.defaultName ? "" : method.name);
-  const [sort, setSort] = useState(String(method.sort));
   const [credentials, setCredentials] = useState<Record<string, string>>(method.credentialValues);
   const [busy, setBusy] = useState(false);
   const notifyUrl = typeof window === "undefined" ? method.notifyPath : `${window.location.origin}${method.notifyPath}`;
@@ -38,7 +37,7 @@ function MethodCard({ method, canManage }: { method: AdminPaymentMethod; canMana
     try {
       await apiClient.patch(`/api/esim/admin/payments/methods/${method.code}`, body);
       if (done) toast.success(done);
-      router.refresh();
+      onChanged();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : String(error));
     } finally {
@@ -50,7 +49,7 @@ function MethodCard({ method, canManage }: { method: AdminPaymentMethod; canMana
     const changed = Object.fromEntries(
       Object.entries(credentials).filter(([key, value]) => (method.secretKeys.includes(key) ? value !== "" : value !== (method.credentialValues[key] ?? ""))),
     );
-    void patch({ name, sort: Number(sort) || 0, credentials: changed }, t("admin.esim.saved", "Saved"));
+    void patch({ name, credentials: changed }, t("admin.esim.saved", "Saved"));
     setCredentials(method.credentialValues);
   };
 
@@ -85,10 +84,6 @@ function MethodCard({ method, canManage }: { method: AdminPaymentMethod; canMana
           <div className="space-y-1.5">
             <Label htmlFor={`${method.code}-name`}>{t("admin.esim.payName", "Name shown to shoppers")}</Label>
             <Input id={`${method.code}-name`} disabled={!canManage} value={name} placeholder={method.defaultName} onChange={(event) => setName(event.target.value)} />
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor={`${method.code}-sort`}>{t("admin.esim.paySort", "Order on the payment page (lower first)")}</Label>
-            <Input id={`${method.code}-sort`} type="number" min={0} disabled={!canManage} value={sort} onChange={(event) => setSort(event.target.value)} />
           </div>
           {method.credentialKeys.map((key) => {
             const secret = method.secretKeys.includes(key);
@@ -142,6 +137,7 @@ const OUTCOME_TONE: Record<string, string> = {
   closed: "text-destructive",
 };
 
+/** Admin → eSIM → Payments: the payments made with the eSIM gateways. */
 export function EsimPaymentsAdmin({ methods, payments, attention, canManage }: { methods: AdminPaymentMethod[]; payments: AdminPayment[]; attention: boolean; canManage: boolean }) {
   const t = useFallbackTranslator(useTranslations());
   const router = useRouter();
@@ -188,14 +184,14 @@ export function EsimPaymentsAdmin({ methods, payments, attention, canManage }: {
         <p className="text-sm text-muted-foreground">
           {t(
             "admin.esim.paymentsHint",
-            "The methods offered at checkout as “More ways to pay”. The shopper picks one on the eSIM payment page; the order is placed when the gateway confirms the payment. Refunds of these payments are made by hand in the gateway.",
+            "Payments made with the eSIM payment gateways. The order is placed when the gateway confirms the payment; refunds of these payments are made by hand in the gateway.",
           )}
         </p>
-      </div>
-      <div className="grid gap-4 xl:grid-cols-2">
-        {methods.map((method) => (
-          <MethodCard key={method.code} method={method} canManage={canManage} />
-        ))}
+        <p className="mt-1 text-sm">
+          <Link href="/admin/settings/payment" className="text-primary hover:underline">
+            {t("admin.esim.paymentsMoved", "The gateways, their order and icons at checkout, and the payment fees are set under Settings → Payment.")}
+          </Link>
+        </p>
       </div>
 
       <div className="space-y-3">

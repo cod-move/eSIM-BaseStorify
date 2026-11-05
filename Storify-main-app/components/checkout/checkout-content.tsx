@@ -181,6 +181,7 @@ import {
 import { EsimBalanceTopupLink, useEsimBalanceText, useEsimCheckoutBalance, useEsimOnlyCart, useEsimPaymentFee } from "@/components/esim/checkout-balance"; // [esim-patch] P27 P28 P29
 import { EsimPaymentFeeLabel } from "@/components/esim/payment-fee-label"; // [esim-patch] P30
 import { esimBaseMethod, esimExtensionRows, esimPaymentFields, isExtensionChoice, type ExtensionChoice, type ExtensionOption } from "@/components/esim/checkout-methods"; // [esim-patch] P15
+import { esimArrangeMethods, useEsimDefaultPaymentMethod, type CheckoutDisplay } from "@/components/esim/checkout-methods"; // [esim-patch] P34
 import {
   reconcileVendorSelections,
   sameSelections,
@@ -747,6 +748,7 @@ function CheckoutForm({
     mtnMomoConfigured?: boolean;
     extensionEnabled?: boolean; // [esim-patch] P15
     extensionMethods?: ExtensionOption[];
+    checkoutDisplay?: CheckoutDisplay; // [esim-patch] P34
     codInstructions?: string;
     codMinOrderAmount?: number;
     codMaxOrderAmount?: number;
@@ -2396,7 +2398,7 @@ function CheckoutForm({
     // Filtering it down to COD for pickup is what made collection unreachable in
     // a prepaid-only store, and a prepaid collection is the safer of the two
     // orders — see `pickupAvailable`.
-    return methods;
+    return esimArrangeMethods(methods, paymentConfig.checkoutDisplay); // [esim-patch] P34 the admin's order and icons
   }, [paymentConfig, fulfillmentMethod, hasPreorderItems, t, isAuthenticated, esimBalance.walletCart, esimBalanceText]); // [esim-patch] P27
 
   // A pre-order that leaves a balance can only be placed on a method that can
@@ -2462,6 +2464,13 @@ function CheckoutForm({
     if (selectablePaymentMethods.some((method) => method.value === current)) return;
     form.setValue("paymentMethod", selectablePaymentMethods[0].value);
   }, [selectablePaymentMethods, form]);
+  // [esim-patch] P34 the admin's default method, once, when it can take the order.
+  useEsimDefaultPaymentMethod({
+    display: paymentConfig.checkoutDisplay,
+    selectable: selectablePaymentMethods,
+    current: () => form.getValues("paymentMethod"),
+    choose: (value) => form.setValue("paymentMethod", value as CheckoutFormData["paymentMethod"]),
+  });
 
   // A store whose only method is COD has nothing left to charge a downloads-only
   // cart with, so say that instead of rendering an empty radio group.

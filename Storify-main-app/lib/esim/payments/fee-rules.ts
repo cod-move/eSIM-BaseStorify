@@ -8,20 +8,7 @@
  * its own fee, under "extension:<code>" (method-names.ts).
  */
 
-import { DEV_ONLY_METHODS, EXTENSION_METHOD_NAMES, extensionChoice } from "./method-names";
-
-/** Storify's own checkout methods. */
-const STORE_FEE_METHODS = [
-  { method: "card", label: "Card" },
-  { method: "paypal", label: "PayPal" },
-  { method: "razorpay", label: "Razorpay" },
-  { method: "paystack", label: "Paystack" },
-  { method: "pesapal", label: "Pesapal" },
-  { method: "iotec", label: "ioTec Pay" },
-  { method: "orange_money", label: "Orange Money" },
-  { method: "mtn_momo", label: "MTN Mobile Money" },
-  { method: "cod", label: "Cash on delivery" },
-];
+import { DEV_ONLY_METHODS, EXTENSION_METHOD_NAMES, extensionChoice, STORE_CHECKOUT_METHODS } from "./method-names";
 
 /**
  * The checkout methods a fee can be set for, as the checkout names them:
@@ -29,7 +16,7 @@ const STORE_FEE_METHODS = [
  * the shopper app, whose shopper picks on the eSIM payment page.
  */
 export const PAYMENT_FEE_METHODS: ReadonlyArray<{ method: string; label: string }> = [
-  ...STORE_FEE_METHODS,
+  ...STORE_CHECKOUT_METHODS,
   ...Object.entries(EXTENSION_METHOD_NAMES)
     // The test method has a fee only outside production, to try fees with.
     .filter(([code]) => process.env.NODE_ENV !== "production" || !DEV_ONLY_METHODS.includes(code))

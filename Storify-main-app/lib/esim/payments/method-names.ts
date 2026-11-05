@@ -18,6 +18,19 @@ export const EXTENSION_METHOD_NAMES = {
   "fake-pay": "Test payment",
 } as const;
 
+/** Storify's own checkout methods, by the value checkout gives them, with their names. */
+export const STORE_CHECKOUT_METHODS: ReadonlyArray<{ method: string; label: string }> = [
+  { method: "card", label: "Card" },
+  { method: "paypal", label: "PayPal" },
+  { method: "razorpay", label: "Razorpay" },
+  { method: "paystack", label: "Paystack" },
+  { method: "pesapal", label: "Pesapal" },
+  { method: "iotec", label: "ioTec Pay" },
+  { method: "orange_money", label: "Orange Money" },
+  { method: "mtn_momo", label: "MTN Mobile Money" },
+  { method: "cod", label: "Cash on delivery" },
+];
+
 /** Only for development: no fee is set for it and it is never offered in production. */
 export const DEV_ONLY_METHODS: readonly string[] = ["fake-pay"];
 

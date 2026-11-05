@@ -17,7 +17,7 @@ import { MAX_FEE_PERCENT, paymentFeeLabel, type PaymentFeeRule } from "@/lib/esi
  * fixed amount plus a percent of the goods. Shown at checkout as a "Payment
  * fee" line. Amounts are edited in dollars and stored in cents.
  */
-export function EsimPaymentFeesCard({ fees, canManage }: { fees: PaymentFeeRule[]; canManage: boolean }) {
+export function EsimPaymentFeesCard({ fees, canManage, onSaved }: { fees: PaymentFeeRule[]; canManage: boolean; onSaved?: () => void }) {
   const t = useFallbackTranslator(useTranslations());
   const router = useRouter();
   const [value, setValue] = useState(fees);
@@ -32,7 +32,8 @@ export function EsimPaymentFeesCard({ fees, canManage }: { fees: PaymentFeeRule[
     try {
       await apiClient.post("/api/esim/admin/payment-fees", { fees: value });
       toast.success(t("admin.esim.saved", "Saved"));
-      router.refresh();
+      if (onSaved) onSaved();
+      else router.refresh();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : String(error));
     } finally {

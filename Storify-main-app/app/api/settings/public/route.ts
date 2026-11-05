@@ -14,6 +14,7 @@ import {
 import { resolveCheckoutGatewayReadiness } from "@/lib/payments/checkout-gateways";
 import { mtnMomoPhoneExample } from "@/lib/payments/mtn-momo";
 import { extensionMethodOptions } from "@/lib/esim/payments/service"; // [esim-patch] P15
+import { publicCheckoutDisplay } from "@/lib/esim/admin/checkout-display"; // [esim-patch] P34
 import {
   getDefaultHomePageSettings,
   normalizeHomePageSettings,
@@ -67,6 +68,7 @@ const getPublicSettingsPayload = unstable_cache(
     const paystackCreds = resolvePaystackCredentials(settings.payment?.paystack);
     const gateways = resolveCheckoutGatewayReadiness(settings);
     const extensionMethods = await extensionMethodOptions(settings.general?.defaultCurrency); // [esim-patch] P15
+    const checkoutDisplay = await publicCheckoutDisplay(); // [esim-patch] P34
     const analytics = resolveAnalyticsConfig(settings.analytics);
 
     const googleOAuthConfigured = Boolean(
@@ -142,6 +144,7 @@ const getPublicSettingsPayload = unstable_cache(
           // [esim-patch] P15 on when an eSIM payment method is switched on and set up; one checkout row per method ({ code, name }).
           extensionEnabled: extensionMethods.length > 0,
           extensionMethods,
+          checkoutDisplay, // [esim-patch] P34 the methods' order, default and icons at checkout
           codEnabled: settings.payment?.cod?.enabled ?? true,
           stripePublishableKey: stripeCreds.publishableKey,
           paypalClientId: paypalCreds.clientId,

@@ -12,6 +12,8 @@ import { CheckoutAttempt, CHECKOUT_ATTEMPT_STATUS, Order } from "@/models";
 import { EsimPayment } from "@/models/esim-payment.model";
 import { startExtensionCheckout } from "./checkout";
 import { extensionMethodNames, settlePayment } from "./service";
+import { publicCheckoutDisplay } from "@/lib/esim/admin/checkout-display";
+import { appDisplayRank } from "./checkout-display";
 
 /**
  * Extension payments in the shopper app (APP-09, patch P15): the "redirect"
@@ -21,22 +23,32 @@ import { extensionMethodNames, settlePayment } from "./service";
  * confirmed or the shopper gives up; the app then verifies.
  */
 
-/** Adds "extension" to a quote's methods when a method is on, the app has a way back, and nothing is pre-ordered. */
+/**
+ * Adds "extension" to a quote's methods when a method is on, the app has a way
+ * back, and nothing is pre-ordered; then lists the methods in the order set
+ * for checkout (patch P34), "extension" where the first eSIM method is.
+ */
 export async function withExtensionMethod(
   quote: CheckoutQuote,
   options: { appScheme: string; currency: string; hasPreorder: boolean },
 ): Promise<CheckoutQuote> {
-  if (options.hasPreorder) return quote;
+  const display = await publicCheckoutDisplay();
+  const ordered = (methods: CheckoutQuote["paymentMethods"]) =>
+    methods
+      .map((method, index) => ({ method, index, rank: appDisplayRank(display, method.id) }))
+      .sort((a, b) => a.rank - b.rank || a.index - b.index)
+      .map((entry) => entry.method);
+  if (options.hasPreorder) return { ...quote, paymentMethods: ordered(quote.paymentMethods) };
   const names = await extensionMethodNames(options.currency);
-  if (!names.length) return quote;
+  if (!names.length) return { ...quote, paymentMethods: ordered(quote.paymentMethods) };
   return {
     ...quote,
-    paymentMethods: [
+    paymentMethods: ordered([
       ...quote.paymentMethods,
       isValidAppScheme(options.appScheme)
         ? { id: "extension", flow: "redirect", name: names.join(" · "), available: true }
         : { id: "extension", flow: "redirect", name: names.join(" · "), available: false, reason: "NOT_CONFIGURED", message: "This payment method is not available" },
-    ],
+    ]),
   };
 }
 
