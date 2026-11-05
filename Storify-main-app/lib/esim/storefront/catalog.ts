@@ -230,11 +230,15 @@ export async function destinationSitemap(): Promise<Array<{ path: string; update
   return [...destinations, ...(await campaignSitemap())];
 }
 
-/** A destination as the client components take it (`components/esim/destination-card.tsx`). */
-export function toBrowserDestination(destination: Destination) {
+/**
+ * A destination as the client components take it (`components/esim/destination-card.tsx`).
+ * Named in the page's language first (`localizeDestinations`), it keeps the English name for search.
+ */
+export function toBrowserDestination(destination: Destination & { englishName?: string }) {
   return {
     slug: destination.slug,
     name: destination.name,
+    ...(destination.englishName && destination.englishName !== destination.name ? { englishName: destination.englishName } : {}),
     emoji: destination.emoji,
     scope: destination.scope,
     continent: destination.continent,

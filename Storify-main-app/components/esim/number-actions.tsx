@@ -15,7 +15,7 @@ import { useFallbackTranslator } from "@/hooks/use-fallback-translator";
 import { useCurrency } from "@/providers/currency-provider";
 import { apiClient } from "@/lib/api/client";
 import { cn } from "@/lib/utils";
-import { formatAmount, rechargeProblem } from "@/lib/esim/numbers/line";
+import { cardUsdMinor, formatAmount, rechargeProblem } from "@/lib/esim/numbers/line";
 import type { NumberShop } from "@/lib/esim/numbers/storefront";
 
 /**
@@ -39,9 +39,9 @@ export function NumberTopupActions({ numberId, title, options }: { numberId: str
   const { currency, usdPerUnit } = options.recharge;
   const rechargeMinor = custom ? Number(custom) * 100 : amount;
   const problem = rechargeMinor ? rechargeProblem(rechargeMinor, options.recharge.minMinor) : t("esim.number.chooseAmount", "Choose an amount");
-  const priceMinor = open === "packet"
-    ? options.packets.find((entry) => entry.id === packet)?.priceMinor ?? 0
-    : usdPerUnit && rechargeMinor ? Math.ceil(rechargeMinor * usdPerUnit - 1e-9) : 0;
+  // Prices are in the card currency; checkout charges them in USD (usdPerUnit carries the FX buffer).
+  const amountMinor = open === "packet" ? options.packets.find((entry) => entry.id === packet)?.priceMinor ?? 0 : rechargeMinor;
+  const priceMinor = usdPerUnit && amountMinor ? cardUsdMinor(amountMinor, usdPerUnit) : 0;
 
   if (!options.product) return null;
 
@@ -123,7 +123,7 @@ export function NumberTopupActions({ numberId, title, options }: { numberId: str
                       min: formatAmount(options.recharge.minMinor, currency),
                       max: formatAmount(options.recharge.maxMinor, currency),
                     })
-                  : t("esim.numbers.rechargePrice", "{amount} lands on the number; you pay {price}.", { amount: formatAmount(rechargeMinor, currency), price: formatPrice(priceMinor / 100) })}
+                  : t("esim.numbers.chargedAs", "Charged as {price} at checkout.", { price: formatPrice(priceMinor / 100) })}
               </p>
             </div>
           ) : open === "packet" ? (
@@ -135,7 +135,7 @@ export function NumberTopupActions({ numberId, title, options }: { numberId: str
                 <SelectContent>
                   {options.packets.map((entry) => (
                     <SelectItem key={entry.id} value={entry.id}>
-                      {entry.name} · {t("esim.numbers.days", "{days} days", { days: entry.validityDays })} · {formatPrice(entry.priceMinor / 100)}
+                      {entry.name} · {t("esim.numbers.days", "{days} days", { days: entry.validityDays })} · {formatAmount(entry.priceMinor, currency)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -145,12 +145,15 @@ export function NumberTopupActions({ numberId, title, options }: { numberId: str
                   {t("esim.numbers.packetCountries", "Works in: {countries}", { countries: options.packets.find((entry) => entry.id === packet)!.countryCodes.join(", ") })}
                 </p>
               ) : null}
+              {priceMinor ? (
+                <p className="text-xs text-muted-foreground">{t("esim.numbers.chargedAs", "Charged as {price} at checkout.", { price: formatPrice(priceMinor / 100) })}</p>
+              ) : null}
             </div>
           ) : null}
           <DialogFooter>
             <Button className="w-full" disabled={busy || !priceMinor || (open === "recharge" && Boolean(problem))} onClick={buy}>
               {busy ? <Loader2 className="me-2 h-4 w-4 animate-spin" /> : null}
-              {t("esim.number.payFor", "Pay {price}", { price: formatPrice(priceMinor / 100) })}
+              {t("esim.number.payFor", "Pay {price}", { price: formatAmount(amountMinor, currency) })}
             </Button>
           </DialogFooter>
         </DialogContent>

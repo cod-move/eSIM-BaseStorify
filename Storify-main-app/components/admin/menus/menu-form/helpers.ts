@@ -41,6 +41,8 @@ export type MenuItem = {
   promoImages?: string[];
   isMegaColumn?: boolean;
   columnTitle?: string;
+  /** [esim-patch] P36 The label in other languages, by locale. */
+  labels?: Record<string, string>;
   children: MenuItem[];
 };
 

@@ -2,6 +2,8 @@ import type { EsimDestinationsBlock, EsimDeviceCheckBlock } from "@/contracts/mo
 import type { Currency } from "@/lib/intl/currencies";
 import { connectDB } from "@/lib/db";
 import { destinationsBySlug, popularDestinations } from "@/lib/esim/storefront/catalog";
+import { localizeTemplateCopy } from "@/lib/esim/storefront/template-copy";
+import { localizeDestinations } from "@/lib/esim/storefront/destination-names";
 import type { DrawnSection } from "@/lib/storefront/sections/drawn";
 import { lt } from "@/lib/storefront/sections/localized";
 import type { LocalizedText } from "@/lib/storefront/sections/types";
@@ -33,7 +35,7 @@ async function destinationsBlock(
 ): Promise<EsimDestinationsBlock | null> {
   await connectDB();
   const settings = section.instance.settings;
-  const destinations = (await pick()).map((destination) => toEsimDestination(destination, ctx.currency));
+  const destinations = (await localizeDestinations(await pick(), ctx.locale)).map((destination) => toEsimDestination(destination, ctx.currency));
   if (!destinations.length && !extra.searchPlaceholder) return null;
   const title = text(settings.title, ctx);
   const subtitle = text(settings.subtitle, ctx);
@@ -81,9 +83,13 @@ const deviceCheck: Mapper = async (section, ctx) => {
   return { type: "ESIM_DEVICE_CHECK", id: section.instance.id, title, ...(subtitle ? { subtitle } : {}) };
 };
 
+/** The template's own text in the App's language first, as the website shows it (patch P35). */
+const inLanguage = (mapper: Mapper): Mapper => async (section, ctx) =>
+  mapper({ ...section, instance: (await localizeTemplateCopy([section.instance], ctx.locale))[0] }, ctx);
+
 export const ESIM_HOME_BLOCK_MAPPERS: Record<string, Mapper> = {
-  "esim-hero": hero,
-  "esim-popular": popular,
-  "esim-destination-tabs": tabs,
-  "esim-device-check": deviceCheck,
+  "esim-hero": inLanguage(hero),
+  "esim-popular": inLanguage(popular),
+  "esim-destination-tabs": inLanguage(tabs),
+  "esim-device-check": inLanguage(deviceCheck),
 };

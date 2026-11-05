@@ -15,6 +15,7 @@ import {
 } from "@/lib/site-config/content-pages-config";
 import { headerLogoWidths } from "@/lib/site-config/header-config";
 import { getStorefrontSettings } from "@/lib/storefront/storefront-settings";
+import { menuIn } from "@/lib/esim/storefront/menu-labels"; // [esim-patch] P36
 import { getStorefrontCategories } from "@/lib/storefront/storefront-categories";
 import { getStorefrontCollections } from "@/lib/storefront/storefront-collections";
 import { hasOpenPreorders } from "@/lib/products/storefront-products";
@@ -55,7 +56,7 @@ async function buildHeaderMenuItems(locale: Locale) {
   const [{ contentPages, headerSettings }, headerMenus, preordersOpen] =
     await Promise.all([
       getStorefrontSettings(),
-      getMenusByLocation("header"),
+      getMenusByLocation("header").then((menus) => menus.map((menu) => menuIn(menu, locale))), // [esim-patch] P36
       hasOpenPreorders(),
     ]);
 
@@ -230,7 +231,7 @@ export async function HeaderBar({ locale }: { locale: Locale }) {
     categoriesResult,
   ] = await Promise.all([
     buildHeaderMenuItems(locale),
-    getMenusByLocation("header-mega"),
+    getMenusByLocation("header-mega").then((menus) => menus.map((menu) => menuIn(menu, locale))), // [esim-patch] P36
     getStorefrontCategories({ flat: false, page: 1, limit: 20 }),
   ]);
 
@@ -252,7 +253,7 @@ export async function HeaderBar({ locale }: { locale: Locale }) {
           limit: headerSettings.collectionsMenu?.limit ?? 12,
         })
       : Promise.resolve({ data: [] }),
-    Promise.all(linkedHandles.map((handle) => getMenuByHandle(handle))),
+    Promise.all(linkedHandles.map((handle) => getMenuByHandle(handle).then((menu) => menuIn(menu, locale)))), // [esim-patch] P36
   ]);
 
   const resolveHref = (raw: string) => {
@@ -296,7 +297,7 @@ export async function HeaderBar({ locale }: { locale: Locale }) {
 export async function FooterBar({ locale }: { locale: Locale }) {
   const { footerSettings, headerSettings, isMultiVendorEnabled } =
     await getStorefrontSettings();
-  const resolved = await resolveFooterMenuColumns(footerSettings);
+  const resolved = await resolveFooterMenuColumns(footerSettings, locale); // [esim-patch] P36
   return (
     <StoreFooter
       locale={locale}
@@ -345,6 +346,7 @@ async function resolveFooterMenuColumns(
   footerSettings: Awaited<
     ReturnType<typeof getStorefrontSettings>
   >["footerSettings"],
+  locale: Locale, // [esim-patch] P36
 ) {
   const handles = [
     ...new Set(
@@ -356,7 +358,7 @@ async function resolveFooterMenuColumns(
   if (handles.length === 0) return footerSettings;
 
   const menus = await Promise.all(
-    handles.map((handle) => getMenuByHandle(handle)),
+    handles.map((handle) => getMenuByHandle(handle).then((menu) => menuIn(menu, locale))), // [esim-patch] P36
   );
   const byHandle = new Map(
     menus.flatMap((menu) => (menu ? [[menu.handle, menu] as const] : [])),

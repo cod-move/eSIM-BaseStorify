@@ -17,7 +17,7 @@ import { useSession } from "@/lib/auth/auth-client";
 import { buildLoginUrl, currentBrowserPath } from "@/lib/auth/return-path";
 import { useCurrency } from "@/providers/currency-provider";
 import { cn } from "@/lib/utils";
-import { formatAmount, numberLineLabel, rechargeProblem } from "@/lib/esim/numbers/line";
+import { cardUsdMinor, formatAmount, numberLineLabel, rechargeProblem } from "@/lib/esim/numbers/line";
 import type { NumberShop, PremiumFilter, ShopNumber, ShopNumberFilters, ShopPacket } from "@/lib/esim/numbers/storefront";
 
 /**
@@ -35,7 +35,6 @@ export function NumberPicker({ shop, filters, locale }: { shop: NumberShop; filt
   const t = useFallbackTranslator(useTranslations());
   const router = useRouter();
   const pathname = usePathname();
-  const { formatPrice } = useCurrency();
   const [isPending, startTransition] = useTransition();
   const [digits, setDigits] = useState(filters.digits ?? "");
   const [chosen, setChosen] = useState<ShopNumber | null>(null);
@@ -128,7 +127,7 @@ export function NumberPicker({ shop, filters, locale }: { shop: NumberShop; filt
                 ) : null}
               </div>
               <div className="font-mono text-lg font-semibold tracking-wide">{groupDigits(row.nationalNumber)}</div>
-              <div className="text-sm font-medium text-primary">{formatPrice((row.priceMinor + row.premiumMinor) / 100)}</div>
+              <div className="text-sm font-medium text-primary">{formatAmount(row.priceMinor + row.premiumMinor, shop.recharge.currency)}</div>
             </button>
           ))}
         </div>
@@ -184,8 +183,12 @@ function NumberDialog({ shop, number, locale, onClose }: { shop: NumberShop; num
   const rechargeMinor = custom ? Number(custom) * 100 : recharge;
   const problem = rechargeProblem(rechargeMinor, shop.recharge.minMinor);
   const chosenPacket = shop.packets.find((entry) => entry.id === packet) ?? null;
-  const rechargeUsd = rechargeMinor && usdPerUnit ? Math.ceil(rechargeMinor * usdPerUnit - 1e-9) : 0;
-  const totalMinor = number ? number.priceMinor + number.premiumMinor + (problem ? 0 : rechargeUsd) + (chosenPacket?.priceMinor ?? 0) : 0;
+  // Every price here is in the card currency; checkout charges each part in USD (usdPerUnit carries the FX buffer).
+  const credit = problem ? 0 : rechargeMinor;
+  const totalMinor = number ? number.priceMinor + number.premiumMinor + credit + (chosenPacket?.priceMinor ?? 0) : 0;
+  const totalUsdMinor = number && usdPerUnit
+    ? cardUsdMinor(number.priceMinor + number.premiumMinor, usdPerUnit) + cardUsdMinor(credit, usdPerUnit) + cardUsdMinor(chosenPacket?.priceMinor ?? 0, usdPerUnit)
+    : 0;
   const rechargeUnpriced = !usdPerUnit;
   const label = useMemo(
     () =>
@@ -208,7 +211,7 @@ function NumberDialog({ shop, number, locale, onClose }: { shop: NumberShop; num
         productId: shop.product.productId,
         variantId: shop.product.variantId,
         quantity: 1,
-        price: totalMinor / 100,
+        price: totalUsdMinor / 100,
         name: label,
         lineAttributes: { number: { id: number.id, recharge: rechargeMinor, ...(chosenPacket ? { packet: chosenPacket.id } : {}) } },
       });
@@ -268,15 +271,13 @@ function NumberDialog({ shop, number, locale, onClose }: { shop: NumberShop; num
                   onChange={(event) => setCustom(event.target.value.replace(/\D/g, "").slice(0, 3))}
                 />
               </div>
-              <p className={cn("text-xs", problem ? "text-destructive" : "text-muted-foreground")}>
-                {problem
-                  ? t("esim.numbers.rechargeAmounts", "Whole amounts from {min} to {max}.", {
+              <p className={cn("text-xs", problem || rechargeUnpriced ? "text-destructive" : "text-muted-foreground")}>
+                {!problem && rechargeUnpriced
+                  ? t("esim.numbers.creditUnpriced", "Credit cannot be priced right now; please try again later.")
+                  : t("esim.numbers.rechargeAmounts", "Whole amounts from {min} to {max}.", {
                       min: formatAmount(shop.recharge.minMinor, currency),
                       max: formatAmount(shop.recharge.maxMinor, currency),
-                    })
-                  : rechargeUnpriced
-                    ? t("esim.numbers.creditUnpriced", "Credit cannot be priced right now; please try again later.")
-                    : t("esim.numbers.rechargePrice", "{amount} lands on the number; you pay {price}.", { amount: formatAmount(rechargeMinor, currency), price: formatPrice(rechargeUsd / 100) })}
+                    })}
               </p>
             </fieldset>
 
@@ -294,7 +295,7 @@ function NumberDialog({ shop, number, locale, onClose }: { shop: NumberShop; num
                     {shop.packets.map((entry) => (
                       <SelectItem key={entry.id} value={entry.id}>
                         {entry.name} · {volumeLabel(entry, t("esim.numbers.unlimited", "Unlimited"))} ·{" "}
-                        {t("esim.numbers.days", "{days} days", { days: entry.validityDays })} · {formatPrice(entry.priceMinor / 100)}
+                        {t("esim.numbers.days", "{days} days", { days: entry.validityDays })} · {formatAmount(entry.priceMinor, currency)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -308,16 +309,19 @@ function NumberDialog({ shop, number, locale, onClose }: { shop: NumberShop; num
             ) : null}
 
             <dl className="space-y-1 rounded-lg bg-muted/50 p-3 text-sm">
-              <Row label={t("esim.numbers.numberPrice", "Number")} value={formatPrice(number.priceMinor / 100)} />
-              {number.premiumMinor ? <Row label={t("esim.numbers.premiumFee", "Memorable number")} value={formatPrice(number.premiumMinor / 100)} /> : null}
-              {!problem && !rechargeUnpriced ? (
-                <Row label={t("esim.numbers.credit", "Credit {amount}", { amount: formatAmount(rechargeMinor, currency) })} value={formatPrice(rechargeUsd / 100)} />
-              ) : null}
-              {chosenPacket ? <Row label={chosenPacket.name} value={formatPrice(chosenPacket.priceMinor / 100)} /> : null}
+              <Row label={t("esim.numbers.numberPrice", "Number")} value={formatAmount(number.priceMinor, currency)} />
+              {number.premiumMinor ? <Row label={t("esim.numbers.premiumFee", "Memorable number")} value={formatAmount(number.premiumMinor, currency)} /> : null}
+              {credit ? <Row label={t("esim.numbers.creditLine", "Credit on the number")} value={formatAmount(credit, currency)} /> : null}
+              {chosenPacket ? <Row label={chosenPacket.name} value={formatAmount(chosenPacket.priceMinor, currency)} /> : null}
               <div className="flex justify-between border-t pt-2 font-semibold">
                 <dt>{t("esim.numbers.total", "Total")}</dt>
-                <dd>{formatPrice(totalMinor / 100)}</dd>
+                <dd>{formatAmount(totalMinor, currency)}</dd>
               </div>
+              {totalUsdMinor && currency.toUpperCase() !== "USD" ? (
+                <div className="text-xs text-muted-foreground">
+                  {t("esim.numbers.chargedAs", "Charged as {price} at checkout.", { price: formatPrice(totalUsdMinor / 100) })}
+                </div>
+              ) : null}
             </dl>
           </div>
         ) : null}

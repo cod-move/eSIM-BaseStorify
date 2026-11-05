@@ -11,7 +11,7 @@ import { parsePhoneNumberFromString } from "libphonenumber-js/min";
  *   MSISDN ICCID LPA PIN1 PUK1 PIN2 PUK2 [PRICE PREMIUM]
  *
  * A header line (holding both "MSISDN" and "ICCID") is skipped. PRICE and
- * PREMIUM, in dollars, override the batch's; the old CSV's tenth column (a QR
+ * PREMIUM, in the card currency (TopConnect's), override the batch's; the old CSV's tenth column (a QR
  * image file name) is ignored, as the QR is drawn from the LPA. A number may
  * come with or without its country code: with a batch dial code the code is
  * added when missing; without one the number must carry it.
@@ -20,7 +20,7 @@ import { parsePhoneNumberFromString } from "libphonenumber-js/min";
 export interface NumberImportOptions {
   /** Country calling code for the batch, digits only ("372"). */
   dialCode?: string;
-  /** Per-number price and premium, USD cents, unless a line sets its own. */
+  /** Per-number price and premium, cents of the card currency, unless a line sets its own. */
   priceMinor: number;
   premiumMinor: number;
 }

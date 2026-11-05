@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
 import { DestinationPage, destinationSeo } from "@/components/esim/destination-page";
 import { translator } from "@/lib/esim/i18n/server";
-import { getDestination } from "@/lib/esim/storefront/catalog";
+import { getLocalizedDestination } from "@/lib/esim/storefront/destination-names";
 
 interface PageProps {
   params: Promise<{ locale: string }>;
@@ -11,7 +11,7 @@ interface PageProps {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { locale } = await params;
-  const destination = await getDestination("global", "multi");
+  const destination = await getLocalizedDestination("global", "multi", locale);
   if (!destination) return {};
   const { title, description } = await destinationSeo(destination, locale);
   return { title, description, openGraph: { title, description } };
@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 export default async function EsimGlobalPage({ params }: PageProps) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const destination = await getDestination("global", "multi");
+  const destination = await getLocalizedDestination("global", "multi", locale);
   if (!destination) notFound();
   const tr = await translator(locale);
   return (

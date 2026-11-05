@@ -54,7 +54,11 @@ export interface NumberShop {
   pages: number;
   dialCodes: Array<{ code: string; country: string | null; count: number }>;
   packets: ShopPacket[];
-  /** First recharge: chosen in the card's currency; `usdPerUnit` already carries the FX buffer, for showing the price only (the cart prices it). */
+  /**
+   * The card currency every price here is in (numbers, premiums, packages,
+   * credit); `usdPerUnit` already carries the FX buffer, for showing what
+   * checkout will charge in USD only (the cart prices it).
+   */
   recharge: { currency: string; usdPerUnit: number | null; minMinor: number; maxMinor: number; suggestions: number[]; presetMinor: number };
   /** The hidden product a number is added to the cart as; null until an admin imports numbers. */
   product: { productId: string; variantId: string } | null;
@@ -156,7 +160,9 @@ export async function numberShop(filters: ShopNumberFilters): Promise<NumberShop
 
 export interface NumbersTeaser {
   count: number;
+  /** The cheapest number with its premium, in `currency` (the card currency). */
   fromMinor: number;
+  currency: string;
   samples: Array<{ dialCode: string; nationalNumber: string; premium: boolean }>;
 }
 
@@ -164,17 +170,19 @@ export interface NumbersTeaser {
 export async function numbersTeaser(sampleCount: number): Promise<NumbersTeaser | null> {
   await connectDB();
   const match: Record<string, unknown> = onSale(new Date());
-  const [count, cheapest, samples] = await Promise.all([
+  const [count, cheapest, samples, provider] = await Promise.all([
     EsimNumber.countDocuments(match),
     EsimNumber.aggregate<{ price: number }>([{ $match: match }, { $project: { price: { $add: ["$priceMinor", "$premiumMinor"] } } }, { $sort: { price: 1 } }, { $limit: 1 }]),
     sampleCount > 0
       ? EsimNumber.find(match).select({ dialCode: 1, nationalNumber: 1, premiumMinor: 1 }).sort({ premiumMinor: -1, msisdn: 1 }).limit(sampleCount).lean()
       : [],
+    EsimProvider.findOne({ code: "topconnect" }).select({ settlementCurrency: 1 }).lean(),
   ]);
   if (!count) return null;
   return {
     count,
     fromMinor: cheapest[0]?.price ?? 0,
+    currency: provider?.settlementCurrency ?? "EUR",
     samples: samples.map((row) => ({ dialCode: row.dialCode, nationalNumber: row.nationalNumber, premium: row.premiumMinor > 0 })),
   };
 }

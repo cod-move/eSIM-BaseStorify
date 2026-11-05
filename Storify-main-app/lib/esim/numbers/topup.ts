@@ -10,7 +10,7 @@ import { getEsimSettings } from "@/models/esim-pricing.model";
 import { rechargeMinOf } from "@/lib/esim/numbers/settings";
 import { currentRates } from "@/lib/esim/pricing/fx-service";
 import { findNumberTopupProduct } from "@/lib/esim/numbers/product";
-import { formatAmount, rechargeProblem, rechargeUsdMinor } from "@/lib/esim/numbers/line";
+import { cardChargeRate, cardUsdMinor, formatAmount, rechargeProblem } from "@/lib/esim/numbers/line";
 import { enqueue, type QueuedOp } from "@/lib/esim/numbers/ops";
 import type { NumberTopupChoice, NumberTopupSnapshot } from "@/lib/esim/numbers/topup-choice";
 
@@ -19,8 +19,9 @@ import type { NumberTopupChoice, NumberTopupSnapshot } from "@/lib/esim/numbers/
  * from the number's page through the normal cart and checkout: an order is
  * made and paid first, and TopConnect is called only after the payment
  * (lib/esim/numbers/ops.ts). The line carries `lineAttributes.numberTopup`:
- * the number and either a recharge (whole amounts in the card's currency,
- * priced at the rate plus the FX buffer) or a package from the price list.
+ * the number and either a recharge (whole amounts in the card's currency) or
+ * a package from the price list (priced in that currency too), charged in
+ * USD at the day's rate plus the FX buffer.
  * Checkout settles it to the snapshot the order keeps.
  */
 
@@ -41,11 +42,18 @@ export async function numberTopupLine(choice: NumberTopupChoice | undefined, use
     .lean();
   if (!number) return "Sign in to the account that owns the number";
   const title = `+${number.dialCode} ${number.nationalNumber}`;
+  const settings = await getEsimSettings();
+  const provider = await EsimProvider.findOne({ code: "topconnect" }).select({ settlementCurrency: 1 }).lean();
+  const currency = provider?.settlementCurrency ?? "EUR";
+  const rate = (await currentRates([currency])).get(currency);
+  if (!rate) return "This cannot be priced right now: try again later";
+  const chargeRate = cardChargeRate(rate.usdPerUnit, settings.fxBufferPercent);
 
   if (choice.packet) {
     const row = mongoose.isValidObjectId(choice.packet) ? await EsimNumberPackage.findOne({ _id: choice.packet, status: "active" }).lean() : null;
     if (!row || !(row.retailPriceMinor > 0)) return "This data package is no longer offered: choose another one";
     const label = `${title} · ${row.name}`;
+    const priceMinor = cardUsdMinor(row.retailPriceMinor, chargeRate);
     return {
       lineAttributes: {
         numberTopup: {
@@ -57,24 +65,19 @@ export async function numberTopupLine(choice: NumberTopupChoice | undefined, use
           currency: row.cost.currency,
           packetId: row.packetId,
           packetName: row.name,
-          priceMinor: row.retailPriceMinor,
+          priceMinor,
         },
         label,
       },
-      priceMinor: row.retailPriceMinor,
+      priceMinor,
       label,
     };
   }
 
   const recharge = choice.recharge ?? 0;
-  const settings = await getEsimSettings();
   const problem = recharge ? rechargeProblem(recharge, rechargeMinOf(settings)) : "Choose a whole amount to put on the number";
   if (problem) return problem;
-  const provider = await EsimProvider.findOne({ code: "topconnect" }).select({ settlementCurrency: 1 }).lean();
-  const currency = provider?.settlementCurrency ?? "EUR";
-  const rate = (await currentRates([currency])).get(currency);
-  if (!rate) return "Credit cannot be priced right now: try again later";
-  const priceMinor = rechargeUsdMinor(recharge, rate.usdPerUnit, settings.fxBufferPercent);
+  const priceMinor = cardUsdMinor(recharge, chargeRate);
   const label = `${title} · ${formatAmount(recharge, currency)} credit`;
   return {
     lineAttributes: {

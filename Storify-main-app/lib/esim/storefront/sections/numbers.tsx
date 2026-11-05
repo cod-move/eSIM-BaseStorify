@@ -4,7 +4,7 @@ import { translator } from "@/lib/esim/i18n/server";
 import { lt } from "@/lib/storefront/sections/localized";
 import type { LocalizedText, SectionDefinition, SectionRenderContext } from "@/lib/storefront/sections/types";
 import { numbersTeaser } from "@/lib/esim/numbers/storefront";
-import { formatStorePrice } from "@/lib/esim/topup/format";
+import { formatAmount } from "@/lib/esim/numbers/line";
 
 /**
  * "eSIM: phone numbers" (NUM-03): a slim entry to the numbers page for the
@@ -61,7 +61,7 @@ export const esimNumbersEntry: SectionDefinition = {
             <div className="flex items-center justify-between gap-3 sm:justify-end">
               {settings.showPrice !== false ? (
                 <span className="whitespace-nowrap text-sm text-muted-foreground">
-                  {tr("esim.numbers.entryFrom", "{count} numbers · from {price}", { count: teaser.count, price: formatStorePrice(teaser.fromMinor, ctx.locale) })}
+                  {tr("esim.numbers.entryFrom", "{count} numbers · from {price}", { count: teaser.count, price: formatAmount(teaser.fromMinor, teaser.currency) })}
                 </span>
               ) : null}
               <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition group-hover:gap-2">

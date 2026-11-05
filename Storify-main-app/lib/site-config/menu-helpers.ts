@@ -9,6 +9,7 @@ import {
 } from "@/lib/site-config/menu-depth";
 import type { MenuLocation } from "@/types";
 import { withFallback } from "@/lib/storefront/cached-read";
+import { menuLabelsOf, type MenuLabels } from "@/lib/esim/storefront/menu-labels"; // [esim-patch] P36
 
 interface SeedItem {
   label: string;
@@ -232,6 +233,8 @@ export interface MenuItemPlain {
   promoImages?: string[];
   isMegaColumn?: boolean;
   columnTitle?: string;
+  /** [esim-patch] P36 The label in other languages, by locale. */
+  labels?: MenuLabels;
   children: MenuItemPlain[];
 }
 
@@ -289,6 +292,7 @@ function normalizeItems(items: unknown): MenuItemPlain[] {
         : undefined,
       isMegaColumn: !!it.isMegaColumn,
       columnTitle: typeof it.columnTitle === "string" ? it.columnTitle : undefined,
+      labels: menuLabelsOf(it.labels), // [esim-patch] P36
       children: normalizeItems(it.children),
     };
   });

@@ -40,6 +40,8 @@ export interface AdminNumberPackage {
 
 export interface AdminNumberPackageList {
   rows: AdminNumberPackage[];
+  /** The card currency every package price is in (TopConnect's settlement currency). */
+  priceCurrency: string;
   /** USD per unit of each cost currency now; missing = no rate, so no automatic price. */
   rates: Record<string, number>;
   /** Whether TopConnect is set up and a number is in stock to ask its list for. */
@@ -74,6 +76,7 @@ export async function listNumberPackagesAdmin(): Promise<AdminNumberPackageList>
       status: row.status,
       sortOrder: row.sortOrder,
     })),
+    priceCurrency: provider?.settlementCurrency ?? "EUR",
     rates: Object.fromEntries([...rates.values()].map((rate) => [rate.currency, rate.usdPerUnit])),
     canLoad: Boolean(provider && provider.status === "active" && anyNumber),
     packetMccmnc: settings.numbers?.packetMccmnc ?? null,

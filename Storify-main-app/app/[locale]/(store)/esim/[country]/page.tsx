@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
 import { DestinationPage, destinationSeo } from "@/components/esim/destination-page";
 import { translator } from "@/lib/esim/i18n/server";
-import { getDestination } from "@/lib/esim/storefront/catalog";
+import { getLocalizedDestination } from "@/lib/esim/storefront/destination-names";
 
 interface PageProps {
   params: Promise<{ locale: string; country: string }>;
@@ -11,7 +11,7 @@ interface PageProps {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { locale, country } = await params;
-  const destination = await getDestination(country, "local");
+  const destination = await getLocalizedDestination(country, "local", locale);
   if (!destination) return {};
   const { title, description } = await destinationSeo(destination, locale);
   return { title, description, openGraph: { title, description, images: destination.image ? [{ url: destination.image }] : undefined } };
@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 export default async function EsimCountryPage({ params }: PageProps) {
   const { locale, country } = await params;
   setRequestLocale(locale);
-  const destination = await getDestination(country, "local");
+  const destination = await getLocalizedDestination(country, "local", locale);
   if (!destination) notFound();
   const tr = await translator(locale);
   return (

@@ -2349,9 +2349,10 @@ function StoreHeaderBar({
                   </span>
                 </span>
               ) : (
-                // [esim-patch] P31 — as for a member: say what the icon opens.
+                // [esim-patch] P31 — as for a member: say what the icon opens; the
+                // header preset's own "Login / Register" in the page's language.
                 <span className="hidden items-center gap-1 whitespace-nowrap text-[13px] font-medium leading-none sm:inline-flex">
-                  {item.label || t("common.login")}
+                  {item.label && item.label.trim() !== "Login / Register" ? item.label : `${t("common.login")} / ${t("common.register")}`}
                   <ChevronDown className="h-3.5 w-3.5 opacity-55" />
                 </span>
               )}

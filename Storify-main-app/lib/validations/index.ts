@@ -1727,6 +1727,7 @@ const MenuItemBaseSchema = z.object({
   promoImages: z.array(z.string()).max(2).optional(),
   isMegaColumn: z.boolean().optional(),
   columnTitle: z.string().max(120).optional(),
+  labels: z.record(z.string().regex(/^[a-z]{2,3}(-[A-Za-z]{2,4})?$/), z.string().max(120)).optional(), // [esim-patch] P36 the label in other languages
 });
 
 type MenuItemInput = z.infer<typeof MenuItemBaseSchema> & {

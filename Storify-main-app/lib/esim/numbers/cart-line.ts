@@ -11,7 +11,8 @@ import {
   numberLineLabel,
   numberLinePriceMinor,
   rechargeProblem,
-  rechargeUsdMinor,
+  cardChargeRate,
+  cardUsdMinor,
   type NumberLineChoice,
   type NumberLineSnapshot,
 } from "@/lib/esim/numbers/line";
@@ -49,7 +50,7 @@ function obtainable(userId: string, now: Date): Record<string, unknown> {
   };
 }
 
-/** The TopConnect supplier's settlement currency: what recharges and packages are put on the card in. */
+/** The TopConnect supplier's settlement currency: what every number price is in, and what recharges are put on the card in. */
 async function cardCurrency(): Promise<string> {
   const provider = await EsimProvider.findOne({ code: "topconnect" }).select({ settlementCurrency: 1 }).lean();
   return provider?.settlementCurrency ?? "EUR";
@@ -84,30 +85,29 @@ export async function numberCartLine(choice: NumberLineChoice | undefined, userI
   if (!number) return "This number has just been taken: choose another one";
 
   const currency = await cardCurrency();
-  let packet: { id: string; packetId: string; name: string; cost: { amountMinor: number; currency: string }; priceMinor: number } | null = null;
+  let packet: { id: string; packetId: string; name: string; cost: { amountMinor: number; currency: string }; priceMinor: number } | null = null; // priceMinor: card currency
   if (choice.packet) {
     const row = mongoose.isValidObjectId(choice.packet) ? await EsimNumberPackage.findOne({ _id: choice.packet, status: "active" }).lean() : null;
     if (!row || !(row.retailPriceMinor > 0)) return "This data package is no longer offered: choose another one";
     packet = { id: String(row._id), packetId: row.packetId, name: row.name, cost: row.cost, priceMinor: row.retailPriceMinor };
   }
 
-  let rechargeUsd = 0;
-  if (recharge) {
-    const rate = (await currentRates([currency])).get(currency);
-    if (!rate) return "Credit cannot be priced right now: try again later";
-    rechargeUsd = rechargeUsdMinor(recharge, rate.usdPerUnit, settings.fxBufferPercent);
-  }
+  // Every part is priced in the card currency and charged in USD at the day's rate plus the buffer.
+  const rate = (await currentRates([currency])).get(currency);
+  if (!rate) return "This number cannot be priced right now: try again later";
+  const chargeRate = cardChargeRate(rate.usdPerUnit, settings.fxBufferPercent);
 
   const snapshot: NumberLineSnapshot = {
     id: String(number._id),
     msisdn: number.msisdn,
     numberMinor: number.priceMinor,
     premiumMinor: number.premiumMinor,
+    numberUsdMinor: cardUsdMinor(number.priceMinor + number.premiumMinor, chargeRate),
     recharge,
     rechargeCurrency: currency,
-    rechargeUsdMinor: rechargeUsd,
-    ...(packet ? { packet: packet.id, packetId: packet.packetId, packetName: packet.name, packetCost: packet.cost } : {}),
-    packetUsdMinor: packet?.priceMinor ?? 0,
+    rechargeUsdMinor: cardUsdMinor(recharge, chargeRate),
+    ...(packet ? { packet: packet.id, packetId: packet.packetId, packetName: packet.name, packetCost: packet.cost, packetMinor: packet.priceMinor } : {}),
+    packetUsdMinor: cardUsdMinor(packet?.priceMinor ?? 0, chargeRate),
   };
   const label = numberLineLabel({ dialCode: number.dialCode, nationalNumber: number.nationalNumber, recharge, rechargeCurrency: currency, packetName: packet?.name });
   return { lineAttributes: { number: snapshot, label }, priceMinor: numberLinePriceMinor(snapshot), label };

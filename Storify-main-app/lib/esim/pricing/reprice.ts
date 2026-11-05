@@ -4,6 +4,7 @@ import type { AnyBulkWriteOperation, Types } from "mongoose";
 import { EsimPlan, type IEsimPlan } from "@/models/esim-plan.model";
 import { EsimNumberPackage, type IEsimNumberPackage } from "@/models/esim-number-package.model";
 import { EsimPricingRule, getEsimSettings } from "@/models/esim-pricing.model";
+import { EsimProvider } from "@/models/esim-provider.model";
 import { currentRates } from "@/lib/esim/pricing/fx-service";
 import { priceOf, type PricingRule, type PricingSettings } from "@/lib/esim/pricing/price";
 import { packagePricingInput } from "@/lib/esim/numbers/packages";
@@ -139,7 +140,13 @@ export async function repricePlans(options: { onlyIfFxMoved?: boolean; providerC
   return result;
 }
 
-/** Re-prices the number-card data packages; one an admin priced by hand keeps its price. */
+/**
+ * Re-prices the number-card data packages in the card currency (TopConnect's
+ * settlement currency, what every number price is in): the cost turned into
+ * that currency, then the rules and rounding as for plans. The FX buffer is
+ * left to checkout, which charges the price in USD with it. One an admin
+ * priced by hand keeps its price.
+ */
 export async function repriceNumberPackages(
   options: { onlyIfFxMoved?: boolean; ids?: string[] } = {},
   pricing?: Awaited<ReturnType<typeof loadPricing>>,
@@ -149,27 +156,33 @@ export async function repriceNumberPackages(
   const rows = await EsimNumberPackage.find(filter)
     .select({ countryCodes: 1, cost: 1, retailPriceMinor: 1, pricing: 1 })
     .lean<IEsimNumberPackage[]>();
-  const rates = await currentRates(rows.map((row) => row.cost.currency));
+  const provider = await EsimProvider.findOne({ code: "topconnect" }).select({ settlementCurrency: 1 }).lean();
+  const cardCurrency = (provider?.settlementCurrency ?? "EUR").toUpperCase();
+  const rates = await currentRates([cardCurrency, ...rows.map((row) => row.cost.currency)]);
+  const cardRate = rates.get(cardCurrency);
   const result: RepriceResult = { considered: rows.length, changed: 0, missingRates: [] };
   const missing = new Set<string>();
   const pricedAt = new Date();
   const writes: AnyBulkWriteOperation<IEsimNumberPackage>[] = [];
   for (const row of rows) {
     const rate = rates.get(row.cost.currency);
-    if (!rate) {
-      missing.add(row.cost.currency);
+    if (!rate || !cardRate) {
+      missing.add(rate ? cardCurrency : row.cost.currency);
       continue;
     }
-    if (options.onlyIfFxMoved && row.pricing) {
+    if (options.onlyIfFxMoved && row.pricing && row.pricing.currency === cardCurrency) {
       const moved = Math.abs(rate.usdPerUnit - row.pricing.usdPerUnit) / row.pricing.usdPerUnit;
       if (moved <= repriceThresholdPercent / 100) continue;
     }
-    const price = priceOf(packagePricingInput(row, rate.usdPerUnit), rules, settings);
+    // Priced in the card currency: the cost's rate against it, no buffer (checkout adds it on the way to USD).
+    const price = priceOf(packagePricingInput(row, rate.usdPerUnit / cardRate.usdPerUnit), rules, { ...settings, fxBufferPercent: 0 });
+    const costUsdMinor = Math.round(row.cost.amountMinor * rate.usdPerUnit * (1 + settings.fxBufferPercent / 100));
     const ruleId = price.ruleId as unknown as Types.ObjectId | null;
     if (
       row.retailPriceMinor === price.retailMinor &&
+      row.pricing?.currency === cardCurrency &&
       row.pricing?.usdPerUnit === rate.usdPerUnit &&
-      row.pricing?.costUsdMinor === price.costUsdMinor &&
+      row.pricing?.costUsdMinor === costUsdMinor &&
       String(row.pricing?.ruleId ?? null) === String(ruleId)
     ) {
       continue;
@@ -181,8 +194,9 @@ export async function repriceNumberPackages(
           $set: {
             retailPriceMinor: price.retailMinor,
             pricing: {
-              costUsdMinor: price.costUsdMinor,
+              costUsdMinor,
               usdPerUnit: rate.usdPerUnit,
+              currency: cardCurrency,
               ruleId,
               markupPercent: price.markupPercent,
               marginFloorApplied: price.marginFloorApplied,

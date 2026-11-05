@@ -3,6 +3,8 @@ import { SectionHeading } from "@/components/store/sections/section-shell";
 import { DeviceCheck } from "@/components/esim/sections/device-check";
 import { InstallGuideTabs } from "@/components/esim/sections/install-guide-tabs";
 import { deviceList } from "@/lib/esim/admin/devices";
+import { translator } from "@/lib/esim/i18n/server";
+import { templateText } from "@/lib/esim/storefront/template-text";
 import { lt } from "@/lib/storefront/sections/localized";
 import type { LocalizedText, SectionDefinition, SectionRenderContext } from "@/lib/storefront/sections/types";
 
@@ -149,7 +151,9 @@ export const esimDeviceCheck: SectionDefinition = {
   ],
   async Render({ settings, ctx }) {
     const subtitle = text(settings.subtitle, ctx);
-    const devices = await deviceList();
+    const [list, tr] = await Promise.all([deviceList(), translator(ctx.locale)]);
+    // The notes the device list ships, in the page's language (patch P35); an admin's own note stays as written.
+    const devices = list.map((entry) => ({ ...entry, models: entry.models.map((model) => (model.note ? { ...model, note: templateText(model.note, tr) } : model)) }));
     return (
       <section className="py-5 lg:py-8">
         <div className="container mx-auto px-4">

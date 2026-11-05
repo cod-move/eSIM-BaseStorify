@@ -3,10 +3,13 @@
  * shopper's choice as `lineAttributes.number`, the first recharge's bounds,
  * the line's name and price.
  *
- * TopConnect amounts are chosen in TopConnect's own currency (euros, decided
- * 2026-11-03): a first recharge of €10 puts €10 on the card, and the shopper
- * pays its USD equivalent at the day's rate plus the FX buffer, no markup.
- * A data package is priced by the pricing rules (lib/esim/numbers/packages.ts).
+ * Everything about a number is priced in TopConnect's own currency, the
+ * "card currency" (euros, decided 2026-11-03; the supplier's settlement
+ * currency): the number, the memorable-number premium, the credit (€10 puts
+ * €10 on the card) and the data packages (priced by the pricing rules in
+ * that currency, lib/esim/pricing/reprice.ts). The store settles in USD, so
+ * the cart charges each part's USD equivalent at the day's rate plus the FX
+ * buffer, rounded up (`cardUsdMinor`).
  */
 
 /** What the shopper asks for: the number, a first recharge in cents of TopConnect's currency (whole units), a data package. */
@@ -23,34 +26,40 @@ export interface NumberLineChoice {
  */
 export interface NumberLineSnapshot extends NumberLineChoice {
   msisdn: string;
+  /** The number's price and premium, in the card currency (`rechargeCurrency`). */
   numberMinor: number;
   premiumMinor: number;
+  /** What the number and premium were charged, USD cents. */
+  numberUsdMinor: number;
   recharge: number;
+  /** The card currency every amount above is in. */
   rechargeCurrency: string;
   rechargeUsdMinor: number;
   packet?: string;
   packetId?: string;
   packetName?: string;
   packetCost?: { amountMinor: number; currency: string };
+  /** The package's price in the card currency. */
+  packetMinor?: number;
   packetUsdMinor: number;
 }
 
 /**
  * A recharge (the first one bought with a number, and later ones) is a whole
- * amount from the minimum set under Admin → eSIM → Numbers (€5 unless
+ * amount from the minimum set under Admin → eSIM → Numbers (€2 unless
  * changed, never under €1) up to 300. A number is always sold with one.
  */
 export const RECHARGE_FLOOR_MINOR = 100;
-export const RECHARGE_DEFAULT_MIN_MINOR = 500;
+export const RECHARGE_DEFAULT_MIN_MINOR = 200;
 export const RECHARGE_MAX_MINOR = 30_000;
-const RECHARGE_SUGGESTIONS_MINOR = [500, 1000, 2000, 5000];
+const RECHARGE_SUGGESTIONS_MINOR = [200, 500, 1000, 2000, 5000, 10_000];
 /** The amount picked for the shopper to start with: €5, or the minimum when that is higher. */
 const RECHARGE_PRESET_MINOR = 500;
 
 /** The amounts offered as buttons for a minimum: the usual ones it allows, led by the minimum itself. */
 export function rechargeSuggestions(minMinor: number): number[] {
   const allowed = RECHARGE_SUGGESTIONS_MINOR.filter((amount) => amount >= minMinor);
-  return allowed[0] === minMinor ? allowed : [minMinor, ...allowed].slice(0, 4);
+  return allowed[0] === minMinor ? allowed : [minMinor, ...allowed].slice(0, RECHARGE_SUGGESTIONS_MINOR.length);
 }
 
 /** The amount selected when the dialog opens. */
@@ -65,15 +74,29 @@ export function rechargeProblem(minor: number, minMinor = RECHARGE_DEFAULT_MIN_M
   return null;
 }
 
-/** The USD cents a recharge costs: the day's rate plus the FX buffer, rounded up so the store never loses on it. */
-export function rechargeUsdMinor(minor: number, usdPerUnit: number, fxBufferPercent: number): number {
+/**
+ * The USD cents an amount in the card currency is charged: `chargeRate` is
+ * USD per unit with the FX buffer already applied (`cardChargeRate`),
+ * rounded up so the store never loses on it.
+ */
+export function cardUsdMinor(minor: number, chargeRate: number): number {
   if (minor === 0) return 0;
-  if (!(usdPerUnit > 0)) throw new Error("No exchange rate for the recharge currency");
-  return Math.ceil(minor * usdPerUnit * (1 + fxBufferPercent / 100) - 1e-9);
+  if (!(chargeRate > 0)) throw new Error("No exchange rate for the card currency");
+  return Math.ceil(minor * chargeRate - 1e-9);
 }
 
-export const numberLinePriceMinor = (line: Pick<NumberLineSnapshot, "numberMinor" | "premiumMinor" | "rechargeUsdMinor" | "packetUsdMinor">) =>
-  line.numberMinor + line.premiumMinor + line.rechargeUsdMinor + line.packetUsdMinor;
+/** USD per unit of the card currency as charged: the day's rate plus the FX buffer. */
+export const cardChargeRate = (usdPerUnit: number, fxBufferPercent: number) => usdPerUnit * (1 + fxBufferPercent / 100);
+
+/** The USD cents a recharge costs: the day's rate plus the FX buffer, rounded up. */
+export function rechargeUsdMinor(minor: number, usdPerUnit: number, fxBufferPercent: number): number {
+  if (minor !== 0 && !(usdPerUnit > 0)) throw new Error("No exchange rate for the recharge currency");
+  return cardUsdMinor(minor, cardChargeRate(usdPerUnit, fxBufferPercent));
+}
+
+/** What the line is charged, USD cents. */
+export const numberLinePriceMinor = (line: Pick<NumberLineSnapshot, "numberUsdMinor" | "rechargeUsdMinor" | "packetUsdMinor">) =>
+  line.numberUsdMinor + line.rechargeUsdMinor + line.packetUsdMinor;
 
 const CURRENCY_SIGNS: Record<string, string> = { EUR: "€", USD: "$", GBP: "£" };
 

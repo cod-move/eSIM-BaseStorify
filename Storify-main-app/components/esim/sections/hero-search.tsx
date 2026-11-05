@@ -36,6 +36,7 @@ export function HeroSearch({
       .filter(
         (destination) =>
           destination.name.toLowerCase().includes(needle) ||
+          Boolean(destination.englishName?.toLowerCase().includes(needle)) ||
           destination.countryNames.some((country) => country.toLowerCase().includes(needle)),
       )
       .sort((a, b) => {

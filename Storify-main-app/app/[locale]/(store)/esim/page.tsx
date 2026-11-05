@@ -5,6 +5,7 @@ import { DestinationBrowser } from "@/components/esim/destination-browser";
 import { translator } from "@/lib/esim/i18n/server";
 import { getLocaleRouting } from "@/lib/i18n/locale-routing";
 import { listDestinations, toBrowserDestination } from "@/lib/esim/storefront/catalog";
+import { localizeDestinations } from "@/lib/esim/storefront/destination-names";
 import { CampaignBanner } from "@/components/esim/campaign-banner";
 import { bannerData, campaignForPage } from "@/lib/esim/campaigns/service";
 
@@ -41,7 +42,7 @@ export default async function EsimDestinationsPage({ params }: PageProps) {
         </div>
       ) : null}
       <DestinationBrowser
-        destinations={destinations.map(toBrowserDestination)}
+        destinations={(await localizeDestinations(destinations, locale)).map(toBrowserDestination)}
       />
     </div>
   );

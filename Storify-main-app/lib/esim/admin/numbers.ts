@@ -3,6 +3,7 @@ import "server-only";
 import { connectDB, mongoose } from "@/lib/db";
 import { User } from "@/models";
 import { EsimNumber, type EsimNumberStatus } from "@/models/esim-number.model";
+import { EsimProvider } from "@/models/esim-provider.model";
 import { ensureNumberProduct, ensureNumberTopupProduct } from "@/lib/esim/numbers/product";
 import { parseNumberImport, type NumberImportOptions, type NumberImportProblem } from "@/lib/esim/numbers/import";
 
@@ -51,6 +52,8 @@ export interface AdminNumberList {
   dialCodes: string[];
   /** Why numbers cannot be bought: the hidden store products their cart lines use could not be made. */
   productProblem: string | null;
+  /** The card currency number prices and premiums are in (TopConnect's settlement currency). */
+  currency: string;
 }
 
 /**
@@ -92,7 +95,7 @@ export async function listNumbersAdmin(filters: AdminNumberFilters): Promise<Adm
   }
 
   const page = Math.max(1, Math.floor(filters.page ?? 1));
-  const [rows, total, statusRows, dialCodes] = await Promise.all([
+  const [rows, total, statusRows, dialCodes, provider] = await Promise.all([
     EsimNumber.find(match)
       .sort({ createdAt: -1, _id: -1 })
       .skip((page - 1) * NUMBERS_PAGE_SIZE)
@@ -101,6 +104,7 @@ export async function listNumbersAdmin(filters: AdminNumberFilters): Promise<Adm
     EsimNumber.countDocuments(match),
     EsimNumber.aggregate<{ _id: EsimNumberStatus; count: number }>([{ $group: { _id: "$status", count: { $sum: 1 } } }]),
     EsimNumber.distinct("dialCode") as Promise<string[]>,
+    EsimProvider.findOne({ code: "topconnect" }).select({ settlementCurrency: 1 }).lean(),
   ]);
 
   const customerIds = rows.flatMap((row) => [row.customer, row.reservation?.customer]).filter((id): id is mongoose.Types.ObjectId => Boolean(id));
@@ -140,6 +144,7 @@ export async function listNumbersAdmin(filters: AdminNumberFilters): Promise<Adm
     counts,
     dialCodes: dialCodes.sort((a, b) => Number(a) - Number(b)),
     productProblem,
+    currency: provider?.settlementCurrency ?? "EUR",
   };
 }
 

@@ -11,7 +11,10 @@ import { campaignPriceMinor } from "@/lib/esim/campaigns/rules";
 /** A destination as the overview, the blocks and search draw it. Serialisable. */
 export interface BrowserDestination {
   slug: string;
+  /** In the page's language. */
   name: string;
+  /** The supplier's English name when the shown one differs, for search. */
+  englishName?: string;
   emoji: string | null;
   scope: "local" | "regional" | "global";
   continent: Continent | null;

@@ -5,6 +5,7 @@ import { DestinationBrowser } from "@/components/esim/destination-browser";
 import { PlanSelector } from "@/components/esim/plan-selector";
 import { HeroSearch } from "@/components/esim/sections/hero-search";
 import { translator } from "@/lib/esim/i18n/server";
+import { localizeDestination, localizeDestinations } from "@/lib/esim/storefront/destination-names";
 import { lt } from "@/lib/storefront/sections/localized";
 import type { LocalizedText, SectionDefinition, SectionRenderContext } from "@/lib/storefront/sections/types";
 import {
@@ -77,9 +78,9 @@ export const esimHero: SectionDefinition = {
           </p>
           <div className="mt-8">
             <HeroSearch
-              destinations={all.map(toBrowserDestination)}
+              destinations={(await localizeDestinations(all, ctx.locale)).map(toBrowserDestination)}
               placeholder={text(settings.placeholder, ctx)}
-              popular={popular.map(toBrowserDestination)}
+              popular={(await localizeDestinations(popular, ctx.locale)).map(toBrowserDestination)}
             />
           </div>
         </div>
@@ -119,7 +120,7 @@ export const esimPopular: SectionDefinition = {
             className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:[grid-template-columns:repeat(var(--esim-cols),minmax(0,1fr))]"
             style={{ ["--esim-cols" as string]: columns }}
           >
-            {items.map((destination) => (
+            {(await localizeDestinations(items, ctx.locale)).map((destination) => (
               <DestinationCard key={destination.slug} destination={toBrowserDestination(destination)} showPrice={settings.showPrice !== false} />
             ))}
           </div>
@@ -149,7 +150,7 @@ export const esimDestinationTabs: SectionDefinition = {
         <div className="container mx-auto px-4">
           <SectionHeading title={text(settings.title, ctx)} className="mb-4" />
           <DestinationBrowser
-            destinations={all.map(toBrowserDestination)}
+            destinations={(await localizeDestinations(all, ctx.locale)).map(toBrowserDestination)}
             search={false}
             grouped={false}
             limit={Number(settings.limit ?? 12)}
@@ -184,8 +185,9 @@ export const esimPlanSelector: SectionDefinition = {
   async Render({ settings, ctx }) {
     const slug = String(settings.destination ?? "").trim().toLowerCase().replace(/-esim$/, "");
     if (!slug) return null;
-    const destination = (await getDestination(slug, "local")) ?? (await getDestination(slug, "multi"));
-    if (!destination) return null;
+    const found = (await getDestination(slug, "local")) ?? (await getDestination(slug, "multi"));
+    if (!found) return null;
+    const destination = await localizeDestination(found, ctx.locale);
     const regionNames = regionNamesFor(destination, ctx.locale);
     const title = text(settings.title, ctx) || `${destination.name} eSIM`;
     return (

@@ -165,8 +165,8 @@ export function EsimNumbersAdmin({ list, filters, canManage }: { list: AdminNumb
                 <TableRow>
                   <TableHead>{t("admin.esim.number", "Number")}</TableHead>
                   <TableHead>ICCID</TableHead>
-                  <TableHead className="text-right">{t("admin.esim.numberPrice", "Price")}</TableHead>
-                  <TableHead className="text-right">{t("admin.esim.numberPremium", "Premium")}</TableHead>
+                  <TableHead className="text-right">{t("admin.esim.numberPrice", "Price")} ({list.currency})</TableHead>
+                  <TableHead className="text-right">{t("admin.esim.numberPremium", "Premium")} ({list.currency})</TableHead>
                   <TableHead>{t("admin.esim.status", "Status")}</TableHead>
                   <TableHead>{t("admin.esim.customer", "Customer")}</TableHead>
                   <TableHead>{t("admin.esim.batch", "Batch")}</TableHead>
@@ -253,11 +253,11 @@ export function EsimNumbersAdmin({ list, filters, canManage }: { list: AdminNumb
             <div className="space-y-3">
               <div className="grid gap-3 sm:grid-cols-2">
                 <div className="space-y-1.5">
-                  <Label htmlFor="number-price">{t("admin.esim.numberPriceUsd", "Price (USD)")}</Label>
+                  <Label htmlFor="number-price">{t("admin.esim.priceIn", "Price ({currency})", { currency: list.currency })}</Label>
                   <Input id="number-price" inputMode="decimal" value={editing.price} onChange={(event) => setEditing({ ...editing, price: event.target.value })} />
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor="number-premium">{t("admin.esim.numberPremiumUsd", "Premium for a memorable number (USD)")}</Label>
+                  <Label htmlFor="number-premium">{t("admin.esim.numberPremiumIn", "Premium for a memorable number ({currency})", { currency: list.currency })}</Label>
                   <Input id="number-premium" inputMode="decimal" value={editing.premium} onChange={(event) => setEditing({ ...editing, premium: event.target.value })} />
                 </div>
               </div>
@@ -300,6 +300,7 @@ export function EsimNumbersAdmin({ list, filters, canManage }: { list: AdminNumb
       </Dialog>
 
       <ImportDialog
+        currency={list.currency}
         open={importing}
         onClose={() => setImporting(false)}
         onImported={() => {
@@ -313,11 +314,13 @@ export function EsimNumbersAdmin({ list, filters, canManage }: { list: AdminNumb
 }
 
 function ImportDialog({
+  currency,
   open,
   onClose,
   onImported,
   problemLabel,
 }: {
+  currency: string;
   open: boolean;
   onClose: () => void;
   onImported: () => void;
@@ -388,11 +391,11 @@ function ImportDialog({
               <Input id="import-dial" placeholder="372" value={form.dialCode} onChange={(event) => setForm({ ...form, dialCode: event.target.value })} />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="import-price">{t("admin.esim.numberPriceUsd", "Price (USD)")}</Label>
+              <Label htmlFor="import-price">{t("admin.esim.priceIn", "Price ({currency})", { currency })}</Label>
               <Input id="import-price" inputMode="decimal" value={form.price} onChange={(event) => setForm({ ...form, price: event.target.value })} />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="import-premium">{t("admin.esim.numberPremiumShort", "Premium (USD)")}</Label>
+              <Label htmlFor="import-premium">{t("admin.esim.numberPremiumShortIn", "Premium ({currency})", { currency })}</Label>
               <Input id="import-premium" inputMode="decimal" value={form.premium} onChange={(event) => setForm({ ...form, premium: event.target.value })} />
             </div>
             <div className="space-y-1.5">

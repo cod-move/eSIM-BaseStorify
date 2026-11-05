@@ -184,7 +184,7 @@ const EsimSettingsSchema = new Schema<IEsimSettings>(
       installDays: { type: Number, default: 3, min: 1, max: 60 },
     },
     numbers: {
-      rechargeMinMinor: { type: Number, default: 500, min: 100, max: 30_000 },
+      rechargeMinMinor: { type: Number, default: 200, min: 100, max: 30_000 },
       packetMccmnc: { type: String, default: null, match: /^\d{5,6}$/ },
     },
     cancellation: {

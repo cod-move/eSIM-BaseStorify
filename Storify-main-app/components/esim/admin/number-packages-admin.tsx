@@ -159,7 +159,7 @@ export function EsimNumberPackagesAdmin({ list, canManage }: { list: AdminNumber
                   <TableHead>{t("admin.esim.packetData", "Data")}</TableHead>
                   <TableHead>{t("admin.esim.packetCountries", "Countries")}</TableHead>
                   <TableHead className="text-right">{t("admin.esim.cost", "Cost")}</TableHead>
-                  <TableHead className="text-right">{t("admin.esim.priceUsd", "Price (USD)")}</TableHead>
+                  <TableHead className="text-right">{t("admin.esim.priceIn", "Price ({currency})", { currency: list.priceCurrency })}</TableHead>
                   <TableHead>{t("admin.esim.status", "Status")}</TableHead>
                   {canManage ? <TableHead /> : null}
                 </TableRow>
@@ -186,7 +186,7 @@ export function EsimNumberPackagesAdmin({ list, canManage }: { list: AdminNumber
                       {row.costUsdMinor !== null && row.currency !== "USD" ? <div className="text-xs text-muted-foreground">≈ ${money(row.costUsdMinor)}</div> : null}
                     </TableCell>
                     <TableCell className="whitespace-nowrap text-right tabular-nums">
-                      {row.retailPriceManual || row.retailPriceMinor ? `$${money(row.retailPriceMinor)}` : "—"}
+                      {row.retailPriceManual || row.retailPriceMinor ? `${money(row.retailPriceMinor)} ${list.priceCurrency}` : "—"}
                       <div className="text-xs text-muted-foreground">
                         {row.retailPriceManual ? t("admin.esim.priceManual", "set by hand") : t("admin.esim.priceAuto", "by the rules")}
                       </div>
@@ -340,7 +340,7 @@ export function EsimNumberPackagesAdmin({ list, canManage }: { list: AdminNumber
                 <Field id="packet-currency" label={t("admin.esim.currency", "Currency")}>
                   <Input id="packet-currency" maxLength={3} value={draft.currency} onChange={(event) => setDraft({ ...draft, currency: event.target.value.toUpperCase() })} />
                 </Field>
-                <Field id="packet-price" label={t("admin.esim.priceUsd", "Price (USD)")}>
+                <Field id="packet-price" label={t("admin.esim.priceIn", "Price ({currency})", { currency: list.priceCurrency })}>
                   <div className="flex items-center gap-2">
                     <Switch
                       checked={draft.manualPrice}

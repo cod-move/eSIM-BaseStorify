@@ -9,8 +9,12 @@ const { Schema, models, model } = mongoose;
  *
  * `cost` is TopConnect's price in its own currency: the amount moved onto
  * the card's balance before the packet is switched on (NUM-08). The shopper
- * pays `retailPriceMinor` (USD cents), priced from the cost like plans are
- * (CAT-07) unless an admin set it by hand. `volumeMb` null is unlimited;
+ * pays `retailPriceMinor`, in cents of the card currency (TopConnect's
+ * settlement currency, like every number price; charged in USD at checkout),
+ * priced from the cost like plans are (CAT-07) unless an admin set it by
+ * hand. `pricing.currency` is the currency the rules priced it in: a row
+ * priced before prices moved to the card currency has none and is priced
+ * again. `volumeMb` null is unlimited;
  * `countryCodes` is where the packet works, shown to the shopper only.
  */
 
@@ -30,6 +34,7 @@ export interface IEsimNumberPackage extends mongoose.Document {
   pricing?: {
     costUsdMinor: number;
     usdPerUnit: number;
+    currency?: string | null;
     ruleId: mongoose.Types.ObjectId | null;
     markupPercent: number;
     marginFloorApplied: boolean;
@@ -68,6 +73,7 @@ const EsimNumberPackageSchema = new Schema<IEsimNumberPackage>(
         {
           costUsdMinor: { type: Number, required: true },
           usdPerUnit: { type: Number, required: true },
+          currency: { type: String, default: null },
           ruleId: { type: Schema.Types.ObjectId, default: null },
           markupPercent: { type: Number, required: true },
           marginFloorApplied: { type: Boolean, default: false },

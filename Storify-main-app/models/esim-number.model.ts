@@ -10,8 +10,9 @@ const { Schema, models, model } = mongoose;
  * `nationalNumber` split it for the "+372 55501234" title and the picker's
  * filter. `install` (LPA, PIN/PUK) is what installs and unlocks the card: it
  * is never selected by default and reaches the owner only after payment
- * (NUM-07). Prices are USD cents: the number's price plus a premium for a
- * memorable one. `card` caches the last `card_stat` answer (NUM-06):
+ * (NUM-07). Prices are cents of the card currency (TopConnect's settlement
+ * currency, charged in USD at checkout): the number's price plus a premium
+ * for a memorable one. `card` caches the last `card_stat` answer (NUM-06):
  * balance, state, last use and the packages on the card.
  */
 

@@ -17,6 +17,7 @@ import { getActiveThemeManifest } from "@/lib/storefront/themes/registry";
 import { getSettings } from "@/models/settings.model";
 import { HOME_TEMPLATE_KEY, StorePage } from "@/models/store-page.model";
 import { homePageSettingsToSections } from "./legacy-home";
+import { localizeTemplateCopy as esimLocalizeTemplateCopy } from "@/lib/esim/storefront/template-copy"; // [esim-patch] P35
 
 interface HomePageSections {
   sections: SectionInstance[];
@@ -111,7 +112,7 @@ export async function getHomePageRender(locale: Locale): Promise<{
       getHomePageSections(),
     ]);
     return {
-      sections: page.sections,
+      sections: await esimLocalizeTemplateCopy(page.sections, locale), // [esim-patch] P35 the eSIM template's own text in this language
       ctx: {
         locale,
         defaultLanguage: settings.defaultLanguage,

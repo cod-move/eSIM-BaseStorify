@@ -51,6 +51,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import { EsimMenuItemLabels } from "@/components/esim/admin/menu-item-labels"; // [esim-patch] P36
 import {
   Popover,
   PopoverContent,
@@ -431,6 +432,8 @@ export function MenuItemInspector({
           value={item.label}
           onChange={(event) => onChange({ label: event.target.value })}
         />
+        {/* [esim-patch] P36 the label in the store's other languages */}
+        <EsimMenuItemLabels label={item.label} value={item.labels} onChange={(labels) => onChange({ labels })} />
       </div>
       <div>
         <Label>URL</Label>
@@ -648,6 +651,8 @@ function MegaItemFields({
           value={item.label}
           onChange={(event) => onChange({ label: event.target.value })}
         />
+        {/* [esim-patch] P36 the label in the store's other languages */}
+        <EsimMenuItemLabels label={item.label} value={item.labels} onChange={(labels) => onChange({ labels })} />
       </div>
 
       <div>

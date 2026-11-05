@@ -7,6 +7,7 @@ import { DestinationCard } from "@/components/esim/destination-card";
 import { translator } from "@/lib/esim/i18n/server";
 import { getLocaleRouting } from "@/lib/i18n/locale-routing";
 import { toBrowserDestination } from "@/lib/esim/storefront/catalog";
+import { localizeDestinations } from "@/lib/esim/storefront/destination-names";
 import { bannerData, getLiveCampaign } from "@/lib/esim/campaigns/service";
 
 interface PageProps {
@@ -46,7 +47,7 @@ export default async function EsimCampaignPage({ params }: PageProps) {
         <h2 className="text-lg font-semibold">{tr("esim.campaign.destinations", "Destinations in this offer")}</h2>
         {destinations.length ? (
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {destinations.map((destination) => (
+            {(await localizeDestinations(destinations, locale)).map((destination) => (
               <DestinationCard key={destination.slug} destination={toBrowserDestination(destination)} discountPercent={campaign.discountPercent} />
             ))}
           </div>

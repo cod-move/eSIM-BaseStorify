@@ -9,6 +9,9 @@ import { EsimPlan } from "@/models/esim-plan.model";
 import { EsimProductLink } from "@/models/esim-product-link.model";
 import { revalidateProductContent } from "@/lib/cache-invalidation";
 import { publishDestinations, setPlansStatus } from "@/lib/esim/admin/plans";
+import { listDestinations } from "@/lib/esim/storefront/catalog";
+import { destinationNameIn } from "@/lib/esim/storefront/destination-name";
+import { getLocaleRouting } from "@/lib/i18n/locale-routing";
 
 /**
  * Admin → eSIM → Destinations (ADM-02) and their variant ↔ supplier mapping
@@ -155,6 +158,42 @@ export async function setDestinationPlans(productSlugs: string[], status: "activ
     changed += (await setPlansStatus({ filters: { productSlug } }, status)).changed;
   }
   return { changed };
+}
+
+/**
+ * A destination's name in each store language (WEB-01): what the shopper
+ * sees without one, and the name an admin gave, if any. Without one a plain
+ * single-country destination shows the country's own name, others the
+ * supplier's English name (lib/esim/storefront/destination-name.ts).
+ */
+export async function getDestinationNames(productSlug: string) {
+  await connectDB();
+  const slug = productSlug.replace(/-esim$/, "");
+  const [destination, choice, routing] = await Promise.all([
+    listDestinations().then((list) => list.find((entry) => entry.slug === slug) ?? null),
+    EsimDestination.findOne({ productSlug }).select({ names: 1 }).lean(),
+    getLocaleRouting(),
+  ]);
+  if (!destination) return null;
+  const given = Object.fromEntries(Object.entries((choice?.names ?? {}) as Record<string, string>).filter(([, value]) => typeof value === "string" && value.trim()));
+  return {
+    supplierName: destination.name,
+    languages: routing.enabled.map((locale) => ({ locale, automatic: destinationNameIn(destination, locale), given: given[locale] ?? "" })),
+  };
+}
+
+/** Saves the names an admin gave; an empty one goes back to the automatic name. */
+export async function setDestinationNames(productSlug: string, names: Record<string, string>) {
+  await connectDB();
+  const cleaned = Object.fromEntries(
+    Object.entries(names)
+      .map(([locale, value]) => [locale, value.trim().slice(0, 80)] as const)
+      .filter(([locale, value]) => /^[a-z]{2,3}(-[A-Za-z]{2,4})?$/.test(locale) && value),
+  );
+  const before = await EsimDestination.findOne({ productSlug }).select({ names: 1 }).lean();
+  await EsimDestination.updateOne({ productSlug }, { $set: { names: cleaned } }, { upsert: true });
+  expireStorefront();
+  return { before: (before?.names ?? {}) as Record<string, string>, after: cleaned };
 }
 
 export async function publishDestinationList(productSlugs: string[], status: "draft" | "active") {
