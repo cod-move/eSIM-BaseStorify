@@ -165,6 +165,7 @@
       "depends": "Hangt af van de bundel die je kiest.",
       "coverage": "Dekking",
       "networks": "Netwerken",
+      "bestAvailable": "Het beste netwerk dat ter plaatse beschikbaar is.",
       "data": "Data",
       "speed": "Snelheid",
       "upTo": "Tot {speed}",

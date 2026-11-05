@@ -165,6 +165,7 @@
       "depends": "Ya dogara da fakitin da ka zaɓa.",
       "coverage": "Rufewa",
       "networks": "Hanyoyin sadarwa",
+      "bestAvailable": "Mafi kyawun hanyar sadarwa da ake da ita a wurin.",
       "data": "Data",
       "speed": "Sauri",
       "upTo": "Har zuwa {speed}",

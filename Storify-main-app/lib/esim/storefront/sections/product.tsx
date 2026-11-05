@@ -82,7 +82,7 @@ export const esimProductDetails: SectionDefinition = {
               .slice(0, 12)
               .map((network) => `${facts.scope === "local" ? "" : `${network.countryCode} `}${network.operator}${network.network ? ` (${network.network})` : ""}`)
               .join(" · ") + (facts.networks.length > 12 ? " …" : "")
-          : tr("esim.coverage.operatorUnknown", "Not provided by the supplier. Once installed, the eSIM connects to a local operator automatically."),
+          : tr("esim.details.bestAvailable", "The best network available locally."),
       },
       {
         icon: Gauge,

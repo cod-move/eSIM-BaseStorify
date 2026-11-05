@@ -165,6 +165,7 @@
       "depends": "選ぶプランによって異なります。",
       "coverage": "対応エリア",
       "networks": "ネットワーク",
+      "bestAvailable": "現地で利用可能な最良のネットワーク。",
       "data": "データ",
       "speed": "速度",
       "upTo": "最大 {speed}",

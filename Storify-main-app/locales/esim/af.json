@@ -165,6 +165,7 @@
       "depends": "Hang af van die plan wat jy kies.",
       "coverage": "Dekking",
       "networks": "Netwerke",
+      "bestAvailable": "Die beste netwerk plaaslik beskikbaar.",
       "data": "Data",
       "speed": "Spoed",
       "upTo": "Tot {speed}",

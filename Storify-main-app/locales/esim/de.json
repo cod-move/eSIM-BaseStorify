@@ -165,6 +165,7 @@
       "depends": "Hängt vom gewählten Tarif ab.",
       "coverage": "Abdeckung",
       "networks": "Netze",
+      "bestAvailable": "Das beste vor Ort verfügbare Netz.",
       "data": "Daten",
       "speed": "Geschwindigkeit",
       "upTo": "Bis zu {speed}",

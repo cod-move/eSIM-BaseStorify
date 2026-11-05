@@ -165,6 +165,7 @@
       "depends": "Depends on the plan you choose.",
       "coverage": "Coverage",
       "networks": "Networks",
+      "bestAvailable": "The best network available locally.",
       "data": "Data",
       "speed": "Speed",
       "upTo": "Up to {speed}",

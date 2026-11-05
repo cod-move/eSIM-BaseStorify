@@ -165,6 +165,7 @@
       "depends": "Kuxhomekeke kwiphakheji oyikhethayo.",
       "coverage": "Ukugubungela",
       "networks": "Iinethiwekhi",
+      "bestAvailable": "Inethiwekhi engcono efumanekayo kuloo ndawo.",
       "data": "Idatha",
       "speed": "Isantya",
       "upTo": "Ukuya kuthi ga kwi-{speed}",

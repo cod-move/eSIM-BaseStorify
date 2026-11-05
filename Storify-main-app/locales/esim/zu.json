@@ -165,6 +165,7 @@
       "depends": "Kuncike ephakheji olikhethayo.",
       "coverage": "Ukufinyelela",
       "networks": "Amanethiwekhi",
+      "bestAvailable": "Inethiwekhi engcono etholakalayo endaweni.",
       "data": "Idatha",
       "speed": "Ijubane",
       "upTo": "Kuze kufike ku-{speed}",

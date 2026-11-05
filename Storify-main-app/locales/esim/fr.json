@@ -165,6 +165,7 @@
       "depends": "Dépend du forfait choisi.",
       "coverage": "Couverture",
       "networks": "Réseaux",
+      "bestAvailable": "Le meilleur réseau disponible sur place.",
       "data": "Données",
       "speed": "Débit",
       "upTo": "Jusqu'à {speed}",

@@ -165,6 +165,7 @@
       "depends": "取决于你选择的套餐。",
       "coverage": "覆盖范围",
       "networks": "运营商网络",
+      "bestAvailable": "使用当地最好的网络。",
       "data": "流量",
       "speed": "网速",
       "upTo": "最高 {speed}",

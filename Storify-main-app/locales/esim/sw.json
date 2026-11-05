@@ -165,6 +165,7 @@
       "depends": "Inategemea kifurushi utakachochagua.",
       "coverage": "Huduma",
       "networks": "Mitandao",
+      "bestAvailable": "Mtandao bora unaopatikana eneo hilo.",
       "data": "Data",
       "speed": "Kasi",
       "upTo": "Hadi {speed}",

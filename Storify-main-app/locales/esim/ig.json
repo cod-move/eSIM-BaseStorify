@@ -165,6 +165,7 @@
       "depends": "Ọ dabere na ngwugwu ị họọrọ.",
       "coverage": "Mkpuchi",
       "networks": "Netwọk",
+      "bestAvailable": "Netwọk kacha mma dị n'ebe ahụ.",
       "data": "Data",
       "speed": "Ọsọ",
       "upTo": "Ruo {speed}",
