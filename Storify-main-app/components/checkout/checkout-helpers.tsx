@@ -39,6 +39,7 @@ export type CheckoutFormData = {
     | "orange_money"
     | "mtn_momo"
     | "extension" // [esim-patch] P15
+    | `extension:${string}` // [esim-patch] P15 an eSIM payment method's own row
     | "store_credit" // [esim-patch] P27 the account balance, as a method
     | "cod";
   /** ioTec Pay collection channel; defaults to mobile money. */

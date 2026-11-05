@@ -11,6 +11,8 @@
  * notification turns the attempt into a paid order through Storify's own
  * settlement — once, however often it is replayed; a second payment on the
  * same checkout is recorded as owed back; the payment page then says "paid".
+ * Then a checkout that chose the method on its own row: the attempt is held to
+ * it and the payment starts at once, straight to the gateway's page.
  * Removes everything it created and reports any collection whose document
  * count changed. Refuses to run with NODE_ENV=production.
  */
@@ -23,6 +25,8 @@ import { keepTopupProductAsItWas } from "./lib/esim-topup-product";
 
 const tag = `e2e-pay-${Date.now()}`;
 const SECRET = "e2e-fake-secret";
+/** The fake gateway signs its fields, not the raw body. */
+const NOTICE = { raw: "", headers: {}, now: Date.now() };
 type Id = mongoose.Types.ObjectId;
 const created = { users: [] as Id[], orders: [] as Id[], attempts: [] as unknown[], refs: [] as string[] };
 let walletBefore: unknown = undefined;
@@ -103,12 +107,12 @@ async function run() {
 
   // 3. Notifications.
   const forged = { ...fakeNoticeBody({ reference: first.reference, state: "paid", amountMinor: 2500, currency: "USD" }, "wrong-secret") };
-  assert.deepEqual(await service.receiveNotice("fake-pay", forged), { accepted: false, text: "rejected" });
+  assert.deepEqual(await service.receiveNotice("fake-pay", forged, NOTICE), { accepted: false, text: "rejected" });
   const short = fakeNoticeBody({ reference: first.reference, state: "paid", amountMinor: 100, currency: "USD" }, SECRET);
-  assert.equal((await service.receiveNotice("fake-pay", short)).accepted, false, "the wrong amount is not accepted");
+  assert.equal((await service.receiveNotice("fake-pay", short, NOTICE)).accepted, false, "the wrong amount is not accepted");
   assert.equal(await Order.countDocuments({ checkoutAttemptId: start.record.id }), 0);
   const paid = fakeNoticeBody({ reference: first.reference, state: "paid", amountMinor: 2500, currency: "USD" }, SECRET);
-  assert.deepEqual(await service.receiveNotice("fake-pay", paid), { accepted: true, text: "ok" });
+  assert.deepEqual(await service.receiveNotice("fake-pay", paid, NOTICE), { accepted: true, text: "ok" });
   const payment = await EsimPayment.findOne({ reference: first.reference }).lean();
   assert.equal(payment?.state, "paid");
   assert.equal(payment?.settlement?.outcome, "order");
@@ -122,7 +126,7 @@ async function run() {
   assert.equal(String(order.checkoutAttemptId), String(start.record.id));
   console.log(`✓ notifications: forged and short refused; paid → order ${order.orderNumber}, paid by extension`);
 
-  assert.deepEqual(await service.receiveNotice("fake-pay", paid), { accepted: true, text: "ok" });
+  assert.deepEqual(await service.receiveNotice("fake-pay", paid, NOTICE), { accepted: true, text: "ok" });
   assert.equal(await service.settlePayment(String(payment!._id)), "order");
   assert.equal(await Order.countDocuments({ checkoutAttemptId: start.record.id }), 1, "one order, however often");
   page = await service.paymentPage(start.reference);
@@ -134,7 +138,7 @@ async function run() {
   // 4. Paid twice: the second is owed back.
   const second = await EsimPayment.create({ reference: `EP${Date.now()}E2E`, checkoutRef: start.reference, attemptId: start.record.id as Id, method: "fake-pay", amountMinor: 2500, currency: "USD", state: "pending", email });
   const twice = fakeNoticeBody({ reference: second.reference, state: "paid", amountMinor: 2500, currency: "USD" }, SECRET);
-  assert.equal((await service.receiveNotice("fake-pay", twice)).accepted, true);
+  assert.equal((await service.receiveNotice("fake-pay", twice, NOTICE)).accepted, true);
   const duplicate = await EsimPayment.findById(second._id).lean();
   assert.equal(duplicate?.settlement?.outcome, "duplicate");
   assert.equal(await Order.countDocuments({ checkoutAttemptId: start.record.id }), 1);
@@ -152,6 +156,37 @@ async function run() {
   assert.equal(swept.failed, 0);
   assert.equal((await CheckoutAttempt.findById(start.record.id).lean<{ status: string }>())?.status, "completed", "an attempt that became an order is not expired");
   console.log("✓ sweep: nothing failed; a paid checkout is left alone");
+
+  // 6. The method chosen on its own checkout row: started at once, and the checkout is held to it.
+  await addCartLine({ userId }, { productId: product.productId, variantId: product.variantId, quantity: 1, lineAttributes: { wallet: 1500 } });
+  const chosenBody = { ...body, extensionMethod: "fake-pay" };
+  const chosen = await startExtensionCheckout(await prepareCheckout(chosenBody as never, context as never, { mode: "place" }), {
+    pageUrl: (ref) => `http://localhost:3000/esim/pay/${ref}`,
+    request: { clientIp: "127.0.0.1", userAgent: "e2e" },
+    method: "fake-pay",
+    start: startContext,
+  });
+  created.attempts.push(chosen.record.id);
+  created.refs.push(chosen.reference);
+  assert.notEqual(chosen.reference, start.reference);
+  assert.match(chosen.redirectUrl, /fake=1/, "straight to the gateway's page, not the eSIM payment page");
+  const held = await CheckoutAttempt.findById(chosen.record.id).lean<{ gateway?: { extensionMethod?: string } }>();
+  assert.equal(held?.gateway?.extensionMethod, "fake-pay");
+  assert.equal(await EsimPayment.countDocuments({ checkoutRef: chosen.reference, method: "fake-pay", state: "pending" }), 1, "the try is made at checkout");
+  page = await service.paymentPage(chosen.reference);
+  assert.equal(page?.chosen, "fake-pay");
+  assert.deepEqual(page?.methods.map((method) => method.code), ["fake-pay"], "the payment page offers only the method chosen");
+  await assert.rejects(service.startPayment(chosen.reference, "bepusdt", startContext), /go back to checkout/);
+  await assert.rejects(
+    startExtensionCheckout(await prepareCheckout({ ...body, extensionMethod: "no-such-method" } as never, context as never, { mode: "place" }), {
+      pageUrl: (ref) => `http://localhost:3000/esim/pay/${ref}`,
+      request: { clientIp: "127.0.0.1", userAgent: "e2e" },
+      method: "no-such-method",
+      start: startContext,
+    }),
+    /Validation failed: paymentMethod/,
+  );
+  console.log("✓ chosen at checkout: straight to the gateway; the page and the attempt are held to that method; an unknown one is refused");
   console.log("All extension payment checks passed.");
 }
 

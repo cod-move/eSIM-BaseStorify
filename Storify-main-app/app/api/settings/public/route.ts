@@ -13,7 +13,7 @@ import {
 } from "@/lib/settings/credentials";
 import { resolveCheckoutGatewayReadiness } from "@/lib/payments/checkout-gateways";
 import { mtnMomoPhoneExample } from "@/lib/payments/mtn-momo";
-import { extensionMethodNames } from "@/lib/esim/payments/service"; // [esim-patch] P15
+import { extensionMethodOptions } from "@/lib/esim/payments/service"; // [esim-patch] P15
 import {
   getDefaultHomePageSettings,
   normalizeHomePageSettings,
@@ -66,7 +66,7 @@ const getPublicSettingsPayload = unstable_cache(
     const razorpayCreds = resolveRazorpayCredentials(settings.payment?.razorpay);
     const paystackCreds = resolvePaystackCredentials(settings.payment?.paystack);
     const gateways = resolveCheckoutGatewayReadiness(settings);
-    const extensionMethods = await extensionMethodNames(settings.general?.defaultCurrency); // [esim-patch] P15
+    const extensionMethods = await extensionMethodOptions(settings.general?.defaultCurrency); // [esim-patch] P15
     const analytics = resolveAnalyticsConfig(settings.analytics);
 
     const googleOAuthConfigured = Boolean(
@@ -139,7 +139,7 @@ const getPublicSettingsPayload = unstable_cache(
           iotecEnabled: settings.payment?.iotec?.enabled || false,
           orangeMoneyEnabled: settings.payment?.orange_money?.enabled || false,
           mtnMomoEnabled: settings.payment?.mtn_momo?.enabled || false,
-          // [esim-patch] P15 on when an eSIM payment method is switched on and set up.
+          // [esim-patch] P15 on when an eSIM payment method is switched on and set up; one checkout row per method ({ code, name }).
           extensionEnabled: extensionMethods.length > 0,
           extensionMethods,
           codEnabled: settings.payment?.cod?.enabled ?? true,

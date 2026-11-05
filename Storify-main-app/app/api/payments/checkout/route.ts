@@ -497,12 +497,15 @@ async function placeCheckout(request: NextRequest) {
       });
     }
 
-    // [esim-patch] P15 the extension gateway: the eSIM payment page, where the
-    // shopper picks a plugin (lib/esim/payments/checkout.ts).
+    // [esim-patch] P15 the extension gateway: the eSIM method chosen on its
+    // checkout row, started at once — the gateway's page, or the eSIM payment
+    // page for a QR code (lib/esim/payments/checkout.ts).
     if (paymentMethod === "extension") {
       const start = await startExtensionCheckout(draft, {
         pageUrl: (reference) => checkoutUrl(`/esim/pay/${reference}`),
         request: startRequest,
+        method: body.extensionMethod,
+        start: { origin, clientIp: startRequest.clientIp, userAgent: startRequest.userAgent || "", locale: activeLocale },
       });
       return NextResponse.json({
         success: true,

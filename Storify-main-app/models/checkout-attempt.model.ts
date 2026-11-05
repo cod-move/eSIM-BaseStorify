@@ -62,6 +62,8 @@ const AttemptGatewayRefsSchema = new Schema(
     stripeSessionId: { type: String, trim: true },
     // [esim-patch] P15 the eSIM payment page's checkout reference.
     extensionReference: { type: String, trim: true },
+    // [esim-patch] P15 the eSIM payment method chosen at checkout, which the order's fee was priced for.
+    extensionMethod: { type: String, trim: true },
     /** The hosted page the shopper was sent to, for support and for a retry. */
     checkoutUrl: { type: String, trim: true },
   },

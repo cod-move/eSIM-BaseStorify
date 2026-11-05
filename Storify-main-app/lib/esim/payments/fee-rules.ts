@@ -4,11 +4,14 @@
  * Payments. Amounts in cents. Pure.
  *
  * The balance ("store_credit") never carries a fee, and neither does a wallet
- * top-up, which has a fee of its own (WAL-01).
+ * top-up, which has a fee of its own (WAL-01). Each eSIM payment method has
+ * its own fee, under "extension:<code>" (method-names.ts).
  */
 
-/** The checkout methods a fee can be set for, as the checkout names them. */
-export const PAYMENT_FEE_METHODS = [
+import { DEV_ONLY_METHODS, EXTENSION_METHOD_NAMES, extensionChoice } from "./method-names";
+
+/** Storify's own checkout methods. */
+const STORE_FEE_METHODS = [
   { method: "card", label: "Card" },
   { method: "paypal", label: "PayPal" },
   { method: "razorpay", label: "Razorpay" },
@@ -17,11 +20,22 @@ export const PAYMENT_FEE_METHODS = [
   { method: "iotec", label: "ioTec Pay" },
   { method: "orange_money", label: "Orange Money" },
   { method: "mtn_momo", label: "MTN Mobile Money" },
-  { method: "extension", label: "More ways to pay" },
   { method: "cod", label: "Cash on delivery" },
-] as const;
+];
 
-export type PaymentFeeMethod = (typeof PAYMENT_FEE_METHODS)[number]["method"];
+/**
+ * The checkout methods a fee can be set for, as the checkout names them:
+ * Storify's, then each eSIM payment method, then "extension" without one —
+ * the shopper app, whose shopper picks on the eSIM payment page.
+ */
+export const PAYMENT_FEE_METHODS: ReadonlyArray<{ method: string; label: string }> = [
+  ...STORE_FEE_METHODS,
+  ...Object.entries(EXTENSION_METHOD_NAMES)
+    // The test method has a fee only outside production, to try fees with.
+    .filter(([code]) => process.env.NODE_ENV !== "production" || !DEV_ONLY_METHODS.includes(code))
+    .map(([code, label]) => ({ method: extensionChoice(code), label })),
+  { method: "extension", label: "eSIM payment page (shopper app)" },
+];
 
 export interface PaymentFeeRule {
   method: string;

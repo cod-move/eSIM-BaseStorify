@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { feeRuleFor, paymentFeeLabel, paymentFeeMinor } from "../fee-rules";
+import { feeRuleFor, PAYMENT_FEE_METHODS, paymentFeeLabel, paymentFeeMinor } from "../fee-rules";
+import { feeMethodOf, isExtensionChoice, splitPaymentChoice } from "../method-names";
 
 const rules = [
   { method: "card", fixedMinor: 30, percent: 3 },
@@ -32,5 +33,32 @@ describe("payment fees", () => {
   it("names the method on the line", () => {
     assert.equal(paymentFeeLabel("card"), "Card");
     assert.equal(paymentFeeLabel("other"), "other");
+  });
+});
+
+describe("a fee per eSIM payment method", () => {
+  it("keys each method's fee as extension:<code>, and plain extension when none was chosen", () => {
+    assert.equal(feeMethodOf("extension", "stripe"), "extension:stripe");
+    assert.equal(feeMethodOf("extension", undefined), "extension");
+    assert.equal(feeMethodOf("extension", "Bad Code!"), "extension");
+    assert.equal(feeMethodOf("card", "stripe"), "card", "only an eSIM method has one");
+    const perMethod = [
+      { method: "extension:stripe", fixedMinor: 0, percent: 3 },
+      { method: "extension:bepusdt", fixedMinor: 0, percent: 0 },
+    ];
+    assert.equal(paymentFeeMinor(feeRuleFor(perMethod, feeMethodOf("extension", "stripe")), 1000), 30);
+    assert.equal(feeRuleFor(perMethod, feeMethodOf("extension", "bepusdt")), null);
+    assert.equal(feeRuleFor(perMethod, "extension"), null, "the shopper app's rule is its own");
+  });
+
+  it("lists every eSIM method for a fee, named, and splits a checkout row's value", () => {
+    const methods = PAYMENT_FEE_METHODS.map((entry) => entry.method);
+    for (const code of ["stripe", "bepusdt", "redeepay-wechat", "redeepay-alipay"]) assert.ok(methods.includes(`extension:${code}`), code);
+    assert.ok(methods.includes("extension") && methods.includes("card"));
+    assert.equal(new Set(methods).size, methods.length);
+    assert.equal(paymentFeeLabel("extension:bepusdt"), "USDT / USDC (BEpusdt)");
+    assert.deepEqual(splitPaymentChoice("extension:redeepay-wechat"), { paymentMethod: "extension", extensionMethod: "redeepay-wechat" });
+    assert.deepEqual(splitPaymentChoice("card"), { paymentMethod: "card" });
+    assert.equal(isExtensionChoice("extension:"), false);
   });
 });

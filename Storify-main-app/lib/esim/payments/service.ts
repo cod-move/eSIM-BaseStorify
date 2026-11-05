@@ -12,11 +12,12 @@ import { amountDueNow, type SettingsDocument } from "@/lib/payments/finalize-ord
 import { CHECKOUT_CLOSED_BEFORE_PAYMENT, finalizeCapturedAttempt, findAttemptByGatewayRef } from "@/lib/payments/finalize-attempt";
 import { closeCheckoutAttempt } from "@/lib/checkout/checkout-attempt-store";
 import { paymentMethodDefinition, PAYMENT_METHOD_DEFINITIONS, type PaymentMethodDefinition } from "./registry";
-import { PaymentPluginError, type Credentials, type PayRequest } from "./plugins/types";
+import { IGNORED_NOTICE, PaymentPluginError, type Credentials, type NoticeContext, type PayRequest } from "./plugins/types";
 
 /**
- * Extension payments (PAY, patch P15): the payment page's methods, starting a
- * try with a plugin, the gateway's notification, and settling a paid try
+ * Extension payments (PAY, patch P15): the methods on offer (checkout lists
+ * each on its own row, and a checkout that chose one is held to it), starting
+ * a try with a plugin, the gateway's notification, and settling a paid try
  * through Storify's own `finalizeCapturedAttempt` — which writes the order,
  * takes the stock, books the money and sends the emails exactly as it does
  * for Pesapal. Refunds of this method are recorded as made by hand: Storify
@@ -45,6 +46,7 @@ export function methodCredentials(definition: PaymentMethodDefinition, method: I
 
 /** Every key the plugin needs before it can take a payment (optional ones aside). */
 const REQUIRED: Record<string, readonly string[]> = {
+  stripe: ["secretKey", "webhookSecret"],
   bepusdt: ["apiUrl", "apiToken"],
   redeepay: ["apiBaseUrl", "merchantNo", "tradeKey", "domain", "pcRoute", "h5Route"],
   fake: ["secret"],
@@ -78,16 +80,21 @@ export async function offeredMethods(currency = "USD"): Promise<OfferedMethod[]>
 }
 
 /**
- * For Storify's public settings (P15): the names of the methods on offer —
- * none means checkout does not show "extension" at all. Never throws.
+ * For Storify's public settings (P15): the methods on offer, one checkout row
+ * each — none means checkout shows none. Never throws.
  */
-export async function extensionMethodNames(currency?: string | null): Promise<string[]> {
+export async function extensionMethodOptions(currency?: string | null): Promise<OfferedMethod[]> {
   try {
-    return (await offeredMethods(String(currency || "USD").toUpperCase())).map((method) => method.name);
+    return await offeredMethods(String(currency || "USD").toUpperCase());
   } catch (error) {
     console.error("Reading the extension payment methods failed:", error);
     return [];
   }
+}
+
+/** The names of the methods on offer, for the shopper app's single "extension" entry. Never throws. */
+export async function extensionMethodNames(currency?: string | null): Promise<string[]> {
+  return (await extensionMethodOptions(currency)).map((method) => method.name);
 }
 
 export async function extensionCheckoutAvailable(currency?: string | null): Promise<boolean> {
@@ -110,12 +117,14 @@ type AttemptView = {
   finalize?: { orderId?: unknown; orderNumber?: string } | null;
   customerId?: unknown;
   guestEmail?: string;
+  /** `extensionMethod`: the method chosen at checkout, which the order's fee was priced for. */
+  gateway?: { extensionMethod?: string };
 };
 
 async function attemptFor(checkoutRef: string) {
   if (!CHECKOUT_REF.test(checkoutRef)) return null;
   return CheckoutAttempt.findOne({ "gateway.extensionReference": checkoutRef, paymentMethod: EXTENSION_METHOD })
-    .select("_id status expiresAt snapshot finalize customerId guestEmail")
+    .select("_id status expiresAt snapshot finalize customerId guestEmail gateway.extensionMethod")
     .lean<AttemptView | null>();
 }
 
@@ -142,7 +151,10 @@ export interface PaymentPageView {
   /** open: can be paid; paid: an order exists; closed: expired or replaced. */
   state: "open" | "paid" | "closed";
   orderNumber: string | null;
+  /** What can be paid with: only the method chosen at checkout, when one was. */
   methods: OfferedMethod[];
+  /** The method chosen at checkout, if any: another means going back to checkout (its fee may differ). */
+  chosen: string | null;
   /** The latest try, when it can still be paid or has been. */
   latest: { reference: string; method: string; state: string; pay: ShopperPay | null } | null;
 }
@@ -153,11 +165,13 @@ export async function paymentPage(checkoutRef: string): Promise<PaymentPageView 
   const attempt = await attemptFor(checkoutRef);
   if (!attempt) return null;
   const currency = String(attempt.snapshot?.currency || "USD").toUpperCase();
-  const [methods, latest] = await Promise.all([
+  const chosen = attempt.gateway?.extensionMethod || null;
+  const [offered, latest] = await Promise.all([
     offeredMethods(currency),
     EsimPayment.findOne({ checkoutRef }).sort({ createdAt: -1 }).lean<IEsimPayment | null>(),
   ]);
   const settledOrder = attempt.finalize?.orderNumber || (latest?.settlement?.outcome === "order" ? latest.settlement.orderNumber : "") || null;
+  const methods = chosen ? offered.filter((method) => method.code === chosen) : offered;
   return {
     checkoutRef,
     amountMinor: toMinor(amountDueNow(attempt.snapshot ?? {})),
@@ -165,6 +179,7 @@ export async function paymentPage(checkoutRef: string): Promise<PaymentPageView 
     state: settledOrder ? "paid" : attemptOpen(attempt) ? "open" : "closed",
     orderNumber: settledOrder,
     methods,
+    chosen,
     latest: latest
       ? { reference: latest.reference, method: latest.method, state: latest.state, pay: latest.state === "pending" && latest.pay ? await forShopper(latest.pay) : null }
       : null,
@@ -188,6 +203,9 @@ export async function startPayment(checkoutRef: string, methodCode: string, cont
   if (attempt.finalize?.orderId) throw new ValidationError("This order is already paid");
   if (!attemptOpen(attempt)) throw new ValidationError("This checkout has closed. Please check out again.");
 
+  // The order's fee was priced for the method chosen at checkout: another is chosen there.
+  const chosen = attempt.gateway?.extensionMethod;
+  if (chosen && chosen !== methodCode) throw new ValidationError("To pay another way, go back to checkout and choose it there.");
   const definition = paymentMethodDefinition(methodCode);
   const method = definition ? await EsimPaymentMethod.findOne({ code: methodCode, status: "active" }).select("+secretCredentials") : null;
   if (!definition || !method) throw new ValidationError("This payment method is not available");
@@ -294,14 +312,15 @@ export interface NoticeAnswer {
  * recorded, even if settling it fails — the sweep settles it again, and a
  * gateway retrying forever would not help.
  */
-export async function receiveNotice(methodCode: string, body: Record<string, unknown>): Promise<NoticeAnswer> {
+export async function receiveNotice(methodCode: string, body: Record<string, unknown>, context: NoticeContext): Promise<NoticeAnswer> {
   const definition = paymentMethodDefinition(methodCode);
   if (!definition) return { accepted: false, text: "unknown method" };
   const { accepted, rejected } = definition.plugin.acknowledge;
   await connectDB();
   // A method switched off since still settles what was paid with it.
   const method = await EsimPaymentMethod.findOne({ code: methodCode }).select("+secretCredentials");
-  const notice = definition.plugin.readNotice(body, methodCredentials(definition, method));
+  const notice = definition.plugin.readNotice(body, methodCredentials(definition, method), context);
+  if (notice === IGNORED_NOTICE) return { accepted: true, text: accepted };
   if (!notice) return { accepted: false, text: rejected };
   const payment = await EsimPayment.findOneAndUpdate({ reference: notice.reference, method: methodCode }, { $inc: { notices: 1 } }, { returnDocument: "after" });
   if (!payment) return { accepted: false, text: rejected };

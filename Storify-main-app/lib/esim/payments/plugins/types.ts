@@ -3,8 +3,8 @@ import type { FetchLike } from "@/lib/esim/providers/http";
 /**
  * The contract every extension-payment plugin implements (PAY, patch P15).
  *
- * Storify sees one gateway, "extension"; the shopper picks a plugin on the
- * eSIM payment page. A plugin only talks to its gateway and checks what the
+ * Storify sees one gateway, "extension"; checkout lists each method on its
+ * own row (lib/esim/payments/method-names.ts). A plugin only talks to its gateway and checks what the
  * gateway sends back — it never touches the database, orders or the ledger,
  * and never returns credentials. Amounts are in minor units (cents).
  */
@@ -62,6 +62,18 @@ export interface PayNotice {
 
 export type Credentials = Record<string, string>;
 
+/** The notification as it arrived, for gateways that sign the raw body (Stripe). */
+export interface NoticeContext {
+  raw: string;
+  /** Lower-case header names. */
+  headers: Record<string, string>;
+  /** Milliseconds; the clock a signature's age is judged by. */
+  now: number;
+}
+
+/** An authentic notification about nothing to act on (another kind of event): answered "accepted". */
+export const IGNORED_NOTICE = "ignore" as const;
+
 export interface PaymentPlugin {
   readonly code: string;
   readonly credentialKeys: readonly string[];
@@ -71,9 +83,10 @@ export interface PaymentPlugin {
   start(request: PayRequest, credentials: Credentials, fetcher: FetchLike): Promise<PayStart>;
   /**
    * Reads a notification body (JSON or form fields). `null` when it is not
-   * authentic or not one of ours — the caller answers with `rejected`.
+   * authentic or not one of ours — the caller answers with `rejected`;
+   * `IGNORED_NOTICE` when it is authentic but about nothing to act on.
    */
-  readNotice(body: Record<string, unknown>, credentials: Credentials): PayNotice | null;
+  readNotice(body: Record<string, unknown>, credentials: Credentials, context?: NoticeContext): PayNotice | typeof IGNORED_NOTICE | null;
   /** The plain-text answers the gateway expects. */
   readonly acknowledge: { accepted: string; rejected: string };
 }

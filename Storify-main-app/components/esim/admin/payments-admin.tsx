@@ -117,6 +117,14 @@ function MethodCard({ method, canManage }: { method: AdminPaymentMethod; canMana
         <p className="break-all text-xs text-muted-foreground">
           {t("admin.esim.payNotify", "Notification URL (the gateway posts here): {url}", { url: notifyUrl })}
         </p>
+        {method.code === "stripe" ? (
+          <p className="text-xs text-muted-foreground">
+            {t(
+              "admin.esim.payStripeHint",
+              "In the Stripe Dashboard, add this notification URL as a webhook endpoint for the checkout.session events, and paste its signing secret (whsec_…) into webhookSecret.",
+            )}
+          </p>
+        ) : null}
         {canManage ? (
           <Button onClick={save} disabled={busy}>
             {busy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}

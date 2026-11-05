@@ -1361,6 +1361,8 @@ export const CheckoutSchema = z.object({
     // Store credit covers all of it, and no gateway is asked for anything (R8).
     "store_credit",
   ]),
+  // [esim-patch] P15 with "extension": the eSIM payment method chosen on its own checkout row.
+  extensionMethod: z.string().trim().regex(/^[a-z0-9][a-z0-9-]{0,39}$/).optional(),
   /**
    * Whether the shopper's store credit pays what it can of this order (R8).
    * On unless they untick it; only a signed-in shopper has any.

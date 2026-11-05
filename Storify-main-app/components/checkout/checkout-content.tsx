@@ -180,6 +180,7 @@ import {
 } from "@/components/checkout/shipping-method-selector";
 import { EsimBalanceTopupLink, useEsimBalanceText, useEsimCheckoutBalance, useEsimOnlyCart, useEsimPaymentFee } from "@/components/esim/checkout-balance"; // [esim-patch] P27 P28 P29
 import { EsimPaymentFeeLabel } from "@/components/esim/payment-fee-label"; // [esim-patch] P30
+import { esimBaseMethod, esimExtensionRows, esimPaymentFields, isExtensionChoice, type ExtensionChoice, type ExtensionOption } from "@/components/esim/checkout-methods"; // [esim-patch] P15
 import {
   reconcileVendorSelections,
   sameSelections,
@@ -520,7 +521,7 @@ function CheckoutForm({
         "extension", // [esim-patch] P15
         "cod",
         "store_credit", // [esim-patch] P27 the account balance, as a method
-      ]),
+      ]).or(z.custom<ExtensionChoice>(isExtensionChoice)), // [esim-patch] P15 an eSIM payment method's own row
       iotecChannel: z.enum(["mobile_money", "card"]).optional(),
       iotecPhone: z.string().optional(),
       mtnMomoPhone: z.string().optional(),
@@ -745,7 +746,7 @@ function CheckoutForm({
     mtnMomoEnabled: boolean;
     mtnMomoConfigured?: boolean;
     extensionEnabled?: boolean; // [esim-patch] P15
-    extensionMethods?: string[];
+    extensionMethods?: ExtensionOption[];
     codInstructions?: string;
     codMinOrderAmount?: number;
     codMaxOrderAmount?: number;
@@ -2352,15 +2353,15 @@ function CheckoutForm({
         detail: t("checkout.payment.mtnMomoDetail"),
       });
     }
-    // [esim-patch] P15 the eSIM payment page's methods; not for pre-orders,
-    // whose balance only a card can collect.
+    // [esim-patch] P15 each eSIM payment method on its own row; not for
+    // pre-orders, whose balance only a card can collect.
     if (paymentConfig.extensionEnabled && !hasPreorderItems) {
-      methods.push({
-        value: "extension",
-        label: t.has("esim.pay.checkoutLabel") ? t("esim.pay.checkoutLabel") : "More ways to pay",
-        icon: Wallet,
-        detail: (paymentConfig.extensionMethods ?? []).join(" · "),
-      });
+      methods.push(
+        ...esimExtensionRows(
+          paymentConfig.extensionMethods,
+          t.has("esim.pay.checkoutDetail") ? t("esim.pay.checkoutDetail") : "You'll finish paying on the payment provider's page.",
+        ),
+      );
     }
     // COD is offered on carts with digital lines too: their downloads unlock
     // only once the order is marked paid (`isOrderEntitledToDownloads`), so no
@@ -2483,7 +2484,7 @@ function CheckoutForm({
   const redirectPaymentProvider = (
     ["paypal", "razorpay", "paystack", "pesapal", "orange_money", "extension"] as const // [esim-patch] P15
   ).includes(
-    selectedPayment as
+    esimBaseMethod(selectedPayment) as // [esim-patch] P15 any eSIM method's row is "extension"
       | "paypal"
       | "razorpay"
       | "paystack"
@@ -2491,7 +2492,7 @@ function CheckoutForm({
       | "orange_money"
       | "extension",
   )
-    ? (selectedPayment as
+    ? (esimBaseMethod(selectedPayment) as // [esim-patch] P15
         | "paypal"
         | "razorpay"
         | "paystack"
@@ -2500,7 +2501,7 @@ function CheckoutForm({
         | "extension")
     : null;
   const redirectPaymentProviderName = redirectPaymentProvider
-    ? paymentMethods.find((method) => method.value === redirectPaymentProvider)
+    ? paymentMethods.find((method) => method.value === selectedPayment) // [esim-patch] P15 the row chosen, an eSIM method's own
         ?.label || redirectPaymentProvider
     : "";
   const checkoutSummaryStyle = {
@@ -2811,7 +2812,7 @@ function CheckoutForm({
       const checkoutPayload = {
         shippingAddress: isDigitalOnly ? undefined : shippingAddress,
         billingAddress,
-        paymentMethod: data.paymentMethod,
+        ...esimPaymentFields(data.paymentMethod), // [esim-patch] P15 "extension" and the eSIM method chosen
         email: data.email.trim() || undefined,
         ...contactPayload,
         couponCode: appliedCoupon?.code,

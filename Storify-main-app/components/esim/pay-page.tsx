@@ -14,7 +14,9 @@ import type { PaymentPageView, ShopperPay } from "@/lib/esim/payments/service";
 const POLL_MS = 4000;
 
 /**
- * Pick a method, pay, wait (PAY, patch P15). While a payment is waiting for
+ * Pay, wait (PAY, patch P15). A checkout that chose its method on its own row
+ * offers only that one here — its fee was priced for it — with the way back
+ * to checkout to pay another way; the shopper app's checkout picks here. While a payment is waiting for
  * the gateway's confirmation the page asks again every few seconds; once the
  * order exists it moves on to Storify's order confirmation.
  */
@@ -137,7 +139,13 @@ export function EsimPayPage({ initial, appReturn }: { initial: PaymentPageView; 
         {view.methods.length ? (
           <div className="space-y-2">
             <p className="text-sm font-medium">
-              {waiting ? t("esim.pay.another", "Or pay another way") : t("esim.pay.choose", "Choose how to pay")}
+              {view.chosen
+                ? waiting
+                  ? t("esim.pay.retry", "Open the payment again")
+                  : t("esim.pay.choose", "Choose how to pay")
+                : waiting
+                  ? t("esim.pay.another", "Or pay another way")
+                  : t("esim.pay.choose", "Choose how to pay")}
             </p>
             {view.methods.map((method) => (
               <Button key={method.code} type="button" variant="outline" className="h-12 w-full justify-start gap-3" disabled={busy !== null} onClick={() => void choose(method.code)}>
@@ -152,6 +160,10 @@ export function EsimPayPage({ initial, appReturn }: { initial: PaymentPageView; 
         {appReturn ? (
           <Button asChild variant="ghost" className="w-full">
             <a href={appReturn.cancel}>{t("esim.pay.backToApp", "Back to the app")}</a>
+          </Button>
+        ) : view.chosen ? (
+          <Button asChild variant="ghost" className="w-full">
+            <Link href="/checkout">{t("esim.pay.otherWay", "Pay another way at checkout")}</Link>
           </Button>
         ) : null}
         <p className="text-center text-xs text-muted-foreground">

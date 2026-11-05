@@ -1,12 +1,15 @@
+import { EXTENSION_METHOD_NAMES } from "./method-names";
 import { bepusdtPlugin } from "./plugins/bepusdt";
 import { fakePaymentPlugin } from "./plugins/fake";
 import { redeepayPlugin } from "./plugins/redeepay";
+import { stripePlugin } from "./plugins/stripe";
 import type { PaymentPlugin } from "./plugins/types";
 
 /**
- * The payment methods the eSIM payment page can offer (PAY, patch P15), each
- * one plugin with its own settings. A new gateway is a new plugin and an
- * entry here; Storify's checkout is not touched again.
+ * The eSIM payment methods (PAY, patch P15), each one plugin with its own
+ * settings; checkout lists each on its own row. A new gateway is a new
+ * plugin, an entry here and its name in method-names.ts; Storify's checkout
+ * is not touched again.
  *
  * `defaults` fills credentials an admin has not set — the RedeePay entries
  * differ only in their routes, as they did in the old store.
@@ -20,24 +23,29 @@ export interface PaymentMethodDefinition {
 }
 
 export const PAYMENT_METHOD_DEFINITIONS = {
+  stripe: {
+    plugin: stripePlugin,
+    displayName: EXTENSION_METHOD_NAMES.stripe,
+    defaults: {},
+  },
   bepusdt: {
     plugin: bepusdtPlugin,
-    displayName: "USDT / USDC (BEpusdt)",
+    displayName: EXTENSION_METHOD_NAMES.bepusdt,
     defaults: { cryptos: "USDT,USDC", orderName: "eSIM Order", timeout: "1200" },
   },
   "redeepay-wechat": {
     plugin: redeepayPlugin,
-    displayName: "WeChat Pay (RedeePay)",
+    displayName: EXTENSION_METHOD_NAMES["redeepay-wechat"],
     defaults: { pcRoute: "Native|Native|WeChat", h5Route: "Wallet|H5|WeChat", defaultCountry: "HK", subject: "eSIM Order" },
   },
   "redeepay-alipay": {
     plugin: redeepayPlugin,
-    displayName: "Alipay (RedeePay)",
+    displayName: EXTENSION_METHOD_NAMES["redeepay-alipay"],
     defaults: { pcRoute: "Native|Native|Alipay", h5Route: "Wallet|H5|Alipay", defaultCountry: "HK", subject: "eSIM Order" },
   },
   "fake-pay": {
     plugin: fakePaymentPlugin,
-    displayName: "Test payment",
+    displayName: EXTENSION_METHOD_NAMES["fake-pay"],
     defaults: {},
     devOnly: true,
   },
