@@ -4503,12 +4503,10 @@ function CheckoutForm({
                                           : "cursor-pointer hover:bg-muted/40",
                                       )}
                                     >
-                                      <RadioGroupItem
-                                        value={method.value}
-                                        id={`pm_${method.value}`}
-                                        disabled={blocked}
-                                        className="size-4 shrink-0 border-muted-foreground/30"
-                                      />
+                                      {/* [esim-patch] P34 the icon first, the radio at the end */}
+                                      <span className="flex w-7 shrink-0 justify-center">
+                                        <method.icon className="h-4 w-4 shrink-0 text-muted-foreground" />
+                                      </span>
                                       <span className="flex min-w-0 flex-1 flex-col gap-0.5">
                                         <span>{method.label}</span>
                                         {blockedReason ? (
@@ -4525,7 +4523,12 @@ function CheckoutForm({
                                       {method.value === "store_credit" && blocked && esimBalance.walletEnabled ? (
                                         <EsimBalanceTopupLink />
                                       ) : null}
-                                      <method.icon className="h-4 w-4 shrink-0 text-muted-foreground" />
+                                      <RadioGroupItem
+                                        value={method.value}
+                                        id={`pm_${method.value}`}
+                                        disabled={blocked}
+                                        className="size-4 shrink-0 border-muted-foreground/30"
+                                      />
                                     </Label>
 
                                     {/* A gateway that cannot open without an
@@ -5079,9 +5082,11 @@ function CheckoutForm({
                       </>
                     ) : redirectPaymentProvider ? (
                       <>
-                        <PaymentProviderLogo
-                          provider={redirectPaymentProvider}
-                        />
+                        {redirectPaymentProvider !== "extension" ? ( // [esim-patch] P15 no mark for an eSIM method
+                          <PaymentProviderLogo
+                            provider={redirectPaymentProvider}
+                          />
+                        ) : null}
                         <span>Continue with {redirectPaymentProviderName}</span>
                       </>
                     ) : (

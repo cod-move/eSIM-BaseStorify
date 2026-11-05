@@ -45,7 +45,7 @@ const imageIcons = new Map<string, LucideIcon>();
 function imageIcon(url: string): LucideIcon {
   let icon = imageIcons.get(url);
   if (!icon) {
-    const Icon = () => createElement("img", { src: url, alt: "", "aria-hidden": true, className: "h-5 w-auto max-w-14 shrink-0 object-contain" });
+    const Icon = () => createElement("img", { src: url, alt: "", "aria-hidden": true, className: "h-5 w-7 shrink-0 object-contain" });
     Icon.displayName = "EsimPaymentIcon";
     icon = Icon as unknown as LucideIcon;
     imageIcons.set(url, icon);
