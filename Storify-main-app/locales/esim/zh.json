@@ -165,7 +165,6 @@
       "depends": "取决于你选择的套餐。",
       "coverage": "覆盖范围",
       "networks": "运营商网络",
-      "bestAvailable": "使用当地最好的网络。",
       "data": "流量",
       "speed": "网速",
       "upTo": "最高 {speed}",
@@ -324,7 +323,7 @@
     "coverage": {
       "search": "搜索国家或运营商",
       "notFound": "此套餐不覆盖该国家或地区。",
-      "bestAvailable": "使用当地最佳网络",
+      "operatorUnknown": "上游未提供该信息，eSIM 安装后自动连接运营商",
       "showAll": "显示全部 {count} 个国家和地区",
       "showLess": "收起"
     },

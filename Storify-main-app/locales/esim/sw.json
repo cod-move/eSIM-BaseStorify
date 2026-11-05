@@ -165,7 +165,6 @@
       "depends": "Inategemea kifurushi utakachochagua.",
       "coverage": "Huduma",
       "networks": "Mitandao",
-      "bestAvailable": "Mtandao bora unaopatikana eneo hilo.",
       "data": "Data",
       "speed": "Kasi",
       "upTo": "Hadi {speed}",
@@ -324,7 +323,7 @@
     "coverage": {
       "search": "Tafuta nchi au mtoa huduma",
       "notFound": "Kifurushi hiki hakihudumii nchi hiyo.",
-      "bestAvailable": "Mtandao bora unaopatikana eneo hilo",
+      "operatorUnknown": "Msambazaji hajatoa taarifa hii. Baada ya kusakinishwa, eSIM huunganishwa kiotomatiki na mtoa huduma wa eneo hilo.",
       "showAll": "Onyesha nchi zote {count}",
       "showLess": "Onyesha chache"
     },

@@ -165,7 +165,6 @@
       "depends": "Ọ dabere na ngwugwu ị họọrọ.",
       "coverage": "Mkpuchi",
       "networks": "Netwọk",
-      "bestAvailable": "Netwọk kacha mma dị n'ebe ahụ.",
       "data": "Data",
       "speed": "Ọsọ",
       "upTo": "Ruo {speed}",
@@ -324,7 +323,7 @@
     "coverage": {
       "search": "Chọta mba ma ọ bụ ụlọ ọrụ netwọk",
       "notFound": "Ngwugwu a ekpuchighị mba ahụ.",
-      "bestAvailable": "Netwọk kacha mma dị n'ebe ahụ",
+      "operatorUnknown": "Onye na-ebunye ya enyeghị ozi a. Mgbe etinyere ya, eSIM ga-ejikọ na netwọk mpaghara n'onwe ya.",
       "showAll": "Gosi mba {count} niile",
       "showLess": "Gosi ole na ole"
     },

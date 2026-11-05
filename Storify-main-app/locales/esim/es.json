@@ -165,7 +165,6 @@
       "depends": "Depende del plan que elijas.",
       "coverage": "Cobertura",
       "networks": "Redes",
-      "bestAvailable": "La mejor red disponible en el lugar.",
       "data": "Datos",
       "speed": "Velocidad",
       "upTo": "Hasta {speed}",
@@ -324,7 +323,7 @@
     "coverage": {
       "search": "Busca un país u operador",
       "notFound": "Este plan no cubre ese país.",
-      "bestAvailable": "La mejor red disponible en el lugar",
+      "operatorUnknown": "El proveedor no facilita este dato. Una vez instalada, la eSIM se conecta automáticamente a un operador local.",
       "showAll": "Mostrar los {count} países",
       "showLess": "Mostrar menos"
     },

@@ -165,7 +165,6 @@
       "depends": "Hang af van die plan wat jy kies.",
       "coverage": "Dekking",
       "networks": "Netwerke",
-      "bestAvailable": "Die beste netwerk plaaslik beskikbaar.",
       "data": "Data",
       "speed": "Spoed",
       "upTo": "Tot {speed}",
@@ -324,7 +323,7 @@
     "coverage": {
       "search": "Soek 'n land of operateur",
       "notFound": "Hierdie plan dek nie daardie land nie.",
-      "bestAvailable": "Die beste netwerk plaaslik beskikbaar",
+      "operatorUnknown": "Nie deur die verskaffer verstrek nie. Sodra dit geïnstalleer is, koppel die eSIM outomaties aan 'n plaaslike operateur.",
       "showAll": "Wys al {count} lande",
       "showLess": "Wys minder"
     },

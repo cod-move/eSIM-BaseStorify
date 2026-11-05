@@ -165,7 +165,6 @@
       "depends": "Seçtiğiniz pakete bağlıdır.",
       "coverage": "Kapsama",
       "networks": "Şebekeler",
-      "bestAvailable": "Yerelde mevcut en iyi şebeke.",
       "data": "Veri",
       "speed": "Hız",
       "upTo": "{speed} hıza kadar",
@@ -324,7 +323,7 @@
     "coverage": {
       "search": "Ülke veya operatör bulun",
       "notFound": "Bu paket o ülkeyi kapsamıyor.",
-      "bestAvailable": "Yerelde mevcut en iyi şebeke",
+      "operatorUnknown": "Tedarikçi bu bilgiyi vermiyor. Kurulduktan sonra eSIM yerel bir operatöre otomatik olarak bağlanır.",
       "showAll": "{count} ülkenin tümünü göster",
       "showLess": "Daha az göster"
     },

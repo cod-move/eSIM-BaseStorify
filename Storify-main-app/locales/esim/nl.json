@@ -165,7 +165,6 @@
       "depends": "Hangt af van de bundel die je kiest.",
       "coverage": "Dekking",
       "networks": "Netwerken",
-      "bestAvailable": "Het beste netwerk dat ter plaatse beschikbaar is.",
       "data": "Data",
       "speed": "Snelheid",
       "upTo": "Tot {speed}",
@@ -324,7 +323,7 @@
     "coverage": {
       "search": "Zoek een land of provider",
       "notFound": "Deze bundel dekt dat land niet.",
-      "bestAvailable": "Het beste netwerk dat ter plaatse beschikbaar is",
+      "operatorUnknown": "Niet opgegeven door de leverancier. Na installatie maakt de eSIM automatisch verbinding met een lokale provider.",
       "showAll": "Alle {count} landen tonen",
       "showLess": "Minder tonen"
     },

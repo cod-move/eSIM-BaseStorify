@@ -29,7 +29,8 @@ describe("BNESIM catalogue", () => {
     assert.equal(plan.validityDays, 30);
     assert.deepEqual(plan.cost, { currency: "USD", amountMinor: 750, billingUnit: "plan" });
     assert.equal(plan.topup.mode, "addon");
-    assert.equal(plan.coverage.networks[0].operator, "KDDI");
+    // BNESIM names no operators: none is made up from `provider`.
+    assert.deepEqual(plan.coverage.networks, []);
   });
 
   it("reads coverage from region names, and knows unlimited, lifetime and global", () => {

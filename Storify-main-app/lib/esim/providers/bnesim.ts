@@ -480,7 +480,6 @@ export function mapProduct(product: JsonObject, index: AreaIndex, currency: stri
   const days = validityDays(product);
   const megabytes = unlimited ? UNLIMITED_DAILY_MB : Math.round(num(product.volume) ?? 0);
   const type: DataType = lifetime ? "lifetime" : unlimited ? "daily_throttled" : "total";
-  const operator = str(product.provider) || "BNESIM";
   return {
     providerPlanId: id,
     sku: null,
@@ -492,7 +491,8 @@ export function mapProduct(product: JsonObject, index: AreaIndex, currency: stri
     coverage: {
       scope,
       countries: coverage.countries.map((code) => ({ code, name: countryNameFromCode(code) })),
-      networks: coverage.countries.map((code) => ({ countryCode: code, operator, network: null })),
+      // BNESIM names no operators (its `provider` is not one): left empty, shown as "not stated".
+      networks: [],
       breakoutIp: [],
     },
     data: { megabytes, label: unlimited ? "Unlimited" : megabytesLabel(megabytes), type },

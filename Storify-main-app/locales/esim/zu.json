@@ -165,7 +165,6 @@
       "depends": "Kuncike ephakheji olikhethayo.",
       "coverage": "Ukufinyelela",
       "networks": "Amanethiwekhi",
-      "bestAvailable": "Inethiwekhi engcono etholakalayo endaweni.",
       "data": "Idatha",
       "speed": "Ijubane",
       "upTo": "Kuze kufike ku-{speed}",
@@ -324,7 +323,7 @@
     "coverage": {
       "search": "Thola izwe noma inkampani yenethiwekhi",
       "notFound": "Leli phakheji alilihlanganisi lelo zwe.",
-      "bestAvailable": "Inethiwekhi engcono etholakalayo endaweni",
+      "operatorUnknown": "Umhlinzeki akalunikezanga lolu lwazi. Uma isifakiwe, i-eSIM ixhuma ngokuzenzakalelayo kumhlinzeki wenethiwekhi wendawo.",
       "showAll": "Bonisa wonke amazwe angu-{count}",
       "showLess": "Bonisa okumbalwa"
     },

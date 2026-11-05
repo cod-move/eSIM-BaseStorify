@@ -165,7 +165,6 @@
       "depends": "Hängt vom gewählten Tarif ab.",
       "coverage": "Abdeckung",
       "networks": "Netze",
-      "bestAvailable": "Das beste vor Ort verfügbare Netz.",
       "data": "Daten",
       "speed": "Geschwindigkeit",
       "upTo": "Bis zu {speed}",
@@ -324,7 +323,7 @@
     "coverage": {
       "search": "Land oder Netzbetreiber suchen",
       "notFound": "Dieser Tarif deckt dieses Land nicht ab.",
-      "bestAvailable": "Das beste vor Ort verfügbare Netz",
+      "operatorUnknown": "Vom Anbieter nicht angegeben. Nach der Installation verbindet sich die eSIM automatisch mit einem lokalen Netzbetreiber.",
       "showAll": "Alle {count} Länder anzeigen",
       "showLess": "Weniger anzeigen"
     },

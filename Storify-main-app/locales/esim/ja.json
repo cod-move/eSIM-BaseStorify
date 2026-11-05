@@ -165,7 +165,6 @@
       "depends": "選ぶプランによって異なります。",
       "coverage": "対応エリア",
       "networks": "ネットワーク",
-      "bestAvailable": "現地で利用可能な最良のネットワーク。",
       "data": "データ",
       "speed": "速度",
       "upTo": "最大 {speed}",
@@ -324,7 +323,7 @@
     "coverage": {
       "search": "国または通信事業者を検索",
       "notFound": "このプランはその国に対応していません。",
-      "bestAvailable": "現地で利用可能な最良のネットワーク",
+      "operatorUnknown": "仕入れ先からの情報がありません。インストール後、eSIMは現地の通信事業者に自動で接続します。",
       "showAll": "全{count}か国を表示",
       "showLess": "閉じる"
     },

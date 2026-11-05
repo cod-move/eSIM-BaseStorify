@@ -31,6 +31,9 @@ export function CoverageDialog({
   const t = useFallbackTranslator(useTranslations());
   const [search, setSearch] = useState("");
   const found = useMemo(() => searchCountries(countries, search), [countries, search]);
+  // Some suppliers name no operators at all: say so once rather than on every country.
+  const noOperators = countries.every((country) => country.operators.length === 0);
+  const operatorUnknown = t("esim.coverage.operatorUnknown", "Not provided by the supplier. Once installed, the eSIM connects to a local operator automatically.");
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -39,6 +42,11 @@ export function CoverageDialog({
           <DialogTitle>{t("esim.plans.coverageTitle", "Coverage and networks")}</DialogTitle>
           <DialogDescription>{title}</DialogDescription>
         </DialogHeader>
+        {noOperators ? (
+          <p className="rounded-lg bg-muted/40 px-3 py-2 text-sm text-muted-foreground">
+            {t("esim.plans.operator", "Operator")}: {operatorUnknown}
+          </p>
+        ) : null}
         {countries.length >= SEARCH_FROM ? (
           <div className="relative">
             <Search className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -70,8 +78,8 @@ export function CoverageDialog({
                       </span>
                     ))}
                   </div>
-                ) : (
-                  <p className="text-xs text-muted-foreground">{t("esim.coverage.bestAvailable", "The best network available locally")}</p>
+                ) : noOperators ? null : (
+                  <p className="text-xs text-muted-foreground">{operatorUnknown}</p>
                 )}
               </li>
             ))}

@@ -341,11 +341,18 @@ export function PlanBrowser({ productId, destinationName, variants, countryCodes
                     ) : null}
                   </button>
                 </li>
-                <li className="flex min-w-0 items-center gap-2">
-                  <RadioTower className="h-4 w-4 shrink-0" />
-                  <span className="truncate" title={(variant.operators ?? []).join(", ") || undefined}>
-                    {titles.operator}: {operatorsLine(variant)}
-                  </span>
+                <li>
+                  <button
+                    type="button"
+                    onClick={() => setCoverageShown(coverageOf(variant))}
+                    title={(variant.operators ?? []).join(", ") || undefined}
+                    className="group relative z-10 flex max-w-full min-w-0 items-center gap-2 text-start hover:text-foreground"
+                  >
+                    <RadioTower className="h-4 w-4 shrink-0" />
+                    <span className="truncate underline-offset-2 group-hover:underline">
+                      {titles.operator}: {operatorsLine(variant)}
+                    </span>
+                  </button>
                 </li>
               </ul>
 

@@ -165,7 +165,6 @@
       "depends": "Dépend du forfait choisi.",
       "coverage": "Couverture",
       "networks": "Réseaux",
-      "bestAvailable": "Le meilleur réseau disponible sur place.",
       "data": "Données",
       "speed": "Débit",
       "upTo": "Jusqu'à {speed}",
@@ -324,7 +323,7 @@
     "coverage": {
       "search": "Rechercher un pays ou un opérateur",
       "notFound": "Ce forfait ne couvre pas ce pays.",
-      "bestAvailable": "Le meilleur réseau disponible sur place",
+      "operatorUnknown": "Information non fournie par le fournisseur. Une fois installée, l'eSIM se connecte automatiquement à un opérateur local.",
       "showAll": "Afficher les {count} pays",
       "showLess": "Afficher moins"
     },

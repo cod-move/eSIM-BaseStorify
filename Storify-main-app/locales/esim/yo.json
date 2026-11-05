@@ -165,7 +165,6 @@
       "depends": "Ó dá lórí pákẹ́ẹ̀jì tí o yàn.",
       "coverage": "Ìbòrí",
       "networks": "Àwọn nẹ́tíwọ́ọ̀kì",
-      "bestAvailable": "Nẹ́tíwọ́ọ̀kì tó dára jù tó wà ní agbègbè.",
       "data": "Dátà",
       "speed": "Ìyára",
       "upTo": "Títí dé {speed}",
@@ -324,7 +323,7 @@
     "coverage": {
       "search": "Wá orílẹ̀-èdè tàbí ilé-iṣẹ́ nẹ́tíwọ́ọ̀kì",
       "notFound": "Pákẹ́ẹ̀jì yìí kò bo orílẹ̀-èdè yẹn.",
-      "bestAvailable": "Nẹ́tíwọ́ọ̀kì tó dára jù tó wà ní agbègbè",
+      "operatorUnknown": "Olùpèsè kò pèsè ìwífún yìí. Lẹ́yìn tí a bá fi sí orí ẹ̀rọ, eSIM yóò so pọ̀ mọ́ nẹ́tíwọ̀ọ̀kì àdúgbò fúnra rẹ̀.",
       "showAll": "Fi gbogbo orílẹ̀-èdè {count} hàn",
       "showLess": "Fi díẹ̀ hàn"
     },

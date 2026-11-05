@@ -165,7 +165,6 @@
       "depends": "Ya dogara da fakitin da ka zaɓa.",
       "coverage": "Rufewa",
       "networks": "Hanyoyin sadarwa",
-      "bestAvailable": "Mafi kyawun hanyar sadarwa da ake da ita a wurin.",
       "data": "Data",
       "speed": "Sauri",
       "upTo": "Har zuwa {speed}",
@@ -324,7 +323,7 @@
     "coverage": {
       "search": "Nemo ƙasa ko kamfanin sadarwa",
       "notFound": "Wannan fakiti ba ya rufe wannan ƙasa.",
-      "bestAvailable": "Mafi kyawun hanyar sadarwa da ake da ita a wurin",
+      "operatorUnknown": "Mai samarwa bai bayar da wannan bayani ba. Bayan an saka shi, eSIM zai haɗu da kamfanin sadarwa na gida kai tsaye.",
       "showAll": "Nuna duk ƙasashe {count}",
       "showLess": "Nuna kaɗan"
     },
