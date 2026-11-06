@@ -175,6 +175,7 @@ export default async function AccountNumberPage({ params }: PageProps) {
                 ) : null}
                 {number.install.smdpAddress ? <CopyValue label={tr("esim.account.smdp", "SM-DP+ address")} value={number.install.smdpAddress} /> : null}
                 {number.install.matchingId ? <CopyValue label={tr("esim.account.activationCode", "Activation code")} value={number.install.matchingId} /> : null}
+                {lpa ? <CopyValue label={tr("esim.account.lpaCode", "Full LPA code")} value={lpa} /> : null}
               </div>
             </div>
             {number.install.pin1 || number.install.puk1 || number.install.pin2 || number.install.puk2 ? (
