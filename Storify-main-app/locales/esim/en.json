@@ -44,6 +44,7 @@
       "qrAlt": "eSIM QR code",
       "smdp": "SM-DP+ address",
       "activationCode": "Activation code",
+      "lpaCode": "Full LPA code",
       "copy": "Copy",
       "copied": "Copied",
       "details": "Details",

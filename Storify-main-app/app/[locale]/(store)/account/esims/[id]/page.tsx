@@ -45,6 +45,9 @@ export default async function AccountEsimPage({ params }: PageProps) {
   const code = esim.installation.activationCode;
   const qr = code ? await QRCode.toDataURL(code, { width: 320, margin: 2, errorCorrectionLevel: "M" }) : null;
   const links = installLinks(code);
+  // The whole LPA string, for phones that take it pasted in one piece.
+  const { smdpAddress, matchingId } = esim.installation;
+  const lpa = code?.startsWith("LPA:") ? code : smdpAddress && matchingId ? `LPA:1$${smdpAddress}$${matchingId}` : null;
   const percent = remainingPercent(esim.usage?.totalBytes, esim.usage?.remainingBytes);
   const unlimited = esim.dataType !== "total" && esim.dataType !== "lifetime";
   const vpn = esim.bundles.find((bundle) => bundle.type === "vpn");
@@ -149,6 +152,7 @@ export default async function AccountEsimPage({ params }: PageProps) {
                 ) : null}
                 {esim.installation.smdpAddress ? <CopyValue label={tr("esim.account.smdp", "SM-DP+ address")} value={esim.installation.smdpAddress} /> : null}
                 {esim.installation.matchingId ? <CopyValue label={tr("esim.account.activationCode", "Activation code")} value={esim.installation.matchingId} /> : null}
+                {lpa ? <CopyValue label={tr("esim.account.lpaCode", "Full LPA code")} value={lpa} /> : null}
                 {esim.installation.apn ? <CopyValue label="APN" value={esim.installation.apn} /> : null}
               </div>
             </div>

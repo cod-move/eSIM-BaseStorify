@@ -44,6 +44,7 @@
       "qrAlt": "eSIM-QR-code",
       "smdp": "SM-DP+-adres",
       "activationCode": "Activeringscode",
+      "lpaCode": "Volledige LPA-code",
       "copy": "Kopiëren",
       "copied": "Gekopieerd",
       "details": "Details",
