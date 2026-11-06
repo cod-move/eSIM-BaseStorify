@@ -1,4 +1,4 @@
-import { setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server"; // [esim-patch] P37
 import { Skeleton } from "@/components/ui/skeleton";
 import { ClientSuspense } from "@/components/common/client-suspense";
 import { CustomerNotifications } from "@/components/account/customer-notifications";
@@ -10,14 +10,16 @@ interface PageProps {
 export default async function NotificationsPage({ params }: PageProps) {
   const { locale } = await params;
   setRequestLocale(locale);
+  const t = await getTranslations("esim.notices.inbox"); // [esim-patch] P37
 
   return (
     <div className="space-y-6">
       {/* Desktop only; the mobile identity strip titles this page. */}
       <div className="hidden lg:block">
-        <h1 className="text-xl font-bold sm:text-2xl">Notifications</h1>
+        {/* [esim-patch] P37 */}
+        <h1 className="text-xl font-bold sm:text-2xl">{t("title")}</h1>
         <p className="text-sm text-muted-foreground sm:text-base">
-          Follow every update for your orders.
+          {t("pageSubtitle")}
         </p>
       </div>
 

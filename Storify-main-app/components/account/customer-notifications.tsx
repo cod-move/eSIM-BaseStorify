@@ -1,7 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
-import { formatDistanceToNow } from "date-fns";
+import { useTranslations } from "next-intl";
+// [esim-patch] P37 notifications in the page's language: the panel's words and each stored notice.
+import { localizeNotice, timeAgoIn } from "@/lib/esim/notices/localize";
 import {
   Archive,
   BellRing,
@@ -78,36 +80,36 @@ function getNotificationVisual(type: string) {
     order_placed: {
       icon: Package,
       className: "bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-300",
-      label: "Order",
+      label: "order", // [esim-patch] P37 a key under esim.notices.inbox.type
     },
     order_status: {
       icon: Truck,
       className: "bg-sky-50 text-sky-700 dark:bg-sky-500/10 dark:text-sky-300",
-      label: "Order",
+      label: "order", // [esim-patch] P37 a key under esim.notices.inbox.type
     },
     order_delivered: {
       icon: CheckCircle2,
       className:
         "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300",
-      label: "Delivery",
+      label: "delivery", // [esim-patch] P37 a key under esim.notices.inbox.type
     },
     return_request: {
       icon: RotateCcw,
       className:
         "bg-orange-50 text-orange-700 dark:bg-orange-500/10 dark:text-orange-300",
-      label: "Return",
+      label: "return", // [esim-patch] P37 a key under esim.notices.inbox.type
     },
     support_message: {
       icon: BellRing,
       className:
         "bg-sky-50 text-sky-700 dark:bg-sky-500/10 dark:text-sky-300",
-      label: "Support",
+      label: "support", // [esim-patch] P37 a key under esim.notices.inbox.type
     },
     system: {
       icon: Info,
       className:
         "bg-muted text-muted-foreground dark:bg-muted dark:text-muted-foreground",
-      label: "System",
+      label: "system", // [esim-patch] P37 a key under esim.notices.inbox.type
     },
   };
 
@@ -122,6 +124,8 @@ function getNotificationVisual(type: string) {
  * there and writes new snapshots into the same copy.
  */
 export function CustomerNotifications({ locale }: CustomerNotificationsProps) {
+  const t = useTranslations(); // [esim-patch] P37
+  const n = (key: string) => t(`esim.notices.inbox.${key}`); // [esim-patch] P37
   const [activeTab, setActiveTab] = useState<TabType>("all");
   const [isSwitchingTab, startTabSwitch] = useTransition();
   const [isMutating, setIsMutating] = useState(false);
@@ -140,10 +144,12 @@ export function CustomerNotifications({ locale }: CustomerNotificationsProps) {
   const tabs = useMemo(
     () =>
       [
-        { id: "all", label: "All", count: counts.all },
-        { id: "unread", label: "Unread", count: counts.unread },
-        { id: "archived", label: "Archived", count: counts.archived },
+        // [esim-patch] P37
+        { id: "all", label: n("all"), count: counts.all },
+        { id: "unread", label: n("unread"), count: counts.unread },
+        { id: "archived", label: n("archived"), count: counts.archived },
       ] satisfies { id: TabType; label: string; count: number }[],
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- [esim-patch] P37 n follows the page's locale
     [counts],
   );
 
@@ -155,8 +161,8 @@ export function CustomerNotifications({ locale }: CustomerNotificationsProps) {
     const expired = error.status === 401 || error.status === 403;
     toast.error(
       expired
-        ? "Your session has expired. Sign in again to see your notifications."
-        : error.message || "Failed to load notifications",
+        ? n("sessionExpired") // [esim-patch] P37
+        : n("loadFailed"),
       {
         // One toast for this panel, replaced rather than stacked. Without a
         // stable id a resource that keeps failing — an expired session, an
@@ -166,6 +172,7 @@ export function CustomerNotifications({ locale }: CustomerNotificationsProps) {
         id: "customer-notifications-error",
       },
     );
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- [esim-patch] P37
   }, []);
 
   // A first read that failed is reported the way a failed poll is; the list
@@ -218,7 +225,7 @@ export function CustomerNotifications({ locale }: CustomerNotificationsProps) {
       await refreshNotifications();
       emitStatsChanged();
     } catch {
-      toast.error("Failed to update notification");
+      toast.error(n("updateFailed")); // [esim-patch] P37
     } finally {
       setIsMutating(false);
       setPendingId(undefined);
@@ -237,7 +244,7 @@ export function CustomerNotifications({ locale }: CustomerNotificationsProps) {
       await refreshNotifications();
       emitStatsChanged();
     } catch {
-      toast.error("Failed to mark notifications as read");
+      toast.error(n("markFailed")); // [esim-patch] P37
     } finally {
       setIsMutating(false);
     }
@@ -253,7 +260,7 @@ export function CustomerNotifications({ locale }: CustomerNotificationsProps) {
       await refreshNotifications();
       emitStatsChanged();
     } catch {
-      toast.error("Failed to delete notification");
+      toast.error(n("deleteFailed")); // [esim-patch] P37
     } finally {
       setPendingId(undefined);
     }
@@ -277,16 +284,17 @@ export function CustomerNotifications({ locale }: CustomerNotificationsProps) {
     <div className="overflow-hidden rounded-lg border bg-card">
       <div className="flex items-center justify-between border-b px-5 py-4">
         <div>
-          <h2 className="text-base font-semibold">Notifications</h2>
+          {/* [esim-patch] P37 */}
+          <h2 className="text-base font-semibold">{n("title")}</h2>
           <p className="text-sm text-muted-foreground">
-            Order updates and account alerts
+            {n("subtitle")}
           </p>
         </div>
         <Button
           variant="ghost"
           size="icon"
           className="h-8 w-8"
-          title="Mark all as read"
+          title={n("markAllRead")} // [esim-patch] P37
           onClick={() => void markAllAsRead()}
           disabled={isMutating || counts.unread === 0}
         >
@@ -338,7 +346,7 @@ export function CustomerNotifications({ locale }: CustomerNotificationsProps) {
         {notifications.length === 0 ? (
           <div className="flex h-60 flex-col items-center justify-center gap-2 px-8 text-center text-muted-foreground">
             <BellRing className="h-8 w-8" />
-            <p className="text-sm font-medium">No notifications</p>
+            <p className="text-sm font-medium">{n("empty")}</p>{/* [esim-patch] P37 */}
           </div>
         ) : (
           <div className="divide-y">
@@ -383,11 +391,15 @@ function NotificationItem({
 }) {
   const visual = getNotificationVisual(notification.type);
   const Icon = visual.icon;
+  // [esim-patch] P37 the stored English, the panel's words and the time in the page's language.
+  const t = useTranslations();
+  const n = (key: string) => t(`esim.notices.inbox.${key}`);
+  const text = localizeNotice(notification, t, locale);
   const href = getLocalizedHref(notification.link, locale);
   const createdAt = new Date(notification.createdAt);
   const timeAgo = Number.isNaN(createdAt.getTime())
     ? ""
-    : formatDistanceToNow(createdAt, { addSuffix: true });
+    : timeAgoIn(locale, createdAt); // [esim-patch] P37
 
   return (
     <div
@@ -419,16 +431,17 @@ function NotificationItem({
                   !notification.isRead && "font-semibold",
                 )}
               >
-                {notification.title}
+                {text.title}{/* [esim-patch] P37 */}
               </p>
               <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
-                {notification.message}
+                {text.message}{/* [esim-patch] P37 */}
               </p>
               <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
                 {timeAgo && <span>{timeAgo}</span>}
                 {timeAgo && <span aria-hidden="true">-</span>}
-                <span>{visual.label}</span>
-                {notification.isArchived && <Badge variant="outline">Archived</Badge>}
+                {/* [esim-patch] P37 */}
+                <span>{n(`type.${visual.label}`)}</span>
+                {notification.isArchived && <Badge variant="outline">{n("archived")}</Badge>}
               </div>
             </div>
           </button>
@@ -442,14 +455,14 @@ function NotificationItem({
                 onClick={onOpen}
               >
                 <ExternalLink className="h-3.5 w-3.5" />
-                Open
+                {n("open")}{/* [esim-patch] P37 */}
               </Button>
             )}
             <Button
               variant="ghost"
               size="icon"
               className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground"
-              title={notification.isArchived ? "Unarchive" : "Archive"}
+              title={n(notification.isArchived ? "unarchive" : "archive")} // [esim-patch] P37
               onClick={onArchive}
               disabled={pending}
             >
@@ -463,7 +476,7 @@ function NotificationItem({
               variant="ghost"
               size="icon"
               className="h-8 w-8 rounded-lg text-muted-foreground hover:text-destructive"
-              title="Delete"
+              title={n("delete")} // [esim-patch] P37
               onClick={onDelete}
               disabled={pending}
             >

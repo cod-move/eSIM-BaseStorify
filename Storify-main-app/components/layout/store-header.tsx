@@ -2480,7 +2480,8 @@ function StoreHeaderBar({
             ...fillTextCss(item.textStyle.fill),
           }}
         >
-          {item.display === "name" ? language.name : language.code.toUpperCase()}
+          {/* [esim-patch] P31 the language's own name, as in the picker */}
+          {item.display === "name" ? language.nativeName : language.code.toUpperCase()}
         </span>
         {item.showChevron ? (
           <ChevronDown className="h-3.5 w-3.5 opacity-70" aria-hidden />
@@ -2857,7 +2858,8 @@ function StoreHeaderBar({
                   : undefined
               }
               onSearchSubmit={showSearch ? searchFor : undefined}
-              languages={languages.map(({ code, name }) => ({ code, name }))}
+              // [esim-patch] P31 each language by its own name, as in the picker
+              languages={languages.map(({ code, nativeName }) => ({ code, name: nativeName }))}
               currentLanguage={locale || language.code}
               onLanguageChange={(code) => {
                 const current = locale || language.code;

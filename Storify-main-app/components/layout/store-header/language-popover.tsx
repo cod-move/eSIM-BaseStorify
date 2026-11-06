@@ -8,6 +8,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import { FlagIcon } from "@/components/ui/flag-icon";
 
 /**
  * The language picker a header control opens: the Language item, or the
@@ -17,7 +18,8 @@ import { cn } from "@/lib/utils";
  * and neither ever showed.
  *
  * [esim-patch] P31 — the picker is a list: a click on a language switches to
- * it, where it was a select and a Save button.
+ * it, where it was a select and a Save button. Each language shows its flag and
+ * its own name ("日本語", "Español"), as a shopper looks for theirs.
  */
 export function LanguagePopover({
   trigger,
@@ -28,7 +30,7 @@ export function LanguagePopover({
   trigger: ReactNode;
   /** The page's language; it is ticked. */
   currentCode: string;
-  languages: ReadonlyArray<{ code: string; name: string }>;
+  languages: ReadonlyArray<{ code: string; name: string; nativeName?: string; countryCode?: string }>;
   /** The language the shopper picked. */
   onSave: (code: string) => void;
 }) {
@@ -58,8 +60,15 @@ export function LanguagePopover({
                     current && "font-semibold",
                   )}
                 >
-                  {lang.name}
-                  {current ? <Check className="h-4 w-4 text-primary" /> : null}
+                  <span className="flex min-w-0 items-center gap-2.5">
+                    {lang.countryCode ? (
+                      <FlagIcon countryCode={lang.countryCode} size={20} alt="" aria-hidden="true" className="shrink-0 rounded-[2px]" />
+                    ) : null}
+                    <span className="truncate" lang={lang.code}>
+                      {lang.nativeName || lang.name}
+                    </span>
+                  </span>
+                  {current ? <Check className="h-4 w-4 shrink-0 text-primary" /> : null}
                 </button>
               </li>
             );

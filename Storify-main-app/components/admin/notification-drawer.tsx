@@ -1,7 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { formatDistanceToNow } from "date-fns";
+import { useTranslations } from "next-intl";
+// [esim-patch] P37 the drawer in the page's language: its words, the push panel and each stored notice.
+import { localizeNotice, timeAgoIn } from "@/lib/esim/notices/localize";
 import {
   Archive,
   Bell,
@@ -157,57 +159,57 @@ function getNotificationVisual(type: string) {
     order_placed: {
       icon: Package,
       className: "bg-blue-500/10 text-blue-600",
-      label: "Order",
+      label: "order", // [esim-patch] P37 a key under esim.notices.inbox.type
     },
     order_status: {
       icon: Truck,
       className: "bg-cyan-500/10 text-cyan-700",
-      label: "Status",
+      label: "status", // [esim-patch] P37 a key under esim.notices.inbox.type
     },
     order_delivered: {
       icon: CheckCheck,
       className: "bg-emerald-500/10 text-emerald-700",
-      label: "Delivered",
+      label: "delivered", // [esim-patch] P37 a key under esim.notices.inbox.type
     },
     payment_received: {
       icon: DollarSign,
       className: "bg-emerald-500/10 text-emerald-700",
-      label: "Payment",
+      label: "payment", // [esim-patch] P37 a key under esim.notices.inbox.type
     },
     review_received: {
       icon: Star,
       className: "bg-amber-500/10 text-amber-700",
-      label: "Review",
+      label: "review", // [esim-patch] P37 a key under esim.notices.inbox.type
     },
     return_request: {
       icon: Truck,
       className: "bg-orange-500/10 text-orange-700",
-      label: "Return",
+      label: "return", // [esim-patch] P37 a key under esim.notices.inbox.type
     },
     support_message: {
       icon: BellRing,
       className: "bg-sky-500/10 text-sky-700",
-      label: "Support",
+      label: "support", // [esim-patch] P37 a key under esim.notices.inbox.type
     },
     vendor_application: {
       icon: Store,
       className: "bg-violet-500/10 text-violet-700",
-      label: "Vendor",
+      label: "vendor", // [esim-patch] P37 a key under esim.notices.inbox.type
     },
     product_low_stock: {
       icon: AlertTriangle,
       className: "bg-red-500/10 text-red-700",
-      label: "Inventory",
+      label: "inventory", // [esim-patch] P37 a key under esim.notices.inbox.type
     },
     coupon_applied: {
       icon: Ticket,
       className: "bg-fuchsia-500/10 text-fuchsia-700",
-      label: "Coupon",
+      label: "coupon", // [esim-patch] P37 a key under esim.notices.inbox.type
     },
     system: {
       icon: Info,
       className: "bg-slate-500/10 text-slate-700",
-      label: "System",
+      label: "system", // [esim-patch] P37 a key under esim.notices.inbox.type
     },
   } satisfies Record<
     string,
@@ -269,6 +271,8 @@ async function readPushStatus(): Promise<PushStatus> {
 }
 
 export function NotificationDrawer({ locale }: NotificationDrawerProps) {
+  const t = useTranslations(); // [esim-patch] P37
+  const n = (key: string, values?: Record<string, string | number>) => t(`esim.notices.${key}`, values); // [esim-patch] P37
   const [open, setOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<TabType>("all");
   const [showSettings, setShowSettings] = useState(false);
@@ -308,10 +312,12 @@ export function NotificationDrawer({ locale }: NotificationDrawerProps) {
   const tabs = useMemo(
     () =>
       [
-        { id: "all", label: "All", count: counts.all },
-        { id: "unread", label: "Unread", count: counts.unread },
-        { id: "archived", label: "Archived", count: counts.archived },
+        // [esim-patch] P37
+        { id: "all", label: n("inbox.all"), count: counts.all },
+        { id: "unread", label: n("inbox.unread"), count: counts.unread },
+        { id: "archived", label: n("inbox.archived"), count: counts.archived },
       ] satisfies { id: TabType; label: string; count: number }[],
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- [esim-patch] P37 n follows the page's locale
     [counts],
   );
 
@@ -342,21 +348,24 @@ export function NotificationDrawer({ locale }: NotificationDrawerProps) {
   const showRealtimeToast = useCallback(
     (notification: NotificationRecord, newCount: number) => {
       const href = getLocalizedHref(notification.link, locale);
+      // [esim-patch] P37
+      const text = localizeNotice(notification, t, locale);
       const extraText =
-        newCount > 1 ? ` ${newCount - 1} more new notification(s).` : "";
+        newCount > 1 ? ` ${n("drawer.moreNew", { count: newCount - 1 })}` : "";
 
-      toast.info(notification.title, {
-        description: `${notification.message}${extraText}`,
+      toast.info(text.title, {
+        description: `${text.message}${extraText}`,
         duration: 6500,
         id: `notification-${notification._id}`,
         action: href
           ? {
-              label: "View",
+              label: n("drawer.view"), // [esim-patch] P37
               onClick: () => navigateToNotification(notification),
             }
           : undefined,
       });
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- [esim-patch] P37 t follows the page's locale
     [locale, navigateToNotification],
   );
 
@@ -485,7 +494,7 @@ export function NotificationDrawer({ locale }: NotificationDrawerProps) {
       await apiClient.put("/api/notifications", { ids, action });
       await refreshNotifications();
     } catch {
-      toast.error("Failed to update notification");
+      toast.error(n("inbox.updateFailed")); // [esim-patch] P37
     } finally {
       setIsMutating(false);
       setPendingNotificationId(undefined);
@@ -498,7 +507,7 @@ export function NotificationDrawer({ locale }: NotificationDrawerProps) {
       await apiClient.put("/api/notifications", { markAll: true });
       await refreshNotifications();
     } catch {
-      toast.error("Failed to mark notifications as read");
+      toast.error(n("inbox.markFailed")); // [esim-patch] P37
     } finally {
       setIsMutating(false);
     }
@@ -510,7 +519,7 @@ export function NotificationDrawer({ locale }: NotificationDrawerProps) {
       await apiClient.delete(`/api/notifications?id=${notificationId}`);
       await refreshNotifications();
     } catch {
-      toast.error("Failed to delete notification");
+      toast.error(n("inbox.deleteFailed")); // [esim-patch] P37
     } finally {
       setPendingNotificationId(undefined);
     }
@@ -533,18 +542,16 @@ export function NotificationDrawer({ locale }: NotificationDrawerProps) {
       const statusJson = await statusResponse.json();
       const publicKey = statusJson?.data?.publicKey;
       if (!statusResponse.ok || !statusJson?.data?.configured || !publicKey) {
-        throw new Error(
-          "Browser push is not configured on the server. Add VAPID keys first.",
-        );
+        throw new Error(n("push.notConfigured")); // [esim-patch] P37
       }
 
       if (!supportsBrowserPush()) {
-        throw new Error("Browser push is not supported here");
+        throw new Error(n("push.notSupported")); // [esim-patch] P37
       }
 
       const permission = await Notification.requestPermission();
       if (permission !== "granted") {
-        throw new Error("Notification permission was not granted");
+        throw new Error(n("push.permissionDenied")); // [esim-patch] P37
       }
 
       const registration = await ensureServiceWorkerRegistration();
@@ -561,13 +568,13 @@ export function NotificationDrawer({ locale }: NotificationDrawerProps) {
         locale,
       });
 
-      toast.success("Browser notifications enabled");
+      toast.success(n("push.enabledToast")); // [esim-patch] P37
       await refreshPushStatus();
     } catch (error) {
       toast.error(
         error instanceof Error
           ? error.message
-          : "Failed to enable browser notifications",
+          : n("push.enableFailed"), // [esim-patch] P37
       );
     } finally {
       setIsMutating(false);
@@ -589,10 +596,10 @@ export function NotificationDrawer({ locale }: NotificationDrawerProps) {
         endpoint,
       });
 
-      toast.success("Browser notifications disabled");
+      toast.success(n("push.disabledToast")); // [esim-patch] P37
       await refreshPushStatus();
     } catch {
-      toast.error("Failed to disable browser notifications");
+      toast.error(n("push.disableFailed")); // [esim-patch] P37
     } finally {
       setIsMutating(false);
     }
@@ -602,13 +609,13 @@ export function NotificationDrawer({ locale }: NotificationDrawerProps) {
     setIsMutating(true);
     try {
       await apiClient.post("/api/notifications/push/test");
-      toast.success("Test notification sent");
+      toast.success(n("push.testSent")); // [esim-patch] P37
       await refreshNotifications();
     } catch (error) {
       toast.error(
         error instanceof Error
           ? error.message
-          : "Failed to send test notification",
+          : n("push.testFailed"), // [esim-patch] P37
       );
     } finally {
       setIsMutating(false);
@@ -634,7 +641,7 @@ export function NotificationDrawer({ locale }: NotificationDrawerProps) {
               ? "text-foreground hover:text-primary"
               : "text-muted-foreground hover:text-primary",
           )}
-          aria-label="Open notifications"
+          aria-label={n("drawer.openNotifications")} // [esim-patch] P37
         >
           {counts.unread > 0 ? (
             <BellRing className="h-5 w-5" />
@@ -657,18 +664,19 @@ export function NotificationDrawer({ locale }: NotificationDrawerProps) {
         )}
       >
         <SheetHeader className="sticky top-0 z-10 flex flex-row items-center justify-between border-b border-border/30 bg-background px-4 py-4 sm:px-5">
+          {/* [esim-patch] P37 */}
           <SheetTitle className="text-base font-bold tracking-tight sm:text-lg">
-            Notifications
+            {n("inbox.title")}
           </SheetTitle>
           <SheetDescription className="sr-only">
-            Recent notifications and browser push settings
+            {n("drawer.subtitle")}
           </SheetDescription>
           <div className="flex items-center gap-1">
             <Button
               variant="ghost"
               size="icon"
               className="h-8 w-8 rounded-full text-muted-foreground hover:text-primary"
-              title="Mark all as read"
+              title={n("inbox.markAllRead")} // [esim-patch] P37
               onClick={() => void markAllAsRead()}
               disabled={isMutating || counts.unread === 0}
             >
@@ -682,7 +690,7 @@ export function NotificationDrawer({ locale }: NotificationDrawerProps) {
               variant={showSettings ? "secondary" : "ghost"}
               size="icon"
               className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground"
-              title="Notification settings"
+              title={n("drawer.settings")} // [esim-patch] P37
               onClick={() => setShowSettings((value) => !value)}
             >
               <Settings className="h-4 w-4" />
@@ -752,7 +760,7 @@ export function NotificationDrawer({ locale }: NotificationDrawerProps) {
             ) : notifications.length === 0 ? (
               <div className="flex h-52 flex-col items-center justify-center gap-2 px-8 text-center text-muted-foreground">
                 <BellRing className="h-8 w-8" />
-                <p className="text-sm font-medium">No notifications</p>
+                <p className="text-sm font-medium">{n("inbox.empty")}</p>{/* [esim-patch] P37 */}
               </div>
             ) : (
               <div className="divide-y divide-border/30">
@@ -784,7 +792,7 @@ export function NotificationDrawer({ locale }: NotificationDrawerProps) {
                 disabled={isRefreshing}
               >
                 {isRefreshing && <Loader2 className="h-4 w-4 animate-spin" />}
-                Refresh
+                {n("drawer.refresh")}{/* [esim-patch] P37 */}
               </Button>
             </div>
           </ScrollArea>
@@ -795,9 +803,10 @@ export function NotificationDrawer({ locale }: NotificationDrawerProps) {
 }
 
 function NotificationListSkeleton() {
+  const t = useTranslations(); // [esim-patch] P37
   return (
     <div role="status" aria-busy="true" className="divide-y divide-border/30">
-      <span className="sr-only">Loading notifications</span>
+      <span className="sr-only">{t("esim.notices.drawer.loading")}</span>{/* [esim-patch] P37 */}
       {Array.from({ length: 5 }).map((_, index) => (
         <div key={index} className="flex gap-3 px-4 py-4 sm:px-5">
           <Skeleton className="h-10 w-10 shrink-0 rounded-full" />
@@ -838,15 +847,18 @@ function NotificationSettingsPanel({
   onSendTest: () => void;
   onInstall: () => void;
 }) {
+  // [esim-patch] P37 the push panel in the page's language.
+  const t = useTranslations();
+  const n = (key: string, values?: Record<string, string | number>) => t(`esim.notices.${key}`, values);
   const statusText = !pushStatus.supported
-    ? "Unsupported"
+    ? n("push.unsupported")
     : !pushStatus.configured
-      ? "Server keys missing"
+      ? n("push.keysMissing")
       : pushStatus.permission === "denied"
-        ? "Blocked"
+        ? n("push.blocked")
         : pushStatus.subscribed
-          ? "Enabled"
-          : "Off";
+          ? n("push.enabled")
+          : n("push.off");
 
   return (
     <ScrollArea className="min-h-0 flex-1" viewportClassName="h-full">
@@ -858,14 +870,13 @@ function NotificationSettingsPanel({
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex items-center justify-between gap-3">
-                <p className="font-semibold">Browser push</p>
+                <p className="font-semibold">{n("push.title")}</p>{/* [esim-patch] P37 */}
                 <Badge variant="outline" className="rounded-md">
                   {statusText}
                 </Badge>
               </div>
               <p className="mt-1 text-sm text-muted-foreground">
-                {pushStatus.activeSubscriptions} active browser
-                {pushStatus.activeSubscriptions === 1 ? "" : "s"}
+                {n("push.activeBrowsers", { count: pushStatus.activeSubscriptions })}{/* [esim-patch] P37 */}
               </p>
             </div>
           </div>
@@ -879,7 +890,7 @@ function NotificationSettingsPanel({
                 disabled={isMutating}
               >
                 {isMutating && <Loader2 className="h-4 w-4 animate-spin" />}
-                Disable
+                {n("push.disable")}{/* [esim-patch] P37 */}
               </Button>
             ) : (
               <Button
@@ -893,7 +904,7 @@ function NotificationSettingsPanel({
                 }
               >
                 {isMutating && <Loader2 className="h-4 w-4 animate-spin" />}
-                Enable
+                {n("push.enable")}{/* [esim-patch] P37 */}
               </Button>
             )}
             <Button
@@ -902,7 +913,7 @@ function NotificationSettingsPanel({
               onClick={onSendTest}
               disabled={isMutating || !pushStatus.subscribed}
             >
-              Send test
+              {n("push.sendTest")}{/* [esim-patch] P37 */}
             </Button>
           </div>
         </div>
@@ -911,13 +922,14 @@ function NotificationSettingsPanel({
           <div className="rounded-lg border border-border/60 p-4">
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0">
-                <p className="font-semibold">Install app</p>
+                {/* [esim-patch] P37 */}
+                <p className="font-semibold">{n("install.title")}</p>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  Add {storeName} to this device.
+                  {n("install.text", { store: storeName })}
                 </p>
               </div>
               <Button variant="outline" size="sm" onClick={onInstall}>
-                Install
+                {n("install.button")}{/* [esim-patch] P37 */}
               </Button>
             </div>
           </div>
@@ -945,10 +957,14 @@ function NotificationItem({
   const visual = getNotificationVisual(notification.type);
   const Icon = visual.icon;
   const href = getLocalizedHref(notification.link, locale);
+  // [esim-patch] P37 the stored English, the drawer's words and the time in the page's language.
+  const t = useTranslations();
+  const n = (key: string) => t(`esim.notices.inbox.${key}`);
+  const text = localizeNotice(notification, t, locale);
   const createdAt = new Date(notification.createdAt);
   const timeAgo = Number.isNaN(createdAt.getTime())
     ? ""
-    : formatDistanceToNow(createdAt, { addSuffix: true });
+    : timeAgoIn(locale, createdAt);
 
   return (
     <div
@@ -981,15 +997,15 @@ function NotificationItem({
                   !notification.isRead && "font-semibold",
                 )}
               >
-                {notification.title}
+                {text.title}{/* [esim-patch] P37 */}
               </p>
               <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
-                {notification.message}
+                {text.message}
               </p>
               <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
                 {timeAgo && <span>{timeAgo}</span>}
                 {timeAgo && <span>·</span>}
-                <span>{visual.label}</span>
+                <span>{n(`type.${visual.label}`)}</span>
               </div>
             </div>
           </button>
@@ -1003,14 +1019,14 @@ function NotificationItem({
                 onClick={onOpen}
               >
                 <ExternalLink className="h-3.5 w-3.5" />
-                Open
+                {n("open")}{/* [esim-patch] P37 */}
               </Button>
             )}
             <Button
               variant="ghost"
               size="icon"
               className="h-8 w-8 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
-              title={notification.isArchived ? "Unarchive" : "Archive"}
+              title={n(notification.isArchived ? "unarchive" : "archive")} // [esim-patch] P37
               onClick={onArchive}
               disabled={pending}
             >
@@ -1024,7 +1040,7 @@ function NotificationItem({
               variant="ghost"
               size="icon"
               className="h-8 w-8 rounded-full text-muted-foreground hover:bg-muted hover:text-destructive"
-              title="Delete"
+              title={n("delete")} // [esim-patch] P37
               onClick={onDelete}
               disabled={pending}
             >

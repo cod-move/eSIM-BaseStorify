@@ -758,7 +758,8 @@ export function MobileMenuSheet({
                       >
                         {languages.map((lang) => (
                           <option key={lang.code} value={lang.code}>
-                            {lang.name}
+                            {/* [esim-patch] P33 flag and the language's own name; phones draw emoji flags */}
+                            {`${lang.flag} ${lang.nativeName}`}
                           </option>
                         ))}
                       </select>
