@@ -129,8 +129,8 @@ export class RoamWifiAdapter implements EsimProviderAdapter {
       await this.callData("api_esim/addEsimOrderByApiCode", {
         apiCode: input.providerPlanId,
         count: "1",
-        otherOrderId: input.idempotencyKey,
-        otherItemId: input.idempotencyKey,
+        otherOrderId: externalId(input.idempotencyKey),
+        otherItemId: externalId(input.idempotencyKey),
         backInfo: "1",
         isSendEmail: "0",
         pdfLanguage: "en-US",
@@ -208,8 +208,8 @@ export class RoamWifiAdapter implements EsimProviderAdapter {
       await this.callData("api_esim/renewCardByApiCode", {
         iccid: input.esim.iccid,
         apiCode: input.topupPlanId,
-        otherOrderId: input.idempotencyKey,
-        otherItemId: input.idempotencyKey,
+        otherOrderId: externalId(input.idempotencyKey),
+        otherItemId: externalId(input.idempotencyKey),
         backInfo: "1",
         pdfLanguage: "en-US",
       }),
@@ -448,6 +448,17 @@ function scopeOf(display: string, sku: JsonObject, countryCount: number): Covera
   // RoamWifi numbers regional SKUs from 1000 up.
   const countryCode = num(sku.countryCode);
   return countryCode !== null && countryCode >= 1000 ? "regional" : "local";
+}
+
+/**
+ * RoamWifi rejects otherOrderId / otherItemId of 32 characters or more, and our
+ * keys (`esim-<jobId>-<plan>`, `provider-topup:<id>`) run to ~40. A short key
+ * goes through unchanged; a long one becomes a stable hash, so a retry still
+ * sends the same id.
+ */
+export function externalId(key: string): string {
+  if (/^[A-Za-z0-9_-]{1,31}$/.test(key)) return key;
+  return `rw${createHash("sha256").update(key).digest("hex").slice(0, 29)}`;
 }
 
 export function mapSkuPlans(sku: JsonObject, packageData: JsonObject, currency: string): ProviderPlan[] {

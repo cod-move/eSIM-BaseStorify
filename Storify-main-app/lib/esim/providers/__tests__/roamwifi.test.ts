@@ -2,8 +2,23 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { describe, it } from "node:test";
 import { countryCodeFromName } from "../countries";
-import { RoamWifiAdapter, mapSkuPlans, sign } from "../roamwifi";
+import { RoamWifiAdapter, externalId, mapSkuPlans, sign } from "../roamwifi";
 import { fakeFetch } from "./helpers";
+
+describe("RoamWifi external ids", () => {
+  it("keeps short keys and hashes long ones under 32 characters, stably", () => {
+    assert.equal(externalId("esim-job-1"), "esim-job-1");
+    const purchase = "esim-6727a1b2c3d4e5f6a7b8c9d0-a7b8c9d0-h2";
+    const topup = "provider-topup:6727a1b2c3d4e5f6a7b8c9d0";
+    for (const key of [purchase, topup]) {
+      const id = externalId(key);
+      assert.ok(id.length < 32, `${id} is ${id.length} characters`);
+      assert.match(id, /^[a-z0-9]+$/);
+      assert.equal(externalId(key), id);
+    }
+    assert.notEqual(externalId(purchase), externalId(topup));
+  });
+});
 
 describe("RoamWifi signing", () => {
   it("signs sorted, non-empty pairs rawurlencoded with the key", () => {
