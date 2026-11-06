@@ -26,7 +26,8 @@ const PRESETS = [1000, 2000, 5000, 10_000];
  * Add money to the balance (WAL-01): choose an amount, see the fee and what
  * is paid, and go to checkout. The server prices the line again; what is
  * shown here is only the preview. The top-up is checked out on its own, so
- * the cart's other lines are set aside first and come back after it.
+ * the cart's other lines are set aside first and come back after it (the cart
+ * does this itself too: lib/esim/wallet/park.ts).
  */
 export function WalletTopupForm({ product, minMinor, maxMinor, fee }: Props) {
   const t = useFallbackTranslator(useTranslations());

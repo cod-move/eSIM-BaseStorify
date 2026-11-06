@@ -29,6 +29,7 @@ import {
 } from "@/lib/cart/cart-item-quantity";
 import { CartRefusal, insufficientStock } from "@/lib/cart/cart-refusal";
 import { esimCartLine } from "@/lib/esim/cart"; // [esim-patch] P10
+import { esimKeepTopupAlone } from "@/lib/esim/wallet/park"; // [esim-patch] P10
 import {
   anySellerOffersPickup,
   cartLineKey,
@@ -318,6 +319,8 @@ async function putLine(
     product.media?.[0]?.url ||
     "";
 
+  // [esim-patch] P10 a top-up is checked out on its own: the cart's other lines are set aside, or come back.
+  if (await esimKeepTopupAlone(userId, variantId)) loaded = undefined;
   let cart =
     loaded === undefined
       ? ((await Cart.findOne(cartQuery(identity))) as CartDocument | null)

@@ -26,7 +26,9 @@ function dataLabel(megabytes: number) {
 /**
  * The top-ups an eSIM can take (TOP-02/03). Picking one asks the server for a
  * quote, puts it in the cart as the top-up product's line and goes to
- * checkout, where it is paid like anything else (balance or a gateway).
+ * checkout, where it is paid like anything else (balance or a gateway). The
+ * cart sets its other lines aside first: a top-up is paid on its own
+ * (lib/esim/wallet/park.ts), and they come back after.
  */
 export function EsimTopupPicker({ esimId, offers }: { esimId: string; offers: TopupPickerOffer[] }) {
   const t = useFallbackTranslator(useTranslations());

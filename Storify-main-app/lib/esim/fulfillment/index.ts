@@ -20,6 +20,7 @@ import { EsimNumberOp } from "@/models/esim-number-op.model";
 import { processNumberOps } from "@/lib/esim/numbers/ops";
 import { enqueueOrderNumberTopups } from "@/lib/esim/numbers/topup";
 import { findNumberTopupProduct } from "@/lib/esim/numbers/product";
+import { restoreAfterTopupOrder } from "@/lib/esim/wallet/park";
 
 /**
  * The two ways eSIM fulfilment is driven. Payment settlement calls the first
@@ -46,6 +47,8 @@ export async function esimFulfilOrder(orderId: string) {
   const topups = await processTopupJobs({ orderId, budgetMs: 10_000 });
   // Always: a top-up can fail as it is queued (its quote gone) and still needs its refund.
   await settleOrderDelivery(orderId);
+  // The lines set aside for a top-up go back in the shopper's cart.
+  await restoreAfterTopupOrder(orderId).catch(console.error);
   return { ...result, topups, wallet, numbers, numberOps };
 }
 

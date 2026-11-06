@@ -114,7 +114,7 @@ import {
   CheckoutQuoteChangedError,
 } from "@/lib/checkout/checkout-quote";
 import { esimLinePrices } from "@/lib/esim/cart"; // [esim-patch] P10
-import { isWalletCart } from "@/lib/esim/wallet/park"; // [esim-patch] P27
+import { isMixedTopupCart, isWalletCart } from "@/lib/esim/wallet/park"; // [esim-patch] P27
 import { esimStandInAddress, isEsimOnlyCart } from "@/lib/esim/checkout/address"; // [esim-patch] P28
 import { syncPaymentFeeLine } from "@/lib/esim/payments/fee-line"; // [esim-patch] P29
 import { feeMethodOf } from "@/lib/esim/payments/method-names"; // [esim-patch] P29 the fee of the eSIM method chosen
@@ -404,6 +404,10 @@ async function runCheckout(
   const esimWalletCart = await isWalletCart(items);
   if (esimWalletCart && paymentMethod === "store_credit") {
     throw new ValidationError({ paymentMethod: ["A balance top-up cannot be paid from the balance"] });
+  }
+  // [esim-patch] P27 a top-up is paid on its own, never with other items.
+  if (await isMixedTopupCart(items)) {
+    throw new ValidationError({ cart: ["A top-up is paid on its own. Remove the other items from your cart, or the top-up."] });
   }
   // The shopper's spendable store credit (R8), read alongside the product
   // and seller reads that follow: it needs only the shopper, the store
