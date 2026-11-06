@@ -12,7 +12,7 @@ import { formatCardBytes, packageLeftPercent } from "@/lib/esim/numbers/install"
 import { formatAmount } from "@/lib/esim/numbers/line";
 import { installLinks } from "@/lib/esim/fulfillment/install-links";
 import { UsageBar } from "@/components/esim/esim-status-badge";
-import { CopyValue, RefreshUsageButton } from "@/components/esim/esim-actions";
+import { CopyValue, RefreshUsageButton, RemarkEditor } from "@/components/esim/esim-actions";
 import { CancelPacketButton, NumberTopupActions } from "@/components/esim/number-actions";
 import { numberTopupOptions } from "@/lib/esim/numbers/storefront";
 
@@ -62,13 +62,16 @@ export default async function AccountNumberPage({ params }: PageProps) {
         {tr("esim.account.back", "My eSIMs")}
       </Link>
 
-      <div className="flex flex-wrap items-center gap-3">
-        <h1 className="font-mono text-xl font-bold sm:text-2xl">{title}</h1>
-        {card?.blocked ? (
-          <Badge variant="destructive">{tr("esim.number.blocked", "Blocked")}</Badge>
-        ) : (
-          <Badge>{tr("esim.number.active", "Active")}</Badge>
-        )}
+      <div className="space-y-1">
+        <div className="flex flex-wrap items-center gap-3">
+          <h1 className="font-mono text-xl font-bold sm:text-2xl">{title}</h1>
+          {card?.blocked ? (
+            <Badge variant="destructive">{tr("esim.number.blocked", "Blocked")}</Badge>
+          ) : (
+            <Badge>{tr("esim.number.active", "Active")}</Badge>
+          )}
+        </div>
+        <RemarkEditor esimId={number.id} remark={number.remark} endpoint={`/api/esim/me/numbers/${number.id}`} />
       </div>
 
       {number.pending.length ? (

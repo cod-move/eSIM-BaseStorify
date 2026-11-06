@@ -55,6 +55,8 @@ export interface IEsimNumber extends mongoose.Document {
   /** Import batch name, for finding a delivery again. */
   batch: string | null;
   note: string | null;
+  /** The shopper's own name for it, e.g. "Work line" (USR-06). */
+  remark: string | null;
   card?: {
     checkedAt: Date;
     balanceMinor: number | null;
@@ -109,6 +111,7 @@ const EsimNumberSchema = new Schema<IEsimNumber>(
     soldAt: { type: Date, default: null },
     batch: { type: String, default: null, trim: true, maxlength: 80, index: true },
     note: { type: String, default: null, trim: true, maxlength: 500 },
+    remark: { type: String, default: null, trim: true, maxlength: 100 },
     card: {
       type: new Schema(
         {

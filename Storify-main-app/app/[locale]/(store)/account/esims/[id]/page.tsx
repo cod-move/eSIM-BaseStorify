@@ -156,11 +156,6 @@ export default async function AccountEsimPage({ params }: PageProps) {
                 {esim.installation.apn ? <CopyValue label="APN" value={esim.installation.apn} /> : null}
               </div>
             </div>
-            {esim.customerLink ? (
-              <a href={esim.customerLink} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline">
-                {tr("esim.account.installPage", "Open the supplier's installation page")}
-              </a>
-            ) : null}
           </CardContent>
         </Card>
       ) : null}

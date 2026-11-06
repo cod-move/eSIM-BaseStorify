@@ -37,6 +37,8 @@ export interface CustomerNumberSummary {
   dialCode: string;
   nationalNumber: string;
   country: string | null;
+  /** The shopper's own name for it. */
+  remark: string | null;
   soldAt: Date | null;
   validUntil: Date | null;
   card: CustomerNumberCard | null;
@@ -52,7 +54,7 @@ export interface CustomerNumber extends CustomerNumberSummary {
   refreshFailed: boolean;
 }
 
-type NumberRow = Pick<IEsimNumber, "msisdn" | "dialCode" | "nationalNumber" | "country" | "soldAt" | "card"> & { _id: mongoose.Types.ObjectId };
+type NumberRow = Pick<IEsimNumber, "msisdn" | "dialCode" | "nationalNumber" | "country" | "soldAt" | "card"> & { remark?: string | null } & { _id: mongoose.Types.ObjectId };
 
 function cardOf(row: NumberRow): CustomerNumberCard | null {
   if (!row.card) return null;
@@ -73,6 +75,7 @@ function summaryOf(row: NumberRow): CustomerNumberSummary {
     dialCode: row.dialCode,
     nationalNumber: row.nationalNumber,
     country: row.country,
+    remark: row.remark ?? null,
     soldAt: row.soldAt ?? null,
     validUntil: numberValidUntil({ lastUsedAt: row.card?.lastUsedAt, soldAt: row.soldAt }),
     card: cardOf(row),
@@ -143,6 +146,13 @@ export async function refreshNumberCard(numberId: string, options: { force?: boo
     console.error("[esim] number card refresh failed:", error instanceof Error ? error.message : error);
     return false;
   }
+}
+
+/** The shopper's own name for one of their numbers (USR-06); empty clears it. False when it is not theirs. */
+export async function updateNumberRemark(userId: string, numberId: string, remark: string): Promise<boolean> {
+  if (!mongoose.isValidObjectId(userId) || !mongoose.isValidObjectId(numberId)) return false;
+  const result = await EsimNumber.updateOne({ _id: numberId, ...owned(userId) }, { $set: { remark: remark.trim().slice(0, 100) || null } });
+  return result.matchedCount > 0;
 }
 
 /** One number of the shopper's, refreshed from TopConnect first (NUM-06); null when it is not theirs. */

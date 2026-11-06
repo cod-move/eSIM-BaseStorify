@@ -22,6 +22,7 @@ import { buildLoginUrl, returnPathFromHeaders } from "@/lib/auth/return-path";
 import { localeHref } from "@/lib/i18n/locale-routing";
 import { isDemoModeEnabled, PROFILE_DEMO_MODE_MESSAGE } from "@/lib/demo-mode";
 import { ResourceScope } from "@/hooks/use-suspense-resource";
+import { EsimAccountWidth } from "@/components/esim/account-width"; // [esim-patch] P41
 
 // Canonical, hreflang and robots from the URL being served.
 export { generateMetadata } from "@/lib/storefront/request-path-metadata";
@@ -139,12 +140,15 @@ export default async function AccountLayout({ children, params }: LayoutProps) {
               <SidebarInset>
                 <CustomerHeader locale={locale} demoMode={demoMode} />
                 <main className="isolate flex-1 min-w-0 space-y-6 overflow-x-clip p-4 md:p-6">
-                  <EmailVerificationNotice
-                    email={session.user.email}
-                    status={session.user.emailVerificationStatus}
-                    locale={locale}
-                  />
-                  {children}
+                  {/* [esim-patch] P41 every page as wide as the overview, the inbox aside */}
+                  <EsimAccountWidth>
+                    <EmailVerificationNotice
+                      email={session.user.email}
+                      status={session.user.emailVerificationStatus}
+                      locale={locale}
+                    />
+                    {children}
+                  </EsimAccountWidth>
                 </main>
               </SidebarInset>
             </SidebarProvider>

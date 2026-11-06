@@ -53,7 +53,8 @@ export function RefreshUsageButton({ esimId, endpoint }: { esimId: string; endpo
   );
 }
 
-export function RemarkEditor({ esimId, remark }: { esimId: string; remark: string | null }) {
+/** The shopper's own name for an eSIM, or for a number with `endpoint` (its PATCH route). */
+export function RemarkEditor({ esimId, remark, endpoint }: { esimId: string; remark: string | null; endpoint?: string }) {
   const t = useFallbackTranslator(useTranslations());
   const router = useRouter();
   const [editing, setEditing] = useState(false);
@@ -63,7 +64,7 @@ export function RemarkEditor({ esimId, remark }: { esimId: string; remark: strin
   async function save() {
     setSaving(true);
     try {
-      const response = await fetch(`/api/esim/me/esims/${esimId}`, {
+      const response = await fetch(endpoint ?? `/api/esim/me/esims/${esimId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ remark: value }),

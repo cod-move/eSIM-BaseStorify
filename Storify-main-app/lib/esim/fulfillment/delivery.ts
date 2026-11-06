@@ -85,7 +85,6 @@ function esimBlock(profile: IEsimProfile, planName: string, index: number, attac
         ${row("ICCID", profile.iccid)}
         ${row("Install before", profile.activationDeadline?.toISOString().slice(0, 10))}
       </table>
-      ${profile.customerLink ? `<p style="margin:12px 0 0"><a href="${escapeHtml(profile.customerLink)}">Open the installation page</a></p>` : ""}
     </div>`;
 }
 

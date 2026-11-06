@@ -91,7 +91,8 @@ export default async function AccountEsimsPage({ params }: PageProps) {
                 <CardContent className="flex items-center gap-4 p-4">
                   <Phone className="h-6 w-6 shrink-0 text-primary" />
                   <div className="min-w-0 flex-1 space-y-1">
-                    <div className="font-mono font-medium">
+                    {number.remark ? <div className="font-medium">{number.remark}</div> : null}
+                    <div className={number.remark ? "font-mono text-sm text-muted-foreground" : "font-mono font-medium"}>
                       +{number.dialCode} {number.nationalNumber}
                     </div>
                     <div className="text-xs text-muted-foreground">
