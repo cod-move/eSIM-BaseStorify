@@ -6,7 +6,7 @@ import Link from "@/components/language/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { connectDB } from "@/lib/db";
 import { getAccountSession } from "@/lib/customers/account-data";
-import { getCustomerEsim } from "@/lib/esim/account/esims";
+import { getCustomerEsimFresh } from "@/lib/esim/account/esims";
 import { formatBytes, remainingPercent } from "@/lib/esim/account/display";
 import { installLinks } from "@/lib/esim/fulfillment/install-links";
 import { EsimStatusBadge, UsageBar } from "@/components/esim/esim-status-badge";
@@ -36,7 +36,7 @@ export default async function AccountEsimPage({ params }: PageProps) {
   const session = await getAccountSession();
   if (!session) notFound();
   await connectDB();
-  const esim = await getCustomerEsim(session.user.id, id);
+  const esim = await getCustomerEsimFresh(session.user.id, id);
   if (!esim) notFound();
   const [topup, topups, cancel] = await Promise.all([esimTopupStatus(session.user.id, id), listEsimTopups(session.user.id, id), shopperCancelOffer(session.user.id, id)]);
 

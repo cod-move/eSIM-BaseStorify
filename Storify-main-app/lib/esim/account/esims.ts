@@ -228,3 +228,21 @@ export async function refreshEsimProfile(profile: IEsimProfile): Promise<{ refre
   await profile.save();
   return done(Boolean(usage || esim), error);
 }
+
+/** How long opening the eSIM page waits for the supplier before showing what is stored. */
+const OPEN_REFRESH_WAIT_MS = 4_000;
+
+/**
+ * The eSIM as its page opens (USR-02): asked of the supplier first (at most
+ * once a minute, like the refresh button), so status and data left are
+ * current, but never holding the page up past a few seconds. Null when it is
+ * not the shopper's.
+ */
+export async function getCustomerEsimFresh(userId: string, esimId: string): Promise<EsimView | null> {
+  const stored = getCustomerEsim(userId, esimId);
+  const refreshed = refreshCustomerEsim(userId, esimId)
+    .then((result) => result.view)
+    .catch(() => null);
+  const late = new Promise<null>((resolve) => setTimeout(() => resolve(null), OPEN_REFRESH_WAIT_MS));
+  return (await Promise.race([refreshed, late])) ?? stored;
+}

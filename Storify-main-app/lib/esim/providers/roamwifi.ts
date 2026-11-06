@@ -48,6 +48,8 @@ import {
  */
 
 const DEFAULT_BASE_URL = "https://bpm.roamwifi.hk";
+/** The card-detail call lives on another host (doc v2.11 §2.27.3). */
+const DEFAULT_DETAIL_URL = "https://www.roamesim.net/api/base/getESIMDetail";
 /** RoamWifi's published signing key; overridable if they issue a private one. */
 const DEFAULT_SIGN_KEY = "1234567890qwertyuiopasdfghjklzxc";
 const TOKEN_TTL_MS = 110 * 60 * 1000;
@@ -62,6 +64,8 @@ export interface RoamWifiOptions {
   currency?: string;
   signKey?: string;
   baseUrl?: string;
+  /** Where getESIMDetail is asked (§2.27). */
+  detailUrl?: string;
   fetch?: FetchLike;
 }
 
@@ -83,6 +87,7 @@ export class RoamWifiAdapter implements EsimProviderAdapter {
   private readonly currency: string;
   private readonly signKey: string;
   private readonly baseUrl: string;
+  private readonly detailUrl: string;
   private readonly fetcher: FetchLike;
 
   constructor(options: RoamWifiOptions) {
@@ -94,6 +99,7 @@ export class RoamWifiAdapter implements EsimProviderAdapter {
     this.currency = (options.currency ?? "USD").toUpperCase();
     this.signKey = options.signKey || DEFAULT_SIGN_KEY;
     this.baseUrl = (options.baseUrl ?? DEFAULT_BASE_URL).replace(/\/+$/, "");
+    this.detailUrl = options.detailUrl || DEFAULT_DETAIL_URL;
     this.fetcher = options.fetch ?? fetch;
   }
 
@@ -155,6 +161,13 @@ export class RoamWifiAdapter implements EsimProviderAdapter {
   }
 
   async getUsage(ref: EsimRef): Promise<ProviderUsage> {
+    // The card's own record first (§2.27), which RoamWifi keeps fresher than
+    // the order; it needs our server's IP on their whitelist, so a refusal
+    // falls back to the order as before.
+    if (ref.iccid) {
+      const detail = await this.esimDetail(ref.iccid).catch(() => null);
+      if (detail) return mapEsimDetail(detail);
+    }
     const order = await this.cardOrder(ref);
     const card = objArray(order.cardApiDtoList)[0] ?? {};
     const unit = str(card.unit) || str(order.unit) || "GB";
@@ -254,6 +267,28 @@ export class RoamWifiAdapter implements EsimProviderAdapter {
       if (!(error instanceof ProviderError) || error.code === "credentials_missing") throw error;
     }
     return obj(await this.callData("api_esim/getOrderInfo", { orderNum }));
+  }
+
+  /**
+   * `POST {detailUrl}` with the ICCID (§2.27.3): `code` 1 and `status`
+   * "Success" on success, unlike the `api_esim` calls' 0. The token and sign
+   * go along as with every other call.
+   */
+  private async esimDetail(iccid: string): Promise<JsonObject> {
+    const params = { iccid, token: await this.token() };
+    const { ok, status, body } = await requestJson(this.fetcher, {
+      method: "POST",
+      url: this.detailUrl,
+      form: { ...params, sign: sign(params, this.signKey) },
+    });
+    if (!ok) throw new ProviderError(status >= 500 ? "uncertain" : "rejected", `RoamWifi getESIMDetail failed with HTTP ${status}`, status);
+    const code = str(body.code ?? body.Code);
+    const succeeded = code === "1" || code === "0" || str(body.status).toLowerCase() === "success";
+    const data = obj(body.data);
+    if (!succeeded || !Object.keys(data).length) {
+      throw new ProviderError("rejected", `RoamWifi getESIMDetail refused: ${str(body.message) || `code ${code || "missing"}`}`, null, code || null);
+    }
+    return data;
   }
 
   private async callData(endpoint: string, payload: Record<string, string> = {}): Promise<JsonValue> {
@@ -367,6 +402,38 @@ function date(value: JsonValue | undefined): string | null {
   if (!text) return null;
   const parsed = new Date(text.includes("T") ? text : text.replace(" ", "T"));
   return Number.isNaN(parsed.getTime()) ? null : parsed.toISOString();
+}
+
+/**
+ * The eSIM's state from `api/base/getESIMDetail` (doc v2.11 §2.27): the
+ * card's own record, fresher than the order's. Its `dpStatus` (Enable,
+ * Disable, Delete, ACTIVE) is where the profile is on the phone, not whether
+ * the plan still runs, so the lifecycle comes from the packages: one that has
+ * started and not ended is in use (or used up); all ended is expired; none
+ * started yet is installed or not by `dpStatus`. Usage adds up the packages
+ * still running (a renewal is a package of its own), else the latest one.
+ */
+export function mapEsimDetail(data: JsonObject, now = new Date()): ProviderUsage {
+  const info = obj(data.esimInfo);
+  const packages = objArray(data.esimPackets).flatMap((packet) => objArray(packet.packageList));
+  const ends = (pkg: JsonObject) => date(pkg.endDate);
+  const begins = (pkg: JsonObject) => date(pkg.beginDate);
+  const running = packages.filter((pkg) => begins(pkg) && (!ends(pkg) || new Date(ends(pkg)!).getTime() > now.getTime()));
+  const unstarted = packages.filter((pkg) => !begins(pkg));
+  const latest = [...packages].sort((a, b) => (begins(b) ?? "").localeCompare(begins(a) ?? ""))[0];
+  const counted = running.length ? running : unstarted.length ? unstarted : latest ? [latest] : [];
+  const totalBytes = counted.reduce((sum, pkg) => sum + (bytes(pkg.flows, str(pkg.unit) || "GB") ?? 0), 0);
+  const usedBytes = Math.min(counted.reduce((sum, pkg) => sum + (bytes(pkg.usedMb ?? pkg.usedMB, "MB") ?? 0), 0), totalBytes || Number.MAX_SAFE_INTEGER);
+  const remainingBytes = Math.max(totalBytes - usedBytes, 0);
+  const onPhone = ["ENABLE", "ENABLED", "ACTIVE", "DISABLE", "DISABLED"].includes(str(info.dpStatus).toUpperCase());
+  const lastEnd = packages.map(ends).filter((value): value is string => Boolean(value)).sort().at(-1) ?? null;
+  const expiresAt = date(info.expireDate) ?? lastEnd;
+  let lifecycleStatus: LifecycleStatus | null;
+  if (running.length) lifecycleStatus = totalBytes > 0 && remainingBytes === 0 ? "depleted" : "in_use";
+  else if (unstarted.length) lifecycleStatus = onPhone ? "installed" : "not_installed";
+  else if (packages.length) lifecycleStatus = "expired";
+  else lifecycleStatus = null;
+  return { totalBytes, usedBytes, remainingBytes, lifecycleStatus, expiresAt, syncedAt: now.toISOString(), stale: false, raw: data };
 }
 
 /** dpStatus codes as the esim_php adapter learned them from live traffic. */
