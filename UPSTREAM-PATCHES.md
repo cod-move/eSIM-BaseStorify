@@ -69,6 +69,7 @@
 | P39 | 已改 | `Storify-main-app/lib/orders/order-number.ts` | 导入区；`getNextOnlineOrderNumber` 的函数体（原来的计数器实现原样改名为 `getNextSequentialOnlineOrderNumber` 留在下面） | 网上订单号不再按顺序递增（别人能据此数出订单量、猜到别人的订单号），改为「前缀 + 日期 YYMMDD + 6 位随机数」，如 `ORD261106482917`，生成时查重（`lib/esim/orders/order-number.ts`）。所有网上下单路径（结账、Stripe、后台建单、B 端手工单）都经过这个函数；POS 小票号仍按顺序 | `getNextOnlineOrderNumber` 是否仍是网上订单号的唯一来源（搜 `orderNumber:` 的赋值）；订单号字段长度或格式校验是否新增；POS 前缀与网上前缀相同时，POS 计数器首次初始化会读到随机号里的最大值，两者前缀应保持不同 |
 | P40 | 已改 | `Storify-main-app/app/[locale]/(store)/account/security/page.tsx` | 导入区（`DeleteAccountCard` 的导入换成注释）；页面末尾的 `<DeleteAccountCard …/>` | 网页的安全中心不再显示「删除账户」：顾客的余额、eSIM、号码都挂在账户上，自助删除会连带丢失，改为联系客服由店铺处理。删除接口和后台的删除功能不变；App 端的删除账户页保留（App Store 要求能注册的 App 必须能在 App 内删除账户） | 安全中心页是否改版、`DeleteAccountCard` 是否改名；官方若把删除账户挪到别的页面，那里也要隐藏 |
 | P41 | 已改 | `Storify-main-app/app/[locale]/(store)/account/layout.tsx` | 导入区；`<main>` 里 `EmailVerificationNotice` 和 `{children}` 外面包一层 `EsimAccountWidth` | 用户后台各页面的内容宽度和概览页一致（居中，最宽 `max-w-6xl`，`components/esim/account-width.tsx`），收件箱（`/account/inbox`）仍占满整宽 | `<main>` 的结构和内边距是否改动；官方若给各页加了自己的宽度，去掉本条 |
+| P42 | 已改 | `Storify-main-app/lib/i18n/surface-messages.ts` | `STOREFRONT_BACK_OFFICE_PATHS.admin` 开头 | 用户后台用的是后台通用的侧边栏（`components/ui/sidebar.tsx`，读 `admin.sidebar`），但前台的翻译包不带 `admin`，页面报 `MISSING_MESSAGE: admin.sidebar`。这里只把侧边栏用到的 4 个文案（`mobileTitle`、`mobileDescription`、`landmark`、`toggle`）放进前台翻译包，不带整个后台菜单（`lib/esim/__tests__/account-sidebar-messages.test.ts`） | 官方若修了这个问题（给账户区单独提供这些文案），删掉本条；`sidebar.tsx` 若读了新的文案键，也要加进来 |
 
 > 新增插入点时按编号往后加；某项最终没改，就把状态改为 `取消` 并保留记录。
 

@@ -79,7 +79,8 @@ export const STOREFRONT_BACK_OFFICE_PATHS: Readonly<
   // (components/common/payment-method-meta.ts); the preferences drawer the
   // account area's top bar shares with them.
   admin: [
-    // Shared Sidebar and SidebarTrigger also render in the customer account.
+    // [esim-patch] P42 the account area draws the dashboards' Sidebar (components/ui/sidebar.tsx,
+    // useTranslations("admin.sidebar")): its four labels, not the whole admin menu.
     "sidebar.mobileTitle",
     "sidebar.mobileDescription",
     "sidebar.landmark",
