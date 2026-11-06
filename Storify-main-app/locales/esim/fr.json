@@ -236,13 +236,12 @@
       "backToCheckout": "Retour au paiement",
       "parked": "{count} articles de votre panier sont mis de côté pendant que vous ajoutez de l'argent. Ils reviennent dans votre panier une fois le paiement effectué, ou quand vous revenez au paiement.",
       "parkNote": "L'ajout d'argent se paie séparément. Les articles de votre panier sont mis de côté en attendant et y reviennent ensuite.",
-      "part": "{label} {amount} ({expiry})",
       "partTopup": "Rechargé",
       "partGift": "Offert",
       "partRefund": "Remboursement",
-      "partNeverExpires": "n'expire pas",
-      "partExpires": "expire le {date}",
-      "partSomeExpire": "dont {amount} expire le {date}"
+      "expiringTopup": "Dont crédit rechargé : {amount} (expire le {date})",
+      "expiringGift": "Dont crédit offert : {amount} (expire le {date})",
+      "expiringRefund": "Dont crédit de remboursement : {amount} (expire le {date})"
     },
     "referral": {
       "title": "Inviter des amis",

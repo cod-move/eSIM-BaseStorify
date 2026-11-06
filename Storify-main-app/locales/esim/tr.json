@@ -236,13 +236,12 @@
       "backToCheckout": "Ödemeye dön",
       "parked": "Siz para eklerken sepetinizdeki {count} ürün kenara alınır. Ödeme yapıldığında veya ödemeye döndüğünüzde sepetinize geri döner.",
       "parkNote": "Para ekleme ayrıca ödenir. Bu arada sepetinizdeki ürünler kenara alınır ve sonra sepetinize geri döner.",
-      "part": "{label} {amount} ({expiry})",
       "partTopup": "Yüklenen",
       "partGift": "Hediye",
       "partRefund": "İade",
-      "partNeverExpires": "süresi dolmaz",
-      "partExpires": "{date} tarihinde sona erer",
-      "partSomeExpire": "{amount} tutarı {date} tarihinde sona erer"
+      "expiringTopup": "Bunun yüklenen kredisi: {amount} ({date} tarihinde sona erer)",
+      "expiringGift": "Bunun hediye kredisi: {amount} ({date} tarihinde sona erer)",
+      "expiringRefund": "Bunun iade kredisi: {amount} ({date} tarihinde sona erer)"
     },
     "referral": {
       "title": "Arkadaşlarını davet et",

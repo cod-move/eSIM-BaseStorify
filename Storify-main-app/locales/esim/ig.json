@@ -236,13 +236,12 @@
       "backToCheckout": "Laghachi n'ịkwụ ụgwọ",
       "parked": "Ihe {count} dị n'ụgbọ ahịa gị ka edobere n'akụkụ ka ị na-etinye ego. Ha na-alaghachi n'ụgbọ ahịa gị ozugbo akwụrụ ụgwọ, ma ọ bụ mgbe ị laghachiri n'ịkwụ ụgwọ.",
       "parkNote": "A na-akwụ ụgwọ itinye ego iche. A na-edobe ihe ndị dị n'ụgbọ ahịa gị n'akụkụ ugbu a, ha ga-alaghachi n'ụgbọ ahịa gị mgbe e mesịrị.",
-      "part": "{label} {amount} ({expiry})",
       "partTopup": "Etinyere",
       "partGift": "Onyinye",
       "partRefund": "Nkwụghachi",
-      "partNeverExpires": "anaghị agwụ",
-      "partExpires": "ga-agwụ {date}",
-      "partSomeExpire": "{amount} n'ime ya ga-agwụ {date}"
+      "expiringTopup": "N'ime ya, kredit etinyere: {amount} (ga-agwụ {date})",
+      "expiringGift": "N'ime ya, kredit onyinye: {amount} (ga-agwụ {date})",
+      "expiringRefund": "N'ime ya, kredit nkwụghachi: {amount} (ga-agwụ {date})"
     },
     "referral": {
       "title": "Kpọọ ndị enyi",

@@ -236,13 +236,12 @@
       "backToCheckout": "العودة إلى الدفع",
       "parked": "يتم الاحتفاظ بـ {count} من عناصر سلتك جانبًا بينما تضيف الأموال. وتعود إلى سلتك بعد الدفع، أو عند عودتك إلى الدفع.",
       "parkNote": "تُدفع إضافة الأموال بشكل منفصل. يتم الاحتفاظ بعناصر سلتك جانبًا في الأثناء، ثم تعود إلى سلتك.",
-      "part": "{label} {amount} ({expiry})",
       "partTopup": "مشحون",
       "partGift": "هدية",
       "partRefund": "استرداد",
-      "partNeverExpires": "لا ينتهي",
-      "partExpires": "ينتهي في {date}",
-      "partSomeExpire": "ينتهي {amount} منه في {date}"
+      "expiringTopup": "منها رصيد مشحون: {amount} (ينتهي في {date})",
+      "expiringGift": "منها رصيد هدية: {amount} (ينتهي في {date})",
+      "expiringRefund": "منها رصيد مسترد: {amount} (ينتهي في {date})"
     },
     "referral": {
       "title": "ادعُ أصدقاءك",

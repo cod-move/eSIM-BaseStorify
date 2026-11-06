@@ -236,13 +236,12 @@
       "backToCheckout": "Buyela ekuhlawuleni",
       "parked": "Izinto ezi-{count} ezikwinqwelo yakho zibekwa ecaleni ngelixa usongeza imali. Zibuyela kwinqwelo xa sele ihlawulwe, okanye xa ubuyela ekuhlawuleni.",
       "parkNote": "Ukongeza imali kuhlawulwa ngokwahlukeneyo. Izinto ezikwinqwelo yakho zibekwa ecaleni okwangoku kwaye zibuyela kwinqwelo emva koko.",
-      "part": "{label} {amount} ({expiry})",
       "partTopup": "Ezongezwe nguwe",
       "partGift": "Isipho",
       "partRefund": "Imbuyekezo",
-      "partNeverExpires": "ayiphelelwa",
-      "partExpires": "iphelelwa ngo-{date}",
-      "partSomeExpire": "u-{amount} wayo uphelelwa ngo-{date}"
+      "expiringTopup": "Kuyo, ikhredithi ongeziweyo: {amount} (iphelelwa ngo-{date})",
+      "expiringGift": "Kuyo, ikhredithi yesipho: {amount} (iphelelwa ngo-{date})",
+      "expiringRefund": "Kuyo, ikhredithi yembuyekezo: {amount} (iphelelwa ngo-{date})"
     },
     "referral": {
       "title": "Mema abahlobo",

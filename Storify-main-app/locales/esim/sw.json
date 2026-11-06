@@ -236,13 +236,12 @@
       "backToCheckout": "Rudi kwenye malipo",
       "parked": "Bidhaa {count} kutoka kikapu chako zimewekwa kando unapoongeza pesa. Zinarudi kwenye kikapu chako baada ya kulipwa, au unaporudi kwenye malipo.",
       "parkNote": "Kuongeza pesa kunalipwa peke yake. Bidhaa za kikapu chako zinawekwa kando kwa sasa na kurudi kwenye kikapu baadaye.",
-      "part": "{label} {amount} ({expiry})",
       "partTopup": "Iliyoongezwa",
       "partGift": "Zawadi",
       "partRefund": "Marejesho",
-      "partNeverExpires": "haiishi muda",
-      "partExpires": "inaisha {date}",
-      "partSomeExpire": "{amount} yake inaisha {date}"
+      "expiringTopup": "Kati yake, salio lililoongezwa: {amount} (linaisha {date})",
+      "expiringGift": "Kati yake, salio la zawadi: {amount} (linaisha {date})",
+      "expiringRefund": "Kati yake, salio la marejesho: {amount} (linaisha {date})"
     },
     "referral": {
       "title": "Alika marafiki",

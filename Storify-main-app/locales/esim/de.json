@@ -236,13 +236,12 @@
       "backToCheckout": "Zurück zur Kasse",
       "parked": "{count} Artikel aus deinem Warenkorb werden beiseitegelegt, während du Geld einzahlst. Sie kommen zurück in den Warenkorb, sobald bezahlt ist oder wenn du zur Kasse zurückkehrst.",
       "parkNote": "Die Einzahlung wird separat bezahlt. Die Artikel im Warenkorb werden so lange beiseitegelegt und kommen danach zurück.",
-      "part": "{label} {amount} ({expiry})",
       "partTopup": "Aufgeladen",
       "partGift": "Geschenkt",
       "partRefund": "Erstattung",
-      "partNeverExpires": "verfällt nicht",
-      "partExpires": "verfällt am {date}",
-      "partSomeExpire": "davon {amount} verfällt am {date}"
+      "expiringTopup": "Davon aufgeladenes Guthaben: {amount} (verfällt am {date})",
+      "expiringGift": "Davon geschenktes Guthaben: {amount} (verfällt am {date})",
+      "expiringRefund": "Davon Erstattungsguthaben: {amount} (verfällt am {date})"
     },
     "referral": {
       "title": "Freunde einladen",

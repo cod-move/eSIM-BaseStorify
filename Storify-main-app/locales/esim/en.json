@@ -236,13 +236,12 @@
       "backToCheckout": "Back to checkout",
       "parked": "{count} items from your cart are kept aside while you add money. They go back to your cart once it is paid, or when you return to checkout.",
       "parkNote": "Adding money is paid on its own. The items in your cart are kept aside meanwhile and go back to your cart afterwards.",
-      "part": "{label} {amount} ({expiry})",
       "partTopup": "Topped up",
       "partGift": "Gift",
       "partRefund": "Refund",
-      "partNeverExpires": "never expires",
-      "partExpires": "expires {date}",
-      "partSomeExpire": "{amount} of it expires {date}"
+      "expiringTopup": "Of which topped-up credit: {amount} (expires {date})",
+      "expiringGift": "Of which gift credit: {amount} (expires {date})",
+      "expiringRefund": "Of which refund credit: {amount} (expires {date})"
     },
     "referral": {
       "title": "Invite friends",

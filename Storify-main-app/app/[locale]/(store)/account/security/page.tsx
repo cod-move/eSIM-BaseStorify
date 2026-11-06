@@ -2,7 +2,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { ChangePasswordCard } from "@/components/account/change-password-card";
 import { TwoFactorManagementCard } from "@/components/account/two-factor-management-card";
 import { RevokeSessionsCard } from "@/components/account/revoke-sessions-card";
-import { DeleteAccountCard } from "@/components/account/delete-account-card";
+// [esim-patch] P40 no "Delete account" card here (see below): DeleteAccountCard is not imported.
 import { isDemoModeEnabled, PROFILE_DEMO_MODE_MESSAGE } from "@/lib/demo-mode";
 
 interface PageProps {
@@ -39,8 +39,8 @@ export default async function SecurityPage({ params }: PageProps) {
 
       <RevokeSessionsCard />
 
-      {/* Last, and apart: deleting the account cannot be undone. */}
-      <DeleteAccountCard locale={locale} demoMode={demoMode} />
+      {/* [esim-patch] P40 shoppers do not delete their own account here: their
+          balance, eSIMs and numbers hang on it. The store deletes one on request. */}
     </div>
   );
 }

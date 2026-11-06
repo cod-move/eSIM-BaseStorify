@@ -1,5 +1,5 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { ChevronRight, Phone, Plus, Smartphone } from "lucide-react";
+import { ChevronRight, Gift, Phone, Plus, Smartphone, Wallet } from "lucide-react";
 import Link from "@/components/language/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -54,8 +54,11 @@ export default async function AccountEsimsPage({ params }: PageProps) {
       <Link href="/account/esims/balance" className="block">
         <Card className="transition-colors hover:bg-muted/40">
           <CardContent className="flex items-center justify-between gap-4 p-4 text-sm">
-            <span>
-              {tr("esim.wallet.title", "Balance")}: <b>{formatStorePrice(Math.round(balance * 100), locale)}</b>
+            <span className="flex items-center gap-3">
+              <Wallet className="h-5 w-5 shrink-0 text-primary" aria-hidden />
+              <span>
+                {tr("esim.wallet.title", "Balance")}: <b>{formatStorePrice(Math.round(balance * 100), locale)}</b>
+              </span>
             </span>
             <span className="inline-flex items-center gap-1 font-medium text-primary">
               {tr("esim.wallet.add", "Add money")}
@@ -67,7 +70,10 @@ export default async function AccountEsimsPage({ params }: PageProps) {
       <Link href="/account/esims/referrals" className="block">
         <Card className="transition-colors hover:bg-muted/40">
           <CardContent className="flex items-center justify-between gap-4 p-4 text-sm">
-            <span>{tr("esim.referral.teaser", "Invite friends and earn a reward on their orders")}</span>
+            <span className="flex items-center gap-3">
+              <Gift className="h-5 w-5 shrink-0 text-primary" aria-hidden />
+              <span>{tr("esim.referral.teaser", "Invite friends and earn a reward on their orders")}</span>
+            </span>
             <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground rtl:rotate-180" />
           </CardContent>
         </Card>

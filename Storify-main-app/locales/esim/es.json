@@ -236,13 +236,12 @@
       "backToCheckout": "Volver al pago",
       "parked": "{count} artículos de tu carrito quedan apartados mientras añades dinero. Vuelven al carrito cuando se pague o cuando regreses al pago.",
       "parkNote": "Añadir dinero se paga por separado. Mientras tanto, los artículos del carrito quedan apartados y luego vuelven al carrito.",
-      "part": "{label} {amount} ({expiry})",
       "partTopup": "Recargado",
       "partGift": "Regalo",
       "partRefund": "Reembolso",
-      "partNeverExpires": "no caduca",
-      "partExpires": "caduca el {date}",
-      "partSomeExpire": "{amount} caduca el {date}"
+      "expiringTopup": "De ello, saldo recargado: {amount} (caduca el {date})",
+      "expiringGift": "De ello, saldo de regalo: {amount} (caduca el {date})",
+      "expiringRefund": "De ello, saldo de reembolso: {amount} (caduca el {date})"
     },
     "referral": {
       "title": "Invita a tus amigos",

@@ -236,13 +236,12 @@
       "backToCheckout": "Buyela ekukhokheni",
       "parked": "Izinto ezingu-{count} enqoleni yakho zibekwa eceleni ngenkathi wengeza imali. Zibuyela enqoleni uma isikhokhiwe, noma uma ubuyela ekukhokheni.",
       "parkNote": "Ukwengeza imali kukhokhwa ngokwahlukile. Izinto ezisenqoleni zibekwa eceleni okwamanje bese zibuyela enqoleni ngemuva kwalokho.",
-      "part": "{label} {amount} ({expiry})",
       "partTopup": "Okufakwe nguwe",
       "partGift": "Isipho",
       "partRefund": "Imbuyiselo",
-      "partNeverExpires": "akuphelelwa yisikhathi",
-      "partExpires": "kuphelelwa ngo-{date}",
-      "partSomeExpire": "u-{amount} wakho uphelelwa ngo-{date}"
+      "expiringTopup": "Kukho, ikhredithi efakiwe: {amount} (iphelelwa ngo-{date})",
+      "expiringGift": "Kukho, ikhredithi yesipho: {amount} (iphelelwa ngo-{date})",
+      "expiringRefund": "Kukho, ikhredithi yembuyiselo: {amount} (iphelelwa ngo-{date})"
     },
     "referral": {
       "title": "Mema abangane",

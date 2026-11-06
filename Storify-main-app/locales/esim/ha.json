@@ -236,13 +236,12 @@
       "backToCheckout": "Koma wurin biya",
       "parked": "Abubuwa {count} daga kwandonka an ajiye su gefe yayin da kake ƙara kuɗi. Za su koma kwandonka idan an biya, ko idan ka koma wurin biya.",
       "parkNote": "Ƙara kuɗi ana biya shi daban. Abubuwan da ke kwandonka an ajiye su gefe zuwa lokacin, sannan su koma kwandonka.",
-      "part": "{label} {amount} ({expiry})",
       "partTopup": "Cajin da ka yi",
       "partGift": "Kyauta",
       "partRefund": "Maidowa",
-      "partNeverExpires": "ba ya ƙarewa",
-      "partExpires": "zai ƙare {date}",
-      "partSomeExpire": "{amount} daga ciki zai ƙare {date}"
+      "expiringTopup": "Daga ciki, kuɗin cajin da ka yi: {amount} (zai ƙare {date})",
+      "expiringGift": "Daga ciki, kuɗin kyauta: {amount} (zai ƙare {date})",
+      "expiringRefund": "Daga ciki, kuɗin maidowa: {amount} (zai ƙare {date})"
     },
     "referral": {
       "title": "Gayyaci abokai",

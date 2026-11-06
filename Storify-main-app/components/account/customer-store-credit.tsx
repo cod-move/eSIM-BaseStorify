@@ -66,6 +66,16 @@ export function CustomerStoreCredit() {
       year: "numeric",
     });
 
+  // [esim-patch] P38 adding money to the balance, shown with it
+  const topUp = data?.walletTopup ? (
+    <Button asChild size="sm" className="shrink-0">
+      <Link href="/account/esims/balance">
+        <Plus className="me-1 h-4 w-4" />
+        {tr("esim.wallet.add", "Add money")}
+      </Link>
+    </Button>
+  ) : null;
+
   const describe = (row: HistoryRow) => {
     if (row.type === "expire") return tr("account.storeCreditExpired", "Expired");
     if (row.type === "redeem") {
@@ -86,8 +96,9 @@ export function CustomerStoreCredit() {
     <div className="space-y-6">
       {balances.length === 0 ? (
         <Card>
-          <CardContent className="py-8 text-center text-sm text-muted-foreground">
+          <CardContent className="flex flex-col items-center gap-3 py-8 text-center text-sm text-muted-foreground">
             {tr("account.storeCreditEmpty", "You have no store credit.")}
+            {topUp /* [esim-patch] P38 */}
           </CardContent>
         </Card>
       ) : (
@@ -98,7 +109,11 @@ export function CustomerStoreCredit() {
                 <p className="text-sm text-muted-foreground">
                   {tr("account.storeCreditBalance", "Available")}
                 </p>
-                <p className="text-2xl font-semibold">{money(entry.balance, entry.currency)}</p>
+                {/* [esim-patch] P38 the top-up button beside the balance it adds to */}
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <p className="text-2xl font-semibold">{money(entry.balance, entry.currency)}</p>
+                  {entry.currency === "USD" ? topUp : null}
+                </div>
                 {/* [esim-patch] P38 the balance by where it came from, each part's expiry */}
                 {entry.parts?.length ? (
                   <CreditPartsLine parts={entry.parts} currency={entry.currency} />
@@ -115,15 +130,6 @@ export function CustomerStoreCredit() {
           ))}
         </div>
       )}
-      {/* [esim-patch] P38 adding money to the balance */}
-      {data?.walletTopup ? (
-        <Button asChild variant="outline" className="w-full sm:w-auto">
-          <Link href="/account/esims/balance">
-            <Plus className="me-1 h-4 w-4" />
-            {tr("esim.wallet.add", "Add money")}
-          </Link>
-        </Button>
-      ) : null}
 
       {history.length > 0 ? (
         <Card className="gap-0 overflow-hidden py-0">

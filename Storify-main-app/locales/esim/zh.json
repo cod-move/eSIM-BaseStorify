@@ -236,13 +236,12 @@
       "backToCheckout": "返回结账",
       "parked": "购物车里的 {count} 件商品在充值期间暂时移出，充值支付完成后或回到结账页时会自动放回购物车。",
       "parkNote": "充值需要单独支付。期间购物车里的商品会暂时移出，充值后自动放回。",
-      "part": "{label} {amount}（{expiry}）",
       "partTopup": "充值",
       "partGift": "赠送",
       "partRefund": "退款",
-      "partNeverExpires": "不过期",
-      "partExpires": "{date}过期",
-      "partSomeExpire": "其中 {amount} 于 {date}过期"
+      "expiringTopup": "其中充值额度：{amount}（{date}过期）",
+      "expiringGift": "其中赠送额度：{amount}（{date}过期）",
+      "expiringRefund": "其中退款额度：{amount}（{date}过期）"
     },
     "referral": {
       "title": "邀请好友",

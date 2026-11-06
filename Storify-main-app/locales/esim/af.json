@@ -236,13 +236,12 @@
       "backToCheckout": "Terug na betaal",
       "parked": "{count} items uit jou mandjie word opsy gehou terwyl jy geld byvoeg. Hulle gaan terug na jou mandjie sodra dit betaal is, of wanneer jy na betaal terugkeer.",
       "parkNote": "Geld byvoeg word apart betaal. Die items in jou mandjie word intussen opsy gehou en gaan daarna terug na jou mandjie.",
-      "part": "{label} {amount} ({expiry})",
       "partTopup": "Aangevul",
       "partGift": "Geskenk",
       "partRefund": "Terugbetaling",
-      "partNeverExpires": "verval nie",
-      "partExpires": "verval op {date}",
-      "partSomeExpire": "{amount} daarvan verval op {date}"
+      "expiringTopup": "Waarvan aangevulde krediet: {amount} (verval op {date})",
+      "expiringGift": "Waarvan geskenkkrediet: {amount} (verval op {date})",
+      "expiringRefund": "Waarvan terugbetalingskrediet: {amount} (verval op {date})"
     },
     "referral": {
       "title": "Nooi vriende",

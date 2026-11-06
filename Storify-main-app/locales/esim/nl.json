@@ -236,13 +236,12 @@
       "backToCheckout": "Terug naar afrekenen",
       "parked": "{count} artikelen uit je winkelwagen worden apart gezet terwijl je geld toevoegt. Ze gaan terug naar je winkelwagen zodra er betaald is, of wanneer je terugkeert naar afrekenen.",
       "parkNote": "Geld toevoegen wordt los betaald. De artikelen in je winkelwagen worden intussen apart gezet en gaan daarna terug naar je winkelwagen.",
-      "part": "{label} {amount} ({expiry})",
       "partTopup": "Opgewaardeerd",
       "partGift": "Cadeau",
       "partRefund": "Terugbetaling",
-      "partNeverExpires": "verloopt niet",
-      "partExpires": "verloopt op {date}",
-      "partSomeExpire": "waarvan {amount} verloopt op {date}"
+      "expiringTopup": "Waarvan opgewaardeerd tegoed: {amount} (verloopt op {date})",
+      "expiringGift": "Waarvan cadeautegoed: {amount} (verloopt op {date})",
+      "expiringRefund": "Waarvan terugbetaald tegoed: {amount} (verloopt op {date})"
     },
     "referral": {
       "title": "Vrienden uitnodigen",

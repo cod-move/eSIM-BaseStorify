@@ -236,13 +236,12 @@
       "backToCheckout": "購入手続きに戻る",
       "parked": "入金中、カート内の{count}件の商品を一時的に取り置きます。入金が完了するか購入手続きに戻ると、カートに戻ります。",
       "parkNote": "入金は別途お支払いいただきます。その間カート内の商品は取り置かれ、あとでカートに戻ります。",
-      "part": "{label} {amount}（{expiry}）",
       "partTopup": "チャージ",
       "partGift": "プレゼント",
       "partRefund": "返金",
-      "partNeverExpires": "無期限",
-      "partExpires": "{date}に失効",
-      "partSomeExpire": "うち {amount} が {date}に失効"
+      "expiringTopup": "うちチャージ分：{amount}（{date}に失効）",
+      "expiringGift": "うちプレゼント分：{amount}（{date}に失効）",
+      "expiringRefund": "うち返金分：{amount}（{date}に失効）"
     },
     "referral": {
       "title": "友だちを招待",

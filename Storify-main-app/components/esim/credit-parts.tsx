@@ -8,8 +8,9 @@ import type { CreditKind, CreditPart } from "@/lib/esim/wallet/credit-parts";
 
 /**
  * The balance by where it came from (patch P38, lib/esim/wallet/credit-parts.ts):
- * "Topped up $20 (never expires) + Gift $10 (expires 31 Dec 2026)", and the
- * small tags on each history row.
+ * under the balance, only what of it expires ("Of which gift credit: $10,
+ * expires 31 Dec 2026"; the rest never does), and the small tags on each
+ * history row.
  */
 
 function money(amount: number, currencyCode: string) {
@@ -30,23 +31,22 @@ function useKindLabel() {
 export function CreditPartsLine({ parts, currency, className }: { parts: CreditPart[]; currency: string; className?: string }) {
   const t = useFallbackTranslator(useTranslations());
   const locale = useLocale();
-  const label = useKindLabel();
-  if (!parts.length) return null;
+  const expiring = parts.filter((part) => part.nextExpiry);
+  if (!expiring.length) return null;
   const date = (value: string) => new Date(value).toLocaleDateString(locale, { day: "numeric", month: "short", year: "numeric" });
-  const text = parts
-    .map((part) =>
-      t("esim.wallet.part", "{label} {amount} ({expiry})", {
-        label: label(part.kind),
-        amount: money(part.amount, currency),
-        expiry: !part.nextExpiry
-          ? t("esim.wallet.partNeverExpires", "never expires")
-          : part.nextExpiry.amount >= part.amount
-            ? t("esim.wallet.partExpires", "expires {date}", { date: date(part.nextExpiry.expiresAt) })
-            : t("esim.wallet.partSomeExpire", "{amount} of it expires {date}", { amount: money(part.nextExpiry.amount, currency), date: date(part.nextExpiry.expiresAt) }),
-      }),
-    )
-    .join(" + ");
-  return <p className={className ?? "text-sm text-muted-foreground"}>{text}</p>;
+  const line = (part: CreditPart) => {
+    const values = { amount: money(part.nextExpiry!.amount, currency), date: date(part.nextExpiry!.expiresAt) };
+    if (part.kind === "topup") return t("esim.wallet.expiringTopup", "Of which topped-up credit: {amount} (expires {date})", values);
+    if (part.kind === "refund") return t("esim.wallet.expiringRefund", "Of which refund credit: {amount} (expires {date})", values);
+    return t("esim.wallet.expiringGift", "Of which gift credit: {amount} (expires {date})", values);
+  };
+  return (
+    <div className={className ?? "space-y-0.5 text-sm text-muted-foreground"}>
+      {expiring.map((part) => (
+        <p key={part.kind}>{line(part)}</p>
+      ))}
+    </div>
+  );
 }
 
 export function CreditKindTags({ kinds, currency }: { kinds: Array<{ kind: CreditKind; amount: number }>; currency: string }) {

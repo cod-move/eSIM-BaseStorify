@@ -236,13 +236,12 @@
       "backToCheckout": "Padà sí ìsanwó",
       "parked": "Àwọn nǹkan {count} láti inú kẹ̀kẹ́ ọjà rẹ wà ní ẹ̀gbẹ́ nígbà tí o ń fi owó kún un. Wọ́n máa padà sí kẹ̀kẹ́ ọjà rẹ nígbà tí a bá ti sanwó, tàbí nígbà tí o bá padà sí ìsanwó.",
       "parkNote": "À ń san fífi owó kún un lọ́tọ̀. Àwọn nǹkan inú kẹ̀kẹ́ ọjà rẹ wà ní ẹ̀gbẹ́ fún ìgbà díẹ̀, wọ́n á sì padà sí kẹ̀kẹ́ ọjà rẹ lẹ́yìn náà.",
-      "part": "{label} {amount} ({expiry})",
       "partTopup": "Tí o fi kún",
       "partGift": "Ẹ̀bùn",
       "partRefund": "Àsanpadà",
-      "partNeverExpires": "kì í parí",
-      "partExpires": "yóò parí ní {date}",
-      "partSomeExpire": "{amount} nínú rẹ̀ yóò parí ní {date}"
+      "expiringTopup": "Nínú rẹ̀, owó tí o fi kún: {amount} (yóò parí ní {date})",
+      "expiringGift": "Nínú rẹ̀, owó ẹ̀bùn: {amount} (yóò parí ní {date})",
+      "expiringRefund": "Nínú rẹ̀, owó àsanpadà: {amount} (yóò parí ní {date})"
     },
     "referral": {
       "title": "Pe àwọn ọ̀rẹ́",
