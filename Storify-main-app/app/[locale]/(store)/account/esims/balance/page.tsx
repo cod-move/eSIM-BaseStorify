@@ -11,6 +11,8 @@ import { findWalletProduct } from "@/lib/esim/wallet/product";
 import { formatStorePrice } from "@/lib/esim/topup/format";
 import { WalletTopupForm } from "@/components/esim/wallet-topup-form";
 import { parkedLineCount } from "@/lib/esim/wallet/park";
+import { creditParts } from "@/lib/esim/wallet/credit-history";
+import { CreditPartsLine } from "@/components/esim/credit-parts";
 
 interface PageProps {
   params: Promise<{ locale: string }>;
@@ -32,11 +34,12 @@ export default async function AccountBalancePage({ params, searchParams }: PageP
   const session = await getAccountSession();
   if (!session) notFound();
   await connectDB();
-  const [balances, settings, product, parked] = await Promise.all([
+  const [balances, settings, product, parked, parts] = await Promise.all([
     storeCreditSummary(session.user.id),
     getEsimSettings(),
     findWalletProduct(),
     parkedLineCount(session.user.id),
+    creditParts(session.user.id),
   ]);
   const balance = balances.find((entry) => entry.currency === "USD")?.balance ?? 0;
   const wallet = settings.wallet;
@@ -53,6 +56,7 @@ export default async function AccountBalancePage({ params, searchParams }: PageP
       <div className="space-y-1">
         <h1 className="text-xl font-bold sm:text-2xl">{tr("esim.wallet.title", "Balance")}</h1>
         <p className="text-3xl font-bold">{formatStorePrice(Math.round(balance * 100), locale)}</p>
+        <CreditPartsLine parts={parts.get("USD") ?? []} currency="USD" />
         <Link href="/account/store-credit" className="text-sm text-primary hover:underline">
           {tr("esim.wallet.history", "See every change")}
         </Link>

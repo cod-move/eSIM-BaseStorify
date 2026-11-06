@@ -52,7 +52,8 @@
       "vpn": "VPN imejumuishwa",
       "remark": "Jina",
       "addRemark": "Ongeza jina, k.m. \"Safari ya Japani\"",
-      "remarkFailed": "Haikuweza kuhifadhi jina"
+      "remarkFailed": "Haikuweza kuhifadhi jina",
+      "buyNew": "Nunua eSIM mpya"
     },
     "browse": {
       "title": "Maeneo ya eSIM",
@@ -234,7 +235,14 @@
       "topUp": "Ongeza salio",
       "backToCheckout": "Rudi kwenye malipo",
       "parked": "Bidhaa {count} kutoka kikapu chako zimewekwa kando unapoongeza pesa. Zinarudi kwenye kikapu chako baada ya kulipwa, au unaporudi kwenye malipo.",
-      "parkNote": "Kuongeza pesa kunalipwa peke yake. Bidhaa za kikapu chako zinawekwa kando kwa sasa na kurudi kwenye kikapu baadaye."
+      "parkNote": "Kuongeza pesa kunalipwa peke yake. Bidhaa za kikapu chako zinawekwa kando kwa sasa na kurudi kwenye kikapu baadaye.",
+      "part": "{label} {amount} ({expiry})",
+      "partTopup": "Iliyoongezwa",
+      "partGift": "Zawadi",
+      "partRefund": "Marejesho",
+      "partNeverExpires": "haiishi muda",
+      "partExpires": "inaisha {date}",
+      "partSomeExpire": "{amount} yake inaisha {date}"
     },
     "referral": {
       "title": "Alika marafiki",
@@ -439,7 +447,7 @@
       "entryFrom": "Namba {count} · kuanzia {price}",
       "notReady": "Namba haziwezi kununuliwa kwa sasa. Tafadhali jaribu tena baadaye au wasiliana nasi.",
       "creditLine": "Salio kwenye namba",
-      "chargedAs": "Utatozwa {price} wakati wa kulipa."
+      "chargedAtRate": "Kwa kiwango cha sasa cha ubadilishaji {amount} = {price}, kwa hivyo utalipa {price} wakati wa malipo."
     },
     "number": {
       "blocked": "Imezuiwa",
@@ -1375,7 +1383,16 @@
       "numberPremiumShortIn": "Ada ya ziada ({currency})",
       "destinationNames": "Jina kwa kila lugha",
       "destinationNamesHint": "Msambazaji anaiita \"{name}\". Acha lugha tupu ili kuonyesha jina la kiotomatiki la kijivu: jina la nchi kwa nchi moja, la msambazaji kwa nyingine.",
-      "namesSaved": "Majina yamehifadhiwa"
+      "namesSaved": "Majina yamehifadhiwa",
+      "mergeTitle": "Unganisha na kituo kingine",
+      "mergeHint": "Kwa vituo viwili ambavyo ni mahali pamoja chini ya majina tofauti ya wasambazaji. Baada ya kuunganisha, vifurushi vya kituo hiki, pamoja na vile wasambazaji wataongeza baadaye, vitauzwa chini ya kituo unachochagua, na anwani ya ukurasa huu itaelekeza huko. Vituo vya nchi moja huunganishwa kiotomatiki.",
+      "mergeSearch": "Tafuta vituo",
+      "mergeInto": "Unganisha na",
+      "mergeConfirm": "Unganisha \"{from}\" na \"{into}\"? Bidhaa yake itakuwa rasimu na anwani yake itaelekeza huko.",
+      "merged": "Vituo vimeunganishwa",
+      "mergedHere": "Vilivyounganishwa na kituo hiki",
+      "unmerge": "Tendua",
+      "unmerged": "Kuunganisha kumetenduliwa. Bidhaa ya kituo hicho itabaki rasimu hadi uionyeshe tena."
     },
     "sidebar": {
       "esim": "eSIM",

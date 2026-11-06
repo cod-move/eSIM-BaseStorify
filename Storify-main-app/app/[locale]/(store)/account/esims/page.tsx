@@ -1,6 +1,7 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { ChevronRight, Phone, Smartphone } from "lucide-react";
+import { ChevronRight, Phone, Plus, Smartphone } from "lucide-react";
 import Link from "@/components/language/link";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { connectDB } from "@/lib/db";
 import { getAccountSession } from "@/lib/customers/account-data";
@@ -33,11 +34,21 @@ export default async function AccountEsimsPage({ params }: PageProps) {
 
   return (
     <div className="space-y-6">
-      <div className="hidden lg:block">
-        <h1 className="text-xl font-bold sm:text-2xl">{tr("esim.account.title", "My eSIMs")}</h1>
-        <p className="text-sm text-muted-foreground sm:text-base">
-          {tr("esim.account.description", "Install, check remaining data and top up your eSIMs.")}
-        </p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="hidden lg:block">
+          <h1 className="text-xl font-bold sm:text-2xl">{tr("esim.account.title", "My eSIMs")}</h1>
+          <p className="text-sm text-muted-foreground sm:text-base">
+            {tr("esim.account.description", "Install, check remaining data and top up your eSIMs.")}
+          </p>
+        </div>
+        {esims.length ? (
+          <Button asChild className="w-full sm:ms-auto sm:w-auto">
+            <Link href="/esim">
+              <Plus className="me-1 h-4 w-4" />
+              {tr("esim.account.buyNew", "Buy a new eSIM")}
+            </Link>
+          </Button>
+        ) : null}
       </div>
 
       <Link href="/account/esims/balance" className="block">

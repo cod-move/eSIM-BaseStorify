@@ -52,7 +52,8 @@
       "vpn": "I-VPN iqukiwe",
       "remark": "Igama",
       "addRemark": "Yongeza igama, umz. \"Uhambo lwaseJapan\"",
-      "remarkFailed": "Ayikwazanga ukugcina igama"
+      "remarkFailed": "Ayikwazanga ukugcina igama",
+      "buyNew": "Thenga i-eSIM entsha"
     },
     "browse": {
       "title": "Iindawo ze-eSIM",
@@ -234,7 +235,14 @@
       "topUp": "Gcwalisa",
       "backToCheckout": "Buyela ekuhlawuleni",
       "parked": "Izinto ezi-{count} ezikwinqwelo yakho zibekwa ecaleni ngelixa usongeza imali. Zibuyela kwinqwelo xa sele ihlawulwe, okanye xa ubuyela ekuhlawuleni.",
-      "parkNote": "Ukongeza imali kuhlawulwa ngokwahlukeneyo. Izinto ezikwinqwelo yakho zibekwa ecaleni okwangoku kwaye zibuyela kwinqwelo emva koko."
+      "parkNote": "Ukongeza imali kuhlawulwa ngokwahlukeneyo. Izinto ezikwinqwelo yakho zibekwa ecaleni okwangoku kwaye zibuyela kwinqwelo emva koko.",
+      "part": "{label} {amount} ({expiry})",
+      "partTopup": "Ezongezwe nguwe",
+      "partGift": "Isipho",
+      "partRefund": "Imbuyekezo",
+      "partNeverExpires": "ayiphelelwa",
+      "partExpires": "iphelelwa ngo-{date}",
+      "partSomeExpire": "u-{amount} wayo uphelelwa ngo-{date}"
     },
     "referral": {
       "title": "Mema abahlobo",
@@ -439,7 +447,7 @@
       "entryFrom": "Iinombolo ezi-{count} · ukusuka kwi-{price}",
       "notReady": "Iinombolo azinakuthengwa okwangoku. Nceda uzame kwakhona kamva okanye unxibelelane nathi.",
       "creditLine": "Ityala kwinombolo",
-      "chargedAs": "Kuza kuhlawuliswa {price} xa uhlawula."
+      "chargedAtRate": "Ngezinga lotshintshiselwano langoku {amount} = {price}, ngoko uya kuhlawula {price} xa uhlawula."
     },
     "number": {
       "blocked": "Ivaliwe",
@@ -1375,7 +1383,16 @@
       "numberPremiumShortIn": "Intlawulo eyongezelelweyo ({currency})",
       "destinationNames": "Igama ngolwimi ngalunye",
       "destinationNamesHint": "Umthengisi uyibiza ngokuthi \"{name}\". Shiya ulwimi lungenanto ukuze kuboniswe igama elizenzekelayo ngengwevu: igama lelizwe kwilizwe elinye, elomthengisi kwamanye.",
-      "namesSaved": "Amagama agciniwe"
+      "namesSaved": "Amagama agciniwe",
+      "mergeTitle": "Dibanisa nendawo enye",
+      "mergeHint": "Kwiindawo ezimbini eziyindawo enye kodwa ababoneleli bazinika amagama ahlukeneyo. Emva kokudibanisa, iipakethe zale ndawo, kunye nezo ziza kongezwa kamva, ziya kuthengiswa phantsi kwendawo oyikhethileyo, kwaye idilesi yeli phepha iya kuthumela apho. Iindawo zelizwe elinye zidityaniswa ngokuzenzekelayo.",
+      "mergeSearch": "Khangela iindawo",
+      "mergeInto": "Dibanisa no",
+      "mergeConfirm": "Dibanisa \"{from}\" no \"{into}\"? Imveliso yayo iya kuba yidrafti kwaye idilesi yayo iya kuthumela apho.",
+      "merged": "Iindawo zidityanisiwe",
+      "mergedHere": "Ezidityaniswe nale ndawo",
+      "unmerge": "Rhoxisa",
+      "unmerged": "Ukudityaniswa kurhoxisiwe. Imveliso yaloo ndawo ihlala iyidrafti de uphinde uyibonise."
     },
     "sidebar": {
       "esim": "eSIM",

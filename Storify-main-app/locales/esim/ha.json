@@ -52,7 +52,8 @@
       "vpn": "Ya haɗa da VPN",
       "remark": "Suna",
       "addRemark": "Ƙara suna, misali \"Tafiyar Japan\"",
-      "remarkFailed": "Ba a iya ajiye sunan ba"
+      "remarkFailed": "Ba a iya ajiye sunan ba",
+      "buyNew": "Sayi sabuwar eSIM"
     },
     "browse": {
       "title": "Wuraren eSIM",
@@ -234,7 +235,14 @@
       "topUp": "Ƙara caji",
       "backToCheckout": "Koma wurin biya",
       "parked": "Abubuwa {count} daga kwandonka an ajiye su gefe yayin da kake ƙara kuɗi. Za su koma kwandonka idan an biya, ko idan ka koma wurin biya.",
-      "parkNote": "Ƙara kuɗi ana biya shi daban. Abubuwan da ke kwandonka an ajiye su gefe zuwa lokacin, sannan su koma kwandonka."
+      "parkNote": "Ƙara kuɗi ana biya shi daban. Abubuwan da ke kwandonka an ajiye su gefe zuwa lokacin, sannan su koma kwandonka.",
+      "part": "{label} {amount} ({expiry})",
+      "partTopup": "Cajin da ka yi",
+      "partGift": "Kyauta",
+      "partRefund": "Maidowa",
+      "partNeverExpires": "ba ya ƙarewa",
+      "partExpires": "zai ƙare {date}",
+      "partSomeExpire": "{amount} daga ciki zai ƙare {date}"
     },
     "referral": {
       "title": "Gayyaci abokai",
@@ -439,7 +447,7 @@
       "entryFrom": "Lambobi {count} · daga {price}",
       "notReady": "Ba za a iya sayan lambobi yanzu ba. Don Allah sake gwadawa daga baya ko tuntuɓe mu.",
       "creditLine": "Kuɗi a kan lambar",
-      "chargedAs": "Za a caje {price} a lokacin biya."
+      "chargedAtRate": "A farashin musaya na yanzu {amount} = {price}, don haka za ka biya {price} a wurin biya."
     },
     "number": {
       "blocked": "An toshe",
@@ -1375,7 +1383,16 @@
       "numberPremiumShortIn": "Ƙarin kuɗi ({currency})",
       "destinationNames": "Suna a kowane harshe",
       "destinationNamesHint": "Mai samarwa yana kiran sa \"{name}\". Bar harshe babu komai don nuna sunan atomatik mai launin toka: sunan ƙasa idan ƙasa ɗaya ce, na mai samarwa idan ba haka ba.",
-      "namesSaved": "An adana sunaye"
+      "namesSaved": "An adana sunaye",
+      "mergeTitle": "Haɗa da wata manufa",
+      "mergeHint": "Don manufofi biyu da wuri ɗaya ne amma masu kawowa sun ba su sunaye daban. Bayan haɗawa, fakitin wannan manufa, har da waɗanda za a ƙara daga baya, za a sayar da su ƙarƙashin wadda ka zaɓa, kuma adireshin wannan shafi zai tura can. Manufofin ƙasa ɗaya ana haɗa su kai tsaye.",
+      "mergeSearch": "Nemi manufofi",
+      "mergeInto": "Haɗa da",
+      "mergeConfirm": "A haɗa \"{from}\" da \"{into}\"? Kayanta zai koma daftari kuma adireshinta zai tura can.",
+      "merged": "An haɗa manufofi",
+      "mergedHere": "An haɗa da wannan manufa",
+      "unmerge": "Soke",
+      "unmerged": "An soke haɗawa. Kayan waccan manufa zai kasance daftari har sai ka sake nuna shi."
     },
     "sidebar": {
       "esim": "eSIM",

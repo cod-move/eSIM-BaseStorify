@@ -52,7 +52,8 @@
       "vpn": "VPN wà nínú rẹ̀",
       "remark": "Orúkọ",
       "addRemark": "Fi orúkọ kún un, àpẹẹrẹ \"Ìrìn-àjò Japan\"",
-      "remarkFailed": "Kò ṣeé ṣe láti fi orúkọ pamọ́"
+      "remarkFailed": "Kò ṣeé ṣe láti fi orúkọ pamọ́",
+      "buyNew": "Ra eSIM tuntun"
     },
     "browse": {
       "title": "Àwọn ibi tí eSIM ń lọ",
@@ -234,7 +235,14 @@
       "topUp": "Ṣàfikún",
       "backToCheckout": "Padà sí ìsanwó",
       "parked": "Àwọn nǹkan {count} láti inú kẹ̀kẹ́ ọjà rẹ wà ní ẹ̀gbẹ́ nígbà tí o ń fi owó kún un. Wọ́n máa padà sí kẹ̀kẹ́ ọjà rẹ nígbà tí a bá ti sanwó, tàbí nígbà tí o bá padà sí ìsanwó.",
-      "parkNote": "À ń san fífi owó kún un lọ́tọ̀. Àwọn nǹkan inú kẹ̀kẹ́ ọjà rẹ wà ní ẹ̀gbẹ́ fún ìgbà díẹ̀, wọ́n á sì padà sí kẹ̀kẹ́ ọjà rẹ lẹ́yìn náà."
+      "parkNote": "À ń san fífi owó kún un lọ́tọ̀. Àwọn nǹkan inú kẹ̀kẹ́ ọjà rẹ wà ní ẹ̀gbẹ́ fún ìgbà díẹ̀, wọ́n á sì padà sí kẹ̀kẹ́ ọjà rẹ lẹ́yìn náà.",
+      "part": "{label} {amount} ({expiry})",
+      "partTopup": "Tí o fi kún",
+      "partGift": "Ẹ̀bùn",
+      "partRefund": "Àsanpadà",
+      "partNeverExpires": "kì í parí",
+      "partExpires": "yóò parí ní {date}",
+      "partSomeExpire": "{amount} nínú rẹ̀ yóò parí ní {date}"
     },
     "referral": {
       "title": "Pe àwọn ọ̀rẹ́",
@@ -439,7 +447,7 @@
       "entryFrom": "Nọ́mbà {count} · láti {price}",
       "notReady": "A kò lè ra nọ́mbà báyìí. Jọ̀wọ́ gbìyànjú lẹ́ẹ̀kansí lẹ́yìn náà tàbí kàn sí wa.",
       "creditLine": "Owó lórí nọ́mbà",
-      "chargedAs": "A ó gba {price} nígbà ìsanwó."
+      "chargedAtRate": "Ní ìwọ̀n pàṣípààrọ̀ lọ́wọ́lọ́wọ́ {amount} = {price}, nítorí náà ìwọ yóò san {price} níbi ìsanwó."
     },
     "number": {
       "blocked": "A ti dí i",
@@ -1375,7 +1383,16 @@
       "numberPremiumShortIn": "Owó àfikún ({currency})",
       "destinationNames": "Orúkọ ní èdè kọ̀ọ̀kan",
       "destinationNamesHint": "Olùpèsè pè é ní \"{name}\". Fi èdè kan sílẹ̀ ní òfo láti fi orúkọ aládàáṣe aláwọ̀ eérú hàn: orúkọ orílẹ̀-èdè fún orílẹ̀-èdè kan, ti olùpèsè fún àwọn mìíràn.",
-      "namesSaved": "A ti fi àwọn orúkọ pamọ́"
+      "namesSaved": "A ti fi àwọn orúkọ pamọ́",
+      "mergeTitle": "Darapọ̀ mọ́ ibi míì",
+      "mergeHint": "Fún ibi méjì tí ó jẹ́ ibì kan náà ṣùgbọ́n tí àwọn olùpèsè fún ní orúkọ ọ̀tọ̀. Lẹ́yìn ìdàpọ̀, àwọn àpò ibi yìí, àti àwọn tí wọ́n bá fi kún un lẹ́yìn, yóò máa tà lábẹ́ èyí tí o yàn, àdírẹ́sì ojú-ìwé yìí yóò sì darí síbẹ̀. Àwọn ibi orílẹ̀-èdè kan ṣoṣo ni a ń darapọ̀ fúnra wọn.",
+      "mergeSearch": "Wá àwọn ibi",
+      "mergeInto": "Darapọ̀ mọ́",
+      "mergeConfirm": "Darapọ̀ \"{from}\" mọ́ \"{into}\"? Ọjà rẹ̀ yóò di àkọsílẹ̀, àdírẹ́sì rẹ̀ yóò sì darí síbẹ̀.",
+      "merged": "A ti darapọ̀ àwọn ibi",
+      "mergedHere": "Tí a darapọ̀ mọ́ ibi yìí",
+      "unmerge": "Fagilé",
+      "unmerged": "A ti fagilé ìdàpọ̀. Ọjà ibi yẹn yóò wà bí àkọsílẹ̀ títí o ó fi tún fi hàn."
     },
     "sidebar": {
       "esim": "eSIM",

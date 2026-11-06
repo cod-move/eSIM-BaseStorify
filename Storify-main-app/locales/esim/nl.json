@@ -52,7 +52,8 @@
       "vpn": "VPN inbegrepen",
       "remark": "Naam",
       "addRemark": "Voeg een naam toe, bijv. \"Reis naar Japan\"",
-      "remarkFailed": "Kon de naam niet opslaan"
+      "remarkFailed": "Kon de naam niet opslaan",
+      "buyNew": "Nieuwe eSIM kopen"
     },
     "browse": {
       "title": "eSIM-bestemmingen",
@@ -234,7 +235,14 @@
       "topUp": "Opwaarderen",
       "backToCheckout": "Terug naar afrekenen",
       "parked": "{count} artikelen uit je winkelwagen worden apart gezet terwijl je geld toevoegt. Ze gaan terug naar je winkelwagen zodra er betaald is, of wanneer je terugkeert naar afrekenen.",
-      "parkNote": "Geld toevoegen wordt los betaald. De artikelen in je winkelwagen worden intussen apart gezet en gaan daarna terug naar je winkelwagen."
+      "parkNote": "Geld toevoegen wordt los betaald. De artikelen in je winkelwagen worden intussen apart gezet en gaan daarna terug naar je winkelwagen.",
+      "part": "{label} {amount} ({expiry})",
+      "partTopup": "Opgewaardeerd",
+      "partGift": "Cadeau",
+      "partRefund": "Terugbetaling",
+      "partNeverExpires": "verloopt niet",
+      "partExpires": "verloopt op {date}",
+      "partSomeExpire": "waarvan {amount} verloopt op {date}"
     },
     "referral": {
       "title": "Vrienden uitnodigen",
@@ -439,7 +447,7 @@
       "entryFrom": "{count} nummers · vanaf {price}",
       "notReady": "Nummers kunnen nu niet worden gekocht. Probeer het later opnieuw of neem contact met ons op.",
       "creditLine": "Tegoed op het nummer",
-      "chargedAs": "Bij het afrekenen wordt {price} berekend."
+      "chargedAtRate": "Tegen de huidige wisselkoers is {amount} = {price}, dus je betaalt {price} bij het afrekenen."
     },
     "number": {
       "blocked": "Geblokkeerd",
@@ -1375,7 +1383,16 @@
       "numberPremiumShortIn": "Toeslag ({currency})",
       "destinationNames": "Naam in elke taal",
       "destinationNamesHint": "De leverancier noemt het „{name}”. Laat een taal leeg voor de automatische naam in grijs: de naam van het land bij één land, anders die van de leverancier.",
-      "namesSaved": "Namen opgeslagen"
+      "namesSaved": "Namen opgeslagen",
+      "mergeTitle": "Samenvoegen met een andere bestemming",
+      "mergeHint": "Voor twee bestemmingen die dezelfde plek zijn onder verschillende leveranciersnamen. De bundels van deze bestemming, ook later toegevoegde, worden dan verkocht onder de bestemming die je kiest, en het adres van deze pagina verwijst daarheen. Bestemmingen met één land worden automatisch samengevoegd.",
+      "mergeSearch": "Bestemmingen zoeken",
+      "mergeInto": "Samenvoegen met",
+      "mergeConfirm": "\"{from}\" samenvoegen met \"{into}\"? Het product wordt een concept en het adres verwijst daarheen.",
+      "merged": "Bestemmingen samengevoegd",
+      "mergedHere": "Samengevoegd met deze bestemming",
+      "unmerge": "Ongedaan maken",
+      "unmerged": "Samenvoegen ongedaan gemaakt. Het product van die bestemming blijft een concept tot je het weer toont."
     },
     "sidebar": {
       "esim": "eSIM",

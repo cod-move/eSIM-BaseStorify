@@ -52,7 +52,8 @@
       "vpn": "VPN inklusive",
       "remark": "Name",
       "addRemark": "Namen hinzufügen, z. B. „Japanreise“",
-      "remarkFailed": "Name konnte nicht gespeichert werden"
+      "remarkFailed": "Name konnte nicht gespeichert werden",
+      "buyNew": "Neue eSIM kaufen"
     },
     "browse": {
       "title": "eSIM-Reiseziele",
@@ -234,7 +235,14 @@
       "topUp": "Aufladen",
       "backToCheckout": "Zurück zur Kasse",
       "parked": "{count} Artikel aus deinem Warenkorb werden beiseitegelegt, während du Geld einzahlst. Sie kommen zurück in den Warenkorb, sobald bezahlt ist oder wenn du zur Kasse zurückkehrst.",
-      "parkNote": "Die Einzahlung wird separat bezahlt. Die Artikel im Warenkorb werden so lange beiseitegelegt und kommen danach zurück."
+      "parkNote": "Die Einzahlung wird separat bezahlt. Die Artikel im Warenkorb werden so lange beiseitegelegt und kommen danach zurück.",
+      "part": "{label} {amount} ({expiry})",
+      "partTopup": "Aufgeladen",
+      "partGift": "Geschenkt",
+      "partRefund": "Erstattung",
+      "partNeverExpires": "verfällt nicht",
+      "partExpires": "verfällt am {date}",
+      "partSomeExpire": "davon {amount} verfällt am {date}"
     },
     "referral": {
       "title": "Freunde einladen",
@@ -439,7 +447,7 @@
       "entryFrom": "{count} Nummern · ab {price}",
       "notReady": "Nummern können gerade nicht gekauft werden. Bitte versuche es später erneut oder kontaktiere uns.",
       "creditLine": "Guthaben auf der Nummer",
-      "chargedAs": "Bei der Kasse werden {price} berechnet."
+      "chargedAtRate": "Zum aktuellen Wechselkurs sind {amount} = {price}, du zahlst also {price} an der Kasse."
     },
     "number": {
       "blocked": "Gesperrt",
@@ -1375,7 +1383,16 @@
       "numberPremiumShortIn": "Aufpreis ({currency})",
       "destinationNames": "Name in jeder Sprache",
       "destinationNamesHint": "Der Anbieter nennt es „{name}“. Lass eine Sprache leer, um den grau angezeigten automatischen Namen zu nutzen: bei einem einzelnen Land dessen Name, sonst den des Anbieters.",
-      "namesSaved": "Namen gespeichert"
+      "namesSaved": "Namen gespeichert",
+      "mergeTitle": "Mit einem anderen Ziel zusammenführen",
+      "mergeHint": "Für zwei Ziele, die derselbe Ort unter verschiedenen Lieferantennamen sind. Die Tarife dieses Ziels, auch später hinzukommende, werden dann unter dem gewählten Ziel verkauft, und die Adresse dieser Seite leitet dorthin weiter. Ziele mit nur einem Land werden automatisch zusammengeführt.",
+      "mergeSearch": "Ziele suchen",
+      "mergeInto": "Zusammenführen mit",
+      "mergeConfirm": "„{from}“ mit „{into}“ zusammenführen? Das Produkt wird zum Entwurf und die Adresse leitet dorthin weiter.",
+      "merged": "Ziele zusammengeführt",
+      "mergedHere": "Mit diesem Ziel zusammengeführt",
+      "unmerge": "Rückgängig",
+      "unmerged": "Zusammenführung rückgängig gemacht. Das Produkt des anderen Ziels bleibt ein Entwurf, bis du es wieder anzeigst."
     },
     "sidebar": {
       "esim": "eSIM",

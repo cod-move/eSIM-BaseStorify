@@ -120,6 +120,8 @@ async function readCatalog(): Promise<DestinationDetail[]> {
     const countries = new Map<string, string>();
     const networks = new Map<string, { countryCode: string; operator: string; network: string | null }>();
     const scopes = new Map<CoverageScope, number>();
+    // A merged destination (lib/esim/catalog/destination-key.ts) is named as most of its plans are.
+    const names = new Map<string, number>();
     const coverageSets: CoverageSet[] = [];
     const coverageIndex = new Map<string, number>();
     const coverageSetOf = (plan: PlanFacts) => {
@@ -138,6 +140,7 @@ async function readCatalog(): Promise<DestinationDetail[]> {
       if (!plan) continue;
       first ??= plan;
       scopes.set(plan.coverage.scope, (scopes.get(plan.coverage.scope) ?? 0) + 1);
+      names.set(plan.destination, (names.get(plan.destination) ?? 0) + 1);
       for (const country of plan.coverage.countries) countries.set(country.code, country.name);
       for (const network of networksOfPlan(plan)) {
         networks.set(`${network.countryCode}|${network.operator}|${network.network ?? ""}`, network);
@@ -178,7 +181,7 @@ async function readCatalog(): Promise<DestinationDetail[]> {
     const countryList = [...countries].map(([code, name]) => ({ code, name })).sort((a, b) => a.name.localeCompare(b.name));
     result.push({
       slug: urlSlug(link.productSlug),
-      name: first.destination,
+      name: [...names].sort((a, b) => b[1] - a[1])[0]?.[0] || first.destination,
       emoji: first.emoji ?? null,
       scope,
       continent: scope === "local" ? continentOf(countryList[0]?.code) : null,

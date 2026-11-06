@@ -52,7 +52,8 @@
       "vpn": "VPN ingesluit",
       "remark": "Naam",
       "addRemark": "Voeg 'n naam by, bv. \"Japan-reis\"",
-      "remarkFailed": "Kon nie die naam stoor nie"
+      "remarkFailed": "Kon nie die naam stoor nie",
+      "buyNew": "Koop 'n nuwe eSIM"
     },
     "browse": {
       "title": "eSIM-bestemmings",
@@ -234,7 +235,14 @@
       "topUp": "Laai op",
       "backToCheckout": "Terug na betaal",
       "parked": "{count} items uit jou mandjie word opsy gehou terwyl jy geld byvoeg. Hulle gaan terug na jou mandjie sodra dit betaal is, of wanneer jy na betaal terugkeer.",
-      "parkNote": "Geld byvoeg word apart betaal. Die items in jou mandjie word intussen opsy gehou en gaan daarna terug na jou mandjie."
+      "parkNote": "Geld byvoeg word apart betaal. Die items in jou mandjie word intussen opsy gehou en gaan daarna terug na jou mandjie.",
+      "part": "{label} {amount} ({expiry})",
+      "partTopup": "Aangevul",
+      "partGift": "Geskenk",
+      "partRefund": "Terugbetaling",
+      "partNeverExpires": "verval nie",
+      "partExpires": "verval op {date}",
+      "partSomeExpire": "{amount} daarvan verval op {date}"
     },
     "referral": {
       "title": "Nooi vriende",
@@ -439,7 +447,7 @@
       "entryFrom": "{count} nommers · vanaf {price}",
       "notReady": "Nommers kan nie nou gekoop word nie. Probeer asseblief later weer of kontak ons.",
       "creditLine": "Krediet op die nommer",
-      "chargedAs": "By die betaalpunt word {price} gehef."
+      "chargedAtRate": "Teen die huidige wisselkoers is {amount} = {price}, so jy betaal {price} by die betaalpunt."
     },
     "number": {
       "blocked": "Geblokkeer",
@@ -1375,7 +1383,16 @@
       "numberPremiumShortIn": "Toeslag ({currency})",
       "destinationNames": "Naam in elke taal",
       "destinationNamesHint": "Die verskaffer noem dit \"{name}\". Laat 'n taal leeg om die outomatiese naam in grys te wys: die land se naam vir een land, andersins die verskaffer s'n.",
-      "namesSaved": "Name gestoor"
+      "namesSaved": "Name gestoor",
+      "mergeTitle": "Saamvoeg met 'n ander bestemming",
+      "mergeHint": "Vir twee bestemmings wat dieselfde plek onder verskillende verskaffersname is. Hierdie bestemming se pakkette, ook dié wat later bygevoeg word, word dan onder die gekose bestemming verkoop, en hierdie bladsy se adres stuur daarheen aan. Bestemmings met een land word outomaties saamgevoeg.",
+      "mergeSearch": "Soek bestemmings",
+      "mergeInto": "Voeg saam met",
+      "mergeConfirm": "Voeg \"{from}\" saam met \"{into}\"? Die produk word 'n konsep en die adres stuur daarheen aan.",
+      "merged": "Bestemmings saamgevoeg",
+      "mergedHere": "Met hierdie bestemming saamgevoeg",
+      "unmerge": "Ontdoen",
+      "unmerged": "Saamvoeging ontdoen. Daardie bestemming se produk bly 'n konsep totdat jy dit weer wys."
     },
     "sidebar": {
       "esim": "eSIM",

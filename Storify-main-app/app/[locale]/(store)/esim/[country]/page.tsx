@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
 import { DestinationPage, destinationSeo } from "@/components/esim/destination-page";
 import { translator } from "@/lib/esim/i18n/server";
 import { getLocalizedDestination } from "@/lib/esim/storefront/destination-names";
+import { destinationRedirect } from "@/lib/esim/storefront/destination-redirect";
+import { localeHref } from "@/lib/i18n/locale-routing";
 
 interface PageProps {
   params: Promise<{ locale: string; country: string }>;
@@ -22,7 +24,12 @@ export default async function EsimCountryPage({ params }: PageProps) {
   const { locale, country } = await params;
   setRequestLocale(locale);
   const destination = await getLocalizedDestination(country, "local", locale);
-  if (!destination) notFound();
+  if (!destination) {
+    // A region's address, or a destination merged into another.
+    const moved = await destinationRedirect(country);
+    if (moved) permanentRedirect(await localeHref(locale, moved));
+    notFound();
+  }
   const tr = await translator(locale);
   return (
     <DestinationPage

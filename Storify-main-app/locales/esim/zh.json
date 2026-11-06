@@ -52,7 +52,8 @@
       "vpn": "含 VPN",
       "remark": "名称",
       "addRemark": "添加名称，例如「日本旅行」",
-      "remarkFailed": "名称保存失败"
+      "remarkFailed": "名称保存失败",
+      "buyNew": "购买新的 eSIM"
     },
     "browse": {
       "title": "eSIM 目的地",
@@ -234,7 +235,14 @@
       "topUp": "充值",
       "backToCheckout": "返回结账",
       "parked": "购物车里的 {count} 件商品在充值期间暂时移出，充值支付完成后或回到结账页时会自动放回购物车。",
-      "parkNote": "充值需要单独支付。期间购物车里的商品会暂时移出，充值后自动放回。"
+      "parkNote": "充值需要单独支付。期间购物车里的商品会暂时移出，充值后自动放回。",
+      "part": "{label} {amount}（{expiry}）",
+      "partTopup": "充值",
+      "partGift": "赠送",
+      "partRefund": "退款",
+      "partNeverExpires": "不过期",
+      "partExpires": "{date}过期",
+      "partSomeExpire": "其中 {amount} 于 {date}过期"
     },
     "referral": {
       "title": "邀请好友",
@@ -439,7 +447,7 @@
       "entryFrom": "{count} 个号码 · {price} 起",
       "notReady": "号码暂时无法购买，请稍后再试或联系客服。",
       "creditLine": "号码话费",
-      "chargedAs": "结账时按 {price} 支付。"
+      "chargedAtRate": "按当前汇率 {amount} = {price}，结账时按 {price} 支付。"
     },
     "number": {
       "blocked": "已停用",
@@ -1375,7 +1383,16 @@
       "numberPremiumShortIn": "靓号加价（{currency}）",
       "destinationNames": "各语言名称",
       "destinationNamesHint": "供应商的名称是「{name}」。某个语言留空则显示灰色的自动名称：单个国家用该语言的国名，其他用供应商的名称。",
-      "namesSaved": "名称已保存"
+      "namesSaved": "名称已保存",
+      "mergeTitle": "合并到其他目的地",
+      "mergeHint": "用于同一地方被供应商起了不同名字的两个目的地。合并后，这个目的地的套餐（包括供应商以后新增的）都归到你选的目的地下销售，本页地址也会跳转过去。只覆盖一个国家的目的地会自动合并。",
+      "mergeSearch": "搜索目的地",
+      "mergeInto": "合并到",
+      "mergeConfirm": "把「{from}」合并到「{into}」？它的商品会转为草稿，地址会跳转过去。",
+      "merged": "目的地已合并",
+      "mergedHere": "已合并到此目的地的",
+      "unmerge": "撤销",
+      "unmerged": "已撤销合并。那个目的地的商品仍是草稿，需要你重新上架。"
     },
     "sidebar": {
       "esim": "eSIM",

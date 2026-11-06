@@ -52,7 +52,8 @@
       "vpn": "VPN included",
       "remark": "Name",
       "addRemark": "Add a name, e.g. \"Japan trip\"",
-      "remarkFailed": "Could not save the name"
+      "remarkFailed": "Could not save the name",
+      "buyNew": "Buy a new eSIM"
     },
     "browse": {
       "title": "eSIM destinations",
@@ -234,7 +235,14 @@
       "topUp": "Top up",
       "backToCheckout": "Back to checkout",
       "parked": "{count} items from your cart are kept aside while you add money. They go back to your cart once it is paid, or when you return to checkout.",
-      "parkNote": "Adding money is paid on its own. The items in your cart are kept aside meanwhile and go back to your cart afterwards."
+      "parkNote": "Adding money is paid on its own. The items in your cart are kept aside meanwhile and go back to your cart afterwards.",
+      "part": "{label} {amount} ({expiry})",
+      "partTopup": "Topped up",
+      "partGift": "Gift",
+      "partRefund": "Refund",
+      "partNeverExpires": "never expires",
+      "partExpires": "expires {date}",
+      "partSomeExpire": "{amount} of it expires {date}"
     },
     "referral": {
       "title": "Invite friends",
@@ -439,7 +447,7 @@
       "entryFrom": "{count} numbers · from {price}",
       "notReady": "Numbers cannot be bought right now. Please try again later or contact us.",
       "creditLine": "Credit on the number",
-      "chargedAs": "Charged as {price} at checkout."
+      "chargedAtRate": "At the current exchange rate {amount} = {price}, so you pay {price} at checkout."
     },
     "number": {
       "blocked": "Blocked",
@@ -1375,7 +1383,16 @@
       "numberPremiumShortIn": "Premium ({currency})",
       "destinationNames": "Name in each language",
       "destinationNamesHint": "The supplier calls it \"{name}\". Leave a language empty to show the automatic name in grey: the country's own name for a single country, the supplier's name otherwise.",
-      "namesSaved": "Names saved"
+      "namesSaved": "Names saved",
+      "mergeTitle": "Merge into another destination",
+      "mergeHint": "For two destinations that are the same place under different supplier names. This destination's plans, and any the suppliers add later, are then sold under the one you pick, and this page's address redirects there. Destinations of a single country are merged automatically.",
+      "mergeSearch": "Search destinations",
+      "mergeInto": "Merge into",
+      "mergeConfirm": "Merge \"{from}\" into \"{into}\"? Its product goes to draft and its address redirects there.",
+      "merged": "Destinations merged",
+      "mergedHere": "Merged into this destination",
+      "unmerge": "Undo",
+      "unmerged": "Merge undone. That destination's product stays in draft until you show it again."
     },
     "sidebar": {
       "esim": "eSIM",

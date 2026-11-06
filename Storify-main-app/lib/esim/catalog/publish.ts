@@ -17,6 +17,7 @@ import { revalidateProductContent } from "@/lib/cache-invalidation";
 import { markProductsForCatalogSync } from "@/lib/meta-catalog/sync-marks";
 import { withInventoryWrite } from "@/lib/inventory/finance-context";
 import { slugify } from "@/lib/esim/providers/json";
+import { adoptMergedLink } from "@/lib/esim/catalog/merge";
 import { shownBundles } from "@/lib/esim/providers/registry";
 import { planProducts, type PlannedProduct, type VariantPlan } from "@/lib/esim/catalog/variants";
 import { ensureCategory } from "@/lib/esim/catalog/category";
@@ -359,7 +360,12 @@ export async function publishProducts(options: { productSlugs?: string[]; status
   const result: PublishResult = { created: [], updated: [], unchanged: [], drafted: [] };
 
   for (const product of planned) {
-    const link = links.get(product.productSlug);
+    // A destination merged into this one hands over its product (lib/esim/catalog/merge.ts).
+    const adopted = links.has(product.productSlug) ? null : await adoptMergedLink(product.productSlug);
+    if (adopted) {
+      for (const [slug, old] of links) if (String(old.product) === String(adopted.product)) links.delete(slug);
+    }
+    const link = links.get(product.productSlug) ?? adopted;
     const outcome = link ? await updateProduct(product, link) : null;
     if (outcome === "updated") result.updated.push(product.productSlug);
     else if (outcome === "unchanged") result.unchanged.push(product.productSlug);

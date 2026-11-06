@@ -52,7 +52,8 @@
       "vpn": "VPN inclus",
       "remark": "Nom",
       "addRemark": "Ajoutez un nom, par ex. « Voyage au Japon »",
-      "remarkFailed": "Impossible d'enregistrer le nom"
+      "remarkFailed": "Impossible d'enregistrer le nom",
+      "buyNew": "Acheter une nouvelle eSIM"
     },
     "browse": {
       "title": "Destinations eSIM",
@@ -234,7 +235,14 @@
       "topUp": "Recharger",
       "backToCheckout": "Retour au paiement",
       "parked": "{count} articles de votre panier sont mis de côté pendant que vous ajoutez de l'argent. Ils reviennent dans votre panier une fois le paiement effectué, ou quand vous revenez au paiement.",
-      "parkNote": "L'ajout d'argent se paie séparément. Les articles de votre panier sont mis de côté en attendant et y reviennent ensuite."
+      "parkNote": "L'ajout d'argent se paie séparément. Les articles de votre panier sont mis de côté en attendant et y reviennent ensuite.",
+      "part": "{label} {amount} ({expiry})",
+      "partTopup": "Rechargé",
+      "partGift": "Offert",
+      "partRefund": "Remboursement",
+      "partNeverExpires": "n'expire pas",
+      "partExpires": "expire le {date}",
+      "partSomeExpire": "dont {amount} expire le {date}"
     },
     "referral": {
       "title": "Inviter des amis",
@@ -439,7 +447,7 @@
       "entryFrom": "{count} numéros · dès {price}",
       "notReady": "Les numéros ne peuvent pas être achetés pour le moment. Réessayez plus tard ou contactez-nous.",
       "creditLine": "Crédit sur le numéro",
-      "chargedAs": "Facturé {price} au paiement."
+      "chargedAtRate": "Au taux de change actuel, {amount} = {price} : vous payez donc {price} au paiement."
     },
     "number": {
       "blocked": "Bloqué",
@@ -1375,7 +1383,16 @@
       "numberPremiumShortIn": "Supplément ({currency})",
       "destinationNames": "Nom dans chaque langue",
       "destinationNamesHint": "Le fournisseur l'appelle « {name} ». Laissez une langue vide pour afficher le nom automatique en gris : celui du pays pour un seul pays, celui du fournisseur sinon.",
-      "namesSaved": "Noms enregistrés"
+      "namesSaved": "Noms enregistrés",
+      "mergeTitle": "Fusionner avec une autre destination",
+      "mergeHint": "Pour deux destinations qui sont le même lieu sous des noms de fournisseurs différents. Les forfaits de cette destination, y compris ceux ajoutés plus tard, seront vendus sous celle que vous choisissez, et l'adresse de cette page y redirigera. Les destinations d'un seul pays sont fusionnées automatiquement.",
+      "mergeSearch": "Rechercher une destination",
+      "mergeInto": "Fusionner avec",
+      "mergeConfirm": "Fusionner « {from} » avec « {into} » ? Son produit passe en brouillon et son adresse y redirige.",
+      "merged": "Destinations fusionnées",
+      "mergedHere": "Fusionnées dans cette destination",
+      "unmerge": "Annuler",
+      "unmerged": "Fusion annulée. Le produit de cette destination reste en brouillon jusqu'à ce que vous le réaffichiez."
     },
     "sidebar": {
       "esim": "eSIM",

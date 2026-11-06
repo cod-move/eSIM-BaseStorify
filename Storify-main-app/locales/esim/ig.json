@@ -52,7 +52,8 @@
       "vpn": "VPN gụnyere",
       "remark": "Aha",
       "addRemark": "Tinye aha, dịka \"Njem Japan\"",
-      "remarkFailed": "Enweghị ike ịchekwa aha"
+      "remarkFailed": "Enweghị ike ịchekwa aha",
+      "buyNew": "Zụta eSIM ọhụrụ"
     },
     "browse": {
       "title": "Ebe eSIM",
@@ -234,7 +235,14 @@
       "topUp": "Tinye ego",
       "backToCheckout": "Laghachi n'ịkwụ ụgwọ",
       "parked": "Ihe {count} dị n'ụgbọ ahịa gị ka edobere n'akụkụ ka ị na-etinye ego. Ha na-alaghachi n'ụgbọ ahịa gị ozugbo akwụrụ ụgwọ, ma ọ bụ mgbe ị laghachiri n'ịkwụ ụgwọ.",
-      "parkNote": "A na-akwụ ụgwọ itinye ego iche. A na-edobe ihe ndị dị n'ụgbọ ahịa gị n'akụkụ ugbu a, ha ga-alaghachi n'ụgbọ ahịa gị mgbe e mesịrị."
+      "parkNote": "A na-akwụ ụgwọ itinye ego iche. A na-edobe ihe ndị dị n'ụgbọ ahịa gị n'akụkụ ugbu a, ha ga-alaghachi n'ụgbọ ahịa gị mgbe e mesịrị.",
+      "part": "{label} {amount} ({expiry})",
+      "partTopup": "Etinyere",
+      "partGift": "Onyinye",
+      "partRefund": "Nkwụghachi",
+      "partNeverExpires": "anaghị agwụ",
+      "partExpires": "ga-agwụ {date}",
+      "partSomeExpire": "{amount} n'ime ya ga-agwụ {date}"
     },
     "referral": {
       "title": "Kpọọ ndị enyi",
@@ -439,7 +447,7 @@
       "entryFrom": "Nọmba {count} · site na {price}",
       "notReady": "Enweghị ike ịzụta nọmba ugbu a. Biko nwaa ọzọ ma e mesịa ma ọ bụ kpọtụrụ anyị.",
       "creditLine": "Ego dị na nọmba",
-      "chargedAs": "A ga-ana {price} mgbe ị na-akwụ ụgwọ."
+      "chargedAtRate": "N'ọnụego mgbanwe ugbu a {amount} = {price}, ya mere ị ga-akwụ {price} mgbe ị na-akwụ ụgwọ."
     },
     "number": {
       "blocked": "Egbochiri ya",
@@ -1375,7 +1383,16 @@
       "numberPremiumShortIn": "Ego mgbakwunye ({currency})",
       "destinationNames": "Aha n'asụsụ ọ bụla",
       "destinationNamesHint": "Onye na-ebubata kpọrọ ya \"{name}\". Hapụ asụsụ efu iji gosi aha akpaaka na-acha ntụ: aha mba maka otu mba, aha onye na-ebubata maka ndị ọzọ.",
-      "namesSaved": "Echekwara aha"
+      "namesSaved": "Echekwara aha",
+      "mergeTitle": "Jikọta na ebe ọzọ",
+      "mergeHint": "Maka ebe abụọ bụ otu ebe mana ndị na-ebubata nyere ha aha dị iche. Mgbe ijikọta, a ga-ere atụmatụ ebe a, gụnyere ndị a ga-agbakwunye ma emechaa, n'okpuru ebe ị họọrọ, adreesị peeji a ga-eduga ebe ahụ. A na-ejikọta ebe nwere naanị otu mba na-akpaghị aka.",
+      "mergeSearch": "Chọọ ebe",
+      "mergeInto": "Jikọta na",
+      "mergeConfirm": "Jikọta \"{from}\" na \"{into}\"? Ngwaahịa ya ga-aghọ draftị, adreesị ya ga-eduga ebe ahụ.",
+      "merged": "Ejikọtala ebe",
+      "mergedHere": "Ejikọtara na ebe a",
+      "unmerge": "Gbanwee azụ",
+      "unmerged": "Agbanweela njikọ. Ngwaahịa ebe ahụ ga-anọgide dị ka draftị ruo mgbe i gosiri ya ọzọ."
     },
     "sidebar": {
       "esim": "eSIM",

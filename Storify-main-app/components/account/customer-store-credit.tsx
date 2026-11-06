@@ -1,6 +1,11 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
+import Link from "@/components/language/link"; // [esim-patch] P38
+import { Plus } from "lucide-react"; // [esim-patch] P38
+import { Button } from "@/components/ui/button"; // [esim-patch] P38
+import { CreditKindTags, CreditPartsLine } from "@/components/esim/credit-parts"; // [esim-patch] P38
+import type { CreditKind, CreditPart } from "@/lib/esim/wallet/credit-parts"; // [esim-patch] P38
 import { Card, CardContent } from "@/components/ui/card";
 import { useFallbackTranslator } from "@/hooks/use-fallback-translator";
 import { useSuspenseResource } from "@/hooks/use-suspense-resource";
@@ -11,6 +16,7 @@ type Balance = {
   currency: string;
   balance: number;
   nextExpiry: { amount: number; expiresAt: string } | null;
+  parts?: CreditPart[]; // [esim-patch] P38
 };
 
 type HistoryRow = {
@@ -23,6 +29,9 @@ type HistoryRow = {
   expiresAt?: string | null;
   note?: string;
   createdAt: string;
+  orderId?: string; // [esim-patch] P38
+  orderNumber?: string | null; // [esim-patch] P38
+  kinds?: Array<{ kind: CreditKind; amount: number }>; // [esim-patch] P38
 };
 
 function money(amount: number, currencyCode: string) {
@@ -45,6 +54,7 @@ export function CustomerStoreCredit() {
   const { data } = useSuspenseResource<{
     balances?: Balance[];
     history?: HistoryRow[];
+    walletTopup?: boolean; // [esim-patch] P38
   }>("/api/user/store-credit");
   const balances = data?.balances ?? [];
   const history = data?.history ?? [];
@@ -68,6 +78,7 @@ export function CustomerStoreCredit() {
     if (row.source === "order_refund_restore") {
       return tr("account.storeCreditRestored", "Given back from a refunded order");
     }
+    if (row.source === "wallet_topup") return tr("esim.wallet.lineName", "Wallet top-up"); // [esim-patch] P38
     return tr("account.storeCreditFromStore", "From the store");
   };
 
@@ -88,7 +99,10 @@ export function CustomerStoreCredit() {
                   {tr("account.storeCreditBalance", "Available")}
                 </p>
                 <p className="text-2xl font-semibold">{money(entry.balance, entry.currency)}</p>
-                {entry.nextExpiry ? (
+                {/* [esim-patch] P38 the balance by where it came from, each part's expiry */}
+                {entry.parts?.length ? (
+                  <CreditPartsLine parts={entry.parts} currency={entry.currency} />
+                ) : entry.nextExpiry ? (
                   <p className="text-sm text-muted-foreground">
                     {tr("account.storeCreditExpires", "{amount} expires {date}", {
                       amount: money(entry.nextExpiry.amount, entry.currency),
@@ -101,6 +115,15 @@ export function CustomerStoreCredit() {
           ))}
         </div>
       )}
+      {/* [esim-patch] P38 adding money to the balance */}
+      {data?.walletTopup ? (
+        <Button asChild variant="outline" className="w-full sm:w-auto">
+          <Link href="/account/esims/balance">
+            <Plus className="me-1 h-4 w-4" />
+            {tr("esim.wallet.add", "Add money")}
+          </Link>
+        </Button>
+      ) : null}
 
       {history.length > 0 ? (
         <Card className="gap-0 overflow-hidden py-0">
@@ -113,8 +136,23 @@ export function CustomerStoreCredit() {
                   className="flex items-center justify-between gap-3 px-4 py-3 text-sm"
                 >
                   <div className="min-w-0">
-                    <p className="truncate">{describe(row)}</p>
-                    <p className="text-xs text-muted-foreground">{date(row.createdAt)}</p>
+                    <p className="flex min-w-0 items-center gap-2">
+                      <span className="truncate">{describe(row)}</span>
+                      {/* [esim-patch] P38 topped up, gift or refund */}
+                      <CreditKindTags kinds={row.kinds ?? []} currency={row.currency} />
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {date(row.createdAt)}
+                      {/* [esim-patch] P38 the order it was spent on, refunded from or bought with */}
+                      {row.orderNumber && row.orderId ? (
+                        <>
+                          {" · "}
+                          <Link href={`/account/orders/${row.orderId}`} className="hover:text-foreground hover:underline">
+                            {tr("esim.account.order", "Order {number}", { number: row.orderNumber })}
+                          </Link>
+                        </>
+                      ) : null}
+                    </p>
                   </div>
                   <span
                     className={`shrink-0 font-medium ${incoming ? "text-emerald-600 dark:text-emerald-400" : "text-muted-foreground"}`}

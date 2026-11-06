@@ -5,6 +5,8 @@ import { DestinationPage, destinationSeo } from "@/components/esim/destination-p
 import { translator } from "@/lib/esim/i18n/server";
 import { destinationPath } from "@/lib/esim/storefront/catalog";
 import { getLocalizedDestination } from "@/lib/esim/storefront/destination-names";
+import { destinationRedirect } from "@/lib/esim/storefront/destination-redirect";
+import { localeHref } from "@/lib/i18n/locale-routing";
 
 interface PageProps {
   params: Promise<{ locale: string; slug: string }>;
@@ -23,7 +25,12 @@ export default async function EsimRegionPage({ params }: PageProps) {
   const { locale, slug } = await params;
   setRequestLocale(locale);
   const destination = await getLocalizedDestination(slug, "multi", locale);
-  if (!destination) notFound();
+  if (!destination) {
+    // A country's address, or a destination merged into another.
+    const moved = await destinationRedirect(slug);
+    if (moved) permanentRedirect(await localeHref(locale, moved));
+    notFound();
+  }
   // The global plan lives at /esim/global.
   if (destinationPath(destination) !== `/esim/region/${slug}`) permanentRedirect(destinationPath(destination));
   const tr = await translator(locale);

@@ -319,7 +319,7 @@ function NumberDialog({ shop, number, locale, onClose }: { shop: NumberShop; num
               </div>
               {totalUsdMinor && currency.toUpperCase() !== "USD" ? (
                 <div className="text-xs text-muted-foreground">
-                  {t("esim.numbers.chargedAs", "Charged as {price} at checkout.", { price: formatPrice(totalUsdMinor / 100) })}
+                  {t("esim.numbers.chargedAtRate", "At the current exchange rate {amount} = {price}, so you pay {price} at checkout.", { amount: formatAmount(totalMinor, currency), price: formatPrice(totalUsdMinor / 100) })}
                 </div>
               ) : null}
             </dl>

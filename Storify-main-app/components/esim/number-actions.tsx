@@ -123,7 +123,9 @@ export function NumberTopupActions({ numberId, title, options }: { numberId: str
                       min: formatAmount(options.recharge.minMinor, currency),
                       max: formatAmount(options.recharge.maxMinor, currency),
                     })
-                  : t("esim.numbers.chargedAs", "Charged as {price} at checkout.", { price: formatPrice(priceMinor / 100) })}
+                  : currency.toUpperCase() === "USD"
+                    ? null
+                    : t("esim.numbers.chargedAtRate", "At the current exchange rate {amount} = {price}, so you pay {price} at checkout.", { amount: formatAmount(rechargeMinor, currency), price: formatPrice(priceMinor / 100) })}
               </p>
             </div>
           ) : open === "packet" ? (
@@ -145,8 +147,8 @@ export function NumberTopupActions({ numberId, title, options }: { numberId: str
                   {t("esim.numbers.packetCountries", "Works in: {countries}", { countries: options.packets.find((entry) => entry.id === packet)!.countryCodes.join(", ") })}
                 </p>
               ) : null}
-              {priceMinor ? (
-                <p className="text-xs text-muted-foreground">{t("esim.numbers.chargedAs", "Charged as {price} at checkout.", { price: formatPrice(priceMinor / 100) })}</p>
+              {priceMinor && currency.toUpperCase() !== "USD" ? (
+                <p className="text-xs text-muted-foreground">{t("esim.numbers.chargedAtRate", "At the current exchange rate {amount} = {price}, so you pay {price} at checkout.", { amount: formatAmount(amountMinor, currency), price: formatPrice(priceMinor / 100) })}</p>
               ) : null}
             </div>
           ) : null}

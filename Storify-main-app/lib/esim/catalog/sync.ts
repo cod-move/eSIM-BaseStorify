@@ -8,6 +8,8 @@ import { EsimProviderLog } from "@/models/esim-provider-log.model";
 import { adapterFor } from "@/lib/esim/provider-service";
 import { sellsEsimPlans } from "@/lib/esim/providers/registry";
 import type { ProviderPlan, TopupRule } from "@/lib/esim/providers/types";
+import { destinationKey } from "@/lib/esim/catalog/destination-key";
+import { destinationMerges, recordAutoAliases } from "@/lib/esim/catalog/merge";
 
 /**
  * Pulls a supplier's whole catalogue into `EsimPlan` (CAT-03).
@@ -20,6 +22,9 @@ import type { ProviderPlan, TopupRule } from "@/lib/esim/providers/types";
  *   would then mean "not reached".
  * - Platform fields (status, retail price, product link, KYC) are written only
  *   on insert and never touched again by a sync.
+ * - A plan is filed under its destination as lib/esim/catalog/destination-key.ts
+ *   says (its country, or where an admin merged it); the supplier's own slug
+ *   is kept as `supplierProductSlug`.
  */
 
 const BATCH_SIZE = 200;
@@ -35,11 +40,14 @@ export interface SyncResult {
   error?: string;
 }
 
-/** The plan as stored: the supplier's data with the provider's top-up override applied. */
-export function planDocument(plan: ProviderPlan, override?: Partial<TopupRule>) {
+/**
+ * The plan as stored: the supplier's data with the provider's top-up override
+ * applied, filed under its destination (`merges`: the admin's, from → into).
+ */
+export function planDocument(plan: ProviderPlan, override?: Partial<TopupRule>, merges?: ReadonlyMap<string, string>) {
   const { raw, providerUpdatedAt, ...fields } = plan;
   const topup = override ? { ...fields.topup, ...override } : fields.topup;
-  const normalized = { ...fields, topup };
+  const normalized = { ...fields, ...destinationKey(fields, merges), supplierProductSlug: fields.productSlug, topup };
   return {
     normalized: {
       ...normalized,
@@ -89,6 +97,8 @@ export async function syncProviderCatalog(provider: IEsimProvider): Promise<Sync
     known.set(row.providerPlanId, row.contentHash);
   }
 
+  const merges = await destinationMerges();
+  const moved = new Map<string, string>();
   let writes: AnyBulkWriteOperation<IEsimPlan>[] = [];
   let unchanged: string[] = [];
   const flush = async () => {
@@ -111,7 +121,9 @@ export async function syncProviderCatalog(provider: IEsimProvider): Promise<Sync
     const adapter = adapterFor(provider);
     for await (const plan of adapter.listPlans()) {
       result.seen += 1;
-      const { normalized, raw, contentHash } = planDocument(plan, provider.topupOverride);
+      const { normalized, raw, contentHash } = planDocument(plan, provider.topupOverride, merges);
+      const own = destinationKey(plan).productSlug;
+      if (own !== plan.productSlug) moved.set(plan.productSlug, own);
       if (known.get(plan.providerPlanId) === contentHash) {
         unchanged.push(plan.providerPlanId);
       } else {
@@ -143,6 +155,7 @@ export async function syncProviderCatalog(provider: IEsimProvider): Promise<Sync
       if (writes.length + unchanged.length >= BATCH_SIZE) await flush();
     }
     await flush();
+    await recordAutoAliases(moved);
 
     const retired = await EsimPlan.updateMany(
       { provider: provider._id, syncedAt: { $lt: startedAt }, available: true },

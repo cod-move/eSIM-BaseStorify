@@ -25,7 +25,10 @@ export interface IEsimPlan extends mongoose.Document {
   sku: string | null;
   name: string;
   slug: string;
+  /** The destination it is sold under (lib/esim/catalog/destination-key.ts): its country, or where an admin merged it. */
   productSlug: string;
+  /** The destination the supplier's data puts it under; null on plans synced before it was kept. */
+  supplierProductSlug: string | null;
   destination: string;
   emoji: string | null;
   coverage: {
@@ -92,6 +95,7 @@ const EsimPlanSchema = new Schema<IEsimPlan>(
     name: { type: String, required: true, trim: true },
     slug: { type: String, required: true, trim: true },
     productSlug: { type: String, required: true, trim: true, index: true },
+    supplierProductSlug: { type: String, default: null, index: true },
     destination: { type: String, default: "" },
     emoji: { type: String, default: null },
     coverage: {
