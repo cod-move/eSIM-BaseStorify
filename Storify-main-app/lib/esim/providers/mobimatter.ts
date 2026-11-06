@@ -70,15 +70,10 @@ export class MobiMatterAdapter implements EsimProviderAdapter {
     return { message: "MobiMatter credentials accepted", metadata: { products: products.length } as JsonObject };
   }
 
-  /** Only the plans of the networks we sell (`SOLD_PROVIDERS`, 3HK); every other provider's are left out. */
+  /** Sync base plans from every provider in the catalogue. */
   async *listPlans(): AsyncIterable<ProviderPlan> {
     const products = await this.products();
-    // A list that names no provider at all cannot be filtered: stop rather than retire every plan.
-    if (products.length && !products.some((product) => providerOf(product))) {
-      throw new ProviderError("invalid_response", "MobiMatter products name no provider, so the 3HK plans cannot be picked out", null, "mobimatter");
-    }
     for (const product of products) {
-      if (!soldProvider(product)) continue;
       const plan = mapProduct(product);
       if (plan) yield plan;
     }
@@ -351,18 +346,6 @@ function fallbackName(product: JsonObject, details: Record<string, JsonValue>) {
   const days = hoursToDays(details.PLAN_VALIDITY);
   return str(details.PLAN_DATA_LIMIT) ? `${family} ${str(details.PLAN_DATA_LIMIT)} ${str(details.PLAN_DATA_UNIT).toUpperCase()} / ${days} Days` : family;
 }
-
-/** The providers (networks) whose MobiMatter plans are sold; others are not synced. */
-export const SOLD_PROVIDERS = ["3HK"];
-
-const providerKey = (value: string) => value.replace(/[^a-z0-9]/gi, "").toUpperCase();
-
-/** The provider (network) a MobiMatter product is from, as it names it ("3HK"). */
-export function providerOf(product: JsonObject): string {
-  return str(product.providerName) || str(product.provider) || str(product.providerCode);
-}
-
-export const soldProvider = (product: JsonObject) => SOLD_PROVIDERS.map(providerKey).includes(providerKey(providerOf(product)));
 
 const ISO3: Record<string, string> = {
   HKG: "HK", SGP: "SG", USA: "US", GBR: "GB", CHN: "CN", JPN: "JP", KOR: "KR", TWN: "TW", MAC: "MO",

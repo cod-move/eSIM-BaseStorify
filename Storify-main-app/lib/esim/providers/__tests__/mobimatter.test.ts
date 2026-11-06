@@ -63,7 +63,7 @@ describe("MobiMatter catalogue", () => {
     assert.deepEqual(breakoutCountries("somewhere"), [], "what cannot be read is left out");
   });
 
-  it("syncs only 3HK's plans, and refuses a list that names no provider", async () => {
+  it("syncs every provider's base plans, including products without a provider name", async () => {
     const list = (products: JsonObject[]) =>
       adapter({ "GET /mobimatter/api/v2/products": () => ({ body: { isSuccess: true, result: products } }) }).mm;
     const products = [
@@ -71,14 +71,15 @@ describe("MobiMatter catalogue", () => {
       { ...PRODUCT, productId: "MM-JP-6", providerName: "3 hk" },
       { ...PRODUCT, productId: "MM-JP-7", providerName: "Docomo" },
       { ...PRODUCT, productId: "MM-JP-8", providerName: "" },
+      { ...PRODUCT, productId: "MM-JP-9", productCategory: "esim_addon" },
     ];
     const synced: string[] = [];
     for await (const plan of list(products).listPlans()) synced.push(plan.providerPlanId);
-    assert.deepEqual(synced, ["MM-JP-5|esim_realtime", "MM-JP-6|esim_realtime"]);
+    assert.deepEqual(synced, ["MM-JP-5|esim_realtime", "MM-JP-6|esim_realtime", "MM-JP-7|esim_realtime", "MM-JP-8|esim_realtime"]);
     const unnamed = list([{ ...PRODUCT, providerName: undefined as unknown as JsonValue }]);
-    await assert.rejects(async () => {
-      for await (const _plan of unnamed.listPlans()) void _plan;
-    }, /name no provider/);
+    const unnamedPlans: string[] = [];
+    for await (const plan of unnamed.listPlans()) unnamedPlans.push(plan.providerPlanId);
+    assert.deepEqual(unnamedPlans, ["MM-JP-5|esim_realtime"]);
   });
 
   it("knows unlimited, daily and regional products, and skips add-ons", () => {

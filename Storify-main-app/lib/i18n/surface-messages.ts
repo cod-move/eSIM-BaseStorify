@@ -79,6 +79,11 @@ export const STOREFRONT_BACK_OFFICE_PATHS: Readonly<
   // (components/common/payment-method-meta.ts); the preferences drawer the
   // account area's top bar shares with them.
   admin: [
+    // Shared Sidebar and SidebarTrigger also render in the customer account.
+    "sidebar.mobileTitle",
+    "sidebar.mobileDescription",
+    "sidebar.landmark",
+    "sidebar.toggle",
     "settings.title",
     // The Save bar the account's Preferences page shares with the settings.
     "settings.saveBar",
