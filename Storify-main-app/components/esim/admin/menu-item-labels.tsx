@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import type { MenuLabels } from "@/lib/esim/storefront/menu-labels";
 
 /**
- * A menu item's label in the store's other languages (patch P36), under the
+ * A menu item's label in each of the store's languages, its default too (patch P36), under the
  * label field of the menu editor. Left empty, a language shows the item's
  * own label. The languages are the store's (Settings → General).
  */
@@ -21,7 +21,8 @@ function storeLanguages() {
       const data = (body?.data ?? {}) as { defaultLanguage?: string; supportedLanguages?: unknown };
       const defaultLanguage = typeof data.defaultLanguage === "string" ? data.defaultLanguage : "en";
       const supported = Array.isArray(data.supportedLanguages) ? data.supportedLanguages.filter((code): code is string => typeof code === "string") : [];
-      return { defaultLanguage, languages: supported.filter((code) => code !== defaultLanguage) };
+      // Every language, the default first: the item's own label is often written in another one (English on a Chinese store).
+      return { defaultLanguage, languages: [defaultLanguage, ...supported.filter((code) => code !== defaultLanguage)] };
     })
     .catch(() => {
       languagesRequest = null;
@@ -53,7 +54,8 @@ export function EsimMenuItemLabels({ label, value, onChange }: { label: string; 
     };
   }, []);
 
-  if (!languages.length) return null;
+  // One language: the label field says it all.
+  if (languages.length < 2) return null;
   return (
     <div className="mt-2 rounded-md border">
       <button
@@ -64,7 +66,7 @@ export function EsimMenuItemLabels({ label, value, onChange }: { label: string; 
       >
         <span className="inline-flex items-center gap-1.5">
           <Languages className="h-3.5 w-3.5" />
-          Label in other languages{filled ? ` (${filled}/${languages.length})` : ""}
+          Label in each language{filled ? ` (${filled}/${languages.length})` : ""}
         </span>
         <ChevronDown className={`h-3.5 w-3.5 transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
