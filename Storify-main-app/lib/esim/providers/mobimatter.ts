@@ -70,10 +70,15 @@ export class MobiMatterAdapter implements EsimProviderAdapter {
     return { message: "MobiMatter credentials accepted", metadata: { products: products.length } as JsonObject };
   }
 
-  /** Sync base plans from every provider in the catalogue. */
+  /** Only the product lines we sell (`SOLD_FAMILIES`, "3HK", by `productFamilyName`); the rest are left out. */
   async *listPlans(): AsyncIterable<ProviderPlan> {
     const products = await this.products();
+    // A list that names no product line cannot be filtered: stop rather than retire every plan.
+    if (products.length && !products.some((product) => str(product.productFamilyName))) {
+      throw new ProviderError("invalid_response", "MobiMatter products have no productFamilyName, so the 3HK plans cannot be picked out", null, "mobimatter");
+    }
     for (const product of products) {
+      if (!soldFamily(product)) continue;
       const plan = mapProduct(product);
       if (plan) yield plan;
     }
@@ -476,3 +481,11 @@ export function mapOrder(order: JsonObject, orderId: string): ProviderEsim {
     raw: order,
   };
 }
+
+/** MobiMatter product lines (`productFamilyName`) whose plans are sold; others are not synced. */
+export const SOLD_FAMILIES = ["3HK"];
+
+const familyKey = (value: string) => value.replace(/[^a-z0-9]/gi, "").toUpperCase();
+
+/** Whether a MobiMatter product is from a product line we sell ("3HK", "3 HK"). */
+export const soldFamily = (product: JsonObject) => SOLD_FAMILIES.map(familyKey).includes(familyKey(str(product.productFamilyName)));
