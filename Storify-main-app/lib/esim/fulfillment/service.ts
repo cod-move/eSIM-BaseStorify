@@ -254,9 +254,10 @@ async function recordEsim(job: IEsimFulfillment, plan: IEsimPlan, result: Purcha
     durationDays: plan.duration.configurable ? job.durationDays : null,
     expiresAt,
     ...deadlines(plan, expiresAt),
-    activationDeadline: plan.activation.preInstallDays
+    // The supplier's own install-by date when it gives one, else the plan's window.
+    activationDeadline: toDate(esim.activationDeadline) ?? (plan.activation.preInstallDays
       ? new Date(purchasedAt.getTime() + plan.activation.preInstallDays * 86_400_000)
-      : null,
+      : null),
     raw: esim.raw,
   };
   const profile = await EsimProfile.findOneAndUpdate(

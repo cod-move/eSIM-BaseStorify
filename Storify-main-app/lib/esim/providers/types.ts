@@ -159,6 +159,8 @@ export interface ProviderEsim extends EsimRef {
   }>;
   fulfilledAt: string | null;
   expiresAt: string | null;
+  /** The last day it can be installed, when the supplier says (RoamWifi `activateBefore`). */
+  activationDeadline?: string | null;
   raw: JsonObject;
 }
 

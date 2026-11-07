@@ -20,7 +20,7 @@ describe("RoamWifi getESIMDetail", () => {
     assert.equal(usage.usedBytes, 1024 ** 3);
     assert.equal(usage.remainingBytes, 2 * 1024 ** 3);
     assert.equal(usage.lifecycleStatus, "in_use");
-    assert.equal(usage.expiresAt, new Date("2026-03-24").toISOString());
+    assert.equal(usage.expiresAt, "2026-03-23T16:00:00.000Z");
   });
 
   it("adds a renewal running beside the first package, and says when the data is used up", () => {

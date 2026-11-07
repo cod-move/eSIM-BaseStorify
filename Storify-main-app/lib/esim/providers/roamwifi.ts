@@ -48,8 +48,6 @@ import {
  */
 
 const DEFAULT_BASE_URL = "https://bpm.roamwifi.hk";
-/** The card-detail call lives on another host (doc v2.11 §2.27.3). */
-const DEFAULT_DETAIL_URL = "https://www.roamesim.net/api/base/getESIMDetail";
 /** RoamWifi's published signing key; overridable if they issue a private one. */
 const DEFAULT_SIGN_KEY = "1234567890qwertyuiopasdfghjklzxc";
 const TOKEN_TTL_MS = 110 * 60 * 1000;
@@ -64,8 +62,6 @@ export interface RoamWifiOptions {
   currency?: string;
   signKey?: string;
   baseUrl?: string;
-  /** Where getESIMDetail is asked (§2.27). */
-  detailUrl?: string;
   fetch?: FetchLike;
 }
 
@@ -87,7 +83,6 @@ export class RoamWifiAdapter implements EsimProviderAdapter {
   private readonly currency: string;
   private readonly signKey: string;
   private readonly baseUrl: string;
-  private readonly detailUrl: string;
   private readonly fetcher: FetchLike;
 
   constructor(options: RoamWifiOptions) {
@@ -99,7 +94,6 @@ export class RoamWifiAdapter implements EsimProviderAdapter {
     this.currency = (options.currency ?? "USD").toUpperCase();
     this.signKey = options.signKey || DEFAULT_SIGN_KEY;
     this.baseUrl = (options.baseUrl ?? DEFAULT_BASE_URL).replace(/\/+$/, "");
-    this.detailUrl = options.detailUrl || DEFAULT_DETAIL_URL;
     this.fetcher = options.fetch ?? fetch;
   }
 
@@ -161,31 +155,13 @@ export class RoamWifiAdapter implements EsimProviderAdapter {
   }
 
   async getUsage(ref: EsimRef): Promise<ProviderUsage> {
-    // The card's own record first (§2.27), which RoamWifi keeps fresher than
-    // the order; it needs our server's IP on their whitelist, so a refusal
-    // falls back to the order as before.
-    if (ref.iccid) {
-      const detail = await this.esimDetail(ref.iccid).catch(() => null);
-      if (detail) return mapEsimDetail(detail);
-    }
-    const order = await this.cardOrder(ref);
-    const card = objArray(order.cardApiDtoList)[0] ?? {};
-    const unit = str(card.unit) || str(order.unit) || "GB";
-    const totalBytes = bytes(card.flows ?? order.flows, unit) ?? 0;
-    const usedBytes = bytes(card.usedMb ?? card.usedMB ?? order.usedMb, "MB");
-    const remainingBytes =
-      bytes(card.remainingMb ?? card.remainingMB ?? order.remainingMb, "MB") ??
-      Math.max(totalBytes - (usedBytes ?? 0), 0);
-    return {
-      totalBytes,
-      usedBytes: usedBytes ?? Math.max(totalBytes - remainingBytes, 0),
-      remainingBytes,
-      lifecycleStatus: lifecycle(str(card.dpStatus), date(card.endDate ?? order.endDate)),
-      expiresAt: date(card.endDate ?? order.endDate),
-      syncedAt: null,
-      stale: null,
-      raw: order,
-    };
+    // getOrderInfo carries the card's data used and dates (getESIMDetail, §2.27,
+    // waits on RoamWifi whitelisting our IP).
+    const orderNum = ref.providerEsimId;
+    if (!orderNum) throw new ProviderError("not_found", "RoamWifi needs the order number of the eSIM");
+    let order = obj(await this.callData("api_esim/getOrderInfo", { orderNum }));
+    if (!objArray(order.cardApiDtoList).length) order = await this.cardOrder(ref);
+    return mapOrderUsage(order, ref.iccid);
   }
 
   async listTopupPlans(ref: EsimRef): Promise<ProviderTopupPlan[]> {
@@ -267,28 +243,6 @@ export class RoamWifiAdapter implements EsimProviderAdapter {
       if (!(error instanceof ProviderError) || error.code === "credentials_missing") throw error;
     }
     return obj(await this.callData("api_esim/getOrderInfo", { orderNum }));
-  }
-
-  /**
-   * `POST {detailUrl}` with the ICCID (§2.27.3): `code` 1 and `status`
-   * "Success" on success, unlike the `api_esim` calls' 0. The token and sign
-   * go along as with every other call.
-   */
-  private async esimDetail(iccid: string): Promise<JsonObject> {
-    const params = { iccid, token: await this.token() };
-    const { ok, status, body } = await requestJson(this.fetcher, {
-      method: "POST",
-      url: this.detailUrl,
-      form: { ...params, sign: sign(params, this.signKey) },
-    });
-    if (!ok) throw new ProviderError(status >= 500 ? "uncertain" : "rejected", `RoamWifi getESIMDetail failed with HTTP ${status}`, status);
-    const code = str(body.code ?? body.Code);
-    const succeeded = code === "1" || code === "0" || str(body.status).toLowerCase() === "success";
-    const data = obj(body.data);
-    if (!succeeded || !Object.keys(data).length) {
-      throw new ProviderError("rejected", `RoamWifi getESIMDetail refused: ${str(body.message) || `code ${code || "missing"}`}`, null, code || null);
-    }
-    return data;
   }
 
   private async callData(endpoint: string, payload: Record<string, string> = {}): Promise<JsonValue> {
@@ -396,12 +350,51 @@ function bytes(value: JsonValue | undefined, defaultUnit: string): number | null
 
 /** "2026-11-01 10:00:00 (GMT+08:00)" and friends → ISO, or null. */
 function date(value: JsonValue | undefined): string | null {
-  const text = str(value)
+  const raw = str(value);
+  // "(GMT+8)" says the time zone; without one the time is RoamWifi's own, GMT+8.
+  const zone = raw.match(/\(GMT\s*([+-])\s*(\d{1,2})(?::?(\d{2}))?\)/i);
+  const offset = zone ? `${zone[1]}${zone[2].padStart(2, "0")}:${zone[3] ?? "00"}` : "+08:00";
+  const text = raw
     .replace(/\s*\(GMT[^)]*\)\s*/i, "")
-    .replace(/\.(\d+)\s*$/, "");
-  if (!text) return null;
-  const parsed = new Date(text.includes("T") ? text : text.replace(" ", "T"));
+    .replace(/\.(\d+)\s*$/, "")
+    .trim();
+  if (!text || text.toLowerCase() === "null") return null;
+  const iso = text.includes("T") ? text : text.replace(" ", "T");
+  const hasZone = /([+-]\d{2}:?\d{2}|Z)$/i.test(iso);
+  const parsed = new Date(hasZone ? iso : `${iso.length === 10 ? `${iso}T00:00:00` : iso}${offset}`);
   return Number.isNaN(parsed.getTime()) ? null : parsed.toISOString();
+}
+
+/**
+ * An eSIM's data and lifecycle from `api_esim/getOrderInfo`: its card (the
+ * one with this ICCID) says the allowance as `data` ("10GB"), the data used
+ * as `usedMB`, when it started and ends, and `dpStatus`. Past its end it is
+ * expired; with nothing left, used up; otherwise as `dpStatus` says.
+ */
+export function mapOrderUsage(order: JsonObject, iccid?: string | null, now = new Date()): ProviderUsage {
+  const cards = objArray(order.cardApiDtoList);
+  const card = cards.find((entry) => iccid && str(entry.iccid) === iccid) ?? cards[0] ?? {};
+  const unit = str(card.unit) || str(order.unit) || "GB";
+  const totalBytes = bytes(card.data ?? card.flows ?? order.flows, unit) ?? 0;
+  const usedBytes = bytes(card.usedMB ?? card.usedMb ?? order.usedMB ?? order.usedMb, "MB");
+  const remainingBytes =
+    bytes(card.remainingMb ?? card.remainingMB ?? order.remainingMb, "MB") ?? Math.max(totalBytes - (usedBytes ?? 0), 0);
+  const expiresAt = date(card.endDate) ?? date(order.endDate);
+  const started = Boolean(date(card.startDate));
+  let lifecycleStatus: LifecycleStatus | null;
+  if (expiresAt && new Date(expiresAt).getTime() <= now.getTime()) lifecycleStatus = "expired";
+  else if (started && totalBytes > 0 && remainingBytes === 0) lifecycleStatus = "depleted";
+  else lifecycleStatus = cardLifecycle(str(card.dpStatus), started);
+  return {
+    totalBytes,
+    usedBytes: usedBytes ?? Math.max(totalBytes - remainingBytes, 0),
+    remainingBytes,
+    lifecycleStatus,
+    expiresAt,
+    syncedAt: now.toISOString(),
+    stale: null,
+    raw: order,
+  };
 }
 
 /**
@@ -436,6 +429,24 @@ export function mapEsimDetail(data: JsonObject, now = new Date()): ProviderUsage
   return { totalBytes, usedBytes, remainingBytes, lifecycleStatus, expiresAt, syncedAt: now.toISOString(), stale: false, raw: data };
 }
 
+/**
+ * A card's `dpStatus` is where its profile is on the phone: ACTIVE, Enable,
+ * Disable or Delete (doc v2.11). None of them means the plan was cancelled:
+ * a profile switched off or deleted on the phone still has its plan. So a
+ * card whose plan has started is in use whatever the phone says; before
+ * that, a profile on the phone (ACTIVE, Enable, Disable) is installed and a
+ * deleted or not yet downloaded one is not. Other codes go by `lifecycle`.
+ */
+function cardLifecycle(dpStatus: string, started: boolean): LifecycleStatus | null {
+  const token = dpStatus.trim().toUpperCase();
+  if (["ACTIVE", "ENABLE", "ENABLED", "DISABLE", "DISABLED", "DELETE", "DELETED"].includes(token)) {
+    if (started) return "in_use";
+    return token.startsWith("DELETE") ? "not_installed" : "installed";
+  }
+  if (started) return "in_use";
+  return token ? lifecycle(token, null) : null;
+}
+
 /** dpStatus codes as the esim_php adapter learned them from live traffic. */
 function lifecycle(dpStatus: string, expiresAt: string | null): LifecycleStatus | null {
   const token = dpStatus.toUpperCase().replace(/[^A-Z0-9-]+/g, "_");
@@ -468,7 +479,7 @@ function mapCard(card: JsonObject, order: JsonObject): ProviderEsim {
     status: "fulfilled",
     usageAvailable: true,
     lifecycle: {
-      status: lifecycle(str(card.dpStatus), expiresAt),
+      status: cardLifecycle(str(card.dpStatus), Boolean(date(card.startDate))),
       profileStatus: null,
       installed: null,
       installationDetectedAt: null,
@@ -485,6 +496,7 @@ function mapCard(card: JsonObject, order: JsonObject): ProviderEsim {
     bundles: [],
     fulfilledAt: null,
     expiresAt,
+    activationDeadline: date(card.activateBefore),
     raw: card,
   };
 }

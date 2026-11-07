@@ -197,6 +197,7 @@ export async function refreshEsimProfile(profile: IEsimProfile): Promise<{ refre
     profile.set("lifecycle.activationDetectedAt", toDate(esim.lifecycle.activationDetectedAt) ?? profile.lifecycle.activationDetectedAt);
     profile.set("lifecycle.lastStatusUpdateAt", now);
     if (esim.expiresAt) profile.expiresAt = toDate(esim.expiresAt);
+    if (esim.activationDeadline) profile.activationDeadline = toDate(esim.activationDeadline);
   }
   if (usage) {
     profile.usage = {
