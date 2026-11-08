@@ -81,7 +81,7 @@ export function PlanBrowser({ productId, destinationName, variants, countryCodes
   const [buying, setBuying] = useState<StorefrontVariant | null>(null);
   const [coverageShown, setCoverageShown] = useState<CoveredCountry[] | null>(null);
   const [details, setDetails] = useState<StorefrontVariant | null>(null);
-  const [expanded, setExpanded] = useState<Partial<Record<PlanFilterKey, boolean>>>({ days: true, data: true });
+  const [expanded, setExpanded] = useState<Partial<Record<PlanFilterKey, boolean>>>({ days: true });
   // Every value a filter has, and those the other choices leave open.
   const allValues = useMemo(() => planFilterOptions(variants, {}), [variants]);
   const open = useMemo(() => planFilterOptions(variants, filters), [variants, filters]);
@@ -233,7 +233,7 @@ export function PlanBrowser({ productId, destinationName, variants, countryCodes
           const openValues = new Set(open[key].filter((option) => Number.isFinite(option.fromPriceMinor)).map((option) => option.value));
           const Icon = FILTER_ICONS[key];
           return (
-            <fieldset key={key} className="space-y-2">
+            <fieldset key={key} className="min-w-0 space-y-2">
               <legend className="flex items-center gap-1.5 text-sm font-semibold">
                 <Icon className="h-4 w-4 text-muted-foreground" />
                 {titles[key]}
@@ -297,7 +297,7 @@ export function PlanBrowser({ productId, destinationName, variants, countryCodes
       ) : (
         <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {shown.items.map((variant) => (
-            <li key={variant.variantId} className="relative flex flex-col rounded-2xl border bg-card p-4 transition-shadow hover:shadow-md">
+            <li key={variant.variantId} className="relative flex min-w-0 flex-col rounded-2xl border bg-card p-4 transition-shadow hover:shadow-md">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   {/* The title's hit area covers the card: a click anywhere else on it opens the details. */}
