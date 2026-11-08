@@ -567,7 +567,7 @@ export function mapSkuPlans(sku: JsonObject, packageData: JsonObject, currency: 
         countries,
         networks: networks
           .map((network) => ({
-            countryCode: countries.length === 1 ? countries[0].code : "",
+            countryCode: countries.length === 1 ? countries[0].code : (countryCodeFromName(str(network.nameen) || str(network.nameEn)) ?? ""),
             operator: str(network.operator) || str(network.name),
             network: strOrNull(network.type),
           }))

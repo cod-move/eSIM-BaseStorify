@@ -114,7 +114,7 @@ export function PlanBrowser({ productId, destinationName, variants, countryCodes
   const breakout = (value: string) => {
     const codes = value ? value.split(",") : [];
     if (!codes.length) return t("esim.selector.ipUnknown", "Not specified");
-    if (codes.every((code) => countryCodes.includes(code))) return t("esim.selector.ipLocal", "Local IP");
+    if (countryCodes.length === 1 && codes.length === 1 && codes[0] === countryCodes[0]) return t("esim.selector.ipLocal", "Local IP");
     return codes.map((code) => regionNames[code] ?? code).join(", ");
   };
   const kind = (value: string) =>

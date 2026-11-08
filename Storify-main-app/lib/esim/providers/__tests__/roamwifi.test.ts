@@ -93,3 +93,21 @@ describe("RoamWifi catalogue", () => {
     assert.match(last.get("sign") ?? "", /^[0-9A-F]{32}$/);
   });
 });
+
+describe("RoamWifi regional networks", () => {
+  it("files each network under its own country", () => {
+    const [plan] = mapSkuPlans(
+      { skuid: "1001", countryCode: 1001 },
+      {
+        displayEn: "China HK Macao",
+        countryImageUrlDtoList: [{ nameEn: "China" }, { nameEn: "Hong Kong" }],
+        esimPackageDtoList: [{ apiCode: "CHM-1G", flows: 1, unit: "GB", days: 7, price: "3", flowType: 0, networkDtoList: [
+          { type: "5G", operator: "China Mobile", namecn: "中国", nameen: "China", countryCode: 156 },
+          { type: "4G", operator: "CSL", nameen: "Hong Kong", countryCode: 344 },
+        ] }],
+      },
+      "USD",
+    );
+    assert.deepEqual(plan.coverage.networks.map((network) => [network.countryCode, network.operator]), [["CN", "China Mobile"], ["HK", "CSL"]]);
+  });
+});
