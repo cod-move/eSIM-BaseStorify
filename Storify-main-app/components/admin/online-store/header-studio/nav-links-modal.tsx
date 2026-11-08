@@ -57,6 +57,7 @@ import {
 import { StudioModal } from "@/components/admin/online-store/header-studio/studio-modal";
 import { cn } from "@/lib/utils";
 import { MenuSelect } from "@/components/admin/online-store/header-studio/menu-select";
+import { EsimMenuItemLabels } from "@/components/esim/admin/menu-item-labels"; // [esim-patch] P43
 
 /**
  * The Figma "Links" modal: the nav item's links, one level of nesting.
@@ -454,6 +455,8 @@ function LinkCardBody({
             onChange={(event) => onChange({ label: event.target.value })}
             className="h-9"
           />
+          {/* [esim-patch] P43 the label in each of the store's languages */}
+          <EsimMenuItemLabels label={link.label} value={link.labels} onChange={(labels) => onChange({ labels })} />
         </label>
         <div className="flex min-w-0 flex-col gap-1">
           <FieldCaption>{linkCaption}</FieldCaption>

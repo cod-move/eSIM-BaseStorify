@@ -5,6 +5,8 @@ import { EsimPlan } from "@/models/esim-plan.model";
 import { EsimProvider, type IEsimProvider } from "@/models/esim-provider.model";
 import { adapterFor, applyCredentials, findProvider } from "@/lib/esim/provider-service";
 import { syncProviderCatalog } from "@/lib/esim/catalog/sync";
+import { publishProducts } from "@/lib/esim/catalog/publish";
+import { runAfterResponse } from "@/lib/esim/admin/route";
 import { PROVIDER_DEFINITIONS, defaultProviderCurrency, isProviderCode, sellsEsimPlans } from "@/lib/esim/providers/registry";
 
 /**
@@ -150,6 +152,17 @@ export async function updateProvider(code: string, update: ProviderUpdate) {
     }
   }
   await provider.save();
+  // Switched on or off, or reordered: the destinations it sells in are published
+  // again, so a disabled supplier's plans leave the store (a destination with
+  // nothing else to sell goes to draft) and an enabled one's come back.
+  if (before.status !== provider.status || before.priority !== provider.priority) {
+    const productSlugs = (await EsimPlan.distinct("productSlug", { providerCode: provider.code })) as string[];
+    if (productSlugs.length) {
+      await runAfterResponse(() =>
+        publishProducts({ productSlugs }).then(() => undefined, (error) => console.error("[esim] republishing after a supplier change failed:", error)),
+      );
+    }
+  }
   return {
     before,
     after: { name: provider.name, status: provider.status, priority: provider.priority, settlementCurrency: provider.settlementCurrency, ...(Object.keys(credentialChanges).length ? { credentials: credentialChanges } : {}) },

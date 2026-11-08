@@ -28,6 +28,7 @@ import {
   type SlideBackground,
 } from "@/lib/sliders/background";
 import { isRecord } from "@/lib/utils";
+import { menuLabelsOf } from "@/lib/esim/storefront/menu-labels"; // [esim-patch] P43
 
 /**
  * A row's or an item's background: a solid colour, a gradient, or an
@@ -281,6 +282,8 @@ function normalizeCollectionIds(value: unknown): string[] {
 export interface HeaderNavLink {
   id: string;
   label: string;
+  /** [esim-patch] P43 the label in each language, where one was given (lib/esim/storefront/menu-labels.ts). */
+  labels?: Record<string, string>;
   url: string;
   /** An uploaded image URL, or a built-in `glyph:<key>` — see linkGlyph. */
   icon: string;
@@ -856,6 +859,7 @@ function normalizeNavLinks(value: unknown, depth = 0): HeaderNavLink[] {
       {
         id: readString(entry.id, "") || newId(),
         label: readString(entry.label, "").slice(0, 120),
+        labels: menuLabelsOf(entry.labels), // [esim-patch] P43
         url: readString(entry.url, "").slice(0, 500),
         icon: readString(entry.icon, "").slice(0, 1000),
         description: readString(entry.description, "").slice(0, 160),

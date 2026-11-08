@@ -18,6 +18,9 @@ export interface TopupPickerOffer {
   priceMinor: number;
 }
 
+/** Top-ups on one page. */
+const PAGE_SIZE = 10;
+
 function dataLabel(megabytes: number) {
   if (megabytes >= 1024) return `${Number((megabytes / 1024).toFixed(megabytes % 1024 ? 1 : 0))} GB`;
   return `${megabytes} MB`;
@@ -37,6 +40,10 @@ export function EsimTopupPicker({ esimId, offers }: { esimId: string; offers: To
   const { formatPrice } = useCurrency();
   const [selected, setSelected] = useState(offers[0]?.topupPlanId ?? null);
   const [busy, setBusy] = useState(false);
+  // A supplier like BNESIM offers top-ups for other regions too: many of them, so in pages.
+  const [page, setPage] = useState(0);
+  const pages = Math.max(1, Math.ceil(offers.length / PAGE_SIZE));
+  const shown = offers.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
 
   async function buy() {
     const offer = offers.find((entry) => entry.topupPlanId === selected);
@@ -76,7 +83,7 @@ export function EsimTopupPicker({ esimId, offers }: { esimId: string; offers: To
   return (
     <div className="space-y-4">
       <div role="radiogroup" aria-label={t("esim.topup.choose", "Choose a top-up")} className="grid gap-3 sm:grid-cols-2">
-        {offers.map((offer) => {
+        {shown.map((offer) => {
           const active = offer.topupPlanId === selected;
           return (
             <button
@@ -87,19 +94,34 @@ export function EsimTopupPicker({ esimId, offers }: { esimId: string; offers: To
               onClick={() => setSelected(offer.topupPlanId)}
               className={`rounded-lg border p-4 text-start transition-colors ${active ? "border-primary bg-primary/5 ring-1 ring-primary" : "hover:bg-muted/50"}`}
             >
-              <div className="flex items-baseline justify-between gap-3">
-                <span className="text-lg font-semibold">{offer.megabytes ? dataLabel(offer.megabytes) : offer.name}</span>
+              {/* The package's own name: where it works, for a supplier that tops up other regions. */}
+              <div className="line-clamp-2 text-sm font-medium">{offer.name}</div>
+              <div className="mt-1 flex items-baseline justify-between gap-3">
+                <span className="text-lg font-semibold">{offer.megabytes ? dataLabel(offer.megabytes) : null}</span>
                 <span className="font-semibold">{formatPrice(offer.priceMinor / 100)}</span>
               </div>
-              <div className="mt-1 text-sm text-muted-foreground">
-                {offer.validityDays
-                  ? t("esim.topup.validFor", "Valid for {count} days", { count: offer.validityDays })
-                  : offer.name}
-              </div>
+              {offer.validityDays ? (
+                <div className="mt-1 text-sm text-muted-foreground">
+                  {t("esim.topup.validFor", "Valid for {count} days", { count: offer.validityDays })}
+                </div>
+              ) : null}
             </button>
           );
         })}
       </div>
+      {pages > 1 ? (
+        <div className="flex items-center justify-center gap-3 text-sm">
+          <Button type="button" variant="outline" size="sm" disabled={page === 0} onClick={() => setPage(page - 1)}>
+            {t("common.previous", "Previous")}
+          </Button>
+          <span className="tabular-nums text-muted-foreground">
+            {page + 1} / {pages}
+          </span>
+          <Button type="button" variant="outline" size="sm" disabled={page >= pages - 1} onClick={() => setPage(page + 1)}>
+            {t("common.next", "Next")}
+          </Button>
+        </div>
+      ) : null}
       <Button size="lg" onClick={buy} disabled={!selected || busy} className="w-full sm:w-auto">
         {busy ? <Loader2 className="me-2 h-4 w-4 animate-spin" /> : null}
         {t("esim.topup.buy", "Continue to checkout")}

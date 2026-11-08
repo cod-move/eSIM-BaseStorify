@@ -145,6 +145,7 @@ import { NavDropdown } from "@/components/layout/store-header/nav-dropdown";
 import { CollectionsMenu } from "@/components/layout/store-header/collections-menu";
 import { NavMegaDropdown } from "@/components/layout/store-header/nav-mega-dropdown";
 import { LanguagePopover } from "@/components/layout/store-header/language-popover";
+import { headerLinksIn } from "@/lib/esim/storefront/menu-labels"; // [esim-patch] P43
 import {
   HeaderMobileSearch,
   HeaderSearchBar,
@@ -397,7 +398,8 @@ function StoreHeaderBar({
   const homePaths = [`/${locale}`, `/${locale}/`, "/"];
   const onHomePage = homePaths.includes(pathname);
   const tree = useMemo(() => {
-    const saved = headerSettings?.builder ?? getDefaultHeaderLayout();
+    // [esim-patch] P43 nav links in the page's language
+    const saved = headerLinksIn(headerSettings?.builder ?? getDefaultHeaderLayout(), locale);
     // Rows marked "home page only" leave the tree everywhere else, before
     // anything measures it — so hide-on-scroll and the sticky offset count
     // only the rows actually on this page.
@@ -413,7 +415,7 @@ function StoreHeaderBar({
           darkColors ?? getDefaultHeaderSettings().colors.dark,
         )
       : stored;
-  }, [headerSettings, darkScheme, darkColors, onHomePage, showVendorSignup]);
+  }, [headerSettings, darkScheme, darkColors, onHomePage, showVendorSignup, locale]); // [esim-patch] P43 locale
   const headerTransparent = headerColorMode === "transparent";
   /**
    * The floating bar. `overlapLayout` is the LAYOUT half — true for the

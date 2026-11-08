@@ -37,3 +37,23 @@ export function menuIn<T extends { items: LabelledItem[] }>(menu: T | null, loca
 export function menuIn<T extends { items: LabelledItem[] }>(menu: T | null, locale: string): T | null {
   return menu ? { ...menu, items: menuItemsIn(menu.items, locale) } : null;
 }
+
+/**
+ * A header layout (Online store → Customize → Header) with every nav link's
+ * label in `locale` (patch P43): a link carries `labels` like a menu item.
+ * Walks the whole tree, so links in any row, column or dropdown are covered;
+ * anything without `labels` is returned as it is. Pure.
+ */
+export function headerLinksIn<T>(layout: T, locale: string): T {
+  const walk = (node: unknown): unknown => {
+    if (Array.isArray(node)) return node.map(walk);
+    if (!node || typeof node !== "object") return node;
+    const record = node as Record<string, unknown>;
+    const next: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(record)) next[key] = key === "labels" ? value : walk(value);
+    const labels = menuLabelsOf(record.labels);
+    if (labels && typeof record.label === "string") next.label = labels[locale] ?? record.label;
+    return next;
+  };
+  return walk(layout) as T;
+}
