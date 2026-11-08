@@ -686,6 +686,19 @@
         "text": "把 {store} 添加到这台设备。",
         "button": "安装"
       }
+    },
+    "support": {
+      "title": "联系客服",
+      "subtitle": "选择要咨询的内容并留言，客服回复会出现在收件箱里。",
+      "about": "咨询什么？",
+      "kindOrder": "订单",
+      "kindEsim": "eSIM",
+      "kindNumber": "号码",
+      "kindOther": "其他问题",
+      "choose": "请选择…",
+      "message": "留言内容",
+      "send": "发送给客服",
+      "failed": "留言发送失败"
     }
   },
   "admin": {

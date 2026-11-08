@@ -686,6 +686,19 @@
         "text": "Voeg {store} toe aan dit apparaat.",
         "button": "Installeren"
       }
+    },
+    "support": {
+      "title": "Contact met support",
+      "subtitle": "Kies waar het over gaat en schrijf ons. Antwoorden komen in je inbox.",
+      "about": "Waar gaat het over?",
+      "kindOrder": "Een bestelling",
+      "kindEsim": "Een eSIM",
+      "kindNumber": "Een nummer",
+      "kindOther": "Iets anders",
+      "choose": "Kies…",
+      "message": "Je bericht",
+      "send": "Naar support sturen",
+      "failed": "Het bericht kon niet worden verstuurd"
     }
   },
   "admin": {

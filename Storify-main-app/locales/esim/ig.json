@@ -686,6 +686,19 @@
         "text": "Tinye {store} na ngwaọrụ a.",
         "button": "Wụnye"
       }
+    },
+    "support": {
+      "title": "Kpọtụrụ nkwado",
+      "subtitle": "Họrọ ihe ọ gbasara ma degara anyị. Azịza ga-abata n’igbe ozi gị.",
+      "about": "Gbasara gịnị?",
+      "kindOrder": "Otu ọda",
+      "kindEsim": "Otu eSIM",
+      "kindNumber": "Otu nọmba",
+      "kindOther": "Ihe ọzọ",
+      "choose": "Họrọ…",
+      "message": "Ozi gị",
+      "send": "Zigara nkwado",
+      "failed": "Enweghị ike izipu ozi ahụ"
     }
   },
   "admin": {

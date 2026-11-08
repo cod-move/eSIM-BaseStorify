@@ -10,6 +10,7 @@ import {
   Settings2,
   Shield,
   Smartphone, // [esim-patch] P11
+  LifeBuoy, // [esim-patch] P11
   User,
 } from "lucide-react";
 import type { LoyaltyTier } from "@/types";
@@ -70,6 +71,13 @@ export const dashboardLinks: AccountNavLink[] = [
     labelFallback: "Inbox",
     href: "/account/inbox",
     icon: MessageSquare,
+  },
+  // [esim-patch] P11 "Contact support": a message about an order, eSIM or number.
+  {
+    labelKey: "esim.support.title",
+    labelFallback: "Contact support",
+    href: "/account/esims/support",
+    icon: LifeBuoy,
   },
   {
     labelKey: "account.quotes",

@@ -686,6 +686,19 @@
         "text": "Fi {store} kún ẹ̀rọ yìí.",
         "button": "Fi sórí"
       }
+    },
+    "support": {
+      "title": "Kan si atilẹyin",
+      "subtitle": "Yan ohun ti o jẹ nipa rẹ ki o kọ si wa. Awọn idahun yoo de apo-iwọle rẹ.",
+      "about": "Nipa kini?",
+      "kindOrder": "Aṣẹ kan",
+      "kindEsim": "eSIM kan",
+      "kindNumber": "Nọmba kan",
+      "kindOther": "Nkan miiran",
+      "choose": "Yan…",
+      "message": "Ifiranṣẹ rẹ",
+      "send": "Fi ranṣẹ si atilẹyin",
+      "failed": "A ko le fi ifiranṣẹ naa ranṣẹ"
     }
   },
   "admin": {

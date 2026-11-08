@@ -2,6 +2,7 @@ import QRCode from "qrcode";
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { ChevronLeft } from "lucide-react";
+import { SupportLink } from "@/components/esim/support-link";
 import Link from "@/components/language/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { connectDB } from "@/lib/db";
@@ -61,10 +62,13 @@ export default async function AccountEsimPage({ params }: PageProps) {
 
   return (
     <div className="space-y-6">
-      <Link href="/account/esims" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
-        <ChevronLeft className="h-4 w-4 rtl:rotate-180" />
-        {tr("esim.account.back", "My eSIMs")}
-      </Link>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <Link href="/account/esims" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+          <ChevronLeft className="h-4 w-4 rtl:rotate-180" />
+          {tr("esim.account.back", "My eSIMs")}
+        </Link>
+        <SupportLink query={`esim=${esim.id}`} label={tr("esim.support.title", "Contact support")} />
+      </div>
 
       <div className="space-y-2">
         <div className="flex flex-wrap items-center gap-3">

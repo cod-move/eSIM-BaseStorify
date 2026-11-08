@@ -686,6 +686,19 @@
         "text": "Engeza i-{store} kule divayisi.",
         "button": "Faka"
       }
+    },
+    "support": {
+      "title": "Xhumana nosizo",
+      "subtitle": "Khetha ukuthi imayelana nani bese usibhalela. Izimpendulo zizofika ebhokisini lakho.",
+      "about": "Imayelana nani?",
+      "kindOrder": "I-oda",
+      "kindEsim": "I-eSIM",
+      "kindNumber": "Inombolo",
+      "kindOther": "Okunye",
+      "choose": "Khetha…",
+      "message": "Umlayezo wakho",
+      "send": "Thumela kusizo",
+      "failed": "Umlayezo awukwazanga ukuthunyelwa"
     }
   },
   "admin": {

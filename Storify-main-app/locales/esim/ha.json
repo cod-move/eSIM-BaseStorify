@@ -686,6 +686,19 @@
         "text": "Ƙara {store} a wannan na'urar.",
         "button": "Saka"
       }
+    },
+    "support": {
+      "title": "Tuntuɓi tallafi",
+      "subtitle": "Zaɓi abin da ya shafa ka rubuto mana. Amsoshi za su zo akwatin saƙonka.",
+      "about": "Game da me?",
+      "kindOrder": "Oda",
+      "kindEsim": "eSIM",
+      "kindNumber": "Lamba",
+      "kindOther": "Wani abu daban",
+      "choose": "Zaɓi…",
+      "message": "Saƙonka",
+      "send": "Aika zuwa tallafi",
+      "failed": "Ba a iya aika saƙon ba"
     }
   },
   "admin": {

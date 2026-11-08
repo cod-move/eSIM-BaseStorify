@@ -686,6 +686,19 @@
         "text": "Voeg {store} by hierdie toestel.",
         "button": "Installeer"
       }
+    },
+    "support": {
+      "title": "Kontak ondersteuning",
+      "subtitle": "Kies waaroor dit gaan en skryf vir ons. Antwoorde kom in jou inkassie.",
+      "about": "Waaroor gaan dit?",
+      "kindOrder": "’n Bestelling",
+      "kindEsim": "’n eSIM",
+      "kindNumber": "’n Nommer",
+      "kindOther": "Iets anders",
+      "choose": "Kies…",
+      "message": "Jou boodskap",
+      "send": "Stuur na ondersteuning",
+      "failed": "Die boodskap kon nie gestuur word nie"
     }
   },
   "admin": {

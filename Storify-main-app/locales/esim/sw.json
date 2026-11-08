@@ -686,6 +686,19 @@
         "text": "Ongeza {store} kwenye kifaa hiki.",
         "button": "Sakinisha"
       }
+    },
+    "support": {
+      "title": "Wasiliana na msaada",
+      "subtitle": "Chagua mada na utuandikie. Majibu yatafika kwenye kikasha chako.",
+      "about": "Ni kuhusu nini?",
+      "kindOrder": "Agizo",
+      "kindEsim": "eSIM",
+      "kindNumber": "Namba",
+      "kindOther": "Kitu kingine",
+      "choose": "Chagua…",
+      "message": "Ujumbe wako",
+      "send": "Tuma kwa msaada",
+      "failed": "Ujumbe haukuweza kutumwa"
     }
   },
   "admin": {

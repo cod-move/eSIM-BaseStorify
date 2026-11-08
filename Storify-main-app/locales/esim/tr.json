@@ -686,6 +686,19 @@
         "text": "{store} uygulamasını bu cihaza ekleyin.",
         "button": "Yükle"
       }
+    },
+    "support": {
+      "title": "Destekle iletişime geç",
+      "subtitle": "Konuyu seçin ve bize yazın. Yanıtlar gelen kutunuza gelir.",
+      "about": "Konu nedir?",
+      "kindOrder": "Bir sipariş",
+      "kindEsim": "Bir eSIM",
+      "kindNumber": "Bir numara",
+      "kindOther": "Başka bir şey",
+      "choose": "Seçin…",
+      "message": "Mesajınız",
+      "send": "Desteğe gönder",
+      "failed": "Mesaj gönderilemedi"
     }
   },
   "admin": {

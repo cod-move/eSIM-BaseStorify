@@ -686,6 +686,19 @@
         "text": "Yongeza i-{store} kwesi sixhobo.",
         "button": "Faka"
       }
+    },
+    "support": {
+      "title": "Qhagamshelana nenkxaso",
+      "subtitle": "Khetha ukuba imalunga nantoni uze usibhalele. Iimpendulo ziza kwibhokisi yakho.",
+      "about": "Imalunga nantoni?",
+      "kindOrder": "I-odolo",
+      "kindEsim": "I-eSIM",
+      "kindNumber": "Inombolo",
+      "kindOther": "Enye into",
+      "choose": "Khetha…",
+      "message": "Umyalezo wakho",
+      "send": "Thumela kwinkxaso",
+      "failed": "Umyalezo awukwazanga ukuthunyelwa"
     }
   },
   "admin": {

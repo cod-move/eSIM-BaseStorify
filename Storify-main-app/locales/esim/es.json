@@ -686,6 +686,19 @@
         "text": "Añade {store} a este dispositivo.",
         "button": "Instalar"
       }
+    },
+    "support": {
+      "title": "Contactar con soporte",
+      "subtitle": "Elige el tema y escríbenos. Las respuestas llegan a tu bandeja de entrada.",
+      "about": "¿Sobre qué es?",
+      "kindOrder": "Un pedido",
+      "kindEsim": "Una eSIM",
+      "kindNumber": "Un número",
+      "kindOther": "Otra cosa",
+      "choose": "Elige…",
+      "message": "Tu mensaje",
+      "send": "Enviar a soporte",
+      "failed": "No se pudo enviar el mensaje"
     }
   },
   "admin": {

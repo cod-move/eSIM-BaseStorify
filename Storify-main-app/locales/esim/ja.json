@@ -686,6 +686,19 @@
         "text": "{store}をこの端末に追加します。",
         "button": "インストール"
       }
+    },
+    "support": {
+      "title": "サポートに連絡",
+      "subtitle": "内容を選んでメッセージを送ってください。返信は受信箱に届きます。",
+      "about": "お問い合わせ内容",
+      "kindOrder": "注文",
+      "kindEsim": "eSIM",
+      "kindNumber": "番号",
+      "kindOther": "その他",
+      "choose": "選択…",
+      "message": "メッセージ",
+      "send": "サポートに送信",
+      "failed": "メッセージを送信できませんでした"
     }
   },
   "admin": {
