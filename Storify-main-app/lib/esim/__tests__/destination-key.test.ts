@@ -27,12 +27,19 @@ describe("which destination a plan is sold under", () => {
     assert.equal(countryName("china"), null);
   });
 
-  it("leaves regions and the world as the supplier filed them", () => {
+  it("files several countries by the countries, not the name", () => {
     assert.deepEqual(destinationKey(plan("china-mainland-hk-macao-esim", "China (mainland HK Macao)", "regional", ["CN", "HK", "MO"])), {
-      productSlug: "china-mainland-hk-macao-esim",
-      destination: "China (mainland HK Macao)",
+      productSlug: "china-hong-kong-macao-esim",
+      destination: "China + Hong Kong + Macao",
     });
-    assert.equal(destinationKey(plan("global-esim", "Global", "global", ["US", "FR"])).productSlug, "global-esim");
+    assert.equal(destinationKey(plan("greater-china", "Greater China", "regional", ["MO", "hk", "CN"])).productSlug, "china-hong-kong-macao-esim");
+    const eu = ["FR", "DE", "IT", "ES", "NL"];
+    assert.deepEqual(destinationKey(plan("eu-5", "EU 5", "regional", eu)), { productSlug: "europe-5-esim", destination: "Europe (5 countries)" });
+    assert.equal(destinationKey(plan("x", "Europe+", "regional", [...eu, "EG"])).productSlug, "europe-6-esim");
+    assert.equal(destinationKey(plan("eu-6", "EU 6", "regional", [...eu, "PT"])).productSlug, "europe-6-esim");
+    // Mixed regions keep the supplier's slug.
+    assert.equal(destinationKey(plan("mix-esim", "Mix", "regional", ["FR", "DE", "JP", "KR", "US"])).productSlug, "mix-esim");
+    assert.deepEqual(destinationKey(plan("global-esim", "Global", "global", ["US", "FR"])), { productSlug: "global-2-esim", destination: "Global (2 countries)" });
     // A "local" plan listing several countries is not one country.
     assert.equal(destinationKey(plan("odd-esim", "Odd", "local", ["CN", "HK"])).productSlug, "odd-esim");
   });
@@ -49,6 +56,6 @@ describe("which destination a plan is sold under", () => {
     const merges = new Map([["greater-china-esim", "china-esim"]]);
     const stored = { ...plan("china-esim", "Greater China", "regional", ["CN", "HK"]), supplierProductSlug: "greater-china-esim" };
     assert.equal(destinationKey(stored, merges).productSlug, "china-esim");
-    assert.equal(destinationKey(stored).productSlug, "greater-china-esim");
+    assert.equal(destinationKey(stored).productSlug, "china-hong-kong-esim");
   });
 });
