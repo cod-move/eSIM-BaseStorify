@@ -71,13 +71,17 @@ export function PlanBrowser({ productId, destinationName, variants, countryCodes
   const { formatPrice } = useCurrency();
   const { addItem } = useCart();
   const router = useRouter();
-  const [filters, setFilters] = useState<PlanFilters>({});
+  // Total data first when there is any, and other kinds too (else it is no choice).
+  const [filters, setFilters] = useState<PlanFilters>(() => {
+    const kinds = new Set(variants.map((variant) => dataKindOf(variant)));
+    return kinds.has("total") && kinds.size > 1 ? { kind: "total" } : {};
+  });
   const [page, setPage] = useState(1);
   const [adding, setAdding] = useState<string | null>(null);
   const [buying, setBuying] = useState<StorefrontVariant | null>(null);
   const [coverageShown, setCoverageShown] = useState<CoveredCountry[] | null>(null);
   const [details, setDetails] = useState<StorefrontVariant | null>(null);
-  const [expanded, setExpanded] = useState<Partial<Record<PlanFilterKey, boolean>>>({});
+  const [expanded, setExpanded] = useState<Partial<Record<PlanFilterKey, boolean>>>({ days: true, data: true });
   // Every value a filter has, and those the other choices leave open.
   const allValues = useMemo(() => planFilterOptions(variants, {}), [variants]);
   const open = useMemo(() => planFilterOptions(variants, filters), [variants, filters]);

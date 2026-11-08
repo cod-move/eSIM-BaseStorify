@@ -3,6 +3,7 @@ import { requestJson, type FetchLike } from "./http";
 import { countryCodes, currency as currencyOf, int, iso2, megabytesLabel, num, obj, objArray, parseLpa, slugify, splitList, str, strOrNull } from "./json";
 import {
   ProviderError,
+  type BillingStart,
   type CancelResult,
   type CoverageScope,
   type DataType,
@@ -415,7 +416,7 @@ export function mapProduct(product: JsonObject): ProviderPlan | null {
     duration: { configurable: false, defaultDays: days, minDays: days, maxDays: days },
     speed: [...new Set(speeds)],
     tethering: null,
-    activation: { billingStarts: null, preInstallDays: preInstallDays(details) },
+    activation: { billingStarts: billingStartsOf(details.ACTIVATION_POLICY), preInstallDays: preInstallDays(details) },
     // Add-ons are bought into the same product family as a package of their own.
     topup: truthy(details.TOPUP)
       ? { supported: true, type: "MobiMatter add-on", mode: "addon", stackTarget: null, window: "before_expiry", coverage: "same_area", profileRetentionDays: null }
@@ -489,3 +490,17 @@ const familyKey = (value: string) => value.replace(/[^a-z0-9]/gi, "").toUpperCas
 
 /** Whether a MobiMatter product is from a product line we sell ("3HK", "3 HK"). */
 export const soldFamily = (product: JsonObject) => SOLD_FAMILIES.map(familyKey).includes(familyKey(str(product.productFamilyName)));
+
+/**
+ * ACTIVATION_POLICY is prose ("Package activates upon first data usage.",
+ * "…upon installation", "…immediately after purchase"); null when it says
+ * none of these.
+ */
+export function billingStartsOf(policy: unknown): BillingStart | null {
+  const text = str(policy).toLowerCase();
+  if (!text) return null;
+  if (/purchase|immediately|upon order|on order/.test(text)) return "on_purchase";
+  if (/install|download/.test(text)) return "first_installation";
+  if (/data usage|first use|first connect|connect|network|arriv|usage/.test(text)) return "first_connection";
+  return null;
+}

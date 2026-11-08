@@ -227,3 +227,13 @@ describe("MobiMatter plan networks (CAT-10)", () => {
     assert.equal(sent[0].headers["api-key"], "k1");
   });
 });
+
+describe("MobiMatter activation policy", () => {
+  it("reads when billing starts", async () => {
+    const { billingStartsOf } = await import("../mobimatter");
+    assert.equal(billingStartsOf("Package activates upon first data usage."), "first_connection");
+    assert.equal(billingStartsOf("The plan starts when the eSIM is installed."), "first_installation");
+    assert.equal(billingStartsOf("Activates immediately after purchase."), "on_purchase");
+    assert.equal(billingStartsOf(""), null);
+  });
+});
