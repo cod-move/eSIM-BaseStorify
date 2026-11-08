@@ -491,7 +491,7 @@
       "transferSend": "{amount} স্থানান্তর করুন",
       "transferDone": "ব্যালান্স স্থানান্তর হয়েছে",
       "transferPending": "স্থানান্তর চলছে, কয়েক মিনিটে দেখা যাবে",
-      "transferToHint": "দেশের কোডসহ যেকোনো TopConnect নম্বর।"
+      "transferToHint": "এই প্ল্যাটফর্মের যেকোনো নম্বর, দেশের কোডসহ।"
     },
     "copy": {
       "heroTitle": "১৯০টিরও বেশি দেশে সংযুক্ত থাকুন",

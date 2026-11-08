@@ -164,7 +164,7 @@ export function TransferCreditButton({
                   ))}
                 </div>
               ) : null}
-              <p className="text-xs text-muted-foreground">{t("esim.number.transferToHint", "Any TopConnect number, with its country code.")}</p>
+              <p className="text-xs text-muted-foreground">{t("esim.number.transferToHint", "Any number from this platform, with its country code.")}</p>
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="transfer-amount">

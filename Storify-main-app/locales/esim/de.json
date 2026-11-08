@@ -491,7 +491,7 @@
       "transferSend": "{amount} übertragen",
       "transferDone": "Guthaben übertragen",
       "transferPending": "Die Übertragung läuft und ist in wenigen Minuten sichtbar",
-      "transferToHint": "Jede TopConnect-Nummer, mit Ländervorwahl."
+      "transferToHint": "Jede Nummer dieser Plattform, mit Ländervorwahl."
     },
     "copy": {
       "heroTitle": "In über 190 Ländern verbunden bleiben",

@@ -491,7 +491,7 @@
       "transferSend": "转移 {amount}",
       "transferDone": "话费已转移",
       "transferPending": "正在转移，几分钟内到账",
-      "transferToHint": "可填任意 TopConnect 号码，需带国家区号。"
+      "transferToHint": "可填任意本平台内号码，需带国家区号。"
     },
     "copy": {
       "heroTitle": "畅游 190 多个国家和地区，随时在线",

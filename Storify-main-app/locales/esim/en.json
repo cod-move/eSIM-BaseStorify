@@ -491,7 +491,7 @@
       "transferSend": "Transfer {amount}",
       "transferDone": "Credit moved",
       "transferPending": "The transfer is being made and shows within a few minutes",
-      "transferToHint": "Any TopConnect number, with its country code."
+      "transferToHint": "Any number from this platform, with its country code."
     },
     "copy": {
       "heroTitle": "Stay connected in 190+ countries",

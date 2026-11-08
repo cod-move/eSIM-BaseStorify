@@ -491,7 +491,7 @@
       "transferSend": "Transferir {amount}",
       "transferDone": "Saldo transferido",
       "transferPending": "La transferencia está en curso y se verá en unos minutos",
-      "transferToHint": "Cualquier número de TopConnect, con su prefijo de país."
+      "transferToHint": "Cualquier número de esta plataforma, con su prefijo de país."
     },
     "copy": {
       "heroTitle": "Conectado en más de 190 países",

@@ -77,10 +77,12 @@ export async function requestCardTransfer(userId: string, numberId: string, inpu
   const [from, to] = await Promise.all([
     EsimNumber.findOne({ _id: numberId, ...owned(userId) }).select({ msisdn: 1, card: 1 }).lean(),
     // Ours when it is one of the store's numbers: then its card is known.
-    EsimNumber.findOne({ msisdn: toMsisdn }).select({ msisdn: 1, card: 1 }).lean(),
+    EsimNumber.findOne({ msisdn: toMsisdn, status: "sold" }).select({ msisdn: 1, card: 1 }).lean(),
   ]);
   if (!from) return null;
   if (toMsisdn === from.msisdn) return { ok: false, message: "Choose another number" };
+  // Only the platform's own numbers: never someone else's card at TopConnect.
+  if (!to) return { ok: false, message: "This number is not one of the platform's numbers" };
   if (from.card?.blocked || to?.card?.blocked) return { ok: false, message: "A blocked number cannot send or receive credit" };
   const currency = (from.card?.currency ?? "EUR").toUpperCase();
   if (to?.card?.currency && to.card.currency.toUpperCase() !== currency) return { ok: false, message: "The two numbers keep credit in different currencies" };

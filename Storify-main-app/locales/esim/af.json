@@ -491,7 +491,7 @@
       "transferSend": "Dra {amount} oor",
       "transferDone": "Krediet oorgedra",
       "transferPending": "Die oordrag word gedoen en wys binne 'n paar minute",
-      "transferToHint": "Enige TopConnect-nommer, met sy landkode."
+      "transferToHint": "Enige nommer van hierdie platform, met sy landkode."
     },
     "copy": {
       "heroTitle": "Bly verbind in meer as 190 lande",

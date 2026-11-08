@@ -491,7 +491,7 @@
       "transferSend": "{amount} overzetten",
       "transferDone": "Tegoed overgezet",
       "transferPending": "De overboeking loopt en is binnen enkele minuten zichtbaar",
-      "transferToHint": "Elk TopConnect-nummer, met landcode."
+      "transferToHint": "Elk nummer van dit platform, met landcode."
     },
     "copy": {
       "heroTitle": "Blijf verbonden in meer dan 190 landen",

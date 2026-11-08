@@ -491,7 +491,7 @@
       "transferSend": "Dlulisa {amount}",
       "transferDone": "Ikhredithi idlulisiwe",
       "transferPending": "Ukudlulisa kuyaqhubeka, kuzobonakala emizuzwini embalwa",
-      "transferToHint": "Noma iyiphi inombolo ye-TopConnect, nekhodi yezwe."
+      "transferToHint": "Noma iyiphi inombolo yale nkundla, nekhodi yezwe."
     },
     "copy": {
       "heroTitle": "Hlala uxhumekile emazweni angaphezu kwe-190",
