@@ -404,7 +404,10 @@
       "fairUse": "1日{amount}まで高速、その後{speed}。",
       "fairUseOnly": "1日{amount}まで高速。",
       "voiceMinutes": "通話{count}分",
-      "smsCount": "SMS {count}通"
+      "smsCount": "SMS {count}通",
+      "coverage": "対象エリア",
+      "coverageLocal": "単一の国・地域",
+      "coverageMulti": "周遊エリア"
     },
     "nav": {
       "esim": "eSIM",

@@ -404,7 +404,10 @@
       "fairUse": "প্রতিদিন {amount} পূর্ণ গতিতে, তারপর {speed}।",
       "fairUseOnly": "প্রতিদিন {amount} পূর্ণ গতিতে।",
       "voiceMinutes": "{count} মিনিট কল",
-      "smsCount": "{count}টি SMS"
+      "smsCount": "{count}টি SMS",
+      "coverage": "কভারেজ",
+      "coverageLocal": "একটি দেশ/অঞ্চল",
+      "coverageMulti": "আঞ্চলিক"
     },
     "nav": {
       "esim": "eSIM",

@@ -3,7 +3,7 @@ import "server-only";
 import { unstable_cache } from "next/cache";
 import { connectDB } from "@/lib/db";
 import { EsimDestination } from "@/models/esim-destination.model";
-import { getDestination, STOREFRONT_TAG } from "@/lib/esim/storefront/catalog";
+import { getDestination, multiDestinations, STOREFRONT_TAG, withRegionalPlans } from "@/lib/esim/storefront/catalog";
 import { destinationsIn, type DestinationNames, type NamedDestination } from "@/lib/esim/storefront/destination-name";
 
 /** The names admins gave destinations, by URL slug and language; cached with the catalogue. */
@@ -39,5 +39,8 @@ export async function localizeDestination<T extends NamedDestination>(destinatio
 /** A destination page's destination, named in `locale`; null when there is none. */
 export async function getLocalizedDestination(slug: string, scope: "local" | "multi", locale: string) {
   const destination = await getDestination(slug, scope);
-  return destination ? localizeDestination(destination, locale) : null;
+  if (!destination) return null;
+  // A country's page also offers the regions' plans that cover it, named in `locale` too.
+  const page = scope === "local" ? withRegionalPlans(destination, await localizeDestinations(await multiDestinations(), locale)) : destination;
+  return localizeDestination(page, locale);
 }

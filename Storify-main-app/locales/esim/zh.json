@@ -404,7 +404,10 @@
       "fairUse": "每天 {amount} 高速流量，用完后限速 {speed}。",
       "fairUseOnly": "每天 {amount} 高速流量。",
       "voiceMinutes": "{count} 分钟通话",
-      "smsCount": "{count} 条短信"
+      "smsCount": "{count} 条短信",
+      "coverage": "覆盖范围",
+      "coverageLocal": "单一国家/地区",
+      "coverageMulti": "区域"
     },
     "nav": {
       "esim": "eSIM",

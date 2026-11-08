@@ -404,7 +404,10 @@
       "fairUse": "{amount} يوميًا بالسرعة الكاملة، ثم {speed}.",
       "fairUseOnly": "{amount} يوميًا بالسرعة الكاملة.",
       "voiceMinutes": "{count} دقيقة مكالمات",
-      "smsCount": "{count} رسالة"
+      "smsCount": "{count} رسالة",
+      "coverage": "التغطية",
+      "coverageLocal": "دولة/منطقة واحدة",
+      "coverageMulti": "إقليمي"
     },
     "nav": {
       "esim": "eSIM",

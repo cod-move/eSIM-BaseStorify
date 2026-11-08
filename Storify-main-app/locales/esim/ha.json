@@ -404,7 +404,10 @@
       "fairUse": "{amount} a kowace rana a cikakken sauri, sannan {speed}.",
       "fairUseOnly": "{amount} a kowace rana a cikakken sauri.",
       "voiceMinutes": "Mintunan kira {count}",
-      "smsCount": "Saƙonni {count}"
+      "smsCount": "Saƙonni {count}",
+      "coverage": "Yanki",
+      "coverageLocal": "Kasa/yanki guda",
+      "coverageMulti": "Shiyya"
     },
     "nav": {
       "esim": "eSIM",

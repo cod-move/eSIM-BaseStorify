@@ -496,7 +496,7 @@ export const soldFamily = (product: JsonObject) => SOLD_FAMILIES.map(familyKey).
  * "…upon installation", "…immediately after purchase"); null when it says
  * none of these.
  */
-export function billingStartsOf(policy: unknown): BillingStart | null {
+export function billingStartsOf(policy: JsonValue | undefined): BillingStart | null {
   const text = str(policy).toLowerCase();
   if (!text) return null;
   if (/purchase|immediately|upon order|on order/.test(text)) return "on_purchase";

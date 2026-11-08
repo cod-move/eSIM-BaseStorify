@@ -404,7 +404,10 @@
       "fairUse": "रोज़ {amount} पूरी स्पीड पर, फिर {speed}।",
       "fairUseOnly": "रोज़ {amount} पूरी स्पीड पर।",
       "voiceMinutes": "{count} मिनट कॉल",
-      "smsCount": "{count} SMS"
+      "smsCount": "{count} SMS",
+      "coverage": "कवरेज",
+      "coverageLocal": "एक देश/क्षेत्र",
+      "coverageMulti": "क्षेत्रीय"
     },
     "nav": {
       "esim": "eSIM",

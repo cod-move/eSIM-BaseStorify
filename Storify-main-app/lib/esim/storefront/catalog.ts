@@ -218,6 +218,38 @@ export async function getDestination(slug: string, scope: "local" | "multi"): Pr
   return destination;
 }
 
+/** The regions and the world, with their plans: what a country's page adds from. */
+export async function multiDestinations(): Promise<DestinationDetail[]> {
+  return (await cachedCatalog()).filter((destination) => destination.scope !== "local");
+}
+
+/**
+ * A country's page lists, after its own plans, those of the regions and the
+ * world that cover it (bought as their own products), so a shopper sees every
+ * plan that works there and can filter by coverage.
+ */
+export function withRegionalPlans(destination: DestinationDetail, catalog: DestinationDetail[]): DestinationDetail {
+  const code = destination.countries.length === 1 ? destination.countries[0].code : null;
+  if (!code) return destination;
+  const coverageSets = [...destination.coverageSets];
+  const variants: StorefrontVariant[] = destination.variants.map((variant) => ({ ...variant, coverageScope: "local" }));
+  for (const other of catalog) {
+    if (other.scope === "local" || !other.countries.some((country) => country.code === code)) continue;
+    const offset = coverageSets.length;
+    coverageSets.push(...other.coverageSets);
+    for (const variant of other.variants) {
+      variants.push({
+        ...variant,
+        coverageScope: "multi",
+        productId: other.productId,
+        region: other.name,
+        coverageSet: variant.coverageSet === undefined ? undefined : variant.coverageSet + offset,
+      });
+    }
+  }
+  return { ...destination, variants, coverageSets };
+}
+
 /** The global destinations, cheapest first. */
 export async function globalDestinations(): Promise<DestinationDetail[]> {
   return (await cachedCatalog())

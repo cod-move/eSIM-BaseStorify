@@ -404,7 +404,10 @@
       "fairUse": "{amount} ngosuku ngejubane eliphelele, bese {speed}.",
       "fairUseOnly": "{amount} ngosuku ngejubane eliphelele.",
       "voiceMinutes": "Imizuzu engu-{count} yezingcingo",
-      "smsCount": "Ama-SMS angu-{count}"
+      "smsCount": "Ama-SMS angu-{count}",
+      "coverage": "Ukufakwa",
+      "coverageLocal": "Izwe/indawo eyodwa",
+      "coverageMulti": "Isifunda"
     },
     "nav": {
       "esim": "eSIM",

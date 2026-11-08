@@ -96,3 +96,13 @@ describe("plan filters", () => {
     assert.equal(pageOf([], 1, 12).pages, 1);
   });
 });
+
+describe("coverage filter", () => {
+  it("tells the country's own plans from a region's, own first", () => {
+    const mixed = [v("eu", { coverageScope: "multi", productId: "p-eu", region: "Europe (33 countries)" }), v("fr", { coverageScope: "local" })];
+    assert.deepEqual(planFilterOptions(mixed, {}).coverage.map((option) => option.value), ["local", "multi"]);
+    assert.deepEqual(filterPlans(mixed, { coverage: "multi" }).map((variant) => variant.variantId), ["eu"]);
+    // Plans with no coverage named are the page's own.
+    assert.deepEqual(planFilterOptions([v("a", {})], {}).coverage.map((option) => option.value), ["local"]);
+  });
+});

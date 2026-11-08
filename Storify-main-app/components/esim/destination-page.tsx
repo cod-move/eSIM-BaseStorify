@@ -60,7 +60,9 @@ export async function DestinationPage({
   // Each card's own plan: its countries and operators (older cached catalogues have none: the destination's).
   const planCoverage = (destination.coverageSets ?? []).map((set) => coverageByCountry(set.countries, set.networks, locale));
   const local = destination.scope === "local";
-  const prices = destination.variants.map((variant) => variant.perDay ? variant.perDay.priceMinor * variant.perDay.minDays : variant.priceMinor);
+  // The page's own plans: a region's plans shown here are offered under the region.
+  const ownVariants = destination.variants.filter((variant) => variant.coverageScope !== "multi");
+  const prices = ownVariants.map((variant) => variant.perDay ? variant.perDay.priceMinor * variant.perDay.minDays : variant.priceMinor);
   const faq = [
     {
       q: tr("esim.faq.compatibleQ", "Will it work on my phone?"),
@@ -170,7 +172,7 @@ export async function DestinationPage({
             priceCurrency: defaultCurrency || "USD",
             lowPrice: (Math.min(...prices) / 100).toFixed(2),
             highPrice: (Math.max(...prices) / 100).toFixed(2),
-            offerCount: destination.variants.length,
+            offerCount: ownVariants.length,
             availability: "https://schema.org/InStock",
           },
         }}

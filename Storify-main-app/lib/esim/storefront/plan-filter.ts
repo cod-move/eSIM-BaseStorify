@@ -9,7 +9,7 @@ import {
 
 /**
  * A destination's plans as filters and a paged list of cards (WEB-13/14):
- * data kind → days → data → top-up → exit IP → operator. A plan runs on
+ * coverage (the country alone, or a region with it) → data kind → days → data → top-up → exit IP → operator. A plan runs on
  * several operators, so it shows under each of them; one that names none
  * shows under "" (not stated). Each filter offers what the
  * other filters leave open, so no choice ends in an empty list; a value the
@@ -17,7 +17,7 @@ import {
  * Pure, so the page and the tests agree.
  */
 
-export const PLAN_FILTERS = ["kind", "days", "data", "topup", "breakout", "operator"] as const;
+export const PLAN_FILTERS = ["coverage", "kind", "days", "data", "topup", "breakout", "operator"] as const;
 export type PlanFilterKey = (typeof PLAN_FILTERS)[number];
 /** The chosen value of each filter; absent is "all". */
 export type PlanFilters = Partial<Record<PlanFilterKey, string>>;
@@ -32,6 +32,7 @@ const KIND_ORDER: Record<string, number> = { total: 0, daily: 1, unlimited: 2, l
 
 /** A plan's values for each filter: one for most, one per operator for "operator". */
 const valuesOf: Record<PlanFilterKey, (variant: StorefrontVariant) => string[]> = {
+  coverage: (variant) => [variant.coverageScope ?? "local"],
   kind: (variant) => [dataKindOf(variant)],
   days: (variant) => [keyOf.days(variant)],
   data: (variant) => [keyOf.data(variant)],
@@ -51,6 +52,7 @@ function matches(variant: StorefrontVariant, filters: PlanFilters, except?: Plan
 function order(key: PlanFilterKey, variants: StorefrontVariant[]) {
   const sample = new Map(variants.map((variant) => [valuesOf[key](variant)[0], variant]));
   return (a: string, b: string) => {
+    if (key === "coverage") return Number(a === "multi") - Number(b === "multi");
     if (key === "kind") return (KIND_ORDER[a] ?? 9) - (KIND_ORDER[b] ?? 9);
     if (key === "days") return byDays(a, b);
     if (key === "topup") return (TOPUP_ORDER[a] ?? 9) - (TOPUP_ORDER[b] ?? 9);

@@ -404,7 +404,10 @@
       "fairUse": "{amount} al día a máxima velocidad, después {speed}.",
       "fairUseOnly": "{amount} al día a máxima velocidad.",
       "voiceMinutes": "{count} minutos de llamadas",
-      "smsCount": "{count} SMS"
+      "smsCount": "{count} SMS",
+      "coverage": "Cobertura",
+      "coverageLocal": "Un solo país/territorio",
+      "coverageMulti": "Región"
     },
     "nav": {
       "esim": "eSIM",

@@ -47,7 +47,7 @@ const COLLAPSED_OPTIONS = 12;
 /** Fewer hidden than this, and a filter shows them all. */
 const MIN_HIDDEN = 3;
 const collapses = (count: number) => count - COLLAPSED_OPTIONS >= MIN_HIDDEN;
-const FILTER_ICONS: Record<PlanFilterKey, LucideIcon> = { kind: Layers, days: CalendarDays, data: Database, topup: RefreshCw, breakout: Globe2, operator: RadioTower };
+const FILTER_ICONS: Record<PlanFilterKey, LucideIcon> = { coverage: MapPin, kind: Layers, days: CalendarDays, data: Database, topup: RefreshCw, breakout: Globe2, operator: RadioTower };
 /** Operators named on a card before "+N". */
 const SHOWN_OPERATORS = 3;
 
@@ -66,7 +66,7 @@ interface PlanBrowserProps {
   image?: string | null;
 }
 
-export function PlanBrowser({ productId, destinationName, variants, countryCodes, regionNames, coverage, planCoverage, local, image }: PlanBrowserProps) {
+export function PlanBrowser({ productId, destinationName, variants, countryCodes, regionNames, coverage, planCoverage, local: _local, image }: PlanBrowserProps) {
   const t = useFallbackTranslator(useTranslations());
   const { formatPrice } = useCurrency();
   const { addItem } = useCart();
@@ -88,6 +88,8 @@ export function PlanBrowser({ productId, destinationName, variants, countryCodes
   const plans = useMemo(() => filterPlans(variants, filters), [variants, filters]);
   const shown = pageOf(plans, page, PAGE_SIZE);
   const name = t("esim.page.title", "{name} eSIM", { name: destinationName });
+  // A region's plan on a country's page is bought, and named, as the region's.
+  const nameOf = (variant: StorefrontVariant) => (variant.region ? t("esim.page.title", "{name} eSIM", { name: variant.region }) : name);
 
   // A long filter shows its first values, and the chosen one, until opened.
   const visibleValues = (key: PlanFilterKey) => {
@@ -129,6 +131,7 @@ export function PlanBrowser({ productId, destinationName, variants, countryCodes
       lifetime: t("esim.plans.kindLifetime", "Long-term"),
     })[value] ?? value;
   const optionLabel: Record<PlanFilterKey, (value: string) => string> = {
+    coverage: (value) => (value === "multi" ? t("esim.plans.coverageMulti", "Region") : t("esim.plans.coverageLocal", "Single country/area")),
     kind,
     days: (value) =>
       value === FLEX_DAYS
@@ -162,6 +165,7 @@ export function PlanBrowser({ productId, destinationName, variants, countryCodes
     return lines;
   };
   const titles: Record<PlanFilterKey, string> = {
+    coverage: t("esim.plans.coverage", "Coverage"),
     kind: t("esim.plans.kind", "Data type"),
     days: t("esim.selector.days", "How long is your trip?"),
     data: t("esim.selector.data", "How much data?"),
@@ -177,7 +181,7 @@ export function PlanBrowser({ productId, destinationName, variants, countryCodes
     }
     setAdding(variant.variantId);
     try {
-      await addItem({ productId, variantId: variant.variantId, quantity: 1, price: variant.priceMinor / 100, name, image: image ?? undefined });
+      await addItem({ productId: variant.productId ?? productId, variantId: variant.variantId, quantity: 1, price: variant.priceMinor / 100, name: nameOf(variant), image: image ?? undefined });
       router.push("/checkout");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : t("esim.selector.addFailed", "Could not add to cart"));
@@ -194,7 +198,7 @@ export function PlanBrowser({ productId, destinationName, variants, countryCodes
   const coverageOf = (variant: StorefrontVariant) =>
     (variant.coverageSet !== undefined ? planCoverage?.[variant.coverageSet] : undefined) ?? coverage;
   const coverageLabel = (countries: CoveredCountry[]) =>
-    local || countries.length < 2
+    countries.length < 2
       ? t("esim.plans.networks", "Networks")
       : t("esim.plans.countries", "{count} countries", { count: countries.length });
   const cardLabels = (variant: StorefrontVariant): PlanCardLabels => ({
@@ -306,6 +310,12 @@ export function PlanBrowser({ productId, destinationName, variants, countryCodes
                     {variant.dataValue}
                   </button>
                   <div className="text-sm text-muted-foreground">{days(variant)}</div>
+                  {variant.region ? (
+                    <div className="mt-0.5 flex items-center gap-1 text-xs font-medium text-primary">
+                      <MapPin className="h-3.5 w-3.5" />
+                      {variant.region}
+                    </div>
+                  ) : null}
                 </div>
                 <div className="flex shrink-0 flex-col items-end gap-1">
                   <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">{kind(dataKindOf(variant))}</span>
@@ -400,7 +410,7 @@ export function PlanBrowser({ productId, destinationName, variants, countryCodes
       <PlanDetailsDialog
         variant={details}
         onClose={() => setDetails(null)}
-        productId={productId}
+        productId={details?.productId ?? productId}
         labels={details ? cardLabels(details) : null}
         price={details ? priceOf(details) : null}
         coverage={details ? coverageOf(details) : coverage}
@@ -416,8 +426,8 @@ export function PlanBrowser({ productId, destinationName, variants, countryCodes
       <PlanBuyDialog
         variant={buying}
         onClose={() => setBuying(null)}
-        productId={productId}
-        name={name}
+        productId={buying?.productId ?? productId}
+        name={buying ? nameOf(buying) : name}
         image={image}
         summary={buying ? `${buying.dataValue} · ${days(buying)}` : ""}
       />

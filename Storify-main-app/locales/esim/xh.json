@@ -404,7 +404,10 @@
       "fairUse": "{amount} ngosuku ngesantya esipheleleyo, emva koko {speed}.",
       "fairUseOnly": "{amount} ngosuku ngesantya esipheleleyo.",
       "voiceMinutes": "Imizuzu eli-{count} yeefowuni",
-      "smsCount": "Ii-SMS ezi-{count}"
+      "smsCount": "Ii-SMS ezi-{count}",
+      "coverage": "Ukugubungela",
+      "coverageLocal": "Ilizwe/indawo enye",
+      "coverageMulti": "Ummandla"
     },
     "nav": {
       "esim": "eSIM",

@@ -404,7 +404,10 @@
       "fairUse": "{amount} kwa ụbọchị n'ọsọ zuru oke, wee {speed}.",
       "fairUseOnly": "{amount} kwa ụbọchị n'ọsọ zuru oke.",
       "voiceMinutes": "Nkeji oku {count}",
-      "smsCount": "SMS {count}"
+      "smsCount": "SMS {count}",
+      "coverage": "Mkpuchi",
+      "coverageLocal": "Otu obodo/mpaghara",
+      "coverageMulti": "Mpaghara"
     },
     "nav": {
       "esim": "eSIM",

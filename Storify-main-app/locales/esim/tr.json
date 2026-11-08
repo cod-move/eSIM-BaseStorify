@@ -404,7 +404,10 @@
       "fairUse": "Günde {amount} tam hızda, sonra {speed}.",
       "fairUseOnly": "Günde {amount} tam hızda.",
       "voiceMinutes": "{count} dakika arama",
-      "smsCount": "{count} SMS"
+      "smsCount": "{count} SMS",
+      "coverage": "Kapsama",
+      "coverageLocal": "Tek ülke/bölge",
+      "coverageMulti": "Bölgesel"
     },
     "nav": {
       "esim": "eSIM",

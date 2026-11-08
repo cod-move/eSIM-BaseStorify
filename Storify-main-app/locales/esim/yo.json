@@ -404,7 +404,10 @@
       "fairUse": "{amount} lójoojúmọ́ ní ìyára kíkún, lẹ́yìn náà {speed}.",
       "fairUseOnly": "{amount} lójoojúmọ́ ní ìyára kíkún.",
       "voiceMinutes": "Ìṣẹ́jú ìpè {count}",
-      "smsCount": "SMS {count}"
+      "smsCount": "SMS {count}",
+      "coverage": "Agbegbe",
+      "coverageLocal": "Orílẹ̀-èdè/agbègbè kan",
+      "coverageMulti": "Agbègbè"
     },
     "nav": {
       "esim": "eSIM",

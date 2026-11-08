@@ -35,6 +35,13 @@ export interface StorefrontVariant {
   scheduledActivation?: boolean;
   /** What the plan card's details show; absent where the catalogue did not say. */
   details?: PlanDetails | null;
+  /**
+   * On a country's page, a region's or the world's plan that covers it too:
+   * "multi", with the product it is bought as and the region's name.
+   */
+  coverageScope?: "local" | "multi";
+  productId?: string;
+  region?: string | null;
 }
 
 /** One plan's facts for its details dialog; null where the supplier does not say. */

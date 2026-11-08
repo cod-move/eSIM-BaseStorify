@@ -404,7 +404,10 @@
       "fairUse": "{amount} kwa siku kwa kasi kamili, kisha {speed}.",
       "fairUseOnly": "{amount} kwa siku kwa kasi kamili.",
       "voiceMinutes": "Dakika {count} za simu",
-      "smsCount": "SMS {count}"
+      "smsCount": "SMS {count}",
+      "coverage": "Eneo la huduma",
+      "coverageLocal": "Nchi/eneo moja",
+      "coverageMulti": "Kanda"
     },
     "nav": {
       "esim": "eSIM",
