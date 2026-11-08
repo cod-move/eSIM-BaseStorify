@@ -476,7 +476,21 @@
       "cancelPacketTitle": "{name} বাতিল করবেন?",
       "cancelPacketHint": "প্যাকেজটি এখনই বন্ধ হবে। বাকি ডেটা রিফান্ড হয় না।",
       "packetCancelled": "প্যাকেজ বাতিল হয়েছে",
-      "cancelPacket": "বাতিল"
+      "cancelPacket": "বাতিল",
+      "smsToSelf": "নিজেকে SMS পাঠান",
+      "smsHint": "{number}-এ একটি SMS, বার্তা আসে কি না দেখতে।",
+      "smsFrom": "প্রেরকের নম্বর",
+      "smsMessage": "বার্তা",
+      "smsSend": "পাঠান",
+      "smsSent": "{number}-এ SMS পাঠানো হয়েছে",
+      "transfer": "ব্যালান্স স্থানান্তর",
+      "transferHint": "{number}-এর ব্যালান্স আপনার অন্য একটি নম্বরে সরায়।",
+      "transferTo": "কোন নম্বরে",
+      "transferAmount": "পরিমাণ ({currency})",
+      "transferAvailable": "পাওয়া যাবে: {amount}",
+      "transferSend": "{amount} স্থানান্তর করুন",
+      "transferDone": "ব্যালান্স স্থানান্তর হয়েছে",
+      "transferPending": "স্থানান্তর চলছে, কয়েক মিনিটে দেখা যাবে"
     },
     "copy": {
       "heroTitle": "১৯০টিরও বেশি দেশে সংযুক্ত থাকুন",

@@ -34,6 +34,8 @@ import {
 export const TOPCONNECT_DEFAULT_BASE_URL = "https://xml2.travelsim.com/tsim_xml/service/xmlgate";
 
 const TIMEOUT_MS = 35_000;
+/** One text message. */
+export const SMS_MAX_CHARS = 160;
 const MAX_RESPONSE_BYTES = 4 * 1024 * 1024;
 
 export interface TopConnectOptions {
@@ -237,6 +239,20 @@ export class TopConnectClient {
       cardBalanceMinor: money(tag(nodes(xml, "card")[0] ?? "", "balance")),
       accountBalanceMinor: money(tag(nodes(xml, "client")[0] ?? "", "balance")),
     };
+  }
+
+  /**
+   * Sends a text message to a card. `sms2` shows any sender number the
+   * caller names (the live store's "send SMS to myself"); `sms` sends from
+   * the gateway's own. At most 160 characters.
+   */
+  async sendSms(input: { from: string; to: string; message: string; command?: "sms" | "sms2" }): Promise<void> {
+    const message = input.message.trim();
+    if (!message) throw new ProviderError("rejected", "The message is empty", null, "topconnect");
+    if ([...message].length > SMS_MAX_CHARS) throw new ProviderError("rejected", `The message is over ${SMS_MAX_CHARS} characters`, null, "topconnect");
+    const from = input.from.replace(/[\s()+-]/g, "");
+    if (!/^\d{3,15}$/.test(from)) throw new ProviderError("rejected", "The sender must be 3 to 15 digits", null, "topconnect");
+    await this.call(input.command ?? "sms2", { anum: from, bnum: digitsOnly(input.to, "bnum"), msg: message });
   }
 
   /** The card's `sbalance` records between two days (YYYY-MM-DD), for checking a transfer whose answer was lost. */

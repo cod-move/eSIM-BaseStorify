@@ -476,7 +476,21 @@
       "cancelPacketTitle": "{name} kündigen?",
       "cancelPacketHint": "Das Paket endet jetzt. Restliche Daten werden nicht erstattet.",
       "packetCancelled": "Paket gekündigt",
-      "cancelPacket": "Kündigen"
+      "cancelPacket": "Kündigen",
+      "smsToSelf": "SMS an mich senden",
+      "smsHint": "Eine SMS an {number}, um zu prüfen, ob sie ankommt.",
+      "smsFrom": "Absendernummer",
+      "smsMessage": "Nachricht",
+      "smsSend": "Senden",
+      "smsSent": "SMS an {number} gesendet",
+      "transfer": "Guthaben übertragen",
+      "transferHint": "Überträgt Guthaben von {number} auf eine Ihrer anderen Nummern.",
+      "transferTo": "An Nummer",
+      "transferAmount": "Betrag ({currency})",
+      "transferAvailable": "Verfügbar: {amount}",
+      "transferSend": "{amount} übertragen",
+      "transferDone": "Guthaben übertragen",
+      "transferPending": "Die Übertragung läuft und ist in wenigen Minuten sichtbar"
     },
     "copy": {
       "heroTitle": "In über 190 Ländern verbunden bleiben",

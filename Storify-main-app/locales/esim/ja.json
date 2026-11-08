@@ -476,7 +476,21 @@
       "cancelPacketTitle": "{name}をキャンセルしますか？",
       "cancelPacketHint": "パッケージは今すぐ停止します。残りのデータは返金されません。",
       "packetCancelled": "パッケージをキャンセルしました",
-      "cancelPacket": "キャンセル"
+      "cancelPacket": "キャンセル",
+      "smsToSelf": "自分にSMSを送る",
+      "smsHint": "{number} にSMSを送り、受信できるか確認します。",
+      "smsFrom": "送信元番号",
+      "smsMessage": "メッセージ",
+      "smsSend": "送信",
+      "smsSent": "{number} にSMSを送信しました",
+      "transfer": "残高を移す",
+      "transferHint": "{number} の残高を、お持ちの別の番号へ移します。",
+      "transferTo": "移動先の番号",
+      "transferAmount": "金額（{currency}）",
+      "transferAvailable": "移動可能：{amount}",
+      "transferSend": "{amount} を移す",
+      "transferDone": "残高を移しました",
+      "transferPending": "移動中です。数分で反映されます"
     },
     "copy": {
       "heroTitle": "190 以上の国と地域でつながる",

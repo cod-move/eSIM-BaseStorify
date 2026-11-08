@@ -4,6 +4,7 @@ import { mongoose } from "@/lib/db";
 import { EsimNumber, type IEsimNumber, type NumberCardPackage } from "@/models/esim-number.model";
 import { EsimNumberOrder } from "@/models/esim-number-order.model";
 import { EsimNumberOp } from "@/models/esim-number-op.model";
+import { EsimNumberTransfer } from "@/models/esim-number-transfer.model";
 import { formatAmount } from "@/lib/esim/numbers/line";
 import { credentialsOf, findProvider } from "@/lib/esim/provider-service";
 import { withProviderLog } from "@/lib/esim/provider-log";
@@ -164,9 +165,10 @@ export async function getCustomerNumber(userId: string, numberId: string): Promi
     .select("+install")
     .lean<(NumberRow & Pick<IEsimNumber, "iccid" | "install" | "order">) | null>();
   if (!row) return null;
-  const [job, ops] = await Promise.all([
+  const [job, ops, transfers] = await Promise.all([
     row.order ? EsimNumberOrder.findOne({ order: row.order, number: row._id }).select({ orderNumber: 1 }).lean() : null,
     EsimNumberOp.find({ number: row._id, state: { $in: ["queued", "processing"] } }).sort({ createdAt: 1 }).select({ kind: 1, amountMinor: 1, currency: 1, packet: 1 }).lean(),
+    EsimNumberTransfer.find({ $or: [{ "from.number": row._id }, { "to.number": row._id }], state: { $in: ["queued", "processing"] } }).select({ from: 1, to: 1, amountMinor: 1, currency: 1 }).lean(),
   ]);
   const lpa = row.install?.lpa ?? "";
   return {
@@ -181,7 +183,10 @@ export async function getCustomerNumber(userId: string, numberId: string): Promi
       pin2: row.install?.pin2 ?? null,
       puk2: row.install?.puk2 ?? null,
     },
-    pending: ops.map((op) => (op.kind === "packet" ? op.packet?.name ?? "Data package" : `${formatAmount(op.amountMinor, op.currency)} credit`)),
+    pending: [
+      ...ops.map((op) => (op.kind === "packet" ? op.packet?.name ?? "Data package" : `${formatAmount(op.amountMinor, op.currency)} credit`)),
+      ...transfers.map((move) => `${formatAmount(move.amountMinor, move.currency)} +${move.from.msisdn} → +${move.to.msisdn}`),
+    ],
     refreshFailed: !refreshed,
   };
 }

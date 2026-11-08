@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import { Loader2, Plus, Wifi } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -26,7 +26,8 @@ import type { NumberShop } from "@/lib/esim/numbers/storefront";
 
 type Options = Pick<NumberShop, "packets" | "recharge" | "product">;
 
-export function NumberTopupActions({ numberId, title, options }: { numberId: string; title: string; options: Options }) {
+/** `children`: more of the number's buttons, shown after "Add credit" (number-card-tools.tsx). */
+export function NumberTopupActions({ numberId, title, options, children }: { numberId: string; title: string; options: Options; children?: ReactNode }) {
   const t = useFallbackTranslator(useTranslations());
   const router = useRouter();
   const { addItem } = useCart();
@@ -43,7 +44,7 @@ export function NumberTopupActions({ numberId, title, options }: { numberId: str
   const amountMinor = open === "packet" ? options.packets.find((entry) => entry.id === packet)?.priceMinor ?? 0 : rechargeMinor;
   const priceMinor = usdPerUnit && amountMinor ? cardUsdMinor(amountMinor, usdPerUnit) : 0;
 
-  if (!options.product) return null;
+  if (!options.product) return children ? <div className="flex flex-wrap gap-2">{children}</div> : null;
 
   async function buy() {
     if (!options.product) return;
@@ -72,6 +73,7 @@ export function NumberTopupActions({ numberId, title, options }: { numberId: str
             <Plus className="me-1 h-4 w-4" /> {t("esim.number.addCredit", "Add credit")}
           </Button>
         ) : null}
+        {children}
         {options.packets.length ? (
           <Button size="sm" variant="outline" onClick={() => setOpen("packet")}>
             <Wifi className="me-1 h-4 w-4" /> {t("esim.number.buyPacket", "Buy data package")}

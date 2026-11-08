@@ -476,7 +476,21 @@
       "cancelPacketTitle": "Annuler {name} ?",
       "cancelPacketHint": "Le forfait s'arrête maintenant. Les données restantes ne sont pas remboursées.",
       "packetCancelled": "Forfait annulé",
-      "cancelPacket": "Annuler"
+      "cancelPacket": "Annuler",
+      "smsToSelf": "M'envoyer un SMS",
+      "smsHint": "Un SMS vers {number}, pour vérifier qu'il reçoit les messages.",
+      "smsFrom": "Numéro de l'expéditeur",
+      "smsMessage": "Message",
+      "smsSend": "Envoyer",
+      "smsSent": "SMS envoyé à {number}",
+      "transfer": "Transférer du crédit",
+      "transferHint": "Transfère du crédit de {number} vers un autre de vos numéros.",
+      "transferTo": "Vers le numéro",
+      "transferAmount": "Montant ({currency})",
+      "transferAvailable": "Disponible : {amount}",
+      "transferSend": "Transférer {amount}",
+      "transferDone": "Crédit transféré",
+      "transferPending": "Le transfert est en cours et apparaîtra d'ici quelques minutes"
     },
     "copy": {
       "heroTitle": "Restez connecté dans plus de 190 pays",

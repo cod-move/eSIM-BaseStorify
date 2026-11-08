@@ -476,7 +476,21 @@
       "cancelPacketTitle": "Kanselleer {name}?",
       "cancelPacketHint": "Die pakket stop nou. Data wat oor is, word nie terugbetaal nie.",
       "packetCancelled": "Pakket gekanselleer",
-      "cancelPacket": "Kanselleer"
+      "cancelPacket": "Kanselleer",
+      "smsToSelf": "Stuur vir my 'n SMS",
+      "smsHint": "'n SMS na {number} om te kyk of dit boodskappe ontvang.",
+      "smsFrom": "Sender se nommer",
+      "smsMessage": "Boodskap",
+      "smsSend": "Stuur",
+      "smsSent": "SMS gestuur na {number}",
+      "transfer": "Dra krediet oor",
+      "transferHint": "Dra krediet van {number} oor na een van jou ander nommers.",
+      "transferTo": "Na nommer",
+      "transferAmount": "Bedrag ({currency})",
+      "transferAvailable": "Beskikbaar: {amount}",
+      "transferSend": "Dra {amount} oor",
+      "transferDone": "Krediet oorgedra",
+      "transferPending": "Die oordrag word gedoen en wys binne 'n paar minute"
     },
     "copy": {
       "heroTitle": "Bly verbind in meer as 190 lande",

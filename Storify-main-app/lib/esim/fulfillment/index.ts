@@ -18,6 +18,7 @@ import { findNumberProduct } from "@/lib/esim/numbers/product";
 import { releaseExpiredReservations } from "@/lib/esim/numbers/cart-line";
 import { EsimNumberOp } from "@/models/esim-number-op.model";
 import { processNumberOps } from "@/lib/esim/numbers/ops";
+import { processCardTransfers } from "@/lib/esim/numbers/card-tools";
 import { enqueueOrderNumberTopups } from "@/lib/esim/numbers/topup";
 import { findNumberTopupProduct } from "@/lib/esim/numbers/product";
 import { restoreAfterTopupOrder } from "@/lib/esim/wallet/park";
@@ -111,11 +112,12 @@ export async function runFulfilmentCron() {
   const topups = await processTopupJobs({ limit: 100, budgetMs: 15_000 });
   const numbers = await processNumberJobs({ limit: 100 });
   const numberOps = await processNumberOps({ limit: 100, budgetMs: 15_000 });
+  const cardTransfers = await processCardTransfers({ limit: 50, budgetMs: 10_000 });
   // NUM-04: holds nobody paid for go back on sale.
   const released = await releaseExpiredReservations();
   const deliveries: Record<string, string> = {};
   for (const orderId of new Set([...result.orders, ...topups.orders, ...numbers.orders, ...numberOps.orders, ...(await unrefundedOrders())])) {
     deliveries[orderId] = await settleOrderDelivery(orderId);
   }
-  return { swept, ...result, topups, numbers: { ...numbers, released, ops: numberOps }, deliveries };
+  return { swept, ...result, topups, numbers: { ...numbers, released, ops: numberOps, transfers: cardTransfers }, deliveries };
 }

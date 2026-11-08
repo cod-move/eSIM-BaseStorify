@@ -476,7 +476,21 @@
       "cancelPacketTitle": "¿Cancelar {name}?",
       "cancelPacketHint": "El paquete se detiene ahora. Los datos que queden no se reembolsan.",
       "packetCancelled": "Paquete cancelado",
-      "cancelPacket": "Cancelar"
+      "cancelPacket": "Cancelar",
+      "smsToSelf": "Enviarme un SMS",
+      "smsHint": "Un SMS a {number} para comprobar que recibe mensajes.",
+      "smsFrom": "Número del remitente",
+      "smsMessage": "Mensaje",
+      "smsSend": "Enviar",
+      "smsSent": "SMS enviado a {number}",
+      "transfer": "Transferir saldo",
+      "transferHint": "Pasa saldo de {number} a otro de tus números.",
+      "transferTo": "Al número",
+      "transferAmount": "Importe ({currency})",
+      "transferAvailable": "Disponible: {amount}",
+      "transferSend": "Transferir {amount}",
+      "transferDone": "Saldo transferido",
+      "transferPending": "La transferencia está en curso y se verá en unos minutos"
     },
     "copy": {
       "heroTitle": "Conectado en más de 190 países",

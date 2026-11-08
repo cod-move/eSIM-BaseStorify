@@ -27,6 +27,8 @@ export interface FakeTopConnectState {
   calls: Map<string, number>;
   /** Accepted transfers, for the card's transfer log. */
   transfers: Array<{ at: string; orderId: number; msisdn: string; amountMinor: number }>;
+  /** Text messages sent. */
+  sms: Array<{ command: string; from: string; to: string; message: string }>;
   /** Tests: the next `sbalance` transfers are applied but answered with a server error, as if the answer were lost. */
   loseAnswers: number;
 }
@@ -38,7 +40,7 @@ const PACKETS = [
 ];
 
 export function newFakeTopConnectState(): FakeTopConnectState {
-  return { accountMinor: 100_000, lastOrderId: 0, cards: new Map(), calls: new Map(), transfers: [], loseAnswers: 0 };
+  return { accountMinor: 100_000, lastOrderId: 0, cards: new Map(), calls: new Map(), transfers: [], sms: [], loseAnswers: 0 };
 }
 
 /** The store's one fake gateway, kept while the server process runs. */
@@ -155,6 +157,15 @@ export function fakeTopConnectFetch(state: FakeTopConnectState = shared): FetchL
         return xml(
           `<sbalance><onum>${found.msisdn}</onum><amount>${formatMinor(amount)} EUR</amount><orderid>${state.lastOrderId}</orderid><card><balance>${formatMinor(found.balanceMinor)} EUR</balance></card><client><balance>${formatMinor(state.accountMinor)} EUR</balance></client></sbalance>`,
         );
+      }
+      case "sms":
+      case "sms2": {
+        const found = card(params.get("bnum"));
+        if (!found) return error(command, "Card not found");
+        const message = params.get("msg") ?? "";
+        if (!message || !params.get("anum")) return error(command, "Missing parameters");
+        state.sms.push({ command, from: params.get("anum") ?? "", to: found.msisdn, message });
+        return xml(`<${command}><result>Ok</result></${command}>`);
       }
       default:
         return error("error", `Unknown command ${command}`);

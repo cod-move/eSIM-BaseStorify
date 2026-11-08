@@ -7,13 +7,14 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { connectDB } from "@/lib/db";
 import { getAccountSession } from "@/lib/customers/account-data";
-import { getCustomerNumber } from "@/lib/esim/numbers/account";
+import { getCustomerNumber, listCustomerNumbers } from "@/lib/esim/numbers/account";
 import { formatCardBytes, packageLeftPercent } from "@/lib/esim/numbers/install";
 import { formatAmount } from "@/lib/esim/numbers/line";
 import { installLinks } from "@/lib/esim/fulfillment/install-links";
 import { UsageBar } from "@/components/esim/esim-status-badge";
 import { CopyValue, RefreshUsageButton, RemarkEditor } from "@/components/esim/esim-actions";
 import { CancelPacketButton, NumberTopupActions } from "@/components/esim/number-actions";
+import { SendSmsButton, TransferCreditButton } from "@/components/esim/number-card-tools";
 import { numberTopupOptions } from "@/lib/esim/numbers/storefront";
 
 interface PageProps {
@@ -37,7 +38,7 @@ export default async function AccountNumberPage({ params }: PageProps) {
   const session = await getAccountSession();
   if (!session) notFound();
   await connectDB();
-  const [number, topupOptions] = await Promise.all([getCustomerNumber(session.user.id, id), numberTopupOptions()]);
+  const [number, topupOptions, mine] = await Promise.all([getCustomerNumber(session.user.id, id), numberTopupOptions(), listCustomerNumbers(session.user.id)]);
   if (!number) notFound();
 
   const date = new Intl.DateTimeFormat(locale, { dateStyle: "medium" });
@@ -46,7 +47,12 @@ export default async function AccountNumberPage({ params }: PageProps) {
   const qr = lpa ? await QRCode.toDataURL(lpa, { width: 320, margin: 2, errorCorrectionLevel: "M" }) : null;
   const links = installLinks(lpa);
   const card = number.card;
-  const title = `+${number.dialCode} ${number.nationalNumber.replace(/(\d{3,4})(?=(\d{4})+$)/g, "$1 ")}`;
+  const titleOf = (entry: { dialCode: string; nationalNumber: string }) => `+${entry.dialCode} ${entry.nationalNumber.replace(/(\d{3,4})(?=(\d{4})+$)/g, "$1 ")}`;
+  const title = titleOf(number);
+  // Credit moves only between the shopper's own numbers, none of them blocked.
+  const transferTargets = mine
+    .filter((entry) => entry.id !== number.id && !entry.card?.blocked)
+    .map((entry) => ({ id: entry.id, title: entry.remark ? `${titleOf(entry)} · ${entry.remark}` : titleOf(entry) }));
   const row = (label: string, value: string | null | undefined) =>
     value ? (
       <div className="flex justify-between gap-4 py-1.5 text-sm">
@@ -136,7 +142,12 @@ export default async function AccountNumberPage({ params }: PageProps) {
           ) : (
             <p className="text-sm text-muted-foreground">{tr("esim.number.noCard", "The balance appears once the network answers. Refresh to check.")}</p>
           )}
-          {!card?.blocked ? <NumberTopupActions numberId={number.id} title={title} options={topupOptions} /> : null}
+          {!card?.blocked ? (
+            <NumberTopupActions numberId={number.id} title={title} options={topupOptions}>
+              <SendSmsButton numberId={number.id} title={title} />
+              <TransferCreditButton numberId={number.id} title={title} balanceMinor={card?.balanceMinor ?? null} currency={card?.currency ?? "EUR"} targets={transferTargets} />
+            </NumberTopupActions>
+          ) : null}
           {number.refreshFailed && card?.checkedAt ? (
             <p className="text-xs text-muted-foreground">
               {tr("esim.number.stale", "The network did not answer just now; this is from {time}.", { time: dateTime.format(card.checkedAt) })}

@@ -476,7 +476,21 @@
       "cancelPacketTitle": "{name} रद्द करें?",
       "cancelPacketHint": "पैकेज अभी बंद हो जाएगा। इसमें बचा डेटा रिफ़ंड नहीं होता।",
       "packetCancelled": "पैकेज रद्द हुआ",
-      "cancelPacket": "रद्द करें"
+      "cancelPacket": "रद्द करें",
+      "smsToSelf": "खुद को SMS भेजें",
+      "smsHint": "{number} पर एक SMS, यह जाँचने के लिए कि संदेश आते हैं।",
+      "smsFrom": "भेजने वाले का नंबर",
+      "smsMessage": "संदेश",
+      "smsSend": "भेजें",
+      "smsSent": "{number} पर SMS भेजा गया",
+      "transfer": "बैलेंस ट्रांसफ़र करें",
+      "transferHint": "{number} का बैलेंस आपके किसी दूसरे नंबर पर भेजता है।",
+      "transferTo": "किस नंबर पर",
+      "transferAmount": "राशि ({currency})",
+      "transferAvailable": "उपलब्ध: {amount}",
+      "transferSend": "{amount} ट्रांसफ़र करें",
+      "transferDone": "बैलेंस ट्रांसफ़र हो गया",
+      "transferPending": "ट्रांसफ़र हो रहा है, कुछ मिनट में दिखेगा"
     },
     "copy": {
       "heroTitle": "190+ देशों में जुड़े रहें",

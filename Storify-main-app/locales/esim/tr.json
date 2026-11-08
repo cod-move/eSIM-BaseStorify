@@ -476,7 +476,21 @@
       "cancelPacketTitle": "{name} iptal edilsin mi?",
       "cancelPacketHint": "Paket şimdi durur. Kalan veri iade edilmez.",
       "packetCancelled": "Paket iptal edildi",
-      "cancelPacket": "İptal et"
+      "cancelPacket": "İptal et",
+      "smsToSelf": "Kendime SMS gönder",
+      "smsHint": "Mesaj alıp almadığını kontrol etmek için {number} numarasına bir SMS.",
+      "smsFrom": "Gönderen numara",
+      "smsMessage": "Mesaj",
+      "smsSend": "Gönder",
+      "smsSent": "SMS {number} numarasına gönderildi",
+      "transfer": "Bakiye aktar",
+      "transferHint": "{number} numarasındaki bakiyeyi diğer numaralarınızdan birine aktarır.",
+      "transferTo": "Alıcı numara",
+      "transferAmount": "Tutar ({currency})",
+      "transferAvailable": "Kullanılabilir: {amount}",
+      "transferSend": "{amount} aktar",
+      "transferDone": "Bakiye aktarıldı",
+      "transferPending": "Aktarım yapılıyor, birkaç dakika içinde görünür"
     },
     "copy": {
       "heroTitle": "190'dan fazla ülkede bağlantıda kalın",

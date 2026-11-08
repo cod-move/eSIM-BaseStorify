@@ -476,7 +476,21 @@
       "cancelPacketTitle": "取消 {name}？",
       "cancelPacketHint": "流量包会立即停止，剩余流量不退款。",
       "packetCancelled": "流量包已取消",
-      "cancelPacket": "取消"
+      "cancelPacket": "取消",
+      "smsToSelf": "给自己发短信",
+      "smsHint": "向 {number} 发送一条短信，用来确认号码能正常收短信。",
+      "smsFrom": "发送方号码",
+      "smsMessage": "短信内容",
+      "smsSend": "发送",
+      "smsSent": "短信已发送到 {number}",
+      "transfer": "转移话费",
+      "transferHint": "把 {number} 的话费转到你的另一个号码。",
+      "transferTo": "转入号码",
+      "transferAmount": "金额（{currency}）",
+      "transferAvailable": "可转：{amount}",
+      "transferSend": "转移 {amount}",
+      "transferDone": "话费已转移",
+      "transferPending": "正在转移，几分钟内到账"
     },
     "copy": {
       "heroTitle": "畅游 190 多个国家和地区，随时在线",

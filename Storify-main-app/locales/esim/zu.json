@@ -476,7 +476,21 @@
       "cancelPacketTitle": "Khansela u-{name}?",
       "cancelPacketHint": "Iphakheji liyama manje. Idatha esele kulo ayibuyiselwa.",
       "packetCancelled": "Iphakheji likhanseliwe",
-      "cancelPacket": "Khansela"
+      "cancelPacket": "Khansela",
+      "smsToSelf": "Zithumelele i-SMS",
+      "smsHint": "I-SMS eya ku-{number}, ukuhlola ukuthi iyayithola imilayezo.",
+      "smsFrom": "Inombolo yomthumeli",
+      "smsMessage": "Umlayezo",
+      "smsSend": "Thumela",
+      "smsSent": "I-SMS ithunyelwe ku-{number}",
+      "transfer": "Dlulisa ikhredithi",
+      "transferHint": "Idlulisa ikhredithi isuka ku-{number} iye kwenye yezinombolo zakho.",
+      "transferTo": "Kunombolo",
+      "transferAmount": "Imali ({currency})",
+      "transferAvailable": "Etholakalayo: {amount}",
+      "transferSend": "Dlulisa {amount}",
+      "transferDone": "Ikhredithi idlulisiwe",
+      "transferPending": "Ukudlulisa kuyaqhubeka, kuzobonakala emizuzwini embalwa"
     },
     "copy": {
       "heroTitle": "Hlala uxhumekile emazweni angaphezu kwe-190",

@@ -476,7 +476,21 @@
       "cancelPacketTitle": "Cancel {name}?",
       "cancelPacketHint": "The package stops now. Data left on it is not refunded.",
       "packetCancelled": "Package cancelled",
-      "cancelPacket": "Cancel"
+      "cancelPacket": "Cancel",
+      "smsToSelf": "Send SMS to myself",
+      "smsHint": "A text message to {number}, to check that it receives messages.",
+      "smsFrom": "Sender number",
+      "smsMessage": "Message",
+      "smsSend": "Send",
+      "smsSent": "Message sent to {number}",
+      "transfer": "Transfer credit",
+      "transferHint": "Moves credit from {number} to another of your numbers.",
+      "transferTo": "To number",
+      "transferAmount": "Amount ({currency})",
+      "transferAvailable": "Available: {amount}",
+      "transferSend": "Transfer {amount}",
+      "transferDone": "Credit moved",
+      "transferPending": "The transfer is being made and shows within a few minutes"
     },
     "copy": {
       "heroTitle": "Stay connected in 190+ countries",

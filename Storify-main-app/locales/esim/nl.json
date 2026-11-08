@@ -476,7 +476,21 @@
       "cancelPacketTitle": "{name} annuleren?",
       "cancelPacketHint": "De bundel stopt nu. Resterende data wordt niet terugbetaald.",
       "packetCancelled": "Bundel geannuleerd",
-      "cancelPacket": "Annuleren"
+      "cancelPacket": "Annuleren",
+      "smsToSelf": "Sms naar mezelf sturen",
+      "smsHint": "Een sms naar {number}, om te controleren of berichten aankomen.",
+      "smsFrom": "Afzendernummer",
+      "smsMessage": "Bericht",
+      "smsSend": "Versturen",
+      "smsSent": "Sms verstuurd naar {number}",
+      "transfer": "Tegoed overzetten",
+      "transferHint": "Zet tegoed van {number} over naar een ander nummer van u.",
+      "transferTo": "Naar nummer",
+      "transferAmount": "Bedrag ({currency})",
+      "transferAvailable": "Beschikbaar: {amount}",
+      "transferSend": "{amount} overzetten",
+      "transferDone": "Tegoed overgezet",
+      "transferPending": "De overboeking loopt en is binnen enkele minuten zichtbaar"
     },
     "copy": {
       "heroTitle": "Blijf verbonden in meer dan 190 landen",

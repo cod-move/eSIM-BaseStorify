@@ -28,7 +28,26 @@ const LEASE_MS = 90_000;
 const WAIT_MS = 2 * 60_000;
 
 type Client = TopConnectClient;
-type Context = { client: Client; providerId: mongoose.Types.ObjectId };
+export type TopConnectContext = { client: Client; providerId: mongoose.Types.ObjectId };
+type Context = TopConnectContext;
+
+/**
+ * One movement of money onto a card (or off it, negative), kept in a field
+ * of a stored record: an operation's `transfer`, a card-to-card move's
+ * `debit` (lib/esim/numbers/card-tools.ts).
+ */
+export interface MoneyLeg {
+  doc: mongoose.Document & { _id: unknown; createdAt: Date };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- the record's own model, any of them
+  model: mongoose.Model<any>;
+  field: string;
+  msisdn: string;
+  currency: string;
+  /** For the supplier log. */
+  ref: string;
+}
+
+const opLeg = (op: IEsimNumberOp, field: "transfer" | "rollback"): MoneyLeg => ({ doc: op, model: EsimNumberOp, field, msisdn: op.msisdn, currency: op.currency, ref: String(op.order) });
 
 // ── queueing ─────────────────────────────────────────────────────────────
 
@@ -114,37 +133,40 @@ function logged<T>(context: Context, operation: string, request: unknown, call: 
 // ── one transfer, settled ────────────────────────────────────────────────
 
 /** Whether the card's log shows our id for our amount; null when it cannot be read. */
-async function ourTransferLogged(context: Context, op: IEsimNumberOp, orderId: number, amountMinor: number): Promise<boolean | null> {
+async function ourTransferLogged(context: Context, leg: MoneyLeg, orderId: number, amountMinor: number): Promise<boolean | null> {
   try {
-    const from = new Date(op.createdAt.getTime() - 86_400_000).toISOString().slice(0, 10);
+    const from = new Date(leg.doc.createdAt.getTime() - 86_400_000).toISOString().slice(0, 10);
     const to = new Date(Date.now() + 86_400_000).toISOString().slice(0, 10);
-    const records = await logged(context, "numbers.transfer-log", { msisdn: op.msisdn, from, to }, () => context.client.transferLog(op.msisdn, from, to));
+    const records = await logged(context, "numbers.transfer-log", { msisdn: leg.msisdn, from, to }, () => context.client.transferLog(leg.msisdn, from, to));
     return records.some((record) => record.orderId === orderId && record.side !== "client" && record.amountMinor === amountMinor);
   } catch {
     return null;
   }
 }
 
+export type MoveResult = { result: "done" | "wait" | "refused" | "manual"; message?: string };
+
 /**
- * Moves `amountMinor` onto the card (or back, negative) as `field`
- * describes, persisting the id and the send count before each send.
+ * Moves `amountMinor` onto the leg's card (or off it, negative), persisting
+ * the id and the send count before each send. Call under the TopConnect lock.
  */
-async function moveMoney(context: Context, op: IEsimNumberOp, field: "transfer" | "rollback", amountMinor: number): Promise<{ result: "done" | "wait" | "refused" | "manual"; message?: string }> {
+export async function moveMoney(context: Context, leg: MoneyLeg, amountMinor: number): Promise<MoveResult> {
+  const { doc, model, field } = leg;
   for (let round = 0; round < 3; round += 1) {
     // Plain fields: spreading a Mongoose sub-document would write its internals, not these.
-    const stored = op[field] as NumberOpTransfer | null;
+    const stored = doc.get(field) as NumberOpTransfer | null;
     const current: NumberOpTransfer = { orderId: stored?.orderId ?? null, tries: stored?.tries ?? 0, done: Boolean(stored?.done), at: stored?.at ?? null };
     const orderId = current.orderId ?? (await nextOrderId(context));
     const tries = current.orderId === orderId ? current.tries : 0;
     // Counted before the send: a crash after sending still reads as "sent before".
     const sending = { orderId, tries: tries + 1, done: false, at: null };
-    await EsimNumberOp.updateOne({ _id: op._id }, { $set: { [field]: sending } });
-    op.set(field, sending);
+    await model.updateOne({ _id: doc._id }, { $set: { [field]: sending } });
+    doc.set(field, sending);
 
     let answer: TransferAnswer;
     try {
-      await logged(context, "numbers.transfer", { msisdn: op.msisdn, amountMinor, currency: op.currency, orderId }, () =>
-        context.client.transfer({ msisdn: op.msisdn, amountMinor, currency: op.currency, orderId }), { orderId: String(op.order) });
+      await logged(context, "numbers.transfer", { msisdn: leg.msisdn, amountMinor, currency: leg.currency, orderId }, () =>
+        context.client.transfer({ msisdn: leg.msisdn, amountMinor, currency: leg.currency, orderId }), { orderId: leg.ref });
       answer = { kind: "ok" };
     } catch (error) {
       answer = error instanceof TopConnectOrderIdError
@@ -154,20 +176,20 @@ async function moveMoney(context: Context, op: IEsimNumberOp, field: "transfer" 
           : { kind: "refused", message: error instanceof Error ? error.message : String(error) };
     }
     let step = afterTransfer({ orderId, tries }, answer);
-    if (step.do === "check_log") step = afterTransfer({ orderId, tries }, answer, await ourTransferLogged(context, op, orderId, amountMinor));
+    if (step.do === "check_log") step = afterTransfer({ orderId, tries }, answer, await ourTransferLogged(context, leg, orderId, amountMinor));
 
     switch (step.do) {
       case "done": {
         await noteLast(step.last);
         const done = { orderId, tries: tries + 1, done: true, at: new Date() };
-        await EsimNumberOp.updateOne({ _id: op._id }, { $set: { [field]: done }, $push: { history: { at: new Date(), event: `${field} done`, detail: `order id ${orderId}` } } });
-        op.set(field, done);
+        await model.updateOne({ _id: doc._id }, { $set: { [field]: done }, $push: { history: { at: new Date(), event: `${field} done`, detail: `order id ${orderId}` } } });
+        doc.set(field, done);
         return { result: "done" };
       }
       case "resend":
         await noteLast(step.orderId - 1);
-        await EsimNumberOp.updateOne({ _id: op._id }, { $set: { [field]: { orderId: step.orderId, tries: 0, done: false, at: null } } });
-        op.set(field, { orderId: step.orderId, tries: 0, done: false, at: null });
+        await model.updateOne({ _id: doc._id }, { $set: { [field]: { orderId: step.orderId, tries: 0, done: false, at: null } } });
+        doc.set(field, { orderId: step.orderId, tries: 0, done: false, at: null });
         continue;
       case "wait":
         return { result: "wait", message: answer.kind === "uncertain" ? answer.message : undefined };
@@ -222,7 +244,7 @@ async function wait(op: IEsimNumberOp, detail?: string) {
 }
 
 async function rollBack(context: Context, op: IEsimNumberOp, reason: string) {
-  const moved = await moveMoney(context, op, "rollback", -op.amountMinor);
+  const moved = await moveMoney(context, opLeg(op, "rollback"), -op.amountMinor);
   if (moved.result === "done") return finish(op, "failed", `Package refused (${reason}); its price was moved back`, "rejected");
   if (moved.result === "wait") return wait(op, `Moving the package price back: ${moved.message ?? "no answer"}`);
   return finish(op, "manual", `Package refused (${reason}), and moving its price back failed (${moved.message ?? moved.result}): the money is on the card`);
@@ -234,7 +256,7 @@ async function processOne(context: Context, op: IEsimNumberOp) {
   if (op.rollback && !op.rollback.done) return rollBack(context, op, op.lastError?.message ?? "refused");
 
   if (!op.transfer?.done) {
-    const moved = await moveMoney(context, op, "transfer", op.amountMinor);
+    const moved = await moveMoney(context, opLeg(op, "transfer"), op.amountMinor);
     if (moved.result === "wait") return wait(op, moved.message);
     if (moved.result === "refused") return finish(op, "failed", `TopConnect refused the transfer: ${moved.message ?? ""}`, "rejected");
     if (moved.result === "manual") return finish(op, "manual", moved.message ?? "Transfer not settled");
@@ -276,18 +298,13 @@ export async function processNumberOps(options: { orderId?: string; limit?: numb
   const filter: Record<string, unknown> = { state: { $in: ["queued", "processing"] }, nextAttemptAt: { $lte: new Date() } };
   if (options.orderId) filter.order = new mongoose.Types.ObjectId(options.orderId);
   if (!(await EsimNumberOp.exists(filter))) return result;
-  const provider = await findProvider("topconnect");
-  if (!provider || provider.status !== "active") return result;
-  const owner = randomUUID();
-  if (!(await takeLock(owner))) return result;
   const started = Date.now();
   const orders = new Set<string>();
-  try {
-    const context: Context = { client: topConnectClient(credentialsOf(provider)), providerId: provider._id as mongoose.Types.ObjectId };
+  await underTopConnectLock(async (context, renew) => {
     const ops = await EsimNumberOp.find(filter).sort({ nextAttemptAt: 1, createdAt: 1 }).limit(options.limit ?? 50);
     for (const op of ops) {
       if (Date.now() - started > (options.budgetMs ?? 20_000)) break;
-      await EsimNumberSequence.updateOne({ _id: SEQUENCE, "lease.owner": owner }, { $set: { "lease.until": new Date(Date.now() + LEASE_MS) } });
+      await renew();
       try {
         await processOne(context, op);
       } catch (error) {
@@ -301,9 +318,28 @@ export async function processNumberOps(options: { orderId?: string; limit?: numb
       else if (state === "manual") result.manual += 1;
       else result.waiting += 1;
     }
+  });
+  result.orders = [...orders];
+  return result;
+}
+
+/**
+ * Runs `run` holding the TopConnect lock, so order ids go out one at a time;
+ * `renew` keeps the lock between steps. Null when another holds the lock or
+ * TopConnect is not set up.
+ */
+export async function underTopConnectLock<T>(run: (context: Context, renew: () => Promise<void>) => Promise<T>): Promise<T | null> {
+  const provider = await findProvider("topconnect");
+  if (!provider || provider.status !== "active") return null;
+  const owner = randomUUID();
+  if (!(await takeLock(owner))) return null;
+  try {
+    const context: Context = { client: topConnectClient(credentialsOf(provider)), providerId: provider._id as mongoose.Types.ObjectId };
+    const renew = async () => {
+      await EsimNumberSequence.updateOne({ _id: SEQUENCE, "lease.owner": owner }, { $set: { "lease.until": new Date(Date.now() + LEASE_MS) } });
+    };
+    return await run(context, renew);
   } finally {
     await releaseLock(owner);
   }
-  result.orders = [...orders];
-  return result;
 }

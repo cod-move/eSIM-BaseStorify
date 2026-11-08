@@ -70,3 +70,29 @@ export function afterActivation(tries: number, answer: ActivationAnswer): { do: 
     ? { do: "roll_back", reason: "TopConnect did not confirm the package, and the card does not show it" }
     : { do: "wait" };
 }
+
+/** One leg of a card-to-card credit move: take off the source, put on the target, or put back on the source. */
+export type CardTransferLeg = "debit" | "credit" | "refund";
+export type LegResult = "done" | "wait" | "refused" | "manual";
+
+/**
+ * What a card-to-card move does after one leg's answer (NUM, "Transfer
+ * balance"): a refused debit moved nothing; a refused credit puts the money
+ * back; a refund that fails leaves the money on the dealer account, for a
+ * person.
+ */
+export function afterCardTransferLeg(leg: CardTransferLeg, result: LegResult): "credit" | "refund" | "completed" | "failed" | "returned" | "wait" | "manual" {
+  if (result === "wait") return "wait";
+  if (result === "manual") return "manual";
+  if (leg === "debit") return result === "done" ? "credit" : "failed";
+  if (leg === "credit") return result === "done" ? "completed" : "refund";
+  return result === "done" ? "returned" : "manual";
+}
+
+/** "12.5" or "12.50" in a card's currency → 1250 cents; null when it is not an amount. No floating point. */
+export function parseCardAmount(value: string): number | null {
+  const match = /^(\d{1,5})(?:[.,](\d{1,2}))?$/.exec(value.trim());
+  if (!match) return null;
+  const cents = Number(match[1]) * 100 + Number((match[2] ?? "").padEnd(2, "0"));
+  return cents > 0 ? cents : null;
+}

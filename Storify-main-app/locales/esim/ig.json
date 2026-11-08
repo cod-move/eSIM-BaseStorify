@@ -476,7 +476,21 @@
       "cancelPacketTitle": "Kagbuo {name}?",
       "cancelPacketHint": "Ngwugwu ahụ na-akwụsị ugbu a. A naghị eweghachi data fọdụrụ na ya.",
       "packetCancelled": "Akagburu ngwugwu",
-      "cancelPacket": "Kagbuo"
+      "cancelPacket": "Kagbuo",
+      "smsToSelf": "Zitere m SMS",
+      "smsHint": "SMS gaa {number}, iji hụ na ọ na-anata ozi.",
+      "smsFrom": "Nọmba onye na-ezite",
+      "smsMessage": "Ozi",
+      "smsSend": "Zipu",
+      "smsSent": "E zigara SMS na {number}",
+      "transfer": "Bufee kredit",
+      "transferHint": "Na-ebufe kredit site na {number} gaa na nọmba gị ọzọ.",
+      "transferTo": "Gaa na nọmba",
+      "transferAmount": "Ego ({currency})",
+      "transferAvailable": "Dị: {amount}",
+      "transferSend": "Bufee {amount}",
+      "transferDone": "E bufere kredit",
+      "transferPending": "A na-ebufe ya, ọ ga-apụta n'ime nkeji ole na ole"
     },
     "copy": {
       "heroTitle": "Nọgide na-ejikọ na mba karịrị 190",

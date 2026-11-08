@@ -476,7 +476,21 @@
       "cancelPacketTitle": "A soke {name}?",
       "cancelPacketHint": "Fakitin zai tsaya yanzu. Ba a mayar da sauran data a cikinsa ba.",
       "packetCancelled": "An soke fakitin",
-      "cancelPacket": "Soke"
+      "cancelPacket": "Soke",
+      "smsToSelf": "Aika min SMS",
+      "smsHint": "SMS zuwa {number}, don tabbatar yana karɓar saƙonni.",
+      "smsFrom": "Lambar mai aikawa",
+      "smsMessage": "Saƙo",
+      "smsSend": "Aika",
+      "smsSent": "An aika SMS zuwa {number}",
+      "transfer": "Canja kiredit",
+      "transferHint": "Yana canja kiredit daga {number} zuwa wata lambarka.",
+      "transferTo": "Zuwa lamba",
+      "transferAmount": "Adadi ({currency})",
+      "transferAvailable": "Akwai: {amount}",
+      "transferSend": "Canja {amount}",
+      "transferDone": "An canja kiredit",
+      "transferPending": "Ana canjawa, zai bayyana cikin 'yan mintuna"
     },
     "copy": {
       "heroTitle": "Ka kasance a haɗe a ƙasashe fiye da 190",

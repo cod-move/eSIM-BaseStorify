@@ -476,7 +476,21 @@
       "cancelPacketTitle": "إلغاء {name}؟",
       "cancelPacketHint": "تتوقف الباقة الآن. البيانات المتبقية فيها لا تُسترد.",
       "packetCancelled": "تم إلغاء الباقة",
-      "cancelPacket": "إلغاء"
+      "cancelPacket": "إلغاء",
+      "smsToSelf": "أرسل رسالة لنفسي",
+      "smsHint": "رسالة نصية إلى {number} للتأكد من أنه يستقبل الرسائل.",
+      "smsFrom": "رقم المرسل",
+      "smsMessage": "الرسالة",
+      "smsSend": "إرسال",
+      "smsSent": "تم إرسال الرسالة إلى {number}",
+      "transfer": "تحويل الرصيد",
+      "transferHint": "ينقل الرصيد من {number} إلى رقم آخر من أرقامك.",
+      "transferTo": "إلى الرقم",
+      "transferAmount": "المبلغ ({currency})",
+      "transferAvailable": "المتاح: {amount}",
+      "transferSend": "تحويل {amount}",
+      "transferDone": "تم تحويل الرصيد",
+      "transferPending": "جارٍ التحويل ويظهر خلال بضع دقائق"
     },
     "copy": {
       "heroTitle": "ابقَ متصلاً في أكثر من 190 دولة",
