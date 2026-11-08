@@ -15,11 +15,13 @@ import trMessages from "@/locales/esim/tr.json";
 import xhMessages from "@/locales/esim/xh.json";
 import yoMessages from "@/locales/esim/yo.json";
 import zhMessages from "@/locales/esim/zh.json";
+import zhHantMessages from "@/locales/esim/zh-hant.json";
 import zuMessages from "@/locales/esim/zu.json";
 import arStore from "@/locales/esim/store/ar.json";
 import bnStore from "@/locales/esim/store/bn.json";
 import jaStore from "@/locales/esim/store/ja.json";
 import zhStore from "@/locales/esim/store/zh.json";
+import zhHantStore from "@/locales/esim/store/zh-hant.json";
 import { isRecord } from "@/lib/utils";
 
 /**
@@ -58,6 +60,7 @@ const ESIM: Record<string, Messages> = {
   xh: xhMessages as Messages,
   yo: yoMessages as Messages,
   zh: zhMessages as Messages,
+  "zh-hant": zhHantMessages as Messages,
   zu: zuMessages as Messages,
 };
 
@@ -76,6 +79,7 @@ const STORE: Record<string, Messages> = {
   bn: bnStore as Messages,
   ja: jaStore as Messages,
   zh: zhStore as Messages,
+  "zh-hant": zhHantStore as Messages,
 };
 
 const merged = new Map<string, Messages>();

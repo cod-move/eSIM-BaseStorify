@@ -15,6 +15,7 @@ export const locales = [
   "hi",
   "nl",
   "zh",
+  "zh-hant", // [esim-patch] P45 Traditional Chinese
   "ja",
   "zu",
   "xh",
@@ -27,7 +28,7 @@ export const locales = [
 
 export type Locale = (typeof locales)[number];
 
-export const defaultLocale: Locale = "en";
+export const defaultLocale: Locale = "zh-hant"; // [esim-patch] P45 (was "en"; the store's own default language setting still wins)
 
 // Locale metadata for UI display
 export const localeConfig: Record<
@@ -135,13 +136,24 @@ export const localeConfig: Record<
   },
   "zh": {
     name: "Chinese (Simplified)",
-    nativeName: "中文",
+    nativeName: "简体中文", // [esim-patch] P45 (was "中文")
     direction: "ltr",
     flag: "🇨🇳",
     dateFormat: "YYYY/MM/DD",
     numberFormat: "zh-CN",
     languageCode: "zh",
     countryCode: "CN",
+  },
+  // [esim-patch] P45 Traditional Chinese
+  "zh-hant": {
+    name: "Chinese (Traditional)",
+    nativeName: "繁體中文",
+    direction: "ltr",
+    flag: "🇭🇰",
+    dateFormat: "YYYY/MM/DD",
+    numberFormat: "zh-Hant",
+    languageCode: "zh",
+    countryCode: "HK",
   },
   "ja": {
     name: "Japanese (Japan)",

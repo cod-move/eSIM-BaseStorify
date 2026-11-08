@@ -16,6 +16,7 @@ import trMessages from "@/locales/tr.json";
 import hiMessages from "@/locales/hi.json";
 import nlMessages from "@/locales/nl.json";
 import zhMessages from "@/locales/zh.json";
+import zhHantMessages from "@/locales/zh-hant.json"; // [esim-patch] P45
 import jaMessages from "@/locales/ja.json";
 import zuMessages from "@/locales/zu.json";
 import xhMessages from "@/locales/xh.json";
@@ -59,6 +60,7 @@ const messages: Record<Locale, MessageValue> = {
   hi: mergeDeep(baseMessages, hiMessages as unknown as MessageValue),
   nl: mergeDeep(baseMessages, nlMessages as unknown as MessageValue),
   zh: mergeDeep(baseMessages, zhMessages as unknown as MessageValue),
+  "zh-hant": mergeDeep(baseMessages, zhHantMessages as unknown as MessageValue), // [esim-patch] P45
   ja: mergeDeep(baseMessages, jaMessages as unknown as MessageValue),
   zu: mergeDeep(baseMessages, zuMessages as unknown as MessageValue),
   xh: mergeDeep(baseMessages, xhMessages as unknown as MessageValue),

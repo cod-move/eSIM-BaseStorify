@@ -93,7 +93,7 @@ export const stripePlugin: PaymentPlugin = {
       client_reference_id: request.reference,
       "metadata[reference]": request.reference,
       "payment_intent_data[metadata][reference]": request.reference,
-      locale: LOCALES.has(request.locale.slice(0, 2).toLowerCase()) ? request.locale.slice(0, 2).toLowerCase() : "auto",
+      locale: stripeLocale(request.locale),
       expires_at: String(Math.floor(Date.now() / 1000) + SESSION_S),
     };
     if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(request.email)) form.customer_email = request.email;
@@ -153,3 +153,11 @@ export const stripePlugin: PaymentPlugin = {
     };
   },
 };
+
+/** Stripe's page language for ours: Traditional Chinese is Stripe's "zh-HK"; otherwise the two-letter ones it has, else the browser's. */
+export function stripeLocale(locale: string): string {
+  const lower = locale.toLowerCase();
+  if (lower === "zh-hant" || lower === "zh-tw" || lower === "zh-hk") return "zh-HK";
+  const short = lower.slice(0, 2);
+  return LOCALES.has(short) ? short : "auto";
+}
