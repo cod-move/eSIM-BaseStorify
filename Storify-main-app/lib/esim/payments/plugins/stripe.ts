@@ -19,6 +19,11 @@ import { IGNORED_NOTICE, PaymentPluginError, type Credentials, type NoticeContex
  * Credentials: secretKey and webhookSecret (secrets); optional methods, a
  * comma-separated list of Stripe payment method types ("alipay,wechat_pay").
  * Without it Stripe offers what is switched on in its Dashboard.
+ * threeDSecure: `any` (the default: every card payment asks the bank for
+ * 3D Secure), `challenge` (the bank must show a challenge) or `automatic`
+ * (Stripe's own rules). adaptivePricing: `on` / `off` forces Adaptive
+ * Pricing (the shopper sees and pays in their local currency; the session
+ * stays in ours) for this payment; empty follows the Dashboard.
  */
 
 const API = "https://api.stripe.com/v1";
@@ -60,11 +65,17 @@ export function stripeMethodTypes(list: string | undefined): string[] {
   return [...new Set((list ?? "").split(/[\s,]+/).map((type) => type.trim().toLowerCase()).filter((type) => /^[a-z_]{2,40}$/.test(type)))];
 }
 
+/** The 3D Secure request for card payments; anything unknown is "any". */
+export function stripeThreeDSecure(value: string | undefined): "any" | "challenge" | "automatic" {
+  const choice = (value ?? "").trim().toLowerCase();
+  return choice === "challenge" || choice === "automatic" ? choice : "any";
+}
+
 const text = (value: unknown) => (typeof value === "string" ? value : "");
 
 export const stripePlugin: PaymentPlugin = {
   code: "stripe",
-  credentialKeys: ["secretKey", "webhookSecret", "methods"],
+  credentialKeys: ["secretKey", "webhookSecret", "methods", "threeDSecure", "adaptivePricing"],
   secretKeys: ["secretKey", "webhookSecret"],
   currencies: CURRENCIES,
   acknowledge: { accepted: "ok", rejected: "rejected" },
@@ -90,6 +101,10 @@ export const stripePlugin: PaymentPlugin = {
     types.forEach((type, index) => {
       form[`payment_method_types[${index}]`] = type;
     });
+    // Card payments ask for 3D Secure unless the admin chose otherwise.
+    if (!types.length || types.includes("card")) form["payment_method_options[card][request_three_d_secure]"] = stripeThreeDSecure(credentials.threeDSecure);
+    const adaptive = (credentials.adaptivePricing ?? "").trim().toLowerCase();
+    if (adaptive === "on" || adaptive === "off") form["adaptive_pricing[enabled]"] = adaptive === "on" ? "true" : "false";
     // Stripe's page shows WeChat Pay's QR code only when told it is on the web.
     if (types.includes("wechat_pay")) form["payment_method_options[wechat_pay][client]"] = "web";
 

@@ -490,7 +490,8 @@
       "transferAvailable": "Akwai: {amount}",
       "transferSend": "Canja {amount}",
       "transferDone": "An canja kiredit",
-      "transferPending": "Ana canjawa, zai bayyana cikin 'yan mintuna"
+      "transferPending": "Ana canjawa, zai bayyana cikin 'yan mintuna",
+      "transferToHint": "Kowace lambar TopConnect, tare da lambar ƙasa."
     },
     "copy": {
       "heroTitle": "Ka kasance a haɗe a ƙasashe fiye da 190",

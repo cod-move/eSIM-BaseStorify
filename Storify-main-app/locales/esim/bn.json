@@ -490,7 +490,8 @@
       "transferAvailable": "পাওয়া যাবে: {amount}",
       "transferSend": "{amount} স্থানান্তর করুন",
       "transferDone": "ব্যালান্স স্থানান্তর হয়েছে",
-      "transferPending": "স্থানান্তর চলছে, কয়েক মিনিটে দেখা যাবে"
+      "transferPending": "স্থানান্তর চলছে, কয়েক মিনিটে দেখা যাবে",
+      "transferToHint": "দেশের কোডসহ যেকোনো TopConnect নম্বর।"
     },
     "copy": {
       "heroTitle": "১৯০টিরও বেশি দেশে সংযুক্ত থাকুন",

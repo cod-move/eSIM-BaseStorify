@@ -490,7 +490,8 @@
       "transferAvailable": "Kullanılabilir: {amount}",
       "transferSend": "{amount} aktar",
       "transferDone": "Bakiye aktarıldı",
-      "transferPending": "Aktarım yapılıyor, birkaç dakika içinde görünür"
+      "transferPending": "Aktarım yapılıyor, birkaç dakika içinde görünür",
+      "transferToHint": "Ülke koduyla birlikte herhangi bir TopConnect numarası."
     },
     "copy": {
       "heroTitle": "190'dan fazla ülkede bağlantıda kalın",

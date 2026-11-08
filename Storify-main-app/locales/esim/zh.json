@@ -484,13 +484,14 @@
       "smsSend": "发送",
       "smsSent": "短信已发送到 {number}",
       "transfer": "转移话费",
-      "transferHint": "把 {number} 的话费转到你的另一个号码。",
+      "transferHint": "把 {number} 的话费转到另一个号码。",
       "transferTo": "转入号码",
       "transferAmount": "金额（{currency}）",
       "transferAvailable": "可转：{amount}",
       "transferSend": "转移 {amount}",
       "transferDone": "话费已转移",
-      "transferPending": "正在转移，几分钟内到账"
+      "transferPending": "正在转移，几分钟内到账",
+      "transferToHint": "可填任意 TopConnect 号码，需带国家区号。"
     },
     "copy": {
       "heroTitle": "畅游 190 多个国家和地区，随时在线",

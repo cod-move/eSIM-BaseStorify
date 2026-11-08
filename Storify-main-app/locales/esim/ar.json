@@ -490,7 +490,8 @@
       "transferAvailable": "المتاح: {amount}",
       "transferSend": "تحويل {amount}",
       "transferDone": "تم تحويل الرصيد",
-      "transferPending": "جارٍ التحويل ويظهر خلال بضع دقائق"
+      "transferPending": "جارٍ التحويل ويظهر خلال بضع دقائق",
+      "transferToHint": "أي رقم TopConnect مع رمز الدولة."
     },
     "copy": {
       "heroTitle": "ابقَ متصلاً في أكثر من 190 دولة",

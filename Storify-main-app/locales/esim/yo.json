@@ -490,7 +490,8 @@
       "transferAvailable": "O wa: {amount}",
       "transferSend": "Gbe {amount} lọ",
       "transferDone": "A ti gbe owó lọ",
-      "transferPending": "A n gbe e lọ, yoo han laarin iṣẹju diẹ"
+      "transferPending": "A n gbe e lọ, yoo han laarin iṣẹju diẹ",
+      "transferToHint": "Nọmba TopConnect eyikeyi, pẹlu koodu orilẹ-ede."
     },
     "copy": {
       "heroTitle": "Wà ní ìsopọ̀ ní orílẹ̀-èdè tó ju 190 lọ",

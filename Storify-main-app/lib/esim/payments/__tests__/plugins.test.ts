@@ -186,6 +186,20 @@ describe("Stripe Checkout", () => {
     assert.equal(form.get("payment_method_types[0]"), "alipay");
     assert.equal(form.get("payment_method_types[1]"), "wechat_pay");
     assert.equal(form.get("payment_method_options[wechat_pay][client]"), "web");
+    // Only wallets listed: no card options, and the Dashboard decides Adaptive Pricing.
+    assert.equal(form.get("payment_method_options[card][request_three_d_secure]"), null);
+    assert.equal(form.get("adaptive_pricing[enabled]"), null);
+  });
+
+  it("asks for 3D Secure on cards by default, and forces Adaptive Pricing when told", async () => {
+    const { fetch, sent } = fakeFetch({ "POST /v1/checkout/sessions": () => ({ body: { id: "cs_2", url: "https://checkout.stripe.com/c/pay/cs_2" } }) });
+    await stripePlugin.start(request, { ...credentials, methods: "card,alipay", adaptivePricing: "on" }, fetch);
+    await stripePlugin.start(request, { ...credentials, methods: "", threeDSecure: "challenge", adaptivePricing: "off" }, fetch);
+    const [first, second] = sent.map((call) => new URLSearchParams(call.body ?? ""));
+    assert.equal(first.get("payment_method_options[card][request_three_d_secure]"), "any");
+    assert.equal(first.get("adaptive_pricing[enabled]"), "true");
+    assert.equal(second.get("payment_method_options[card][request_three_d_secure]"), "challenge");
+    assert.equal(second.get("adaptive_pricing[enabled]"), "false");
   });
 
   it("leaves the methods to the Dashboard when none are listed, and reports Stripe's error", async () => {

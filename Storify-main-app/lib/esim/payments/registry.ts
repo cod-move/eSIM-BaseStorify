@@ -26,7 +26,7 @@ export const PAYMENT_METHOD_DEFINITIONS = {
   stripe: {
     plugin: stripePlugin,
     displayName: EXTENSION_METHOD_NAMES.stripe,
-    defaults: {},
+    defaults: { threeDSecure: "any" },
   },
   bepusdt: {
     plugin: bepusdtPlugin,

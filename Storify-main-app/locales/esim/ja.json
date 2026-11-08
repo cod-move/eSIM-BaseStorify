@@ -490,7 +490,8 @@
       "transferAvailable": "移動可能：{amount}",
       "transferSend": "{amount} を移す",
       "transferDone": "残高を移しました",
-      "transferPending": "移動中です。数分で反映されます"
+      "transferPending": "移動中です。数分で反映されます",
+      "transferToHint": "国番号付きの任意の TopConnect 番号。"
     },
     "copy": {
       "heroTitle": "190 以上の国と地域でつながる",

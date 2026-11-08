@@ -484,13 +484,14 @@
       "smsSend": "Send",
       "smsSent": "Message sent to {number}",
       "transfer": "Transfer credit",
-      "transferHint": "Moves credit from {number} to another of your numbers.",
+      "transferHint": "Moves credit from {number} to another number.",
       "transferTo": "To number",
       "transferAmount": "Amount ({currency})",
       "transferAvailable": "Available: {amount}",
       "transferSend": "Transfer {amount}",
       "transferDone": "Credit moved",
-      "transferPending": "The transfer is being made and shows within a few minutes"
+      "transferPending": "The transfer is being made and shows within a few minutes",
+      "transferToHint": "Any TopConnect number, with its country code."
     },
     "copy": {
       "heroTitle": "Stay connected in 190+ countries",

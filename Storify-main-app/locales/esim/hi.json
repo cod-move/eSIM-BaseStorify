@@ -490,7 +490,8 @@
       "transferAvailable": "उपलब्ध: {amount}",
       "transferSend": "{amount} ट्रांसफ़र करें",
       "transferDone": "बैलेंस ट्रांसफ़र हो गया",
-      "transferPending": "ट्रांसफ़र हो रहा है, कुछ मिनट में दिखेगा"
+      "transferPending": "ट्रांसफ़र हो रहा है, कुछ मिनट में दिखेगा",
+      "transferToHint": "कोई भी TopConnect नंबर, देश कोड के साथ।"
     },
     "copy": {
       "heroTitle": "190+ देशों में जुड़े रहें",

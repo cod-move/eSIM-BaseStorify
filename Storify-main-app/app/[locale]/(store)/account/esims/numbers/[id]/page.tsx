@@ -49,10 +49,10 @@ export default async function AccountNumberPage({ params }: PageProps) {
   const card = number.card;
   const titleOf = (entry: { dialCode: string; nationalNumber: string }) => `+${entry.dialCode} ${entry.nationalNumber.replace(/(\d{3,4})(?=(\d{4})+$)/g, "$1 ")}`;
   const title = titleOf(number);
-  // Credit moves only between the shopper's own numbers, none of them blocked.
+  // Credit may go to any number; the shopper's other numbers are offered.
   const transferTargets = mine
     .filter((entry) => entry.id !== number.id && !entry.card?.blocked)
-    .map((entry) => ({ id: entry.id, title: entry.remark ? `${titleOf(entry)} · ${entry.remark}` : titleOf(entry) }));
+    .map((entry) => ({ msisdn: entry.msisdn, title: entry.remark ? `${titleOf(entry)} · ${entry.remark}` : titleOf(entry) }));
   const row = (label: string, value: string | null | undefined) =>
     value ? (
       <div className="flex justify-between gap-4 py-1.5 text-sm">

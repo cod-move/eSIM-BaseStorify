@@ -4,8 +4,8 @@ import type { NumberOpTransfer } from "@/models/esim-number-op.model";
 const { Schema, models, model } = mongoose;
 
 /**
- * Credit a shopper moves from one of their number cards to another (the
- * live store's "Transfer balance"). Nothing is paid: TopConnect's `sbalance`
+ * Credit a shopper moves from one of their number cards to any TopConnect
+ * number (the live store's "Transfer balance"). Nothing is paid: TopConnect's `sbalance`
  * takes the amount off the source card onto the dealer account (`debit`),
  * then puts it on the target card (`credit`); a refused credit puts it back
  * on the source (`refund`). Each leg keeps its sequential order id before
@@ -24,7 +24,8 @@ export interface IEsimNumberTransfer extends mongoose.Document {
   /** The shopper's idempotency key: one transfer per key. */
   key: string;
   from: { number: mongoose.Types.ObjectId; msisdn: string };
-  to: { number: mongoose.Types.ObjectId; msisdn: string };
+  /** Any TopConnect number; `number` when it is one of the store's. */
+  to: { number: mongoose.Types.ObjectId | null; msisdn: string };
   /** Cents of `currency` (the cards'). */
   amountMinor: number;
   currency: string;
@@ -54,13 +55,17 @@ const CardSchema = new Schema(
   { number: { type: Schema.Types.ObjectId, ref: "EsimNumber", required: true }, msisdn: { type: String, required: true } },
   { _id: false },
 );
+const TargetSchema = new Schema(
+  { number: { type: Schema.Types.ObjectId, ref: "EsimNumber", default: null }, msisdn: { type: String, required: true } },
+  { _id: false },
+);
 
 const EsimNumberTransferSchema = new Schema<IEsimNumberTransfer>(
   {
     customer: { type: Schema.Types.ObjectId, ref: "User", required: true },
     key: { type: String, required: true },
     from: { type: CardSchema, required: true },
-    to: { type: CardSchema, required: true },
+    to: { type: TargetSchema, required: true },
     amountMinor: { type: Number, required: true, min: 1, validate: Number.isInteger },
     currency: { type: String, required: true, uppercase: true },
     state: { type: String, enum: ["queued", "processing", "completed", "failed", "manual"], default: "queued" },

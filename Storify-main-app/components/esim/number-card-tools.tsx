@@ -8,7 +8,6 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/components/ui/toast-notification";
 import { useRouter } from "@/hooks/use-locale-navigation";
 import { useFallbackTranslator } from "@/hooks/use-fallback-translator";
@@ -94,16 +93,16 @@ export function TransferCreditButton({
   title: string;
   balanceMinor: number | null;
   currency: string;
-  targets: Array<{ id: string; title: string }>;
+  /** The shopper's other numbers, offered; any number may be typed. */
+  targets: Array<{ msisdn: string; title: string }>;
 }) {
   const t = useFallbackTranslator(useTranslations());
   const router = useRouter();
   const [open, setOpen] = useState(false);
-  const [to, setTo] = useState(targets[0]?.id ?? "");
+  const [to, setTo] = useState("");
   const [amount, setAmount] = useState("");
   const [key, setKey] = useState("");
   const [busy, setBusy] = useState(false);
-  if (!targets.length) return null;
   const amountMinor = parseCardAmount(amount);
   const tooMuch = amountMinor !== null && balanceMinor !== null && amountMinor > balanceMinor;
 
@@ -143,24 +142,29 @@ export function TransferCreditButton({
           <DialogHeader>
             <DialogTitle>{t("esim.number.transfer", "Transfer credit")}</DialogTitle>
             <DialogDescription>
-              {t("esim.number.transferHint", "Moves credit from {number} to another of your numbers.", { number: title })}
+              {t("esim.number.transferHint", "Moves credit from {number} to another number.", { number: title })}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
             <div className="space-y-1.5">
               <Label>{t("esim.number.transferTo", "To number")}</Label>
-              <Select value={to} onValueChange={setTo}>
-                <SelectTrigger aria-label={t("esim.number.transferTo", "To number")}>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
+              <Input
+                inputMode="tel"
+                value={to}
+                placeholder="+372 5555 1234"
+                aria-label={t("esim.number.transferTo", "To number")}
+                onChange={(event) => setTo(event.target.value.replace(/[^\d+\s]/g, "").slice(0, 20))}
+              />
+              {targets.length ? (
+                <div className="flex flex-wrap gap-2">
                   {targets.map((entry) => (
-                    <SelectItem key={entry.id} value={entry.id}>
+                    <Button key={entry.msisdn} type="button" size="sm" variant={to.replace(/\D/g, "") === entry.msisdn ? "default" : "outline"} onClick={() => setTo(`+${entry.msisdn}`)}>
                       {entry.title}
-                    </SelectItem>
+                    </Button>
                   ))}
-                </SelectContent>
-              </Select>
+                </div>
+              ) : null}
+              <p className="text-xs text-muted-foreground">{t("esim.number.transferToHint", "Any TopConnect number, with its country code.")}</p>
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="transfer-amount">
@@ -173,7 +177,7 @@ export function TransferCreditButton({
             </div>
           </div>
           <DialogFooter>
-            <Button className="w-full" disabled={busy || !to || !amountMinor || tooMuch} onClick={send}>
+            <Button className="w-full" disabled={busy || !/^\d{6,15}$/.test(to.replace(/\D/g, "")) || !amountMinor || tooMuch} onClick={send}>
               {busy ? <Loader2 className="me-2 h-4 w-4 animate-spin" /> : null}
               {amountMinor ? t("esim.number.transferSend", "Transfer {amount}", { amount: formatAmount(amountMinor, currency) }) : t("esim.number.transfer", "Transfer credit")}
             </Button>

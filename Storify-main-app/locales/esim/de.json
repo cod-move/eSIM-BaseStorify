@@ -490,7 +490,8 @@
       "transferAvailable": "Verfügbar: {amount}",
       "transferSend": "{amount} übertragen",
       "transferDone": "Guthaben übertragen",
-      "transferPending": "Die Übertragung läuft und ist in wenigen Minuten sichtbar"
+      "transferPending": "Die Übertragung läuft und ist in wenigen Minuten sichtbar",
+      "transferToHint": "Jede TopConnect-Nummer, mit Ländervorwahl."
     },
     "copy": {
       "heroTitle": "In über 190 Ländern verbunden bleiben",

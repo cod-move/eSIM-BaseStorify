@@ -490,7 +490,8 @@
       "transferAvailable": "Etholakalayo: {amount}",
       "transferSend": "Dlulisa {amount}",
       "transferDone": "Ikhredithi idlulisiwe",
-      "transferPending": "Ukudlulisa kuyaqhubeka, kuzobonakala emizuzwini embalwa"
+      "transferPending": "Ukudlulisa kuyaqhubeka, kuzobonakala emizuzwini embalwa",
+      "transferToHint": "Noma iyiphi inombolo ye-TopConnect, nekhodi yezwe."
     },
     "copy": {
       "heroTitle": "Hlala uxhumekile emazweni angaphezu kwe-190",

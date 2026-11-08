@@ -53,18 +53,21 @@ export type TransferRequestResult =
 
 /**
  * Moves `amountMinor` (the cards' currency) from one of the shopper's
- * numbers to another. Once per `key`: a repeated request reports the first
+ * numbers to any TopConnect number (`toMsisdn`, digits with the country
+ * code), as the live store does; a number TopConnect does not know refuses
+ * the credit, and the money goes back. Once per `key`: a repeated request reports the first
  * one. Carried out now when TopConnect's lock is free, else within a few
  * minutes by the cron. Null when the source number is not the shopper's.
  */
-export async function requestCardTransfer(userId: string, numberId: string, input: { toNumberId: string; amountMinor: number; key: string }): Promise<TransferRequestResult | null> {
+export async function requestCardTransfer(userId: string, numberId: string, input: { toMsisdn: string; amountMinor: number; key: string }): Promise<TransferRequestResult | null> {
   if (!mongoose.isValidObjectId(userId) || !mongoose.isValidObjectId(numberId)) return null;
   const customer = new mongoose.Types.ObjectId(userId);
   const earlier = await EsimNumberTransfer.findOne({ customer, key: input.key }).lean();
   if (earlier) return reported(earlier);
 
   if (!(await EsimNumber.exists({ _id: numberId, ...owned(userId) }))) return null;
-  if (!mongoose.isValidObjectId(input.toNumberId) || input.toNumberId === numberId) return { ok: false, message: "Choose another of your numbers" };
+  const toMsisdn = input.toMsisdn.replace(/[\s()+-]/g, "");
+  if (!/^\d{6,15}$/.test(toMsisdn)) return { ok: false, message: "Enter the number with its country code" };
   if (!Number.isSafeInteger(input.amountMinor) || input.amountMinor < 1) return { ok: false, message: "Enter an amount" };
   if (await EsimNumberTransfer.exists({ "from.number": numberId, state: { $in: ["queued", "processing"] } })) {
     return { ok: false, message: "A transfer from this number is still being made; try again in a few minutes" };
@@ -73,13 +76,14 @@ export async function requestCardTransfer(userId: string, numberId: string, inpu
   await refreshNumberCard(numberId, { force: true });
   const [from, to] = await Promise.all([
     EsimNumber.findOne({ _id: numberId, ...owned(userId) }).select({ msisdn: 1, card: 1 }).lean(),
-    EsimNumber.findOne({ _id: input.toNumberId, ...owned(userId) }).select({ msisdn: 1, card: 1 }).lean(),
+    // Ours when it is one of the store's numbers: then its card is known.
+    EsimNumber.findOne({ msisdn: toMsisdn }).select({ msisdn: 1, card: 1 }).lean(),
   ]);
   if (!from) return null;
-  if (!to) return { ok: false, message: "Choose another of your numbers" };
-  if (from.card?.blocked || to.card?.blocked) return { ok: false, message: "A blocked number cannot send or receive credit" };
+  if (toMsisdn === from.msisdn) return { ok: false, message: "Choose another number" };
+  if (from.card?.blocked || to?.card?.blocked) return { ok: false, message: "A blocked number cannot send or receive credit" };
   const currency = (from.card?.currency ?? "EUR").toUpperCase();
-  if (to.card?.currency && to.card.currency.toUpperCase() !== currency) return { ok: false, message: "The two numbers keep credit in different currencies" };
+  if (to?.card?.currency && to.card.currency.toUpperCase() !== currency) return { ok: false, message: "The two numbers keep credit in different currencies" };
   const balance = from.card?.balanceMinor;
   if (typeof balance !== "number") return { ok: false, message: "The balance could not be read; refresh and try again" };
   if (input.amountMinor > balance) return { ok: false, message: `The number has ${formatAmount(balance, currency)}` };
@@ -90,11 +94,11 @@ export async function requestCardTransfer(userId: string, numberId: string, inpu
       customer,
       key: input.key,
       from: { number: from._id, msisdn: from.msisdn },
-      to: { number: to._id, msisdn: to.msisdn },
+      to: { number: to?._id ?? null, msisdn: toMsisdn },
       amountMinor: input.amountMinor,
       currency,
       nextAttemptAt: now,
-      history: [{ at: now, event: "queued", detail: `${formatAmount(input.amountMinor, currency)} +${from.msisdn} → +${to.msisdn}` }],
+      history: [{ at: now, event: "queued", detail: `${formatAmount(input.amountMinor, currency)} +${from.msisdn} → +${toMsisdn}` }],
     });
   } catch (error) {
     // The same key sent twice at once: report the one that was kept.
@@ -103,7 +107,7 @@ export async function requestCardTransfer(userId: string, numberId: string, inpu
   await processCardTransfers({ customer: userId, budgetMs: 25_000 });
   const saved = await EsimNumberTransfer.findOne({ customer, key: input.key }).lean();
   if (!saved) return { ok: false, message: "The transfer could not be saved" };
-  await Promise.all([refreshNumberCard(String(saved.from.number), { force: true }), refreshNumberCard(String(saved.to.number), { force: true })]);
+  await Promise.all([refreshNumberCard(String(saved.from.number), { force: true }), saved.to.number ? refreshNumberCard(String(saved.to.number), { force: true }) : null]);
   return reported(saved);
 }
 
