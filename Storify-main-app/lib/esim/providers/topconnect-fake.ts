@@ -32,6 +32,8 @@ export interface FakeTopConnectState {
   calls: Map<string, number>;
   /** Accepted transfers, for the card's transfer log. */
   transfers: Array<{ at: string; orderId: number; msisdn: string; amountMinor: number }>;
+  /** Cards asked to reconnect to the network. */
+  reconnects: string[];
   /** Text messages sent. */
   sms: Array<{ command: string; from: string; to: string; message: string }>;
   /** Tests: the next `sbalance` transfers are applied but answered with a server error, as if the answer were lost. */
@@ -45,7 +47,7 @@ const PACKETS = [
 ];
 
 export function newFakeTopConnectState(): FakeTopConnectState {
-  return { accountMinor: 100_000, lastOrderId: 0, cards: new Map(), calls: new Map(), transfers: [], sms: [], loseAnswers: 0 };
+  return { accountMinor: 100_000, lastOrderId: 0, cards: new Map(), calls: new Map(), transfers: [], sms: [], reconnects: [], loseAnswers: 0 };
 }
 
 /** The store's one fake gateway, kept while the server process runs. */
@@ -247,6 +249,34 @@ export function fakeTopConnectFetch(state: FakeTopConnectState = shared): FetchL
           )
           .join("");
         return xml(`<recharges>${records ? `<money transfer><records>${records}</records></money transfer>` : ""}<recharge_amount>0.00 EUR</recharge_amount></recharges>`);
+      }
+      case "get_last_activity": {
+        const found = card(params.get("onum"));
+        if (!found) return error("get_last_activity", "Card not found");
+        return xml(
+          `<get_last_activity><outbound_call><calldate>2026-10-22 08:40:00</calldate><onum>${found.msisdn}</onum><anum>${found.msisdn}</anum><bnum>33612345678</bnum><cdir>O</cdir><duration>130</duration><billsec>125</billsec><ccost>0.42</ccost><curr>EUR</curr></outbound_call>` +
+            `<data><calldate>2026-10-23 11:21:53</calldate><onum>${found.msisdn}</onum><opercode>46001</opercode><country>China</country><operator>China Unicom</operator><inb>15000</inb><outb>5600</outb><cost>0.0000</cost><curr>EUR</curr><usage_b>20600</usage_b></data>` +
+            `<sms_inbound_nonclassic><calldate>2026-11-08 16:38:06</calldate><onum>${found.msisdn}</onum></sms_inbound_nonclassic></get_last_activity>`,
+        );
+      }
+      case "get_lu": {
+        const found = card(params.get("onum"));
+        if (!found) return error("get_lu", "Card not found");
+        return xml(
+          `<get_lu><voice_lu><msisdn>${found.msisdn}</msisdn><vlr>8615644263</vlr><MCC>460</MCC><MNC>01</MNC><lu_type>U</lu_type><date_time>2026-10-23 11:11:28</date_time></voice_lu>` +
+            `<gprs_lu><msisdn>${found.msisdn}</msisdn><MCC>460</MCC><MNC>01</MNC><lu_type>P</lu_type><date_time>2026-10-23 11:21:50</date_time></gprs_lu></get_lu>`,
+        );
+      }
+      case "checkdatasession": {
+        const found = card(params.get("onum"));
+        if (!found) return error("checkdatasession", "Card not found");
+        return xml(`<checkdatasession><msisdn>${found.msisdn}</msisdn><sessions></sessions></checkdatasession>`);
+      }
+      case "makerequest": {
+        const found = card(params.get("onum"));
+        if (!found) return xml("<makerequest><error_code>1</error_code><error_text>MSISDN not found</error_text><result>FAIL</result></makerequest>");
+        state.reconnects.push(found.msisdn);
+        return xml(`<makerequest><msisdn>${found.msisdn}</msisdn><scenario_id>1</scenario_id><error_code>0</error_code><error_text>OK</error_text><result>SUCCESS</result></makerequest>`);
       }
       case "sms":
       case "sms2": {

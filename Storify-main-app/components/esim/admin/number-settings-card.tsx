@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { toast } from "@/components/ui/toast-notification";
 import { useRouter } from "@/hooks/use-locale-navigation";
 import { useFallbackTranslator } from "@/hooks/use-fallback-translator";
@@ -22,15 +23,18 @@ export function EsimNumberSettingsCard({ settings, canManage }: { settings: Numb
   const t = useFallbackTranslator(useTranslations());
   const router = useRouter();
   const [amount, setAmount] = useState(String(settings.rechargeMinMinor / 100));
+  const [qrEnabled, setQrEnabled] = useState(settings.qrEnabled);
+  const [qrFee, setQrFee] = useState((settings.qrFeeMinor / 100).toFixed(2));
   const [saving, setSaving] = useState(false);
   const units = Number(amount);
-  const valid = /^\d{1,3}$/.test(amount) && units >= 1 && units <= 300;
-  const changed = units * 100 !== settings.rechargeMinMinor;
+  const qrFeeMinor = Math.round(Number(qrFee) * 100);
+  const valid = /^\d{1,3}$/.test(amount) && units >= 1 && units <= 300 && /^\d{1,2}(\.\d{1,2})?$/.test(qrFee) && qrFeeMinor <= 5000;
+  const changed = units * 100 !== settings.rechargeMinMinor || qrEnabled !== settings.qrEnabled || qrFeeMinor !== settings.qrFeeMinor;
 
   async function save() {
     setSaving(true);
     try {
-      await apiClient.post("/api/esim/admin/number-settings", { rechargeMinMinor: units * 100 });
+      await apiClient.post("/api/esim/admin/number-settings", { rechargeMinMinor: units * 100, qrEnabled, qrFeeMinor });
       toast.success(t("admin.esim.saved", "Saved"));
       router.refresh();
     } catch (error) {
@@ -65,6 +69,24 @@ export function EsimNumberSettingsCard({ settings, canManage }: { settings: Numb
             value={amount}
             aria-invalid={!valid}
             onChange={(event) => setAmount(event.target.value.replace(/\D/g, "").slice(0, 3))}
+          />
+        </div>
+        <div className="flex items-center gap-2 pb-2">
+          <Switch id="number-qr-enabled" checked={qrEnabled} disabled={!canManage} onCheckedChange={setQrEnabled} />
+          <Label htmlFor="number-qr-enabled">{t("admin.esim.qrEnabled", "Shoppers may ask for a new QR code")}</Label>
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="number-qr-fee">
+            {t("admin.esim.qrFee", "New QR code fee")} ({settings.currency})
+          </Label>
+          <Input
+            id="number-qr-fee"
+            inputMode="decimal"
+            className="w-28"
+            disabled={!canManage || !qrEnabled}
+            value={qrFee}
+            aria-invalid={!valid}
+            onChange={(event) => setQrFee(event.target.value.replace(/[^\d.]/g, "").slice(0, 5))}
           />
         </div>
         {canManage ? (

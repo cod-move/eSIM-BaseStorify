@@ -91,6 +91,9 @@ export interface IEsimSettings extends mongoose.Document {
     rechargeMinMinor: number;
     /** The network code (MCC-MNC) last used to ask TopConnect for packages (a stock card is on no network). */
     packetMccmnc: string | null;
+    /** A shopper may ask for a new QR code, for this fee off the card's credit (cents; 0 = free). */
+    qrEnabled: boolean;
+    qrFeeMinor: number;
   };
   /** Shopper cancellation (USR-07): on/off, the fee kept, where the rest goes. */
   cancellation: { enabled: boolean; feeFixedMinor: number; feePercent: number; refundTo: "balance" | "original" };
@@ -186,6 +189,8 @@ const EsimSettingsSchema = new Schema<IEsimSettings>(
     numbers: {
       rechargeMinMinor: { type: Number, default: 200, min: 100, max: 30_000 },
       packetMccmnc: { type: String, default: null, match: /^\d{5,6}$/ },
+      qrEnabled: { type: Boolean, default: true },
+      qrFeeMinor: { type: Number, default: 150, min: 0, max: 5000 },
     },
     cancellation: {
       enabled: { type: Boolean, default: false },

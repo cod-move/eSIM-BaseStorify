@@ -4,6 +4,8 @@ import { esimPageAccess } from "@/lib/esim/admin/page-access";
 import { EsimNumbersAdmin } from "@/components/esim/admin/numbers-admin";
 import { EsimNumberSettingsCard } from "@/components/esim/admin/number-settings-card";
 import { getNumberSettingsView } from "@/lib/esim/numbers/settings";
+import { listQrRequests } from "@/lib/esim/numbers/requests";
+import { EsimNumberQrRequests } from "@/components/esim/admin/number-qr-requests";
 
 interface PageProps {
   params: Promise<{ locale: string }>;
@@ -26,9 +28,10 @@ export default async function AdminEsimNumbersPage({ params, searchParams }: Pag
     search: one(query.search),
     page: Number(one(query.page)) || 1,
   };
-  const [list, settings] = await Promise.all([listNumbersAdmin(filters), getNumberSettingsView()]);
+  const [list, settings, qrRequests] = await Promise.all([listNumbersAdmin(filters), getNumberSettingsView(), listQrRequests()]);
   return (
     <div className="space-y-6">
+      {qrRequests.length ? <EsimNumberQrRequests requests={qrRequests} canManage={canManage} /> : null}
       <EsimNumbersAdmin list={list} filters={filters} canManage={canManage} />
       <EsimNumberSettingsCard settings={settings} canManage={canManage} />
     </div>

@@ -17,6 +17,9 @@ import { CopyValue, RefreshUsageButton, RemarkEditor } from "@/components/esim/e
 import { CancelPacketButton, NumberTopupActions } from "@/components/esim/number-actions";
 import { SendSmsButton, TransferCreditButton } from "@/components/esim/number-card-tools";
 import { NumberHistoryCard, NumberServicesCard } from "@/components/esim/number-services";
+import { NumberDiagnosticsCard, NumberManageCard } from "@/components/esim/number-manage";
+import { latestQrRequest } from "@/lib/esim/numbers/requests";
+import { getNumberSettings } from "@/lib/esim/numbers/settings";
 import { numberTopupOptions } from "@/lib/esim/numbers/storefront";
 
 interface PageProps {
@@ -43,8 +46,14 @@ export default async function AccountNumberPage({ params }: PageProps) {
   const session = await getAccountSession();
   if (!session) notFound();
   await connectDB();
-  const [number, topupOptions, mine] = await Promise.all([getCustomerNumber(session.user.id, id), numberTopupOptions(), listCustomerNumbers(session.user.id)]);
+  const [number, topupOptions, mine, numberSettings] = await Promise.all([
+    getCustomerNumber(session.user.id, id),
+    numberTopupOptions(),
+    listCustomerNumbers(session.user.id),
+    getNumberSettings(),
+  ]);
   if (!number) notFound();
+  const qrRequest = await latestQrRequest(number.id);
 
   const date = new Intl.DateTimeFormat(locale, { dateStyle: "medium" });
   const dateTime = new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short" });
@@ -166,6 +175,21 @@ export default async function AccountNumberPage({ params }: PageProps) {
 
       <NumberServicesCard numberId={number.id} />
       <NumberHistoryCard numberId={number.id} currency={card?.currency ?? "EUR"} />
+      <NumberDiagnosticsCard numberId={number.id} testSms={!card?.blocked ? <SendSmsButton numberId={number.id} title={title} /> : null} />
+      <NumberManageCard
+        numberId={number.id}
+        msisdn={number.msisdn}
+        title={title}
+        blocked={card?.blocked === true}
+        qr={{
+          enabled: numberSettings.qrEnabled,
+          feeMinor: numberSettings.qrFeeMinor,
+          currency: card?.currency ?? "EUR",
+          latest: qrRequest
+            ? { state: qrRequest.state, createdAt: qrRequest.createdAt.toISOString(), note: qrRequest.resolution?.note ?? qrRequest.lastError?.message ?? null }
+            : null,
+        }}
+      />
 
       {lpa ? (
         <Card>

@@ -281,3 +281,26 @@ describe("TopConnect services and history", () => {
     assert.equal(JSON.stringify(parsed).includes("3668828254773228"), false);
   });
 });
+
+describe("TopConnect troubleshooting", () => {
+  it("reads the latest activity, registrations and data session, and reconnects", async () => {
+    const state = newFakeTopConnectState();
+    const tc = client(fakeTopConnectFetch(state));
+    const activity = await tc.lastActivity("37254515257");
+    assert.deepEqual(activity.map((entry) => entry.type), ["sms_inbound_nonclassic", "data", "outbound_call"]);
+    assert.equal(activity[1].bytes, 20600);
+    assert.equal(activity[2].party, "33612345678");
+    const updates = await tc.locationUpdates("37254515257");
+    assert.deepEqual(updates.map((entry) => [entry.type, entry.mcc, entry.mnc]), [["gprs_lu", "460", "01"], ["voice_lu", "460", "01"]]);
+    assert.equal(await tc.dataSession("37254515257"), null);
+    await tc.reconnect("37254515257");
+    assert.deepEqual(state.reconnects, ["37254515257"]);
+  });
+
+  it("reads the manual's answers", async () => {
+    const session = answering("<checkdatasession><msisdn>1</msisdn><sessions><session><starttime>2017-12-21 17:15:48</starttime><mccmnc>24801</mccmnc></session></sessions></checkdatasession>");
+    assert.deepEqual(await client(session.fetch).dataSession("37254515257"), { startedAt: "2017-12-21T17:15:48Z", mccmnc: "24801" });
+    const refused = answering("<makerequest><error_code>2</error_code><error_text>Not allowed</error_text><result>FAIL</result></makerequest>");
+    await assert.rejects(client(refused.fetch).reconnect("37254515257"), /cannot be reconnected/);
+  });
+});

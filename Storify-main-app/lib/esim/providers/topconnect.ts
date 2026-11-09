@@ -153,6 +153,33 @@ export interface TopConnectRecharge {
   currency: string | null;
 }
 
+/** The latest record of one kind of activity (`get_last_activity`). */
+export interface TopConnectActivity {
+  /** The gateway's own name: "outbound_call", "inbound_call", "data", "sms_outbound", "sms_inbound_nonclassic", … */
+  type: string;
+  at: string | null;
+  /** The other party (calls, texts). */
+  party: string | null;
+  seconds: number | null;
+  bytes: number | null;
+  country: string | null;
+  operator: string | null;
+  costMinor: number | null;
+  currency: string | null;
+}
+
+/** The latest network registration of one kind (`get_lu`). */
+export interface TopConnectLocationUpdate {
+  /** "voice_lu", "voice_lu_first", "gprs_lu", "gprs_lu_first". */
+  type: string;
+  at: string | null;
+  mcc: string | null;
+  mnc: string | null;
+  vlr: string | null;
+  /** U registration updated, I registered in a new country, G data attached, P data session up. */
+  luType: string | null;
+}
+
 /** `sbalance` refused the order id; `expected` is the one it wants. */
 export class TopConnectOrderIdError extends ProviderError {
   constructor(readonly expected: number, message: string) {
@@ -491,6 +518,70 @@ export class TopConnectClient {
       .sort(newestFirst);
   }
 
+  // ── troubleshooting (manual 6.1) ─────────────────────────────────────────
+
+  /** The latest of each kind of activity: calls, texts, data, recharge, location update. */
+  async lastActivity(msisdn: string): Promise<TopConnectActivity[]> {
+    const xml = await this.call("get_last_activity", { onum: digitsOnly(msisdn, "msisdn") });
+    const body = nodes(xml, "get_last_activity")[0] ?? xml;
+    return children(body)
+      .map(([type, node]): TopConnectActivity => {
+        const counted = integer(tag(node, "usage_b"));
+        const inBytes = integer(tag(node, "inb"));
+        const outBytes = integer(tag(node, "outb"));
+        const outgoing = /outbound|^ussd/i.test(type);
+        return {
+          type: type.toLowerCase(),
+          at: timestamp(tag(node, "calldate") ?? tag(node, "date_time") ?? tag(node, "added")),
+          party: outgoing ? tag(node, "bnum") : tag(node, "anum"),
+          seconds: integer(tag(node, "billsec")) ?? integer(tag(node, "duration")),
+          bytes: counted ?? (inBytes === null && outBytes === null ? null : (inBytes ?? 0) + (outBytes ?? 0)),
+          country: tag(node, "country"),
+          operator: tag(node, "operator"),
+          costMinor: money(tag(node, "ccost") ?? tag(node, "cost")),
+          currency: tag(node, "curr"),
+        };
+      })
+      .sort(newestFirst);
+  }
+
+  /** The latest network registration of each kind. */
+  async locationUpdates(msisdn: string): Promise<TopConnectLocationUpdate[]> {
+    const xml = await this.call("get_lu", { onum: digitsOnly(msisdn, "msisdn") });
+    const body = nodes(xml, "get_lu")[0] ?? xml;
+    return children(body)
+      .map(([type, node]) => ({
+        type: type.toLowerCase(),
+        at: timestamp(tag(node, "date_time")),
+        mcc: tag(node, "MCC"),
+        mnc: tag(node, "MNC"),
+        vlr: tag(node, "vlr"),
+        luType: tag(node, "lu_type"),
+      }))
+      .sort(newestFirst);
+  }
+
+  /** The data session open right now, if any. */
+  async dataSession(msisdn: string): Promise<{ startedAt: string | null; mccmnc: string | null } | null> {
+    const xml = await this.call("checkdatasession", { onum: digitsOnly(msisdn, "msisdn") });
+    const session = nodes(xml, "session")[0];
+    return session === undefined ? null : { startedAt: timestamp(tag(session, "starttime")), mccmnc: tag(session, "mccmnc") };
+  }
+
+  /**
+   * Restarts the SIM's software so it registers on the network again
+   * (`makerequest scenarioid=1`). Some SIM versions are not allowed it
+   * (error 2).
+   */
+  async reconnect(msisdn: string): Promise<void> {
+    const xml = await this.call("makerequest", { onum: digitsOnly(msisdn, "msisdn"), scenarioid: "1" });
+    const code = integer(tag(xml, "error_code"));
+    if (code !== 0 || !/success/i.test(tag(xml, "result") ?? "")) {
+      const message = tag(xml, "error_text") ?? "TopConnect did not reconnect the SIM";
+      throw new ProviderError(code === 1 ? "not_found" : "rejected", code === 2 ? "This SIM cannot be reconnected from here" : message, 200, "topconnect");
+    }
+  }
+
   /** One gateway call; returns the XML when it is not an error answer. */
   async call(command: string, params: Record<string, string | undefined>): Promise<string> {
     const url = new URL(this.baseUrl);
@@ -690,6 +781,14 @@ function section(xml: string, name: string): string {
   if (open === -1) return "";
   const close = xml.toLowerCase().indexOf(`</${name}>`, open);
   return xml.slice(open + name.length + 2, close === -1 ? undefined : close);
+}
+
+/** The top-level elements of `body`, as [name, inner XML]; the gateway uses no attributes here. */
+function children(body: string): Array<[string, string]> {
+  const result: Array<[string, string]> = [];
+  const pattern = /<([A-Za-z_][\w]*)>([\s\S]*?)<\/\1\s*>/g;
+  for (const match of body.matchAll(pattern)) result.push([match[1], match[2]]);
+  return result;
 }
 
 /** "+10.00 USD" → "USD". */

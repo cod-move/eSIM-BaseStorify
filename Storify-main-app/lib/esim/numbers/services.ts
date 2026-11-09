@@ -3,11 +3,14 @@ import "server-only";
 import { createHash } from "node:crypto";
 import { mongoose } from "@/lib/db";
 import { EsimNumber } from "@/models/esim-number.model";
+import { EsimProviderLog } from "@/models/esim-provider-log.model";
 import { credentialsOf, findProvider } from "@/lib/esim/provider-service";
 import { withProviderLog } from "@/lib/esim/provider-log";
 import { topConnectClient } from "@/lib/esim/providers/registry";
 import type {
+  TopConnectActivity,
   TopConnectCallRecord,
+  TopConnectLocationUpdate,
   TopConnectClient,
   TopConnectDataRecord,
   TopConnectRecharge,
@@ -216,5 +219,76 @@ export async function voicemailRecording(userId: string, numberId: string, messa
     return { ok: true, body, contentType: /^audio\//i.test(type) ? type : "audio/wav" };
   } catch {
     return { ok: false, message: "The recording could not be fetched" };
+  }
+}
+
+// ── troubleshooting ──────────────────────────────────────────────────────
+
+export interface NumberDiagnostics {
+  /** The latest of each kind of activity; null when TopConnect did not answer. */
+  activity: TopConnectActivity[] | null;
+  locations: TopConnectLocationUpdate[] | null;
+  /** The data session open now: undefined when unknown. */
+  session: { startedAt: string | null; mccmnc: string | null } | null | undefined;
+  /** When the number may be reconnected again; null when it may now. */
+  reconnectAfter: string | null;
+}
+
+/** How long a reconnect blocks the next one: it restarts the SIM. */
+const RECONNECT_GAP_MS = 10 * 60_000;
+
+async function lastReconnect(numberId: mongoose.Types.ObjectId): Promise<Date | null> {
+  const row = await EsimProviderLog.findOne({ operation: "numbers.reconnect", ok: true, "request.number": String(numberId), createdAt: { $gte: new Date(Date.now() - RECONNECT_GAP_MS) } })
+    .sort({ createdAt: -1 })
+    .select({ createdAt: 1 })
+    .lean<{ createdAt: Date } | null>();
+  return row?.createdAt ?? null;
+}
+
+const reconnectAfter = (last: Date | null) => (last ? new Date(last.getTime() + RECONNECT_GAP_MS).toISOString() : null);
+
+/** What the network last saw of the number. Null when it is not the shopper's. */
+export async function numberDiagnostics(userId: string, numberId: string): Promise<NumberDiagnostics | null> {
+  const line = await ownedLine(userId, numberId);
+  if (!line) return null;
+  const last = await lastReconnect(line.id);
+  const tc = await gateway();
+  if (!tc) return { activity: null, locations: null, session: undefined, reconnectAfter: reconnectAfter(last) };
+  const [activity, locations, session] = await Promise.all([
+    settled(() => tc.client.lastActivity(line.msisdn)),
+    settled(() => tc.client.locationUpdates(line.msisdn)),
+    (async () => {
+      try {
+        return await tc.client.dataSession(line.msisdn);
+      } catch {
+        return undefined;
+      }
+    })(),
+  ]);
+  return { activity, locations, session, reconnectAfter: reconnectAfter(last) };
+}
+
+export type ReconnectResult = { ok: true; reconnectAfter: string } | { ok: false; message: string; reconnectAfter?: string };
+
+/**
+ * Restarts the SIM so it registers on the network again; at most once every
+ * ten minutes per number. Null when the number is not the shopper's.
+ */
+export async function reconnectNumber(userId: string, numberId: string): Promise<ReconnectResult | null> {
+  const line = await ownedLine(userId, numberId);
+  if (!line) return null;
+  if (line.blocked) return { ok: false, message: "This number is blocked" };
+  const last = await lastReconnect(line.id);
+  if (last) return { ok: false, message: "The number was reconnected a few minutes ago; wait before trying again", reconnectAfter: reconnectAfter(last) ?? undefined };
+  const tc = await gateway();
+  if (!tc) return { ok: false, message: "Number services are not available right now" };
+  try {
+    await withProviderLog(
+      { provider: tc.provider, providerCode: "topconnect", operation: "numbers.reconnect", request: { number: String(line.id) } },
+      () => tc.client.reconnect(line.msisdn),
+    );
+    return { ok: true, reconnectAfter: new Date(Date.now() + RECONNECT_GAP_MS).toISOString() };
+  } catch (error) {
+    return { ok: false, message: failure(error) };
   }
 }
