@@ -494,7 +494,14 @@
       "transferSend": "轉移 {amount}",
       "transferDone": "話費已轉移",
       "transferPending": "正在轉移，幾分鐘內到賬",
-      "transferToHint": "可填任意本平臺內號碼，需帶國家區號。"
+      "transferToHint": "可填任意本平臺內號碼，需帶國家區號。",
+      "balanceLabel": "餘額",
+      "tabBalance": "餘額和套餐",
+      "tabInstall": "安裝",
+      "tabServices": "服務",
+      "tabUsage": "用量",
+      "tabDiagnose": "診斷",
+      "tabManage": "管理"
     },
     "copy": {
       "heroTitle": "暢遊 190 多個國家和地區，隨時在線",

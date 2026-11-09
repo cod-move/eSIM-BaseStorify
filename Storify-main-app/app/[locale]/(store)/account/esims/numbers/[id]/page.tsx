@@ -18,6 +18,7 @@ import { CancelPacketButton, NumberTopupActions } from "@/components/esim/number
 import { SendSmsButton, TransferCreditButton } from "@/components/esim/number-card-tools";
 import { NumberHistoryCard, NumberServicesCard } from "@/components/esim/number-services";
 import { NumberDiagnosticsCard, NumberManageCard } from "@/components/esim/number-manage";
+import { NumberTabs } from "@/components/esim/number-tabs";
 import { latestQrRequest } from "@/lib/esim/numbers/requests";
 import { getNumberSettings } from "@/lib/esim/numbers/settings";
 import { numberTopupOptions } from "@/lib/esim/numbers/storefront";
@@ -97,6 +98,19 @@ export default async function AccountNumberPage({ params }: PageProps) {
         <RemarkEditor esimId={number.id} remark={number.remark} endpoint={`/api/esim/me/numbers/${number.id}`} />
       </div>
 
+      <div className="grid grid-cols-3 gap-2">
+        {[
+          [tr("esim.number.balanceLabel", "Balance"), card?.balanceMinor !== null && card?.balanceMinor !== undefined ? formatAmount(card.balanceMinor, card.currency ?? "EUR") : "—"],
+          [tr("esim.number.lastUsed", "Last used"), card?.lastUsedAt ? date.format(card.lastUsedAt) : "—"],
+          [tr("esim.number.validUntil", "Number kept until"), number.validUntil ? date.format(number.validUntil) : "—"],
+        ].map(([label, value]) => (
+          <div key={label} className="rounded-lg border p-3">
+            <div className="text-xs uppercase tracking-wide text-muted-foreground">{label}</div>
+            <div className="mt-0.5 font-semibold tabular-nums">{value}</div>
+          </div>
+        ))}
+      </div>
+
       {number.pending.length ? (
         <div className="flex items-start gap-2 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200">
           <Clock className="mt-0.5 h-4 w-4 shrink-0" />
@@ -108,6 +122,13 @@ export default async function AccountNumberPage({ params }: PageProps) {
         </div>
       ) : null}
 
+      <NumberTabs
+        tabs={[
+          {
+            value: "balance",
+            label: tr("esim.number.tabBalance", "Balance"),
+            content: (
+              <>
       <Card>
         <CardHeader className="flex flex-row items-center justify-between gap-4 space-y-0">
           <CardTitle className="text-base">{tr("esim.number.card", "Balance and data")}</CardTitle>
@@ -161,7 +182,6 @@ export default async function AccountNumberPage({ params }: PageProps) {
           )}
           {!card?.blocked ? (
             <NumberTopupActions numberId={number.id} title={title} options={topupOptions}>
-              <SendSmsButton numberId={number.id} title={title} />
               <TransferCreditButton numberId={number.id} title={title} balanceMinor={card?.balanceMinor ?? null} currency={card?.currency ?? "EUR"} targets={transferTargets} />
             </NumberTopupActions>
           ) : null}
@@ -172,26 +192,30 @@ export default async function AccountNumberPage({ params }: PageProps) {
           ) : null}
         </CardContent>
       </Card>
-
-      <NumberServicesCard numberId={number.id} currency={card?.currency ?? "EUR"} />
-      <NumberHistoryCard numberId={number.id} currency={card?.currency ?? "EUR"} />
-      <NumberDiagnosticsCard numberId={number.id} testSms={!card?.blocked ? <SendSmsButton numberId={number.id} title={title} /> : null} />
-      <NumberManageCard
-        numberId={number.id}
-        msisdn={number.msisdn}
-        title={title}
-        blocked={card?.blocked === true}
-        qr={{
-          enabled: numberSettings.qrEnabled,
-          feeMinor: numberSettings.qrFeeMinor,
-          currency: card?.currency ?? "EUR",
-          latest: qrRequest
-            ? { state: qrRequest.state, createdAt: qrRequest.createdAt.toISOString(), note: qrRequest.resolution?.note ?? qrRequest.lastError?.message ?? null }
-            : null,
-        }}
-      />
-
-      {lpa ? (
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">{tr("esim.account.details", "Details")}</CardTitle>
+        </CardHeader>
+        <CardContent className="divide-y">
+          {row(tr("esim.account.orderNumber", "Order"), number.orderNumber)}
+          {row("ICCID", number.iccid)}
+          {row(tr("esim.number.lastUsed", "Last used"), card?.lastUsedAt ? date.format(card.lastUsedAt) : null)}
+          {row(tr("esim.number.validUntil", "Number kept until"), number.validUntil ? date.format(number.validUntil) : null)}
+          {row(tr("esim.account.updatedAt", "Last updated"), card?.checkedAt ? dateTime.format(card.checkedAt) : null)}
+        </CardContent>
+      </Card>
+      <p className="text-xs text-muted-foreground">
+        {tr("esim.number.validHint", "A number stays yours for a year after it was last used. Use it now and then to keep it.")}
+      </p>
+              </>
+            ),
+          },
+          ...(lpa
+            ? [
+                {
+                  value: "install",
+                  label: tr("esim.number.tabInstall", "Install"),
+                  content: (
         <Card>
           <CardHeader>
             <CardTitle className="text-base">{tr("esim.account.install", "Install")}</CardTitle>
@@ -237,23 +261,35 @@ export default async function AccountNumberPage({ params }: PageProps) {
             </p>
           </CardContent>
         </Card>
-      ) : null}
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">{tr("esim.account.details", "Details")}</CardTitle>
-        </CardHeader>
-        <CardContent className="divide-y">
-          {row(tr("esim.account.orderNumber", "Order"), number.orderNumber)}
-          {row("ICCID", number.iccid)}
-          {row(tr("esim.number.lastUsed", "Last used"), card?.lastUsedAt ? date.format(card.lastUsedAt) : null)}
-          {row(tr("esim.number.validUntil", "Number kept until"), number.validUntil ? date.format(number.validUntil) : null)}
-          {row(tr("esim.account.updatedAt", "Last updated"), card?.checkedAt ? dateTime.format(card.checkedAt) : null)}
-        </CardContent>
-      </Card>
-      <p className="text-xs text-muted-foreground">
-        {tr("esim.number.validHint", "A number stays yours for a year after it was last used. Use it now and then to keep it.")}
-      </p>
+                  ),
+                },
+              ]
+            : []),
+          { value: "services", label: tr("esim.number.tabServices", "Services"), content: <NumberServicesCard numberId={number.id} currency={card?.currency ?? "EUR"} /> },
+          { value: "usage", label: tr("esim.number.tabUsage", "Usage"), content: <NumberHistoryCard numberId={number.id} currency={card?.currency ?? "EUR"} /> },
+          { value: "diagnose", label: tr("esim.number.tabDiagnose", "Diagnose"), content: <NumberDiagnosticsCard numberId={number.id} testSms={!card?.blocked ? <SendSmsButton numberId={number.id} title={title} /> : null} /> },
+          {
+            value: "manage",
+            label: tr("esim.number.tabManage", "Manage"),
+            content: (
+              <NumberManageCard
+        numberId={number.id}
+        msisdn={number.msisdn}
+        title={title}
+        blocked={card?.blocked === true}
+        qr={{
+          enabled: numberSettings.qrEnabled,
+          feeMinor: numberSettings.qrFeeMinor,
+          currency: card?.currency ?? "EUR",
+          latest: qrRequest
+            ? { state: qrRequest.state, createdAt: qrRequest.createdAt.toISOString(), note: qrRequest.resolution?.note ?? qrRequest.lastError?.message ?? null }
+            : null,
+        }}
+      />
+            ),
+          },
+        ]}
+      />
     </div>
   );
 }

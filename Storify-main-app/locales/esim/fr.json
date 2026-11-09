@@ -494,7 +494,14 @@
       "transferSend": "Transférer {amount}",
       "transferDone": "Crédit transféré",
       "transferPending": "Le transfert est en cours et apparaîtra d'ici quelques minutes",
-      "transferToHint": "Tout numéro de cette plateforme, avec son indicatif pays."
+      "transferToHint": "Tout numéro de cette plateforme, avec son indicatif pays.",
+      "balanceLabel": "Solde",
+      "tabBalance": "Solde",
+      "tabInstall": "Installer",
+      "tabServices": "Services",
+      "tabUsage": "Utilisation",
+      "tabDiagnose": "Diagnostic",
+      "tabManage": "Gérer"
     },
     "copy": {
       "heroTitle": "Restez connecté dans plus de 190 pays",

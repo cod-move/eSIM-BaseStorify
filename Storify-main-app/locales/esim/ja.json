@@ -494,7 +494,14 @@
       "transferSend": "{amount} を移す",
       "transferDone": "残高を移しました",
       "transferPending": "移動中です。数分で反映されます",
-      "transferToHint": "このプラットフォームの任意の番号（国番号付き）。"
+      "transferToHint": "このプラットフォームの任意の番号（国番号付き）。",
+      "balanceLabel": "残高",
+      "tabBalance": "残高とパッケージ",
+      "tabInstall": "インストール",
+      "tabServices": "サービス",
+      "tabUsage": "利用状況",
+      "tabDiagnose": "診断",
+      "tabManage": "管理"
     },
     "copy": {
       "heroTitle": "190 以上の国と地域でつながる",

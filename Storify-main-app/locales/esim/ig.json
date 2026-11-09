@@ -494,7 +494,14 @@
       "transferSend": "Bufee {amount}",
       "transferDone": "E bufere kredit",
       "transferPending": "A na-ebufe ya, ọ ga-apụta n'ime nkeji ole na ole",
-      "transferToHint": "Nọmba ọ bụla sitere na nyiwe a, ya na koodu obodo."
+      "transferToHint": "Nọmba ọ bụla sitere na nyiwe a, ya na koodu obodo.",
+      "balanceLabel": "Balance",
+      "tabBalance": "Balance",
+      "tabInstall": "Install",
+      "tabServices": "Services",
+      "tabUsage": "Usage",
+      "tabDiagnose": "Diagnose",
+      "tabManage": "Manage"
     },
     "copy": {
       "heroTitle": "Nọgide na-ejikọ na mba karịrị 190",

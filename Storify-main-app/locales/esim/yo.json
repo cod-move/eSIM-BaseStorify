@@ -494,7 +494,14 @@
       "transferSend": "Gbe {amount} lọ",
       "transferDone": "A ti gbe owó lọ",
       "transferPending": "A n gbe e lọ, yoo han laarin iṣẹju diẹ",
-      "transferToHint": "Nọmba eyikeyi lati pẹpẹ yii, pẹlu koodu orilẹ-ede."
+      "transferToHint": "Nọmba eyikeyi lati pẹpẹ yii, pẹlu koodu orilẹ-ede.",
+      "balanceLabel": "Balance",
+      "tabBalance": "Balance",
+      "tabInstall": "Install",
+      "tabServices": "Services",
+      "tabUsage": "Usage",
+      "tabDiagnose": "Diagnose",
+      "tabManage": "Manage"
     },
     "copy": {
       "heroTitle": "Wà ní ìsopọ̀ ní orílẹ̀-èdè tó ju 190 lọ",

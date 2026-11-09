@@ -494,7 +494,14 @@
       "transferSend": "Canja {amount}",
       "transferDone": "An canja kiredit",
       "transferPending": "Ana canjawa, zai bayyana cikin 'yan mintuna",
-      "transferToHint": "Kowace lamba daga wannan dandali, tare da lambar ƙasa."
+      "transferToHint": "Kowace lamba daga wannan dandali, tare da lambar ƙasa.",
+      "balanceLabel": "Balance",
+      "tabBalance": "Balance",
+      "tabInstall": "Install",
+      "tabServices": "Services",
+      "tabUsage": "Usage",
+      "tabDiagnose": "Diagnose",
+      "tabManage": "Manage"
     },
     "copy": {
       "heroTitle": "Ka kasance a haɗe a ƙasashe fiye da 190",

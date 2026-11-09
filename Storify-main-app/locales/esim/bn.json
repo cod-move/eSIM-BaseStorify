@@ -494,7 +494,14 @@
       "transferSend": "{amount} স্থানান্তর করুন",
       "transferDone": "ব্যালান্স স্থানান্তর হয়েছে",
       "transferPending": "স্থানান্তর চলছে, কয়েক মিনিটে দেখা যাবে",
-      "transferToHint": "এই প্ল্যাটফর্মের যেকোনো নম্বর, দেশের কোডসহ।"
+      "transferToHint": "এই প্ল্যাটফর্মের যেকোনো নম্বর, দেশের কোডসহ।",
+      "balanceLabel": "Balance",
+      "tabBalance": "Balance",
+      "tabInstall": "Install",
+      "tabServices": "Services",
+      "tabUsage": "Usage",
+      "tabDiagnose": "Diagnose",
+      "tabManage": "Manage"
     },
     "copy": {
       "heroTitle": "১৯০টিরও বেশি দেশে সংযুক্ত থাকুন",

@@ -190,7 +190,7 @@ const EsimSettingsSchema = new Schema<IEsimSettings>(
       rechargeMinMinor: { type: Number, default: 200, min: 100, max: 30_000 },
       packetMccmnc: { type: String, default: null, match: /^\d{5,6}$/ },
       qrEnabled: { type: Boolean, default: true },
-      qrFeeMinor: { type: Number, default: 150, min: 0, max: 5000 },
+      qrFeeMinor: { type: Number, default: 200, min: 0, max: 5000 },
     },
     cancellation: {
       enabled: { type: Boolean, default: false },

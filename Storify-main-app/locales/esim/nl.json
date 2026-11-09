@@ -494,7 +494,14 @@
       "transferSend": "{amount} overzetten",
       "transferDone": "Tegoed overgezet",
       "transferPending": "De overboeking loopt en is binnen enkele minuten zichtbaar",
-      "transferToHint": "Elk nummer van dit platform, met landcode."
+      "transferToHint": "Elk nummer van dit platform, met landcode.",
+      "balanceLabel": "Balance",
+      "tabBalance": "Balance",
+      "tabInstall": "Install",
+      "tabServices": "Services",
+      "tabUsage": "Usage",
+      "tabDiagnose": "Diagnose",
+      "tabManage": "Manage"
     },
     "copy": {
       "heroTitle": "Blijf verbonden in meer dan 190 landen",

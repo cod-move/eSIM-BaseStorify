@@ -494,7 +494,14 @@
       "transferSend": "Transfer {amount}",
       "transferDone": "Credit moved",
       "transferPending": "The transfer is being made and shows within a few minutes",
-      "transferToHint": "Any number from this platform, with its country code."
+      "transferToHint": "Any number from this platform, with its country code.",
+      "balanceLabel": "Balance",
+      "tabBalance": "Balance",
+      "tabInstall": "Install",
+      "tabServices": "Services",
+      "tabUsage": "Usage",
+      "tabDiagnose": "Diagnose",
+      "tabManage": "Manage"
     },
     "copy": {
       "heroTitle": "Stay connected in 190+ countries",

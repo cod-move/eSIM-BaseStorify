@@ -494,7 +494,14 @@
       "transferSend": "Dlulisa {amount}",
       "transferDone": "Ikhredithi idlulisiwe",
       "transferPending": "Ukudlulisa kuyaqhubeka, kuzobonakala emizuzwini embalwa",
-      "transferToHint": "Noma iyiphi inombolo yale nkundla, nekhodi yezwe."
+      "transferToHint": "Noma iyiphi inombolo yale nkundla, nekhodi yezwe.",
+      "balanceLabel": "Balance",
+      "tabBalance": "Balance",
+      "tabInstall": "Install",
+      "tabServices": "Services",
+      "tabUsage": "Usage",
+      "tabDiagnose": "Diagnose",
+      "tabManage": "Manage"
     },
     "copy": {
       "heroTitle": "Hlala uxhumekile emazweni angaphezu kwe-190",

@@ -14,8 +14,8 @@ import { RECHARGE_DEFAULT_MIN_MINOR, RECHARGE_FLOOR_MINOR, RECHARGE_MAX_MINOR } 
  * credit.
  */
 
-/** The new-QR-code fee when none is set (as other number shops ask). */
-export const QR_FEE_DEFAULT_MINOR = 150;
+/** The new-QR-code fee when none is set: 2.00 of the card's currency. */
+export const QR_FEE_DEFAULT_MINOR = 200;
 export const QR_FEE_MAX_MINOR = 5000;
 
 export const NumberSettingsSchema = z.object({

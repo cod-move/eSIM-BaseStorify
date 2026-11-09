@@ -494,7 +494,14 @@
       "transferSend": "{amount} ट्रांसफ़र करें",
       "transferDone": "बैलेंस ट्रांसफ़र हो गया",
       "transferPending": "ट्रांसफ़र हो रहा है, कुछ मिनट में दिखेगा",
-      "transferToHint": "इस प्लेटफ़ॉर्म का कोई भी नंबर, देश कोड के साथ।"
+      "transferToHint": "इस प्लेटफ़ॉर्म का कोई भी नंबर, देश कोड के साथ।",
+      "balanceLabel": "Balance",
+      "tabBalance": "Balance",
+      "tabInstall": "Install",
+      "tabServices": "Services",
+      "tabUsage": "Usage",
+      "tabDiagnose": "Diagnose",
+      "tabManage": "Manage"
     },
     "copy": {
       "heroTitle": "190+ देशों में जुड़े रहें",

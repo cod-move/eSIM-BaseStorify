@@ -494,7 +494,14 @@
       "transferSend": "تحويل {amount}",
       "transferDone": "تم تحويل الرصيد",
       "transferPending": "جارٍ التحويل ويظهر خلال بضع دقائق",
-      "transferToHint": "أي رقم من هذه المنصة مع رمز الدولة."
+      "transferToHint": "أي رقم من هذه المنصة مع رمز الدولة.",
+      "balanceLabel": "Balance",
+      "tabBalance": "Balance",
+      "tabInstall": "Install",
+      "tabServices": "Services",
+      "tabUsage": "Usage",
+      "tabDiagnose": "Diagnose",
+      "tabManage": "Manage"
     },
     "copy": {
       "heroTitle": "ابقَ متصلاً في أكثر من 190 دولة",

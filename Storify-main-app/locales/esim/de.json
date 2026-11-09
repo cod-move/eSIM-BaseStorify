@@ -494,7 +494,14 @@
       "transferSend": "{amount} übertragen",
       "transferDone": "Guthaben übertragen",
       "transferPending": "Die Übertragung läuft und ist in wenigen Minuten sichtbar",
-      "transferToHint": "Jede Nummer dieser Plattform, mit Ländervorwahl."
+      "transferToHint": "Jede Nummer dieser Plattform, mit Ländervorwahl.",
+      "balanceLabel": "Guthaben",
+      "tabBalance": "Guthaben",
+      "tabInstall": "Installieren",
+      "tabServices": "Dienste",
+      "tabUsage": "Verbrauch",
+      "tabDiagnose": "Diagnose",
+      "tabManage": "Verwalten"
     },
     "copy": {
       "heroTitle": "In über 190 Ländern verbunden bleiben",

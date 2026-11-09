@@ -494,7 +494,14 @@
       "transferSend": "{amount} aktar",
       "transferDone": "Bakiye aktarıldı",
       "transferPending": "Aktarım yapılıyor, birkaç dakika içinde görünür",
-      "transferToHint": "Bu platformdaki herhangi bir numara, ülke koduyla."
+      "transferToHint": "Bu platformdaki herhangi bir numara, ülke koduyla.",
+      "balanceLabel": "Balance",
+      "tabBalance": "Balance",
+      "tabInstall": "Install",
+      "tabServices": "Services",
+      "tabUsage": "Usage",
+      "tabDiagnose": "Diagnose",
+      "tabManage": "Manage"
     },
     "copy": {
       "heroTitle": "190'dan fazla ülkede bağlantıda kalın",
