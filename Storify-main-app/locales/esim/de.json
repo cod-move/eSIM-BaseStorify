@@ -459,7 +459,18 @@
       "packetData": "Daten",
       "packetValidity": "Gültigkeit",
       "packetPrice": "Preis",
-      "perGb": "{price}/GB"
+      "perGb": "{price}/GB",
+      "riskTitle": "Before you buy — service and account risks",
+      "risk1": "Because of the war and EU sanctions, this eSIM does not work in Russia or Iran. Do not buy it for use there.",
+      "risk2": "Text messages and one-time codes from third parties (banks, apps, social networks) are not guaranteed; some codes may never be sent to +372 numbers at all.",
+      "risk3": "Failed verification codes are not refunded. A third party refusing to send to your number is not a reason for a refund.",
+      "risk4": "Emergency calls are not guaranteed. Do not rely on this eSIM as your only way to reach emergency services; keep another local means of communication.",
+      "risk5": "Sign-up checks by Google, Telegram, WhatsApp and others are outside our control; failures they cause are not refunded.",
+      "risk6": "Call forwarding can send calls to a number in any country; forwarded calls are charged to the number's credit.",
+      "risk7": "Some devices and services (including iMessage and FaceTime) may send activation texts automatically when the eSIM is installed or turned on. These are charged as standard outgoing texts; to avoid them, turn off outgoing texts in the line settings before installing.",
+      "risk8": "To keep the number, it needs at least one qualifying activity (data, text, call or recharge) every 365 days; otherwise the number may be reclaimed.",
+      "riskAgree": "I have read and accept these risks",
+      "riskContinue": "Continue"
     },
     "number": {
       "blocked": "Gesperrt",

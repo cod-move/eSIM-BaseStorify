@@ -2,7 +2,8 @@
 
 import { useMemo, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
-import { ChevronLeft, ChevronRight, Loader2, Phone, Search, Sparkles } from "lucide-react";
+import { ChevronLeft, ChevronRight, Loader2, Phone, Search, ShieldAlert, Sparkles } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -169,6 +170,18 @@ function volumeLabel(packet: ShopPacket, unlimited: string) {
   return packetVolume(packet.volumeMb) ?? unlimited;
 }
 
+/** What a buyer must read first, in order (the keys under esim.numbers, and the English). */
+const RISK_ITEMS: Array<[string, string]> = [
+  ["risk1", "Because of the war and EU sanctions, this eSIM does not work in Russia or Iran. Do not buy it for use there."],
+  ["risk2", "Text messages and one-time codes from third parties (banks, apps, social networks) are not guaranteed; some codes may never be sent to +372 numbers at all."],
+  ["risk3", "Failed verification codes are not refunded. A third party refusing to send to your number is not a reason for a refund."],
+  ["risk4", "Emergency calls are not guaranteed. Do not rely on this eSIM as your only way to reach emergency services; keep another local means of communication."],
+  ["risk5", "Sign-up checks by Google, Telegram, WhatsApp and others are outside our control; failures they cause are not refunded."],
+  ["risk6", "Call forwarding can send calls to a number in any country; forwarded calls are charged to the number's credit."],
+  ["risk7", "Some devices and services (including iMessage and FaceTime) may send activation texts automatically when the eSIM is installed or turned on. These are charged as standard outgoing texts; to avoid them, turn off outgoing texts in the line settings before installing."],
+  ["risk8", "To keep the number, it needs at least one qualifying activity (data, text, call or recharge) every 365 days; otherwise the number may be reclaimed."],
+];
+
 function NumberDialog({ shop, number, locale, onClose }: { shop: NumberShop; number: ShopNumber | null; locale: string; onClose: () => void }) {
   const t = useFallbackTranslator(useTranslations());
   const router = useRouter();
@@ -179,6 +192,9 @@ function NumberDialog({ shop, number, locale, onClose }: { shop: NumberShop; num
   const [custom, setCustom] = useState("");
   const [packet, setPacket] = useState<string>("none");
   const [busy, setBusy] = useState(false);
+  // The service and account risks are read and accepted before anything else.
+  const [accepted, setAccepted] = useState(false);
+  const [ticked, setTicked] = useState(false);
   const { currency, usdPerUnit } = shop.recharge;
 
   const rechargeMinor = custom ? Number(custom) * 100 : recharge;
@@ -230,6 +246,8 @@ function NumberDialog({ shop, number, locale, onClose }: { shop: NumberShop; num
         if (!open) {
           onClose();
           setBusy(false);
+          setAccepted(false);
+          setTicked(false);
         }
       }}
     >
@@ -244,7 +262,31 @@ function NumberDialog({ shop, number, locale, onClose }: { shop: NumberShop; num
           </DialogDescription>
         </DialogHeader>
 
-        {number ? (
+        {number && !accepted ? (
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 text-base font-semibold">
+              <ShieldAlert className="h-5 w-5 text-amber-600" />
+              {t("esim.numbers.riskTitle", "Before you buy — service and account risks")}
+            </div>
+            <ul className="list-disc space-y-2 ps-5 text-sm text-muted-foreground">
+              {RISK_ITEMS.map(([key, fallback]) => (
+                <li key={key}>{t(`esim.numbers.${key}`, fallback)}</li>
+              ))}
+            </ul>
+            <label className="flex items-start gap-2 text-sm font-medium">
+              <Checkbox checked={ticked} onCheckedChange={(value) => setTicked(value === true)} className="mt-0.5" />
+              <span>{t("esim.numbers.riskAgree", "I have read and accept these risks")}</span>
+            </label>
+            <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
+              <Button variant="outline" onClick={onClose}>
+                {t("common.cancel", "Cancel")}
+              </Button>
+              <Button disabled={!ticked} onClick={() => setAccepted(true)}>
+                {t("esim.numbers.riskContinue", "Continue")}
+              </Button>
+            </div>
+          </div>
+        ) : number ? (
           <div className="space-y-5">
             <fieldset className="space-y-2">
               <legend className="text-sm font-semibold">{t("esim.numbers.rechargeTitle", "First credit on the number")}</legend>
