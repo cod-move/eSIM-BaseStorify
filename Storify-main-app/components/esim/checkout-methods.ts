@@ -13,7 +13,7 @@ import { arrangeMethods, isIconUrl, type CheckoutDisplay } from "@/lib/esim/paym
 export type { CheckoutDisplay, ExtensionChoice };
 export { isExtensionChoice };
 
-const ICONS: Record<string, LucideIcon> = { stripe: CreditCard, bepusdt: Coins };
+const ICONS: Record<string, LucideIcon> = { stripe: CreditCard, airwallex: CreditCard, bepusdt: Coins };
 
 export interface ExtensionOption {
   code: string;

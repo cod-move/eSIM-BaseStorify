@@ -1,4 +1,5 @@
 import { EXTENSION_METHOD_NAMES } from "./method-names";
+import { airwallexPlugin } from "./plugins/airwallex";
 import { bepusdtPlugin } from "./plugins/bepusdt";
 import { fakePaymentPlugin } from "./plugins/fake";
 import { redeepayPlugin } from "./plugins/redeepay";
@@ -27,6 +28,11 @@ export const PAYMENT_METHOD_DEFINITIONS = {
     plugin: stripePlugin,
     displayName: EXTENSION_METHOD_NAMES.stripe,
     defaults: { threeDSecure: "any" },
+  },
+  airwallex: {
+    plugin: airwallexPlugin,
+    displayName: EXTENSION_METHOD_NAMES.airwallex,
+    defaults: { env: "prod" },
   },
   bepusdt: {
     plugin: bepusdtPlugin,

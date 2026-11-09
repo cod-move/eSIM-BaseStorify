@@ -10,7 +10,7 @@ const { Schema, models, model } = mongoose;
  * user → User; balance → StoreCreditTransaction; esim → EsimProfile;
  * referral → EsimReferral; order → the per-shopper import Order.
  */
-export const LEGACY_LINK_KINDS = ["user", "balance", "esim", "referral", "order"] as const;
+export const LEGACY_LINK_KINDS = ["user", "balance", "esim", "referral", "order", "number"] as const;
 export type LegacyLinkKind = (typeof LEGACY_LINK_KINDS)[number];
 
 export interface IEsimLegacyLink extends mongoose.Document {

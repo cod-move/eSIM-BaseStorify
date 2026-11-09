@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { describe, it } from "node:test";
 import { countryCodeFromName } from "../countries";
-import { RoamWifiAdapter, externalId, mapSkuPlans, sign } from "../roamwifi";
+import { RoamWifiAdapter, externalId, mapEsimDetail, mapSkuPlans, sign } from "../roamwifi";
 import { fakeFetch } from "./helpers";
 
 describe("RoamWifi external ids", () => {
@@ -159,5 +159,17 @@ describe("RoamWifi renewals and card detail (doc v2.13)", () => {
     const usage = await adapter.getUsage({ providerEsimId: "EP1", simId: null, iccid: "8948010000000000001" });
     assert.equal(usage.lifecycleStatus, "in_use");
     assert.equal(usage.usedBytes, 1024 * 1024 * 1024);
+  });
+
+  it("counts packages by their status: cancelled, unpaid and unsubscribing are left out, completed has ended", () => {
+    const now = new Date("2026-11-09T00:00:00Z");
+    const pkg = (status: number, extra: Record<string, unknown> = {}) => ({ status, flows: 1, unit: "GB", usedMb: 0, beginDate: "2026-11-01 00:00", endDate: "2026-12-01 00:00", ...extra });
+    const detail = (packageList: unknown[], dpStatus = "Enable") => mapEsimDetail({ esimInfo: { dpStatus }, esimPackets: [{ skuId: 1, packageList }] } as never, now);
+    assert.equal(detail([pkg(0)]).lifecycleStatus, "in_use");
+    assert.equal(detail([pkg(2)]).lifecycleStatus, "expired", "completed before its end date");
+    assert.equal(detail([pkg(1), pkg(-1), pkg(3)]).lifecycleStatus, "cancelled");
+    assert.equal(detail([pkg(1, { flows: 5 }), pkg(0)]).totalBytes, 1024 ** 3, "a cancelled package adds no data");
+    assert.equal(detail([pkg(0, { beginDate: null, endDate: null })], "Delete").lifecycleStatus, "not_installed");
+    assert.equal(detail([pkg(0, { beginDate: null, endDate: null })], "ACTIVE").lifecycleStatus, "installed");
   });
 });

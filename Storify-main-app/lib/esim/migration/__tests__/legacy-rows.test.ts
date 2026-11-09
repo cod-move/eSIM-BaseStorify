@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { decimalToMinor, migrateEsim, migrateUser, parseLpa, type LegacyEsimRow, type LegacyUserRow } from "../legacy-rows";
+import { decimalToMinor, migrateEsim, migrateNumber, migrateUser, parseLpa, type LegacyEsimRow, type LegacyNumberRow, type LegacyUserRow } from "../legacy-rows";
 
 const HASH = `$2y$10$${"a".repeat(53)}`;
 const now = new Date("2026-10-27T00:00:00Z");
@@ -112,13 +112,62 @@ describe("migrateEsim", () => {
     assert.equal(migrateEsim(esim({ status: 3 }), now), "esim.not-active");
     assert.equal(migrateEsim(esim({ expiry_date: new Date("2026-01-01T00:00:00Z") }), now), "esim.not-active");
     assert.equal(migrateEsim(esim({ iccid: null }), now), "esim.no-iccid");
-    assert.equal(migrateEsim(esim({ provider_plan_id: null }), now), "esim.no-plan");
+    assert.equal(migrateEsim(esim({ provider_slug: null }), now), "esim.no-provider");
+    const lostPlan = migrateEsim(esim({ provider_plan_id: null }), now);
+    assert.ok(typeof lostPlan === "object" && lostPlan.providerPlanId === null, "a lost plan goes to a stand-in plan, not skipped");
     assert.ok(typeof migrateEsim(esim({ expiry_date: null }), now) === "object", "no expiry is still active");
   });
 
   it("parses only real LPA codes", () => {
     assert.deepEqual(parseLpa("LPA:1$a.b$C"), { smdpAddress: "a.b", matchingId: "C" });
     assert.deepEqual(parseLpa("https://qr.example/1.png"), { smdpAddress: null, matchingId: null });
+  });
+});
+
+describe("migrateNumber", () => {
+  const number = (overrides: Partial<LegacyNumberRow> = {}): LegacyNumberRow => ({
+    id: 5,
+    iccid: "8937204017171234567",
+    msisdn: "55501234",
+    dial_country_code: "+372",
+    lpa: "LPA:1$smdp.example$ABC-1",
+    pin1: "1234",
+    puk1: "12345678",
+    pin2: null,
+    puk2: "x",
+    price: "12.50000000",
+    premium_price: "0.00000000",
+    status: 0,
+    user_id: null,
+    sold_at: null,
+    created_at: new Date("2026-03-01T00:00:00Z"),
+    ...overrides,
+  });
+
+  it("keeps unsold stock for sale with its install details", () => {
+    const migrated = migrateNumber(number(), now);
+    assert.ok(typeof migrated === "object");
+    assert.equal(migrated.msisdn, "37255501234");
+    assert.equal(migrated.dialCode, "372");
+    assert.equal(migrated.priceMinor, 1250);
+    assert.equal(migrated.sold, false);
+    assert.equal(migrated.userLegacyId, null);
+    assert.equal(migrated.puk2, null, "not a PIN code");
+  });
+
+  it("gives sold numbers to their buyer and accepts an LPA without its prefix", () => {
+    const migrated = migrateNumber(number({ status: 1, user_id: 7, msisdn: "37255501234", lpa: "smdp.example$ABC-1" }), now);
+    assert.ok(typeof migrated === "object");
+    assert.equal(migrated.msisdn, "37255501234", "the code is not added twice");
+    assert.equal(migrated.lpa, "LPA:1$smdp.example$ABC-1");
+    assert.equal(migrated.userLegacyId, 7);
+    assert.ok(migrated.soldAt instanceof Date);
+  });
+
+  it("leaves out rows it cannot install", () => {
+    assert.equal(migrateNumber(number({ iccid: "12" }), now), "number.no-iccid");
+    assert.equal(migrateNumber(number({ msisdn: null, dial_country_code: null }), now), "number.no-msisdn");
+    assert.equal(migrateNumber(number({ lpa: "" }), now), "number.no-lpa");
   });
 });
 

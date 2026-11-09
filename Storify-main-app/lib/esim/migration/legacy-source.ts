@@ -1,6 +1,6 @@
 import "server-only";
 
-import type { LegacyEsimRow, LegacyUserRow } from "./legacy-rows";
+import type { LegacyEsimRow, LegacyNumberRow, LegacyUserRow } from "./legacy-rows";
 
 /**
  * Reading the old store's MySQL database (MIG), in production only: the
@@ -54,6 +54,21 @@ const USER_QUERY = `
   order by id
 `;
 
+/**
+ * Every number card in stock, sold or not (number cards are left out of the
+ * data eSIMs above). The buyer is the order's user, else the user of the
+ * eSIM row the sale made.
+ */
+const NUMBER_QUERY = `
+  select i.id, i.iccid, i.msisdn, i.dial_country_code, i.lpa, i.pin1, i.puk1, i.pin2, i.puk2,
+         cast(i.price as char) price, cast(i.premium_price as char) premium_price, i.status,
+         coalesce(o.user_id, (select e.user_id from esims e where e.iccid = i.iccid order by e.id desc limit 1)) user_id,
+         coalesce(o.created_at, i.updated_at) sold_at, i.created_at
+  from inventory_esims i
+  left join orders o on o.id = i.order_id
+  order by i.id
+`;
+
 /** Active data eSIMs of verified users, with the supplier and plan they were bought on. */
 const ESIM_QUERY = `
   select e.id, e.user_id, lower(trim(p.slug)) provider_slug, pl.provider_plan_id, pl.name plan_name,
@@ -66,12 +81,15 @@ const ESIM_QUERY = `
   left join order_items oi on oi.id = e.order_item_id
   left join plans pl on pl.id = oi.plan_id
   where e.status = 1 and (e.expiry_date is null or e.expiry_date >= now())
+    and coalesce(lower(trim(p.slug)), '') <> 'topconnect'
+    and not exists (select 1 from inventory_esims i where i.iccid = e.iccid)
   order by e.id
 `;
 
 export interface LegacySnapshot {
   users: LegacyUserRow[];
   esims: LegacyEsimRow[];
+  numbers: LegacyNumberRow[];
 }
 
 export async function readLegacySnapshot(config: LegacySourceConfig): Promise<LegacySnapshot> {
@@ -93,8 +111,9 @@ export async function readLegacySnapshot(config: LegacySourceConfig): Promise<Le
     await connection.query("START TRANSACTION WITH CONSISTENT SNAPSHOT");
     const [users] = await connection.query(USER_QUERY);
     const [esims] = await connection.query(ESIM_QUERY);
+    const [numbers] = await connection.query(NUMBER_QUERY);
     await connection.query("COMMIT");
-    return { users: users as LegacyUserRow[], esims: esims as LegacyEsimRow[] };
+    return { users: users as LegacyUserRow[], esims: esims as LegacyEsimRow[], numbers: numbers as LegacyNumberRow[] };
   } finally {
     await connection.end().catch(() => undefined);
   }

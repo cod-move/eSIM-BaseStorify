@@ -1373,7 +1373,7 @@
       "migSkipped": "বাদ পড়েছে",
       "migConfirm": "পুরোনো স্টোরের ক্রেতা, ব্যালেন্স, রেফারেল ও সক্রিয় eSIM এখনই ইমপোর্ট করবেন? ক্রেতাদের ইমেইল পাঠানো হবে না। পরে আবার চালালে শুধু নতুনগুলো যোগ হবে।",
       "migStarted": "শুরু হয়েছে; শেষ হলে এই পেজ আপডেট হবে",
-      "migHint": "পুরোনো স্টোর থেকে ক্রেতা (তাদের পুরোনো পাসওয়ার্ডসহ), ব্যালেন্স, রেফারেল ও সক্রিয় eSIM নিয়ে আসে। পুরোনো অর্ডার ইমপোর্ট হয় না। আগে প্রতিটি সরবরাহকারীর ক্যাটালগ সিঙ্ক করুন: যে eSIM-এর প্ল্যান এখনও এখানে নেই সেটি বাদ পড়ে, পরের ইমপোর্টে নেওয়া হয়।",
+      "migHint": "Brings shoppers (with their old passwords), balances, referrals, active data eSIMs and the whole number-card stock over from the old store. Expired data eSIMs and old orders are not imported. Sync every supplier's catalogue first; an eSIM whose plan the supplier no longer lists is put on a disabled stand-in plan.",
       "migSource": "পুরোনো ডেটাবেস",
       "migNoSource": "কনফিগার করা নেই — .env-এ LEGACY_MYSQL_HOST, LEGACY_MYSQL_DATABASE, LEGACY_MYSQL_USER ও LEGACY_MYSQL_PASSWORD সেট করে রিস্টার্ট করুন।",
       "migImported": "এ পর্যন্ত ইমপোর্ট",
@@ -1595,7 +1595,8 @@
       "qrAnswer": "Answer",
       "qrNote": "Note for the customer (needed to decline)",
       "qrSave": "Save the new code",
-      "qrDecline": "Decline and refund"
+      "qrDecline": "Decline and refund",
+      "payAirwallexHint": "In the Airwallex web app (Developer → Webhooks), add this notification URL for payment_intent.succeeded and payment_intent.cancelled, and paste its secret into webhookSecret. clientId and apiKey come from Developer → API keys. env: prod, or demo for the sandbox. methods is optional, e.g. card,applepay,googlepay,alipaycn,wechatpay."
     },
     "sidebar": {
       "esim": "eSIM",

@@ -12,6 +12,7 @@
 /** The default names; an admin can rename a method under eSIM → Payments. */
 export const EXTENSION_METHOD_NAMES = {
   stripe: "Alipay, WeChat Pay and more (Stripe)",
+  airwallex: "Card, Apple Pay, Google Pay and more (Airwallex)",
   bepusdt: "USDT / USDC (BEpusdt)",
   "redeepay-wechat": "WeChat Pay (RedeePay)",
   "redeepay-alipay": "Alipay (RedeePay)",

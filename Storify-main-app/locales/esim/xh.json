@@ -1373,7 +1373,7 @@
       "migSkipped": "Kushiyiwe",
       "migConfirm": "Ngenisa ngoku abathengi, iibhalansi, ukuthunyelwa nee-eSIM ezisebenzayo zevenkile endala? Abathengi abathunyelelwa ii-imeyile. Ukuyiqhuba kwakhona kamva kongeza okutsha kuphela.",
       "migStarted": "Iqalile; eli phepha liza kuhlaziywa xa sele igqityiwe",
-      "migHint": "Izisa abathengi (neephasiwedi zabo ezindala), iibhalansi, ukuthunyelwa nee-eSIM ezisebenzayo ukusuka kwivenkile endala. Ii-odolo ezindala azingeniswa. Vumelanisa ikhathalogu yomboneleli ngamnye kuqala: i-eSIM ephakheji yayo ingekabikho apha iyashiywa, kwaye ukungenisa okulandelayo kuyayithatha.",
+      "migHint": "Brings shoppers (with their old passwords), balances, referrals, active data eSIMs and the whole number-card stock over from the old store. Expired data eSIMs and old orders are not imported. Sync every supplier's catalogue first; an eSIM whose plan the supplier no longer lists is put on a disabled stand-in plan.",
       "migSource": "Isiseko sedatha esidala",
       "migNoSource": "Ayiqwalaselwanga — beka i-LEGACY_MYSQL_HOST, LEGACY_MYSQL_DATABASE, LEGACY_MYSQL_USER ne-LEGACY_MYSQL_PASSWORD kwi-.env uze uqalise kwakhona.",
       "migImported": "Okungenisiweyo ukuza kuthi ga ngoku",
@@ -1595,7 +1595,8 @@
       "qrAnswer": "Answer",
       "qrNote": "Note for the customer (needed to decline)",
       "qrSave": "Save the new code",
-      "qrDecline": "Decline and refund"
+      "qrDecline": "Decline and refund",
+      "payAirwallexHint": "In the Airwallex web app (Developer → Webhooks), add this notification URL for payment_intent.succeeded and payment_intent.cancelled, and paste its secret into webhookSecret. clientId and apiKey come from Developer → API keys. env: prod, or demo for the sandbox. methods is optional, e.g. card,applepay,googlepay,alipaycn,wechatpay."
     },
     "sidebar": {
       "esim": "eSIM",

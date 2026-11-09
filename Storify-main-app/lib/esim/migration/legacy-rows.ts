@@ -55,6 +55,46 @@ export interface LegacyEsimRow {
   created_at: Date | null;
 }
 
+/** A number card in the old store's stock (`inventory_esims`), sold or not. */
+export interface LegacyNumberRow {
+  id: number;
+  iccid: string | null;
+  msisdn: string | null;
+  dial_country_code: string | null;
+  lpa: string | null;
+  pin1: string | null;
+  puk1: string | null;
+  pin2: string | null;
+  puk2: string | null;
+  /** Decimal text. */
+  price: string | null;
+  premium_price: string | null;
+  /** 0 available, 1 sold. */
+  status: number;
+  /** The buyer: the order's user, else the user of the eSIM made from it. */
+  user_id: number | null;
+  sold_at: Date | null;
+  created_at: Date | null;
+}
+
+export interface MigratedNumber {
+  legacyId: number;
+  iccid: string;
+  msisdn: string;
+  dialCode: string;
+  lpa: string;
+  pin1: string | null;
+  puk1: string | null;
+  pin2: string | null;
+  puk2: string | null;
+  priceMinor: number;
+  premiumMinor: number;
+  sold: boolean;
+  userLegacyId: number | null;
+  soldAt: Date | null;
+  createdAt: Date;
+}
+
 export interface MigratedUser {
   legacyId: number;
   refByLegacyId: number | null;
@@ -73,7 +113,8 @@ export interface MigratedEsim {
   legacyId: number;
   userLegacyId: number;
   providerCode: string;
-  providerPlanId: string;
+  /** Null when the old order line lost its plan: the import puts it on a stand-in plan. */
+  providerPlanId: string | null;
   planName: string | null;
   iccid: string;
   simId: string | null;
@@ -95,7 +136,10 @@ export type SkipReason =
   | "user.bad-password"
   | "esim.not-active"
   | "esim.no-iccid"
-  | "esim.no-plan";
+  | "esim.no-provider"
+  | "number.no-iccid"
+  | "number.no-msisdn"
+  | "number.no-lpa";
 
 const BCRYPT = /^\$2[aby]\$\d{2}\$[./A-Za-z0-9]{53}$/;
 const DECIMAL = /^(?:0|[1-9]\d*)(?:\.\d+)?$/;
@@ -189,7 +233,7 @@ export function migrateEsim(row: LegacyEsimRow, now = new Date()): MigratedEsim 
   if (!iccid) return "esim.no-iccid";
   const providerCode = text(row.provider_slug)?.toLowerCase();
   const providerPlanId = text(row.provider_plan_id);
-  if (!providerCode || !providerPlanId) return "esim.no-plan";
+  if (!providerCode) return "esim.no-provider";
   const activationCode = text(row.qr_code);
   const profileStatus = text(row.profile_status)?.toLowerCase() ?? null;
   return {
@@ -207,6 +251,50 @@ export function migrateEsim(row: LegacyEsimRow, now = new Date()): MigratedEsim 
     activationDeadline: validDate(row.activation_deadline),
     profileStatus: profileStatus && PROFILE_STATUSES.has(profileStatus) ? (profileStatus as MigratedEsim["profileStatus"]) : null,
     remark: text(row.remark),
+    createdAt: validDate(row.created_at) ?? now,
+  };
+}
+
+const pin = (value: unknown) => {
+  const code = text(value);
+  return code && /^\d{4,10}$/.test(code) ? code : null;
+};
+
+/** Every number in the old stock: available ones stay for sale, sold ones go to their buyer. */
+export function migrateNumber(row: LegacyNumberRow, now = new Date()): MigratedNumber | SkipReason {
+  const iccid = (text(row.iccid) ?? "").replace(/[^0-9Ff]/g, "").toUpperCase();
+  if (!/^\d{18,22}F?$/.test(iccid)) return "number.no-iccid";
+  const dial = digits(text(row.dial_country_code));
+  let msisdn = digits(text(row.msisdn)).replace(/^00/, "");
+  if (dial && !(msisdn.startsWith(dial) && msisdn.length - dial.length >= 6)) msisdn = `${dial}${msisdn.replace(/^0+/, "")}`;
+  if (!/^\d{5,17}$/.test(msisdn)) return "number.no-msisdn";
+  const raw = text(row.lpa) ?? "";
+  const body = raw.replace(/^LPA:1\$/i, "");
+  if (!/^[A-Za-z0-9.-]+\$[A-Za-z0-9._-]+(\$.*)?$/.test(body)) return "number.no-lpa";
+  const minor = (value: unknown) => {
+    const amount = text(value);
+    try {
+      return amount ? decimalToMinor(amount) : 0;
+    } catch {
+      return 0;
+    }
+  };
+  const sold = Number(row.status) === 1;
+  return {
+    legacyId: Number(row.id),
+    iccid,
+    msisdn,
+    dialCode: dial,
+    lpa: `LPA:1$${body}`,
+    pin1: pin(row.pin1),
+    puk1: pin(row.puk1),
+    pin2: pin(row.pin2),
+    puk2: pin(row.puk2),
+    priceMinor: minor(row.price),
+    premiumMinor: minor(row.premium_price),
+    sold,
+    userLegacyId: sold && Number(row.user_id) > 0 ? Number(row.user_id) : null,
+    soldAt: sold ? (validDate(row.sold_at) ?? validDate(row.created_at) ?? now) : null,
     createdAt: validDate(row.created_at) ?? now,
   };
 }

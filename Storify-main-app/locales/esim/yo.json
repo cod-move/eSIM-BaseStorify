@@ -1373,7 +1373,7 @@
       "migSkipped": "A fi í sílẹ̀",
       "migConfirm": "Gbé àwọn olùrà, ìyókù owó, ìtọ́kasí àti eSIM tó ń ṣiṣẹ́ ti ilé-ìtajà àtijọ́ wọlé báyìí? A kò ní fi ímeèlì ránṣẹ́ sí àwọn olùrà. Ṣíṣe é lẹ́ẹ̀kansí lẹ́yìn náà máa fi àwọn tuntun nìkan kún un.",
       "migStarted": "Ó ti bẹ̀rẹ̀; ojú-ìwé yìí máa yí padà nígbà tí ó bá parí",
-      "migHint": "Ó ń mú àwọn olùrà (pẹ̀lú ọ̀rọ̀ aṣínà àtijọ́ wọn), ìyókù owó, ìtọ́kasí àti eSIM tó ń ṣiṣẹ́ wá láti ilé-ìtajà àtijọ́. A kì í gbé àwọn àṣẹ àtijọ́ wọlé. Kọ́kọ́ mú kátálọ́ọ̀gì olùpèsè kọ̀ọ̀kan ṣiṣẹ́pọ̀: eSIM tí pákẹ́ẹ̀jì rẹ̀ kò tíì sí níbí ni a máa fi sílẹ̀, ìgbéwọlé tó kàn sì máa mú un.",
+      "migHint": "Brings shoppers (with their old passwords), balances, referrals, active data eSIMs and the whole number-card stock over from the old store. Expired data eSIMs and old orders are not imported. Sync every supplier's catalogue first; an eSIM whose plan the supplier no longer lists is put on a disabled stand-in plan.",
       "migSource": "Ibi ìpamọ́ dátà àtijọ́",
       "migNoSource": "A kò ṣètò rẹ̀ — ṣètò LEGACY_MYSQL_HOST, LEGACY_MYSQL_DATABASE, LEGACY_MYSQL_USER àti LEGACY_MYSQL_PASSWORD nínú .env kí o sì tún bẹ̀rẹ̀.",
       "migImported": "Ohun tí a ti gbé wọlé títí di báyìí",
@@ -1595,7 +1595,8 @@
       "qrAnswer": "Answer",
       "qrNote": "Note for the customer (needed to decline)",
       "qrSave": "Save the new code",
-      "qrDecline": "Decline and refund"
+      "qrDecline": "Decline and refund",
+      "payAirwallexHint": "In the Airwallex web app (Developer → Webhooks), add this notification URL for payment_intent.succeeded and payment_intent.cancelled, and paste its secret into webhookSecret. clientId and apiKey come from Developer → API keys. env: prod, or demo for the sandbox. methods is optional, e.g. card,applepay,googlepay,alipaycn,wechatpay."
     },
     "sidebar": {
       "esim": "eSIM",

@@ -106,7 +106,7 @@ export function EsimMigrationAdmin({ status, canManage }: { status: MigrationSta
         <p className="text-sm text-muted-foreground">
           {t(
             "admin.esim.migHint",
-            "Brings shoppers (with their old passwords), balances, referrals and active eSIMs over from the old store. Old orders are not imported. Sync every supplier's catalogue first: an eSIM whose plan is not here yet is left out, and the next import picks it up.",
+            "Brings shoppers (with their old passwords), balances, referrals, active data eSIMs and the whole number-card stock over from the old store. Expired data eSIMs and old orders are not imported. Sync every supplier's catalogue first; an eSIM whose plan the supplier no longer lists is put on a disabled stand-in plan.",
           )}
         </p>
       </div>

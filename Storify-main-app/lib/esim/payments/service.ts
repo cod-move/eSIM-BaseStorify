@@ -47,6 +47,7 @@ export function methodCredentials(definition: PaymentMethodDefinition, method: I
 /** Every key the plugin needs before it can take a payment (optional ones aside). */
 const REQUIRED: Record<string, readonly string[]> = {
   stripe: ["secretKey", "webhookSecret"],
+  airwallex: ["clientId", "apiKey", "webhookSecret"],
   bepusdt: ["apiUrl", "apiToken"],
   redeepay: ["apiBaseUrl", "merchantNo", "tradeKey", "domain", "pcRoute", "h5Route"],
   fake: ["secret"],

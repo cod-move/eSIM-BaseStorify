@@ -457,14 +457,25 @@ export function mapOrderUsage(order: JsonObject, iccid?: string | null, now = ne
  * started and not ended is in use (or used up); all ended is expired; none
  * started yet is installed or not by `dpStatus`. Usage adds up the packages
  * still running (a renewal is a package of its own), else the latest one.
+ *
+ * A package's `status` (RoamWifi): 0 active, 1 cancelled, -1 unpaid,
+ * 2 completed, 3 unsubscription processing. Cancelled, unpaid and
+ * unsubscribing packages are not counted; a completed one has ended whatever
+ * its end date says. With only uncounted packages the eSIM is cancelled.
  */
+export const ROAMWIFI_PACKAGE_STATUS = { active: 0, cancelled: 1, unpaid: -1, completed: 2, unsubscribing: 3 } as const;
+
 export function mapEsimDetail(data: JsonObject, now = new Date()): ProviderUsage {
   const info = obj(data.esimInfo);
-  const packages = objArray(data.esimPackets).flatMap((packet) => objArray(packet.packageList));
+  const all = objArray(data.esimPackets).flatMap((packet) => objArray(packet.packageList));
+  const statusOf = (pkg: JsonObject) => (pkg.status === undefined || pkg.status === null || str(pkg.status) === "" ? null : Number(pkg.status));
+  const dropped = new Set<number>([ROAMWIFI_PACKAGE_STATUS.cancelled, ROAMWIFI_PACKAGE_STATUS.unpaid, ROAMWIFI_PACKAGE_STATUS.unsubscribing]);
+  const packages = all.filter((pkg) => !dropped.has(statusOf(pkg) ?? NaN));
+  const completed = (pkg: JsonObject) => statusOf(pkg) === ROAMWIFI_PACKAGE_STATUS.completed;
   const ends = (pkg: JsonObject) => date(pkg.endDate);
   const begins = (pkg: JsonObject) => date(pkg.beginDate);
-  const running = packages.filter((pkg) => begins(pkg) && (!ends(pkg) || new Date(ends(pkg)!).getTime() > now.getTime()));
-  const unstarted = packages.filter((pkg) => !begins(pkg));
+  const running = packages.filter((pkg) => !completed(pkg) && begins(pkg) && (!ends(pkg) || new Date(ends(pkg)!).getTime() > now.getTime()));
+  const unstarted = packages.filter((pkg) => !completed(pkg) && !begins(pkg));
   const latest = [...packages].sort((a, b) => (begins(b) ?? "").localeCompare(begins(a) ?? ""))[0];
   const counted = running.length ? running : unstarted.length ? unstarted : latest ? [latest] : [];
   const totalBytes = counted.reduce((sum, pkg) => sum + (bytes(pkg.flows, str(pkg.unit) || "GB") ?? 0), 0);
@@ -477,6 +488,7 @@ export function mapEsimDetail(data: JsonObject, now = new Date()): ProviderUsage
   if (running.length) lifecycleStatus = totalBytes > 0 && remainingBytes === 0 ? "depleted" : "in_use";
   else if (unstarted.length) lifecycleStatus = onPhone ? "installed" : "not_installed";
   else if (packages.length) lifecycleStatus = "expired";
+  else if (all.length) lifecycleStatus = "cancelled";
   else lifecycleStatus = null;
   return { totalBytes, usedBytes, remainingBytes, lifecycleStatus, expiresAt, syncedAt: now.toISOString(), stale: false, raw: data };
 }

@@ -1373,7 +1373,7 @@
       "migSkipped": "Ahapụrụ ya",
       "migConfirm": "Bubata ugbu a ndị zụrụ, nguzozi, ntụaka na eSIM na-arụ ọrụ nke ụlọ ahịa ochie? A gaghị eziga ndị zụrụ email. Ịmeghachi ya ma e mesịa na-agbakwunye naanị ihe ọhụrụ.",
       "migStarted": "Amalitela; ibe a ga-emelite mgbe o mechara",
-      "migHint": "Ọ na-ebute ndị zụrụ (ya na okwuntughe ochie ha), nguzozi, ntụaka na eSIM na-arụ ọrụ site n'ụlọ ahịa ochie. A naghị ebubata ọda ochie. Buru ụzọ mekọrịta katalọgụ onye na-eweta ọ bụla: a na-ahapụ eSIM nke ngwugwu ya na-erubeghị ebe a, mbubata ọzọ ga-ewere ya.",
+      "migHint": "Brings shoppers (with their old passwords), balances, referrals, active data eSIMs and the whole number-card stock over from the old store. Expired data eSIMs and old orders are not imported. Sync every supplier's catalogue first; an eSIM whose plan the supplier no longer lists is put on a disabled stand-in plan.",
       "migSource": "Ọdụ data ochie",
       "migNoSource": "Ahazibeghị ya — dobe LEGACY_MYSQL_HOST, LEGACY_MYSQL_DATABASE, LEGACY_MYSQL_USER na LEGACY_MYSQL_PASSWORD na .env wee malitegharịa.",
       "migImported": "Ihe ebubatara ruo ugbu a",
@@ -1595,7 +1595,8 @@
       "qrAnswer": "Answer",
       "qrNote": "Note for the customer (needed to decline)",
       "qrSave": "Save the new code",
-      "qrDecline": "Decline and refund"
+      "qrDecline": "Decline and refund",
+      "payAirwallexHint": "In the Airwallex web app (Developer → Webhooks), add this notification URL for payment_intent.succeeded and payment_intent.cancelled, and paste its secret into webhookSecret. clientId and apiKey come from Developer → API keys. env: prod, or demo for the sandbox. methods is optional, e.g. card,applepay,googlepay,alipaycn,wechatpay."
     },
     "sidebar": {
       "esim": "eSIM",

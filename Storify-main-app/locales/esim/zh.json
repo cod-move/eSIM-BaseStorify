@@ -1373,7 +1373,7 @@
       "migSkipped": "跳过",
       "migConfirm": "现在导入旧站的顾客、余额、推荐关系和在用 eSIM 吗？不会给顾客发邮件。以后再次导入只会补充新增的数据。",
       "migStarted": "已开始；完成后本页会自动更新",
-      "migHint": "把旧站的顾客（保留原密码）、余额、推荐关系和在用 eSIM 迁移过来，历史订单不迁移。请先同步各供应商的套餐库：套餐在这里还没有的 eSIM 会被跳过，下次导入时会补上。",
+      "migHint": "从旧站迁移用户（保留原密码）、余额、推荐关系、在用的流量 eSIM，以及全部号码卡库存。已过期的流量 eSIM 和历史订单不迁移。请先同步各供应商的套餐库；供应商已下架的套餐会生成一个停售的占位套餐，eSIM 照常迁移。",
       "migSource": "旧数据库",
       "migNoSource": "未配置——请在 .env 设置 LEGACY_MYSQL_HOST、LEGACY_MYSQL_DATABASE、LEGACY_MYSQL_USER 和 LEGACY_MYSQL_PASSWORD 后重启。",
       "migImported": "已导入",
@@ -1595,7 +1595,8 @@
       "qrAnswer": "处理",
       "qrNote": "给客户的说明（拒绝时必填）",
       "qrSave": "保存新激活码",
-      "qrDecline": "拒绝并退款"
+      "qrDecline": "拒绝并退款",
+      "payAirwallexHint": "在 Airwallex 后台（开发者 → Webhooks）把上面的回调地址添加为通知地址，订阅 payment_intent.succeeded 和 payment_intent.cancelled，再把它的密钥填入 webhookSecret。clientId 和 apiKey 在 开发者 → API 密钥 中获取。env 填 prod，沙盒测试填 demo。methods 可不填，例如 card,applepay,googlepay,alipaycn,wechatpay。"
     },
     "sidebar": {
       "esim": "eSIM",

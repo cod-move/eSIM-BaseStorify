@@ -1373,7 +1373,7 @@
       "migSkipped": "Omitido",
       "migConfirm": "¿Importar ahora los clientes, saldos, recomendaciones y eSIM activas de la tienda anterior? No se envían correos a los clientes. Volver a ejecutarlo más tarde solo añade lo nuevo.",
       "migStarted": "Iniciado; esta página se actualiza al terminar",
-      "migHint": "Trae de la tienda anterior los clientes (con sus contraseñas antiguas), saldos, recomendaciones y eSIM activas. Los pedidos antiguos no se importan. Sincroniza antes el catálogo de todos los proveedores: una eSIM cuyo plan aún no esté aquí se omite y la próxima importación la recoge.",
+      "migHint": "Brings shoppers (with their old passwords), balances, referrals, active data eSIMs and the whole number-card stock over from the old store. Expired data eSIMs and old orders are not imported. Sync every supplier's catalogue first; an eSIM whose plan the supplier no longer lists is put on a disabled stand-in plan.",
       "migSource": "Base de datos anterior",
       "migNoSource": "Sin configurar: define LEGACY_MYSQL_HOST, LEGACY_MYSQL_DATABASE, LEGACY_MYSQL_USER y LEGACY_MYSQL_PASSWORD en .env y reinicia.",
       "migImported": "Importado hasta ahora",
@@ -1595,7 +1595,8 @@
       "qrAnswer": "Answer",
       "qrNote": "Note for the customer (needed to decline)",
       "qrSave": "Save the new code",
-      "qrDecline": "Decline and refund"
+      "qrDecline": "Decline and refund",
+      "payAirwallexHint": "In the Airwallex web app (Developer → Webhooks), add this notification URL for payment_intent.succeeded and payment_intent.cancelled, and paste its secret into webhookSecret. clientId and apiKey come from Developer → API keys. env: prod, or demo for the sandbox. methods is optional, e.g. card,applepay,googlepay,alipaycn,wechatpay."
     },
     "sidebar": {
       "esim": "eSIM",

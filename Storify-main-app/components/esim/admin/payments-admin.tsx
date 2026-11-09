@@ -120,6 +120,14 @@ export function EsimGatewayCard({ method, canManage, onChanged }: { method: Admi
             )}
           </p>
         ) : null}
+        {method.code === "airwallex" ? (
+          <p className="text-xs text-muted-foreground">
+            {t(
+              "admin.esim.payAirwallexHint",
+              "In the Airwallex web app (Developer → Webhooks), add this notification URL for payment_intent.succeeded and payment_intent.cancelled, and paste its secret into webhookSecret. clientId and apiKey come from Developer → API keys. env: prod, or demo for the sandbox. methods is optional, e.g. card,applepay,googlepay,alipaycn,wechatpay.",
+            )}
+          </p>
+        ) : null}
         {canManage ? (
           <Button onClick={save} disabled={busy}>
             {busy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}

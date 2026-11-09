@@ -3,13 +3,16 @@ import "server-only";
 import { connectDB, mongoose } from "@/lib/db";
 import { Order, User } from "@/models";
 import { EsimLegacyLink, type LegacyLinkKind } from "@/models/esim-legacy.model";
+import { EsimNumber } from "@/models/esim-number.model";
 import { EsimPlan } from "@/models/esim-plan.model";
+import { EsimProvider } from "@/models/esim-provider.model";
 import { EsimProfile } from "@/models/esim-profile.model";
 import { EsimReferral } from "@/models/esim-referral.model";
 import { LEDGER_ACCOUNT, LEDGER_BOOK } from "@/lib/finance/accounts";
 import { postLedgerEntries, postingKey } from "@/lib/finance/ledger";
-import { migrateEsim, migrateUser, type MigratedEsim, type MigratedUser, type SkipReason } from "./legacy-rows";
+import { migrateEsim, migrateNumber, migrateUser, type MigratedEsim, type MigratedUser, type SkipReason } from "./legacy-rows";
 import type { LegacySnapshot } from "./legacy-source";
+import { phoneNumber } from "@/lib/esim/numbers/import";
 
 /**
  * Writes the old store's users, balances, referrals and active eSIMs here
@@ -29,9 +32,13 @@ import type { LegacySnapshot } from "./legacy-source";
  *  - referral: the old "referred by", where the shopper has none here yet.
  *  - esim: an EsimProfile on the shopper's import order (one per shopper,
  *    zero value, paid and delivered, posting nothing), on the plan of the
- *    same supplier and supplier plan id. No such plan here: left out and
- *    counted, so the supplier's catalogue is synced first and the import run
- *    again.
+ *    same supplier and supplier plan id. A plan the supplier no longer lists
+ *    (or an order line that lost its plan) gets a stand-in plan, disabled and
+ *    unavailable, named after the old plan — so an eSIM still in use is never
+ *    left behind. Only a supplier not set up here leaves it out.
+ *  - number: every number card in the old stock (`inventory_esims`).
+ *    Unsold ones stay for sale; sold ones belong to their buyer, or are
+ *    retired when the buyer was not imported.
  */
 
 export interface ImportOptions {
@@ -251,18 +258,39 @@ export async function runLegacyImport(snapshot: LegacySnapshot, options: ImportO
     }
     pending.push(esim);
   }
-  const plans = new Map(
-    (
-      await EsimPlan.find({ $or: [...new Set(pending.map((esim) => `${esim.providerCode} ${esim.providerPlanId}`))].map((key) => ({ providerCode: key.split(" ")[0], providerPlanId: key.slice(key.indexOf(" ") + 1) })) })
-        .select("_id providerCode providerPlanId name")
-        .lean<Array<{ _id: Id; providerCode: string; providerPlanId: string; name?: string }>>()
-    ).map((plan) => [`${plan.providerCode} ${plan.providerPlanId}`, plan]),
+  const planKey = (esim: MigratedEsim) => `${esim.providerCode} ${esim.providerPlanId ?? LEGACY_UNKNOWN_PLAN}`;
+  const wanted = [...new Set(pending.map(planKey))];
+  type PlanRow = { _id: Id; providerCode: string; providerPlanId: string; name?: string };
+  const plans = new Map<string, PlanRow>(
+    wanted.length
+      ? (
+          await EsimPlan.find({ $or: wanted.map((key) => ({ providerCode: key.split(" ")[0], providerPlanId: key.slice(key.indexOf(" ") + 1) })) })
+            .select("_id providerCode providerPlanId name")
+            .lean<PlanRow[]>()
+        ).map((plan) => [`${plan.providerCode} ${plan.providerPlanId}`, plan])
+      : [],
+  );
+  const providers = new Map(
+    (await EsimProvider.find({ code: { $in: [...new Set(pending.map((esim) => esim.providerCode))] } }).select("_id code").lean<Array<{ _id: Id; code: string }>>()).map((row) => [row.code, row._id]),
   );
   const orderLinks = await linksOf("order");
   for (const esim of pending) {
-    const plan = plans.get(`${esim.providerCode} ${esim.providerPlanId}`);
+    let plan = plans.get(planKey(esim));
     if (!plan) {
-      skipped.add(`esim.no-plan:${esim.providerCode}`);
+      const provider = providers.get(esim.providerCode);
+      if (!provider) {
+        skipped.add(`esim.no-provider:${esim.providerCode}`);
+        continue;
+      }
+      report.add(`plans.stand-in:${esim.providerCode}`);
+      if (options.apply) {
+        plan = await standInPlan(provider, esim, now);
+        plans.set(planKey(esim), plan);
+      }
+    }
+    if (!plan) {
+      // A check: the stand-in plan is not written, the eSIM counted as an import would.
+      report.add((await EsimProfile.exists({ iccid: esim.iccid })) ? "esims.matched" : "esims.new");
       continue;
     }
     const existing = await EsimProfile.findOne({ iccid: esim.iccid }).select("_id").lean();
@@ -362,7 +390,89 @@ export async function runLegacyImport(snapshot: LegacySnapshot, options: ImportO
     await link("esim", esim.legacyId, profile._id);
   }
 
+  // 5. Number cards: the whole old stock.
+  const numberLinks = await linksOf("number");
+  for (const row of snapshot.numbers ?? []) {
+    const number = migrateNumber(row, now);
+    if (isSkip(number)) {
+      skipped.add(number);
+      continue;
+    }
+    if (numberLinks.has(number.legacyId)) {
+      report.add("numbers.already");
+      continue;
+    }
+    const existing = await EsimNumber.findOne({ $or: [{ iccid: number.iccid }, { msisdn: number.msisdn }] }).select("_id").lean();
+    if (existing) {
+      report.add("numbers.matched");
+      if (options.apply) await link("number", number.legacyId, existing._id, true);
+      continue;
+    }
+    const customer = number.userLegacyId ? (userIds.get(number.userLegacyId) ?? null) : null;
+    // Sold to someone not imported (an unverified account): kept, but not for sale again.
+    const status = !number.sold ? "available" : customer ? "sold" : "retired";
+    report.add(`numbers.${status}`);
+    if (!options.apply) continue;
+    const parts = phoneNumber(number.msisdn, number.dialCode || undefined);
+    const created = await EsimNumber.create({
+      providerCode: "topconnect",
+      msisdn: parts?.msisdn ?? number.msisdn,
+      dialCode: parts?.dialCode ?? (number.dialCode || number.msisdn.slice(0, 3)),
+      nationalNumber: parts?.nationalNumber ?? number.msisdn.slice((number.dialCode || number.msisdn.slice(0, 3)).length),
+      country: parts?.country ?? null,
+      iccid: number.iccid,
+      install: { lpa: number.lpa, pin1: number.pin1, puk1: number.puk1, pin2: number.pin2, puk2: number.puk2 },
+      priceMinor: number.priceMinor,
+      premiumMinor: number.premiumMinor,
+      status,
+      customer,
+      soldAt: number.soldAt,
+      batch: "legacy",
+      note: status === "retired" ? "Sold in the old store to an account that was not carried over" : null,
+      legacyId: number.legacyId,
+    });
+    await link("number", number.legacyId, created._id);
+  }
+
   report.add("users.read", snapshot.users.length);
   report.add("esims.read", snapshot.esims.length);
+  report.add("numbers.read", snapshot.numbers?.length ?? 0);
   return { report: report.counts, skipped: skipped.counts };
+}
+
+/** What a stand-in plan is called when the old order line lost its plan. */
+const LEGACY_UNKNOWN_PLAN = "legacy-unknown";
+
+/**
+ * A plan for an eSIM whose plan the supplier no longer lists: disabled and
+ * unavailable, so it is never sold, and found again by the next run. A later
+ * catalogue sync that sees the plan again updates it in place.
+ */
+async function standInPlan(provider: Id, esim: MigratedEsim, now: Date) {
+  const providerPlanId = esim.providerPlanId ?? LEGACY_UNKNOWN_PLAN;
+  const name = esim.providerPlanId ? esim.planName || providerPlanId : "Old store plan";
+  const row = await EsimPlan.findOneAndUpdate(
+    { provider, providerPlanId },
+    {
+      $setOnInsert: {
+        provider,
+        providerCode: esim.providerCode,
+        providerPlanId,
+        name,
+        slug: `legacy-${esim.providerCode}-${providerPlanId}`.toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 120),
+        productSlug: "legacy-plans",
+        coverage: { scope: "global", countries: [], networks: [], breakoutIp: [] },
+        data: { megabytes: 0, label: "", type: "total" },
+        validityDays: 0,
+        duration: { configurable: false, defaultDays: 0, minDays: 0, maxDays: 0 },
+        cost: { currency: "USD", amountMinor: 0, billingUnit: "plan" },
+        available: false,
+        status: "disabled",
+        syncedAt: now,
+        contentHash: "legacy-stand-in",
+      },
+    },
+    { upsert: true, returnDocument: "after", projection: { _id: 1, providerCode: 1, providerPlanId: 1, name: 1 } },
+  ).lean<{ _id: Id; providerCode: string; providerPlanId: string; name?: string }>();
+  return row!;
 }

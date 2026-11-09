@@ -1373,7 +1373,7 @@
       "migSkipped": "An bari",
       "migConfirm": "Shigo da masu saye, ma'auni, gayyata da eSIM masu aiki na tsohon shago yanzu? Ba za a aika wa masu saye imel ba. Sake gudanarwa daga baya yana ƙara sababbi kawai.",
       "migStarted": "An fara; wannan shafi zai sabunta idan an gama",
-      "migHint": "Yana kawo masu saye (da tsoffin kalmomin sirrinsu), ma'auni, gayyata da eSIM masu aiki daga tsohon shago. Ba a shigo da tsoffin oda ba. Da farko daidaita kundin kowane mai samarwa: eSIM da fakitinta bai iso nan ba tukuna za a bar ta, kuma shigowa ta gaba za ta ɗauke ta.",
+      "migHint": "Brings shoppers (with their old passwords), balances, referrals, active data eSIMs and the whole number-card stock over from the old store. Expired data eSIMs and old orders are not imported. Sync every supplier's catalogue first; an eSIM whose plan the supplier no longer lists is put on a disabled stand-in plan.",
       "migSource": "Tsohon ma'ajin bayanai",
       "migNoSource": "Ba a saita ba — saita LEGACY_MYSQL_HOST, LEGACY_MYSQL_DATABASE, LEGACY_MYSQL_USER da LEGACY_MYSQL_PASSWORD a .env sannan ka sake kunnawa.",
       "migImported": "Abin da aka shigo da shi zuwa yanzu",
@@ -1595,7 +1595,8 @@
       "qrAnswer": "Answer",
       "qrNote": "Note for the customer (needed to decline)",
       "qrSave": "Save the new code",
-      "qrDecline": "Decline and refund"
+      "qrDecline": "Decline and refund",
+      "payAirwallexHint": "In the Airwallex web app (Developer → Webhooks), add this notification URL for payment_intent.succeeded and payment_intent.cancelled, and paste its secret into webhookSecret. clientId and apiKey come from Developer → API keys. env: prod, or demo for the sandbox. methods is optional, e.g. card,applepay,googlepay,alipaycn,wechatpay."
     },
     "sidebar": {
       "esim": "eSIM",
