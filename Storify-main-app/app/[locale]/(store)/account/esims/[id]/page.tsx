@@ -2,6 +2,7 @@ import QRCode from "qrcode";
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { ChevronLeft } from "lucide-react";
+import { PendingLinkButton } from "@/components/esim/pending-link-button";
 import { SupportLink } from "@/components/esim/support-link";
 import Link from "@/components/language/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,7 +14,6 @@ import { installLinks } from "@/lib/esim/fulfillment/install-links";
 import { EsimStatusBadge, UsageBar } from "@/components/esim/esim-status-badge";
 import { CancelEsimButton, CopyValue, RefreshUsageButton, RemarkEditor } from "@/components/esim/esim-actions";
 import { shopperCancelOffer } from "@/lib/esim/cancel/service";
-import { buttonVariants } from "@/components/ui/button";
 import { esimTopupStatus } from "@/lib/esim/topup/offers";
 import { REFUSAL_TEXT } from "@/lib/esim/topup/eligibility";
 import { TOPUP_STATUS_TEXT, listEsimTopups } from "@/lib/esim/topup/history";
@@ -169,9 +169,7 @@ export default async function AccountEsimPage({ params }: PageProps) {
           <CardHeader className="flex flex-row items-center justify-between gap-4 space-y-0">
             <CardTitle className="text-base">{tr("esim.topup.section", "Top up")}</CardTitle>
             {topup?.eligibility.ok ? (
-              <Link href={`/account/esims/${esim.id}/topup`} className={buttonVariants({ size: "sm" })}>
-                {tr("esim.topup.cta", "Add data")}
-              </Link>
+              <PendingLinkButton href={`/account/esims/${esim.id}/topup`}>{tr("esim.topup.cta", "Add data")}</PendingLinkButton>
             ) : null}
           </CardHeader>
           <CardContent className="space-y-3">

@@ -213,7 +213,10 @@
         "completed": "Ajoutée",
         "failed": "Ajout impossible",
         "refunded": "Remboursée"
-      }
+      },
+      "search": "Rechercher, p. ex. 5GB, 7 jours, Europe",
+      "searchLabel": "Rechercher une recharge",
+      "searchNone": "Aucune recharge ne correspond."
     },
     "wallet": {
       "title": "Solde",

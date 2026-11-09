@@ -213,7 +213,10 @@
         "completed": "A ti fi kún un",
         "failed": "Kò ṣeé ṣe láti fi kún un",
         "refunded": "A ti dá owó padà"
-      }
+      },
+      "search": "Search, e.g. 5GB, 7 days, Europe",
+      "searchLabel": "Search top-ups",
+      "searchNone": "No top-up matches your search."
     },
     "wallet": {
       "title": "Ìyókù owó",

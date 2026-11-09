@@ -213,7 +213,10 @@
         "completed": "An ƙara",
         "failed": "Ba a iya ƙarawa ba",
         "refunded": "An mayar da kuɗi"
-      }
+      },
+      "search": "Search, e.g. 5GB, 7 days, Europe",
+      "searchLabel": "Search top-ups",
+      "searchNone": "No top-up matches your search."
     },
     "wallet": {
       "title": "Ma'auni",

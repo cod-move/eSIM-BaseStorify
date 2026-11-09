@@ -213,7 +213,10 @@
         "completed": "Hinzugefügt",
         "failed": "Konnte nicht hinzugefügt werden",
         "refunded": "Erstattet"
-      }
+      },
+      "search": "Suchen, z. B. 5GB, 7 Tage, Europa",
+      "searchLabel": "Aufladungen suchen",
+      "searchNone": "Keine Aufladung passt zur Suche."
     },
     "wallet": {
       "title": "Guthaben",

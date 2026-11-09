@@ -213,7 +213,10 @@
         "completed": "追加済み",
         "failed": "追加できませんでした",
         "refunded": "返金済み"
-      }
+      },
+      "search": "検索（例：5GB、7日、ヨーロッパ）",
+      "searchLabel": "チャージを検索",
+      "searchNone": "検索に合うチャージはありません。"
     },
     "wallet": {
       "title": "残高",

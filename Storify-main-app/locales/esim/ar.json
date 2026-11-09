@@ -213,7 +213,10 @@
         "completed": "أُضيفت",
         "failed": "تعذّرت الإضافة",
         "refunded": "مستردّة"
-      }
+      },
+      "search": "Search, e.g. 5GB, 7 days, Europe",
+      "searchLabel": "Search top-ups",
+      "searchNone": "No top-up matches your search."
     },
     "wallet": {
       "title": "الرصيد",

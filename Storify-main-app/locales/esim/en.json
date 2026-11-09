@@ -213,7 +213,10 @@
         "completed": "Added",
         "failed": "Could not be added",
         "refunded": "Refunded"
-      }
+      },
+      "search": "Search, e.g. 5GB, 7 days, Europe",
+      "searchLabel": "Search top-ups",
+      "searchNone": "No top-up matches your search."
     },
     "wallet": {
       "title": "Balance",

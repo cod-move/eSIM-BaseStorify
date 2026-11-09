@@ -213,7 +213,10 @@
         "completed": "Agbakwunyela",
         "failed": "Enweghị ike ịgbakwunye ya",
         "refunded": "Eweghachila ego"
-      }
+      },
+      "search": "Search, e.g. 5GB, 7 days, Europe",
+      "searchLabel": "Search top-ups",
+      "searchNone": "No top-up matches your search."
     },
     "wallet": {
       "title": "Nguzozi",

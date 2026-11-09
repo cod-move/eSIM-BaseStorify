@@ -213,7 +213,10 @@
         "completed": "Yongeziwe",
         "failed": "Ayikwazanga ukongezwa",
         "refunded": "Ibuyiselwe imali"
-      }
+      },
+      "search": "Search, e.g. 5GB, 7 days, Europe",
+      "searchLabel": "Search top-ups",
+      "searchNone": "No top-up matches your search."
     },
     "wallet": {
       "title": "Ibhalansi",

@@ -213,7 +213,10 @@
         "completed": "已到賬",
         "failed": "充值失敗",
         "refunded": "已退款"
-      }
+      },
+      "search": "搜尋，例如 5GB、7天、歐洲",
+      "searchLabel": "搜尋儲值套餐",
+      "searchNone": "沒有符合搜尋的儲值套餐。"
     },
     "wallet": {
       "title": "餘額",

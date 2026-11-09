@@ -213,7 +213,10 @@
         "completed": "जोड़ा गया",
         "failed": "जोड़ा नहीं जा सका",
         "refunded": "रिफ़ंड हुआ"
-      }
+      },
+      "search": "Search, e.g. 5GB, 7 days, Europe",
+      "searchLabel": "Search top-ups",
+      "searchNone": "No top-up matches your search."
     },
     "wallet": {
       "title": "बैलेंस",

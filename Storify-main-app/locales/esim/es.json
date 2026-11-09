@@ -213,7 +213,10 @@
         "completed": "Añadida",
         "failed": "No se pudo añadir",
         "refunded": "Reembolsada"
-      }
+      },
+      "search": "Buscar, p. ej. 5GB, 7 días, Europa",
+      "searchLabel": "Buscar recargas",
+      "searchNone": "Ninguna recarga coincide."
     },
     "wallet": {
       "title": "Saldo",

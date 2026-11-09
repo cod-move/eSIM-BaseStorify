@@ -213,7 +213,10 @@
         "completed": "যোগ হয়েছে",
         "failed": "যোগ করা যায়নি",
         "refunded": "রিফান্ড হয়েছে"
-      }
+      },
+      "search": "Search, e.g. 5GB, 7 days, Europe",
+      "searchLabel": "Search top-ups",
+      "searchNone": "No top-up matches your search."
     },
     "wallet": {
       "title": "ব্যালেন্স",

@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { Loader2 } from "lucide-react";
+import { Loader2, Search } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/toast-notification";
 import { useCart } from "@/hooks/use-cart";
@@ -42,8 +43,17 @@ export function EsimTopupPicker({ esimId, offers }: { esimId: string; offers: To
   const [busy, setBusy] = useState(false);
   // A supplier like BNESIM offers top-ups for other regions too: many of them, so in pages.
   const [page, setPage] = useState(0);
-  const pages = Math.max(1, Math.ceil(offers.length / PAGE_SIZE));
-  const shown = offers.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
+  // Search by name, data ("5 GB", "500MB") or days ("7"), every word must match.
+  const [query, setQuery] = useState("");
+  const words = query.toLowerCase().replace(/(\d)\s*(gb|mb|days?|天)/g, "$1$2").split(/\s+/).filter(Boolean);
+  const matching = words.length
+    ? offers.filter((offer) => {
+        const text = `${offer.name} ${dataLabel(offer.megabytes).replace(" ", "")} ${offer.validityDays}days ${offer.validityDays}day ${offer.validityDays}天 ${offer.validityDays}`.toLowerCase();
+        return words.every((word) => text.includes(word));
+      })
+    : offers;
+  const pages = Math.max(1, Math.ceil(matching.length / PAGE_SIZE));
+  const shown = matching.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
 
   async function buy() {
     const offer = offers.find((entry) => entry.topupPlanId === selected);
@@ -82,6 +92,22 @@ export function EsimTopupPicker({ esimId, offers }: { esimId: string; offers: To
 
   return (
     <div className="space-y-4">
+      {offers.length > 4 ? (
+        <div className="relative">
+          <Search className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            className="ps-9"
+            value={query}
+            onChange={(event) => {
+              setQuery(event.target.value);
+              setPage(0);
+            }}
+            placeholder={t("esim.topup.search", "Search, e.g. 5GB, 7 days, Europe")}
+            aria-label={t("esim.topup.searchLabel", "Search top-ups")}
+          />
+        </div>
+      ) : null}
+      {words.length && !matching.length ? <p className="text-sm text-muted-foreground">{t("esim.topup.searchNone", "No top-up matches your search.")}</p> : null}
       <div role="radiogroup" aria-label={t("esim.topup.choose", "Choose a top-up")} className="grid gap-3 sm:grid-cols-2">
         {shown.map((offer) => {
           const active = offer.topupPlanId === selected;
