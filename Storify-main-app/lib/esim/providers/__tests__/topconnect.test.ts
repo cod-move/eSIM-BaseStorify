@@ -205,3 +205,79 @@ describe("TopConnect fake gateway", () => {
     await assert.rejects(fake.cardStatus({ msisdn: "37212340000" }), (error: unknown) => error instanceof ProviderError && error.code === "not_found");
   });
 });
+
+describe("TopConnect services and history", () => {
+  const fake = () => {
+    const state = newFakeTopConnectState();
+    return { state, tc: client(fakeTopConnectFetch(state)) };
+  };
+
+  it("switches data, texts and calls and reads them back", async () => {
+    const { tc } = fake();
+    for (const service of ["data", "sms", "voice"] as const) {
+      assert.equal(await tc.serviceStatus("37254515257", service), true);
+      assert.equal(await tc.setService("37254515257", service, false), false);
+      assert.equal(await tc.serviceStatus("37254515257", service), false);
+      assert.equal(await tc.setService("37254515257", service, true), true);
+    }
+  });
+
+  it("reads the manual's srvsms answer, whose <status> is closed by </service>", async () => {
+    const { fetch } = answering("<service><msisdn>372</msisdn><service>sms</service><status>off</service><result>Ok</result></service>");
+    assert.equal(await client(fetch).serviceStatus("37254515257", "sms"), false);
+    const failed = answering("<service><result>error</result><msg>Service unavailable</msg></service>");
+    await assert.rejects(client(failed.fetch).serviceStatus("37254515257", "sms"), /Service unavailable/);
+  });
+
+  it("turns voicemail off and lists its messages", async () => {
+    const { tc } = fake();
+    assert.deepEqual(await tc.voicemail("37254515257"), { active: true, email: null });
+    assert.equal((await tc.setVoicemail("37254515257", false)).active, false);
+    const messages = await tc.voicemailMessages("37254515257", "2026-10-01", "2026-10-31");
+    assert.equal(messages.length, 1);
+    assert.equal(messages[0].from, "4915112345678");
+    assert.equal(messages[0].at, "2026-10-20T09:15:00Z");
+  });
+
+  it("forwards calls, replaces the forward, and stops it", async () => {
+    const { tc, state } = fake();
+    assert.equal(await tc.redirect("37254515257"), null);
+    assert.equal(await tc.setRedirect("37254515257", "+44 7700 900123"), "447700900123");
+    assert.equal(await tc.setRedirect("37254515257", "33612345678"), "33612345678");
+    assert.equal(await tc.redirect("37254515257"), "33612345678");
+    assert.equal(await tc.setRedirect("37254515257", null), null);
+    assert.equal(state.cards.get("37254515257")?.redirect, null);
+    // Setting what is already set asks nothing more.
+    const before = state.calls.get("redirect");
+    assert.equal(await tc.setRedirect("37254515257", null), null);
+    assert.equal(state.calls.get("redirect"), (before ?? 0) + 1);
+  });
+
+  it("lists calls, texts and data sessions, newest first", async () => {
+    const { tc } = fake();
+    const calls = await tc.callRecords("37254515257", "2026-10-01", "2026-10-31");
+    assert.deepEqual(calls.map((entry) => [entry.kind, entry.direction]), [["sms", "out"], ["call", "out"], ["call", "in"]]);
+    assert.equal(calls[1].seconds, 125);
+    assert.equal(calls[1].costMinor, 42);
+    assert.equal(calls[2].destination, "Germany Mobile");
+    const data = await tc.dataRecords("37254515257", "2026-10-01", "2026-10-31");
+    assert.deepEqual(data.map((entry) => entry.bytes), [20600, 36177280]);
+    assert.equal(data[1].operator, "China Unicom");
+  });
+
+  it("lists the card's recharges without the dealer's side", async () => {
+    const { tc } = fake();
+    await tc.transfer({ msisdn: "37254515257", amountMinor: 500, currency: "EUR", orderId: 1 });
+    const recharges = await tc.recharges("37254515257", "2026-01-01", "2030-01-01");
+    assert.equal(recharges.length, 1);
+    assert.deepEqual([recharges[0].kind, recharges[0].amountMinor, recharges[0].currency], ["transfer", 500, "EUR"]);
+    // The manual's report: vouchers, transfers, automatic and web top-ups, with spaces in the section names.
+    const report = answering(
+      "<recharges><pin recharge><records><record><used>2012-04-28 07:36:35</used><pin>3668828254773228</pin><amount>5.00</amount><currency>USD</currency></record></records></pin recharge>" +
+        "<web recharge><records><record><added>2014-03-07 10:28:48</added><type>web</type><amount>+68.15 USD</amount></record></records></web recharge><recharge_amount>73.15 USD</recharge_amount></recharges>",
+    );
+    const parsed = await client(report.fetch).recharges("37254515257", "2012-01-01", "2015-01-01");
+    assert.deepEqual(parsed.map((entry) => [entry.kind, entry.amountMinor, entry.currency]), [["web", 6815, "USD"], ["voucher", 500, "USD"]]);
+    assert.equal(JSON.stringify(parsed).includes("3668828254773228"), false);
+  });
+});

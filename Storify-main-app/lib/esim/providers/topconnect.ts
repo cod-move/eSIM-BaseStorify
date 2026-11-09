@@ -100,6 +100,59 @@ export interface TopConnectTransferRecord {
   amountMinor: number | null;
 }
 
+/** A service on the card that can be switched on and off. */
+export type TopConnectService = "data" | "sms" | "voice";
+
+export interface TopConnectVoicemail {
+  active: boolean;
+  email: string | null;
+}
+
+export interface TopConnectVoicemailMessage {
+  at: string | null;
+  /** Who called; null when hidden. */
+  from: string | null;
+  /** The gateway's download link for the recording. */
+  link: string;
+}
+
+/** A call or text message from `gccdr`. */
+export interface TopConnectCallRecord {
+  kind: "call" | "sms";
+  at: string | null;
+  /** Calls: "in" or "out"; texts: the number's own on the sending side is "out". */
+  direction: "in" | "out" | null;
+  from: string | null;
+  to: string | null;
+  /** Billed seconds (calls). */
+  seconds: number | null;
+  /** "sms", "ussd" (texts). */
+  smsType: string | null;
+  /** Where the call went or came from, as the gateway names it ("Russia Mobile"). */
+  destination: string | null;
+  costMinor: number | null;
+  currency: string | null;
+}
+
+/** A data session from `gprscdr`. */
+export interface TopConnectDataRecord {
+  at: string | null;
+  endedAt: string | null;
+  country: string | null;
+  operator: string | null;
+  bytes: number | null;
+  costMinor: number | null;
+  currency: string | null;
+}
+
+/** Money put on the card, from `rechargereport`; dealer-side rows are left out. */
+export interface TopConnectRecharge {
+  at: string | null;
+  kind: "voucher" | "transfer" | "automatic" | "web";
+  amountMinor: number | null;
+  currency: string | null;
+}
+
 /** `sbalance` refused the order id; `expected` is the one it wants. */
 export class TopConnectOrderIdError extends ProviderError {
   constructor(readonly expected: number, message: string) {
@@ -267,6 +320,175 @@ export class TopConnectClient {
         amountMinor: money(tag(node, "amount")),
       };
     });
+  }
+
+  // ── services on the card (manual 3.10, 3.13, 4.2, 4.5, 4.6) ─────────────
+
+  /** Whether data, texts or calls are on (`gprsauth block=c`, `srvsms`/`srvvoice active=status`). */
+  async serviceStatus(msisdn: string, service: TopConnectService): Promise<boolean> {
+    const onum = digitsOnly(msisdn, "msisdn");
+    if (service === "data") return gprsState(await this.call("gprsauth", { onum, block: "c" }));
+    return switchState(await this.call(service === "sms" ? "srvsms" : "srvvoice", { onum, active: "status" }));
+  }
+
+  /** Switches data, texts or calls on or off; answers the state the gateway reports. */
+  async setService(msisdn: string, service: TopConnectService, on: boolean): Promise<boolean> {
+    const onum = digitsOnly(msisdn, "msisdn");
+    if (service === "data") {
+      const xml = await this.call("gprsauth", { onum, block: on ? "f" : "t" });
+      // The answer carries "OK", and usually the new state.
+      if (/<GPRS>/i.test(xml)) return gprsState(xml);
+      if (!/^ok$/i.test(tag(xml, "text") ?? "")) throw new ProviderError("invalid_response", "TopConnect did not confirm the data setting", 200, "topconnect");
+      return on;
+    }
+    const state = switchState(await this.call(service === "sms" ? "srvsms" : "srvvoice", { onum, active: on ? "on" : "off" }));
+    if (state !== on) throw new ProviderError("invalid_response", "TopConnect did not confirm the change", 200, "topconnect");
+    return state;
+  }
+
+  async voicemail(msisdn: string): Promise<TopConnectVoicemail> {
+    return parseVoicemail(await this.call("svmail", { onum: digitsOnly(msisdn, "msisdn") }));
+  }
+
+  async setVoicemail(msisdn: string, on: boolean): Promise<TopConnectVoicemail> {
+    const result = parseVoicemail(await this.call("svmail", { onum: digitsOnly(msisdn, "msisdn"), activate: on ? "yes" : "no" }));
+    if (result.active !== on) throw new ProviderError("invalid_response", "TopConnect did not confirm the voicemail setting", 200, "topconnect");
+    return result;
+  }
+
+  /** Recorded messages between two days (YYYY-MM-DD), newest first. */
+  async voicemailMessages(msisdn: string, from: string, to: string): Promise<TopConnectVoicemailMessage[]> {
+    const xml = await this.call("svmail", { onum: digitsOnly(msisdn, "msisdn"), mode: "gmessages", started: day(from), finished: day(to) });
+    return nodes(xml, "message")
+      .flatMap((node) => {
+        const link = tag(node, "link");
+        return link ? [{ at: timestamp(tag(node, "messagedate")), from: tag(node, "anum"), link }] : [];
+      })
+      .sort(newestFirst);
+  }
+
+  /** The number calls are forwarded to; null when they are not. */
+  async redirect(msisdn: string): Promise<string | null> {
+    try {
+      return tag(await this.call("redirect", { onum: digitsOnly(msisdn, "msisdn") }), "redirect");
+    } catch (error) {
+      if (error instanceof ProviderError && /not activated|not present/i.test(error.message)) return null;
+      throw error;
+    }
+  }
+
+  /**
+   * Forwards every call to `target` (digits with the country code), or stops
+   * forwarding with null. The gateway will not replace a forward in place, so
+   * a different one is removed first.
+   */
+  async setRedirect(msisdn: string, target: string | null): Promise<string | null> {
+    const onum = digitsOnly(msisdn, "msisdn");
+    const wanted = target === null ? null : digitsOnly(target, "redirect");
+    const current = await this.redirect(onum);
+    if (current === wanted) return current;
+    if (current !== null) {
+      try {
+        await this.call("redirect", { onum, redirect: "" });
+      } catch (error) {
+        if (!(error instanceof ProviderError && /not present/i.test(error.message))) throw error;
+      }
+    }
+    if (wanted === null) return null;
+    const set = tag(await this.call("redirect", { onum, redirect: wanted }), "redirect");
+    if (set !== wanted) throw new ProviderError("invalid_response", "TopConnect did not confirm the forwarding number", 200, "topconnect");
+    return set;
+  }
+
+  // ── history (manual 3.1, 3.18, 4.2) ──────────────────────────────────────
+
+  /** Calls and text messages between two days (YYYY-MM-DD), newest first. */
+  async callRecords(msisdn: string, from: string, to: string): Promise<TopConnectCallRecord[]> {
+    const onum = digitsOnly(msisdn, "msisdn");
+    const xml = await this.call("gccdr", { onum, started: day(from), finished: day(to) });
+    const calls = nodes(xml, "call").map((node): TopConnectCallRecord => {
+      const direction = (tag(node, "cdir") ?? "").toUpperCase();
+      return {
+        kind: "call",
+        at: timestamp(tag(node, "calldate")),
+        direction: direction === "I" ? "in" : direction === "O" ? "out" : null,
+        from: tag(node, "anum"),
+        to: tag(node, "bnum"),
+        seconds: integer(tag(node, "billsec")) ?? integer(tag(node, "duration")),
+        smsType: null,
+        destination: decodeUrl(direction === "I" ? tag(node, "adest") : tag(node, "bdest")),
+        costMinor: money(tag(node, "ccost")),
+        currency: tag(node, "curr"),
+      };
+    });
+    const texts = nodes(xml, "sms").map((node): TopConnectCallRecord => {
+      const sender = tag(node, "anum");
+      return {
+        kind: "sms",
+        at: timestamp(tag(node, "calldate")),
+        direction: sender === null ? null : sender.replace(/\D/g, "") === onum ? "out" : "in",
+        from: sender,
+        to: tag(node, "bnum"),
+        seconds: null,
+        smsType: tag(node, "smst"),
+        destination: null,
+        costMinor: money(tag(node, "ccost")),
+        currency: tag(node, "curr"),
+      };
+    });
+    return [...calls, ...texts].sort(newestFirst);
+  }
+
+  /** Data sessions between two days (YYYY-MM-DD), newest first. */
+  async dataRecords(msisdn: string, from: string, to: string): Promise<TopConnectDataRecord[]> {
+    const xml = await this.call("gprscdr", { onum: digitsOnly(msisdn, "msisdn"), started: day(from), finished: day(to), extended: "yes" });
+    return nodes(xml, "call")
+      .map((node): TopConnectDataRecord => {
+        const counted = integer(tag(node, "usage_b"));
+        const inBytes = integer(tag(node, "inb"));
+        const outBytes = integer(tag(node, "outb"));
+        return {
+          at: timestamp(tag(node, "calldate")),
+          endedAt: timestamp(tag(node, "end_session")),
+          country: tag(node, "country"),
+          operator: tag(node, "operator"),
+          bytes: counted ?? (inBytes === null && outBytes === null ? null : (inBytes ?? 0) + (outBytes ?? 0)),
+          costMinor: money(tag(node, "cost")),
+          currency: tag(node, "curr"),
+        };
+      })
+      .sort(newestFirst);
+  }
+
+  /**
+   * Money put on the card between two days (YYYY-MM-DD), newest first:
+   * vouchers, transfers (the card's side only: the dealer's side and its
+   * login, address and voucher PINs never leave here), automatic and web
+   * top-ups.
+   */
+  async recharges(msisdn: string, from: string, to: string): Promise<TopConnectRecharge[]> {
+    const xml = await this.call("rechargereport", { onum: digitsOnly(msisdn, "msisdn"), started: day(from), finished: day(to) });
+    const sections: Array<[string, TopConnectRecharge["kind"]]> = [
+      ["pin recharge", "voucher"],
+      ["money transfer", "transfer"],
+      ["automatic transfer", "automatic"],
+      ["web recharge", "web"],
+    ];
+    return sections
+      .flatMap(([name, kind]) =>
+        nodes(section(xml, name), "record").flatMap((node): TopConnectRecharge[] => {
+          const side = tag(node, "type");
+          if (kind === "transfer" && side !== "card") return [];
+          const amount = tag(node, "amount");
+          return [{
+            at: timestamp(tag(node, "used") ?? tag(node, "added")),
+            kind,
+            amountMinor: money(amount),
+            currency: tag(node, "currency") ?? currencyOf(amount),
+          }];
+        }),
+      )
+      .sort(newestFirst);
   }
 
   /** One gateway call; returns the XML when it is not an error answer. */
@@ -437,10 +659,55 @@ function parsePackage(node: string, kind: TopConnectPackageKind): TopConnectActi
 /** The gateway signals failure with `<type>ERROR</type>` and a `<text>`, sometimes `<error>`. */
 function errorText(xml: string): string | null {
   if (/<type>\s*error\s*<\/type>/i.test(xml) || /<error(\s|>)/i.test(xml) || /<result>\s*error\s*<\/result>/i.test(xml)) {
-    return tag(xml, "text") ?? tag(xml, "error") ?? "TopConnect answered with an error";
+    return tag(xml, "text") ?? tag(xml, "msg") ?? tag(xml, "error") ?? "TopConnect answered with an error";
   }
   return null;
 }
+
+/** `<GPRS>enabled|disabled</GPRS>`. */
+function gprsState(xml: string): boolean {
+  const state = (tag(xml, "GPRS") ?? "").toLowerCase();
+  if (state !== "enabled" && state !== "disabled") throw new ProviderError("invalid_response", "TopConnect did not say whether data is on", 200, "topconnect");
+  return state === "enabled";
+}
+
+/** `srvsms`/`srvvoice`: `<status>on|off`, closed by `</status>` or, as the manual shows it, `</service>`. */
+function switchState(xml: string): boolean {
+  const state = /<status>\s*(on|off)\s*</i.exec(xml)?.[1]?.toLowerCase();
+  if (!state || !/<result>\s*ok\s*<\/result>/i.test(xml)) throw new ProviderError("invalid_response", "TopConnect did not say whether the service is on", 200, "topconnect");
+  return state === "on";
+}
+
+function parseVoicemail(xml: string): TopConnectVoicemail {
+  const active = bool(tag(xml, "activated"));
+  if (active === null) throw new ProviderError("invalid_response", "TopConnect did not say whether voicemail is on", 200, "topconnect");
+  return { active, email: tag(xml, "email") };
+}
+
+/** The part of `rechargereport` under `<name>`; its section names have spaces, so they are not XML elements. */
+function section(xml: string, name: string): string {
+  const open = xml.toLowerCase().indexOf(`<${name}>`);
+  if (open === -1) return "";
+  const close = xml.toLowerCase().indexOf(`</${name}>`, open);
+  return xml.slice(open + name.length + 2, close === -1 ? undefined : close);
+}
+
+/** "+10.00 USD" → "USD". */
+function currencyOf(amount: string | null): string | null {
+  return amount ? (/\b([A-Z]{3})\s*$/.exec(amount.trim())?.[1] ?? null) : null;
+}
+
+/** Destinations come URL-encoded ("Extra%20Number"). */
+function decodeUrl(value: string | null): string | null {
+  if (!value) return null;
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+}
+
+const newestFirst = (a: { at: string | null }, b: { at: string | null }) => (b.at ?? "").localeCompare(a.at ?? "");
 
 function nodes(xml: string, name: string): string[] {
   const pattern = new RegExp(`<${name}\\b[^>]*>([\\s\\S]*?)<\\/\\s*${name}\\s*>`, "gi");

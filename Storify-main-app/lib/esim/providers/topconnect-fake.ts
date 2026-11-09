@@ -9,7 +9,9 @@ import { formatMinor, money } from "./topconnect";
  *
  * Any 5- to 32-digit MSISDN is a card the first time it is seen (balance 0,
  * EUR); an MSISDN ending in "0000" is unknown. Packet "9" fails ("Not enough
- * funds") whatever the balance.
+ * funds") whatever the balance. Every card has data, texts, calls and
+ * voicemail on, no call forwarding, and a little history (two calls, a text,
+ * two data sessions, a voicemail message) for the history commands.
  */
 
 interface FakeCard {
@@ -17,6 +19,9 @@ interface FakeCard {
   iccid: string;
   balanceMinor: number;
   packages: Array<{ code: string; name: string; bytes: number; activatedAt: string; expiresAt: string }>;
+  services: { data: boolean; sms: boolean; voice: boolean };
+  voicemail: boolean;
+  redirect: string | null;
 }
 
 export interface FakeTopConnectState {
@@ -62,7 +67,15 @@ export function fakeTopConnectFetch(state: FakeTopConnectState = shared): FetchL
       if (!key || key.endsWith("0000")) return null;
       let found = state.cards.get(key);
       if (!found) {
-        found = { msisdn: key, iccid: iccid ?? `8937204${key.padStart(12, "0").slice(-12)}`, balanceMinor: 0, packages: [] };
+        found = {
+          msisdn: key,
+          iccid: iccid ?? `8937204${key.padStart(12, "0").slice(-12)}`,
+          balanceMinor: 0,
+          packages: [],
+          services: { data: true, sms: true, voice: true },
+          voicemail: true,
+          redirect: null,
+        };
         state.cards.set(key, found);
       }
       return found;
@@ -70,7 +83,7 @@ export function fakeTopConnectFetch(state: FakeTopConnectState = shared): FetchL
 
     switch (command) {
       case "getpermissions":
-        return xml("<permissions><command>card_stat</command><command>sbalance</command><command>discountm</command></permissions>");
+        return xml("<permissions><command>card_stat</command><command>sbalance</command><command>discountm</command><command>gprsauth</command><command>srvsms</command><command>srvvoice</command><command>svmail</command><command>redirect</command><command>gccdr</command><command>gprscdr</command><command>rechargereport</command></permissions>");
       case "account":
         return xml(
           `<account><name>Fake dealer</name><balance>${formatMinor(state.accountMinor)}</balance><currency>EUR</currency><orderid>${state.lastOrderId}</orderid></account>`,
@@ -157,6 +170,83 @@ export function fakeTopConnectFetch(state: FakeTopConnectState = shared): FetchL
         return xml(
           `<sbalance><onum>${found.msisdn}</onum><amount>${formatMinor(amount)} EUR</amount><orderid>${state.lastOrderId}</orderid><card><balance>${formatMinor(found.balanceMinor)} EUR</balance></card><client><balance>${formatMinor(state.accountMinor)} EUR</balance></client></sbalance>`,
         );
+      }
+      case "gprsauth": {
+        const found = card(params.get("onum"));
+        if (!found) return error("gprsauth", "Card not found");
+        const block = params.get("block");
+        if (block === "t" || block === "f") found.services.data = block === "f";
+        else if (block !== "c") return error("gprsauth", "Incorrect block value");
+        return xml(`<records><result><text>OK</text><GPRS>${found.services.data ? "enabled" : "disabled"}</GPRS></result></records>`);
+      }
+      case "srvsms":
+      case "srvvoice": {
+        const found = card(params.get("onum"));
+        if (!found) return xml("<service><result>error</result><msg>Card not found</msg></service>");
+        const service = command === "srvsms" ? "sms" : "voice";
+        const active = params.get("active");
+        if (active === "on" || active === "off") found.services[service] = active === "on";
+        else if (active !== "status") return xml("<service><result>error</result><msg>Incorrect active value</msg></service>");
+        // As the manual prints it: <status> closed by </service>.
+        return xml(`<service><msisdn>${found.msisdn}</msisdn><service>${service}</service><status>${found.services[service] ? "on" : "off"}</service><result>Ok</result></service>`);
+      }
+      case "svmail": {
+        const found = card(params.get("onum"));
+        if (!found) return error("voicemail", "Card not found");
+        if (params.get("mode") === "gmessages") {
+          return xml(
+            `<voicemail><message><tsimid>1</tsimid><messagedate>2026-10-20 09:15:00</messagedate><anum>4915112345678</anum><onum>${found.msisdn}</onum><link>https://xml2.travelsim.com/tsim_xml/service/download/rp/fake/${found.msisdn}</link></message></voicemail>`,
+          );
+        }
+        const activate = params.get("activate");
+        if (activate === "yes" || activate === "no") found.voicemail = activate === "yes";
+        return xml(`<voicemail><tsimid>1</tsimid><inum>${found.msisdn}</inum><onum>${found.msisdn}</onum><activated>${found.voicemail ? "yes" : "no"}</activated><email/></voicemail>`);
+      }
+      case "redirect": {
+        const found = card(params.get("onum"));
+        if (!found) return error("redirect", "Card not found");
+        const cardXml = () =>
+          `<card><tsimid>1</tsimid><onum>${found.msisdn}</onum>${found.redirect ? `<redirect>${found.redirect}</redirect><added>2026-10-01</added>` : "<redirect/><added/>"}</card>`;
+        if (!params.has("redirect")) return found.redirect ? xml(cardXml()) : error("redirect", "Unconditional redirect number not activated");
+        const target = params.get("redirect") ?? "";
+        if (!target) {
+          if (!found.redirect) return error("redirect", "Unconditional redirect number not present");
+          found.redirect = null;
+          return xml(cardXml());
+        }
+        if (found.redirect) return error("redirect", "Unconditional redirect number already present");
+        found.redirect = target;
+        return xml(cardXml());
+      }
+      case "gccdr": {
+        const found = card(params.get("onum"));
+        if (!found) return error("gccdr", "Card not found");
+        return xml(
+          `<records><call><tsimid>1</tsimid><calldate>2026-10-21 18:02:11</calldate><onum>${found.msisdn}</onum><anum>4915112345678</anum><bnum>${found.msisdn}</bnum><cdir>I</cdir><duration>64</duration><billsec>62</billsec><ccost>0.00</ccost><curr>EUR</curr><adest>Germany%20Mobile</adest><bdest/></call>` +
+            `<call><tsimid>1</tsimid><calldate>2026-10-22 08:40:00</calldate><onum>${found.msisdn}</onum><anum>${found.msisdn}</anum><bnum>33612345678</bnum><cdir>O</cdir><duration>130</duration><billsec>125</billsec><ccost>0.42</ccost><curr>EUR</curr><adest/><bdest>France%20Mobile</bdest></call>` +
+            `<sms><tsimid>1</tsimid><calldate>2026-10-22 08:45:30</calldate><onum>${found.msisdn}</onum><anum>${found.msisdn}</anum><bnum>33612345678</bnum><smst>sms</smst><ccost>0.24</ccost><curr>EUR</curr><part>1/1</part></sms></records>`,
+        );
+      }
+      case "gprscdr": {
+        const found = card(params.get("onum"));
+        if (!found) return error("gprscdr", "Card not found");
+        return xml(
+          `<records><call><tsimid>1</tsimid><calldate>2026-10-22 20:43:00</calldate><onum>${found.msisdn}</onum><opercode>46001</opercode><country>China</country><operator>China Unicom</operator><sessionid>a</sessionid><inb>30000000</inb><outb>6177280</outb><cost>0.16</cost><curr>EUR</curr><end_session>2026-10-22 21:10:00</end_session><usage_b>36177280</usage_b></call>` +
+            `<call><tsimid>1</tsimid><calldate>2026-10-23 11:21:53</calldate><onum>${found.msisdn}</onum><opercode>46001</opercode><country>China</country><operator>China Unicom</operator><sessionid>b</sessionid><inb>15000</inb><outb>5600</outb><cost>0.00</cost><curr>EUR</curr></call></records>`,
+        );
+      }
+      case "rechargereport": {
+        const found = card(params.get("onum"));
+        if (!found) return error("rechargereport", "Card not found");
+        const records = state.transfers
+          .filter((entry) => entry.msisdn === found.msisdn)
+          .map(
+            (entry) =>
+              `<record><added>${entry.at}</added><type>card</type><orderid>${entry.orderId}</orderid><uname>dealer</uname><address>10.0.0.1</address><command>sbalance</command><onum>${found.msisdn}</onum><balance>0.00 EUR</balance><amount>${entry.amountMinor > 0 ? "+" : ""}${formatMinor(entry.amountMinor)} EUR</amount></record>` +
+              `<record><added>${entry.at}</added><type>client</type><orderid>${entry.orderId}</orderid><uname>dealer</uname><command>sbalance</command><balance>0.00 EUR</balance><amount>${formatMinor(-entry.amountMinor)} EUR</amount></record>`,
+          )
+          .join("");
+        return xml(`<recharges>${records ? `<money transfer><records>${records}</records></money transfer>` : ""}<recharge_amount>0.00 EUR</recharge_amount></recharges>`);
       }
       case "sms":
       case "sms2": {

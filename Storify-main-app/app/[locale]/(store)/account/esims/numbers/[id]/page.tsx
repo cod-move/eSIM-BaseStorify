@@ -16,6 +16,7 @@ import { UsageBar } from "@/components/esim/esim-status-badge";
 import { CopyValue, RefreshUsageButton, RemarkEditor } from "@/components/esim/esim-actions";
 import { CancelPacketButton, NumberTopupActions } from "@/components/esim/number-actions";
 import { SendSmsButton, TransferCreditButton } from "@/components/esim/number-card-tools";
+import { NumberHistoryCard, NumberServicesCard } from "@/components/esim/number-services";
 import { numberTopupOptions } from "@/lib/esim/numbers/storefront";
 
 interface PageProps {
@@ -27,7 +28,10 @@ interface PageProps {
  * use and data packages, read from TopConnect as the page opens (at most once
  * a minute), and how to install it — QR code, one-tap links, the manual
  * details and PIN/PUK. Credit and data packages are bought from here, and a
- * package listed with its code can be cancelled (NUM-08/09). Rendered only
+ * package listed with its code can be cancelled (NUM-08/09). Its services
+ * (data, texts, calls, voicemail, call forwarding) and its history (calls,
+ * texts, data sessions, recharges, voicemail) load from TopConnect as the
+ * page opens. Rendered only
  * for the number's owner, after payment.
  */
 export default async function AccountNumberPage({ params }: PageProps) {
@@ -159,6 +163,9 @@ export default async function AccountNumberPage({ params }: PageProps) {
           ) : null}
         </CardContent>
       </Card>
+
+      <NumberServicesCard numberId={number.id} />
+      <NumberHistoryCard numberId={number.id} currency={card?.currency ?? "EUR"} />
 
       {lpa ? (
         <Card>
