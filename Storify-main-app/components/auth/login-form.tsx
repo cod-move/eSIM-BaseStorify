@@ -1,5 +1,6 @@
 "use client";
 
+import { CaptchaField, captchaHeaders, captchaRejected, captchaUsed, isCaptchaError } from "@/components/esim/captcha-field"; // [esim-patch] P46
 import { useLocaleHref } from "@/hooks/use-locale-navigation";
 import { posthogClient } from "@/lib/analytics/posthog-client";
 import Link from "@/components/language/link";
@@ -160,12 +161,21 @@ export function useLoginForm({
     onAttempt?.();
 
     try {
-      const result = await signIn.email({
-        email: data.email,
-        password: data.password,
-      });
+      const result = await signIn.email(
+        {
+          email: data.email,
+          password: data.password,
+        },
+        { headers: captchaHeaders() }, // [esim-patch] P46
+      );
 
       if (result.error) {
+        // [esim-patch] P46 a wrong picture code is said under the code; any failure draws a new one.
+        if (isCaptchaError(result.error)) {
+          captchaRejected();
+          return;
+        }
+        captchaUsed();
         if (result.error.code === "EMAIL_NOT_VERIFIED") {
           onSuccess?.();
           router.push(
@@ -512,6 +522,8 @@ export function LoginFields({
             </FormItem>
           )}
         />
+
+        <CaptchaField disabled={isLoading} /> {/* [esim-patch] P46 */}
 
         <div className="flex items-center justify-end">
           <Link

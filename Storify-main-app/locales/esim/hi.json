@@ -865,6 +865,13 @@
       "billTo": "Through month",
       "billDownload": "Download PDF",
       "billFailed": "The bill could not be made"
+    },
+    "captcha": {
+      "label": "Picture code",
+      "placeholder": "Type the characters",
+      "refresh": "New picture",
+      "alt": "Picture code",
+      "invalid": "The picture code is wrong or has run out. Please type the new one."
     }
   },
   "admin": {
@@ -1373,7 +1380,7 @@
       "migSkipped": "छोड़ा गया",
       "migConfirm": "पुराने स्टोर के ग्राहक, बैलेंस, रेफ़रल और सक्रिय eSIM अभी इंपोर्ट करें? ग्राहकों को ईमेल नहीं भेजा जाएगा। बाद में दोबारा चलाने पर केवल नया जोड़ा जाता है।",
       "migStarted": "शुरू हुआ; पूरा होने पर यह पेज अपडेट होगा",
-      "migHint": "Brings shoppers (with their old passwords), balances, referrals, active data eSIMs and the whole number-card stock over from the old store. Expired data eSIMs and old orders are not imported. Sync every supplier's catalogue first; an eSIM whose plan the supplier no longer lists is put on a disabled stand-in plan.",
+      "migHint": "Brings email-verified, not banned shoppers (with their old passwords), their balances, who referred whom, and the whole number-card stock (unsold numbers and numbers already sold) over from the old store. Data eSIMs and old orders are not imported. A number sold to an account that is not carried over is kept but retired.",
       "migSource": "पुराना डेटाबेस",
       "migNoSource": "कॉन्फ़िगर नहीं — .env में LEGACY_MYSQL_HOST, LEGACY_MYSQL_DATABASE, LEGACY_MYSQL_USER और LEGACY_MYSQL_PASSWORD सेट करें और रीस्टार्ट करें।",
       "migImported": "अब तक इंपोर्ट हुआ",

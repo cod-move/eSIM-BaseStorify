@@ -6,7 +6,8 @@
  * which ran against the live database on 2026-08-08 and reconciled to zero
  * differences: only email-verified users, Laravel bcrypt hashes kept as they
  * are (patch P16 upgrades them at first sign-in), status 1 active and anything
- * else banned. Added here: the active data eSIMs, which the rewrite left out.
+ * else banned. Here banned users are not imported at all, data eSIMs are not
+ * imported, and the whole number-card stock is.
  */
 
 export interface LegacyUserRow {
@@ -30,29 +31,6 @@ export interface LegacyUserRow {
   sv: number;
   created_at: Date | null;
   updated_at: Date | null;
-}
-
-export interface LegacyEsimRow {
-  id: number;
-  user_id: number;
-  provider_slug: string | null;
-  provider_plan_id: string | null;
-  plan_name: string | null;
-  purchase_id: string | null;
-  serial_number: string | null;
-  provider_sim_id: string | null;
-  iccid: string | null;
-  phone_number: string | null;
-  /** The LPA activation code ("LPA:1$smdp$matching"). */
-  qr_code: string | null;
-  activation_deadline: Date | null;
-  expiry_date: Date | null;
-  profile_status: string | null;
-  remark: string | null;
-  /** JSON text. */
-  info: string | null;
-  status: number;
-  created_at: Date | null;
 }
 
 /** A number card in the old store's stock (`inventory_esims`), sold or not. */
@@ -102,31 +80,10 @@ export interface MigratedUser {
   passwordHash: string;
   name: string;
   phone: string | null;
-  status: "active" | "banned";
   balanceMinor: number;
   address: { country: string | null; city: string | null; state: string | null; postalCode: string | null; street: string | null };
   createdAt: Date;
   updatedAt: Date;
-}
-
-export interface MigratedEsim {
-  legacyId: number;
-  userLegacyId: number;
-  providerCode: string;
-  /** Null when the old order line lost its plan: the import puts it on a stand-in plan. */
-  providerPlanId: string | null;
-  planName: string | null;
-  iccid: string;
-  simId: string | null;
-  providerOrderId: string | null;
-  activationCode: string | null;
-  smdpAddress: string | null;
-  matchingId: string | null;
-  expiresAt: Date | null;
-  activationDeadline: Date | null;
-  profileStatus: "released" | "installed" | "enabled" | "disabled" | "deleted" | "unknown" | null;
-  remark: string | null;
-  createdAt: Date;
 }
 
 /** Why a row is left out; counted on the admin page, never listed with personal data. */
@@ -134,9 +91,7 @@ export type SkipReason =
   | "user.unverified"
   | "user.bad-email"
   | "user.bad-password"
-  | "esim.not-active"
-  | "esim.no-iccid"
-  | "esim.no-provider"
+  | "user.banned"
   | "number.no-iccid"
   | "number.no-msisdn"
   | "number.no-lpa";
@@ -181,6 +136,7 @@ export function migrateUser(row: LegacyUserRow, now = new Date()): MigratedUser 
   const email = String(row.email ?? "").trim().toLowerCase();
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return "user.bad-email";
   if (!BCRYPT.test(String(row.password ?? ""))) return "user.bad-password";
+  if (Number(row.status) !== 1) return "user.banned";
   const createdAt = validDate(row.created_at) ?? validDate(row.updated_at) ?? now;
   const name = [text(row.firstname), text(row.lastname)].filter(Boolean).join(" ") || text(row.username) || email.split("@")[0];
   const mobile = digits(row.mobile);
@@ -193,7 +149,6 @@ export function migrateUser(row: LegacyUserRow, now = new Date()): MigratedUser 
     passwordHash: row.password,
     name: name.slice(0, 100),
     phone: mobile ? `+${mobile.startsWith(dial) || !dial ? mobile : `${dial}${mobile}`}` : null,
-    status: Number(row.status) === 1 ? "active" : "banned",
     balanceMinor: decimalToMinor(row.balance ?? "0"),
     address: {
       country: country && /^[A-Z]{2}$/.test(country) ? country : null,
@@ -207,53 +162,6 @@ export function migrateUser(row: LegacyUserRow, now = new Date()): MigratedUser 
   };
 }
 
-/** "LPA:1$smdp$matching" into its parts; anything else carries no parts. */
-export function parseLpa(code: string | null): { smdpAddress: string | null; matchingId: string | null } {
-  if (!code?.startsWith("LPA:1$")) return { smdpAddress: null, matchingId: null };
-  const [, smdp, matching] = code.split("$");
-  return { smdpAddress: text(smdp), matchingId: text(matching) };
-}
-
-function infoOrderNumber(info: string | null): string | null {
-  if (!info) return null;
-  try {
-    const parsed = JSON.parse(info) as Record<string, unknown> | null;
-    const value = parsed?.order_num ?? parsed?.orderNo ?? parsed?.order_no;
-    return typeof value === "string" || typeof value === "number" ? String(value) : null;
-  } catch {
-    return null;
-  }
-}
-
-/** An active eSIM (status 1, not past its expiry) of an imported user. */
-export function migrateEsim(row: LegacyEsimRow, now = new Date()): MigratedEsim | SkipReason {
-  const expiresAt = validDate(row.expiry_date);
-  if (Number(row.status) !== 1 || (expiresAt && expiresAt < now)) return "esim.not-active";
-  const iccid = digits(row.iccid);
-  if (!iccid) return "esim.no-iccid";
-  const providerCode = text(row.provider_slug)?.toLowerCase();
-  const providerPlanId = text(row.provider_plan_id);
-  if (!providerCode) return "esim.no-provider";
-  const activationCode = text(row.qr_code);
-  const profileStatus = text(row.profile_status)?.toLowerCase() ?? null;
-  return {
-    legacyId: Number(row.id),
-    userLegacyId: Number(row.user_id),
-    providerCode,
-    providerPlanId,
-    planName: text(row.plan_name),
-    iccid,
-    simId: text(row.provider_sim_id) ?? text(row.serial_number),
-    providerOrderId: text(row.purchase_id) ?? infoOrderNumber(row.info),
-    activationCode,
-    ...parseLpa(activationCode),
-    expiresAt,
-    activationDeadline: validDate(row.activation_deadline),
-    profileStatus: profileStatus && PROFILE_STATUSES.has(profileStatus) ? (profileStatus as MigratedEsim["profileStatus"]) : null,
-    remark: text(row.remark),
-    createdAt: validDate(row.created_at) ?? now,
-  };
-}
 
 const pin = (value: unknown) => {
   const code = text(value);

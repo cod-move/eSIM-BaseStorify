@@ -13,7 +13,7 @@ const NOW = new Date("2025-12-20T00:00:00Z");
 describe("RoamWifi getESIMDetail", () => {
   it("reads a running package's data and the card's expiry", () => {
     const usage = mapEsimDetail(
-      sample([{ id: 1, flows: 3, unit: "GB", days: 7, usedMb: 1024, beginDate: "2025-12-17 23:06", endDate: "2025-12-24 23:06", status: 2 }]),
+      sample([{ id: 1, flows: 3, unit: "GB", days: 7, usedMb: 1024, beginDate: "2025-12-17 23:06", endDate: "2025-12-24 23:06", status: 0 }]),
       NOW,
     );
     assert.equal(usage.totalBytes, 3 * 1024 ** 3);

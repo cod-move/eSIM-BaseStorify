@@ -8,9 +8,11 @@
  *
  * Counts first (nothing written), then imports: a new shopper with their old
  * bcrypt password (which signs in), one matched to an account that already
- * has the email (password untouched), an unverified one left out; a balance
- * as store credit with its opening-balance ledger entry; the referral; two
- * active eSIMs on one import order, and one whose plan is not here left out.
+ * has the email (password untouched), an unverified and a banned one left
+ * out; a balance as store credit with its opening-balance ledger entry; the
+ * referral; number cards: one unsold (for sale), one sold to an imported
+ * shopper (theirs), one sold to an account left out (retired), and one without
+ * an LPA left out.
  * A second import changes nothing. Removes everything it created and
  * reports any collection whose document count changed. Refuses to run with
  * NODE_ENV=production.
@@ -18,13 +20,11 @@
 import assert from "node:assert/strict";
 import bcrypt from "bcryptjs";
 import { connectDB, disconnectDB, mongoose } from "@/lib/db";
-import { Order, User } from "@/models";
+import { User } from "@/models";
 import { EsimLegacyLink } from "@/models/esim-legacy.model";
-import { EsimPlan } from "@/models/esim-plan.model";
-import { EsimProfile } from "@/models/esim-profile.model";
+import { EsimNumber } from "@/models/esim-number.model";
 import { EsimReferral, EsimReferralCode } from "@/models/esim-referral.model";
-import type { LegacyEsimRow, LegacyUserRow } from "@/lib/esim/migration/legacy-rows";
-import { keepTopupProductAsItWas } from "./lib/esim-topup-product";
+import type { LegacyNumberRow, LegacyUserRow } from "@/lib/esim/migration/legacy-rows";
 
 const tag = `e2e-mig-${Date.now()}`;
 type Id = mongoose.Types.ObjectId;
@@ -65,26 +65,25 @@ function userRow(id: number, overrides: Partial<LegacyUserRow> = {}): LegacyUser
   };
 }
 
-function esimRow(id: number, userId: number, plan: { providerCode: string; providerPlanId: string }, iccid: string): LegacyEsimRow {
+function numberRow(id: number, userId: number | null, overrides: Partial<LegacyNumberRow> = {}): LegacyNumberRow {
+  const n = id - BASE;
   return {
     id,
+    iccid: `89440${BASE}000${n % 10}`,
+    msisdn: `4479${BASE}${n % 10}`,
+    dial_country_code: "44",
+    lpa: `LPA:1$smdp.example$${tag}-${id}`,
+    pin1: "1234",
+    puk1: "12345678",
+    pin2: null,
+    puk2: null,
+    price: "15.00",
+    premium_price: "5.50",
+    status: userId ? 1 : 0,
     user_id: userId,
-    provider_slug: plan.providerCode,
-    provider_plan_id: plan.providerPlanId,
-    plan_name: "Old plan",
-    purchase_id: `OLD-${id}`,
-    serial_number: null,
-    provider_sim_id: null,
-    iccid,
-    phone_number: null,
-    qr_code: `LPA:1$smdp.example$${tag}-${id}`,
-    activation_deadline: null,
-    expiry_date: new Date(Date.now() + 30 * 86_400_000),
-    profile_status: "installed",
-    remark: null,
-    info: null,
-    status: 1,
-    created_at: new Date("2026-09-01T00:00:00Z"),
+    sold_at: userId ? new Date("2026-09-01T00:00:00Z") : null,
+    created_at: new Date("2026-08-01T00:00:00Z"),
+    ...overrides,
   };
 }
 
@@ -93,9 +92,6 @@ async function run() {
   const { applyDependencies } = await import("@/lib/esim/admin/migration");
   const { verifyAnyPassword, isLegacyHash } = await import("@/lib/esim/migration/legacy-password");
   const { storeCreditSummary } = await import("@/lib/store-credit/store-credit");
-
-  const plan = await EsimPlan.findOne().select("providerCode providerPlanId").lean<{ providerCode: string; providerPlanId: string }>();
-  assert.ok(plan, "the dev database needs one eSIM plan (run scripts/esim-dev-seed.ts)");
 
   // An account that already has an old shopper's email here.
   const { insertedId } = await User.collection.insertOne({ name: "Signed up here", email: `${tag}-${BASE + 2}@esim.test`, emailVerified: true, role: "customer", roles: ["customer"], status: "active", createdAt: new Date(), updatedAt: new Date() });
@@ -108,12 +104,13 @@ async function run() {
       userRow(BASE + 2),
       userRow(BASE + 3, { balance: "12.34500000", ref_by: BASE + 1 }),
       userRow(BASE + 4, { ev: 0 }),
+      userRow(BASE + 5, { status: 0 }),
     ],
-    esims: [
-      esimRow(BASE + 10, BASE + 3, plan, `89${String(BASE)}01`),
-      esimRow(BASE + 11, BASE + 3, plan, `89${String(BASE)}02`),
-      esimRow(BASE + 12, BASE + 3, { providerCode: plan.providerCode, providerPlanId: `${tag}-missing` }, `89${String(BASE)}03`),
-      { ...esimRow(BASE + 13, BASE + 3, plan, `89${String(BASE)}04`), status: 3 },
+    numbers: [
+      numberRow(BASE + 10, null),
+      numberRow(BASE + 11, BASE + 3),
+      numberRow(BASE + 12, BASE + 4),
+      numberRow(BASE + 13, null, { lpa: null }),
     ],
   };
 
@@ -124,17 +121,20 @@ async function run() {
     { users: 2, matched: 1, balances: 1, total: 1235, referrals: 1 },
   );
   assert.equal(check.skipped["user.unverified"], 1);
-  assert.equal(check.skipped["esim.not-active"], 1);
+  assert.equal(check.skipped["user.banned"], 1);
+  assert.deepEqual(
+    { available: check.report["numbers.available"], sold: check.report["numbers.sold"], retired: check.report["numbers.retired"], noLpa: check.skipped["number.no-lpa"] },
+    { available: 1, sold: 1, retired: 1, noLpa: 1 },
+  );
   assert.equal(await EsimLegacyLink.countDocuments({ legacyId: { $gte: BASE, $lt: BASE + 100 } }), 0, "a check writes nothing");
   assert.equal(await User.countDocuments({ email: new RegExp(tag) }), 1);
-  console.log("✓ check: 2 new, 1 matched, 1 unverified left out, 12.35 of balance, 1 referral; nothing written");
+  console.log("✓ check: 2 new, 1 matched, 1 unverified and 1 banned left out, 12.35 of balance, 1 referral, 3 numbers; nothing written");
 
   // 2. Import.
   const deps = await applyDependencies();
   const first = await runLegacyImport(snapshot, deps);
   assert.equal(first.report["users.new"], 2);
-  assert.equal(first.report["esims.new"], 2);
-  assert.equal(first.skipped[`esim.no-plan:${plan.providerCode}`], 1);
+  assert.equal(first.report["numbers.available"], 1);
 
   const newUser = await User.findOne({ email: `${tag}-${BASE + 3}@esim.test` }).lean<{ _id: Id; name: string; status: string; emailVerified: boolean; phone?: string }>();
   assert.ok(newUser);
@@ -157,26 +157,23 @@ async function run() {
   assert.ok(referral, "the referral");
   console.log("✓ balance: 12.35 store credit, debit opening balance equity / credit store-credit payable; referral kept");
 
-  const profiles = await EsimProfile.find({ customer: newUser._id }).sort({ lineIndex: 1 }).lean();
-  assert.equal(profiles.length, 2);
-  assert.deepEqual(profiles.map((profile) => profile.lineIndex), [0, 1]);
-  assert.equal(profiles[0].installation.matchingId, `${tag}-${BASE + 10}`);
-  assert.equal(profiles[0].status, "fulfilled");
-  const order = await Order.findOne({ orderNumber: `MIG-${BASE + 3}` }).lean<{ _id: Id; total: number; paymentStatus: string; items: unknown[] }>();
-  assert.ok(order);
-  assert.equal(order.total, 0);
-  assert.equal(order.items.length, 2);
-  assert.equal(String(profiles[0].order), String(order._id));
-  assert.equal(await mongoose.connection.db!.collection("ledgerentries").countDocuments({ "source.id": order._id }), 0, "the import order books nothing");
-  console.log("✓ eSIMs: 2 on one zero-value import order (nothing booked); the one without a plan here left out");
+  const numbers = await EsimNumber.find({ legacyId: { $gte: BASE + 10, $lt: BASE + 20 } }).sort({ legacyId: 1 }).lean<Array<{ legacyId: number; status: string; customer: Id | null; priceMinor: number; batch: string; install: { lpa: string } }>>();
+  assert.deepEqual(numbers.map((row) => row.status), ["available", "sold", "retired"]);
+  assert.equal(numbers[0].customer, null);
+  assert.equal(String(numbers[1].customer), String(newUser._id));
+  assert.equal(numbers[2].customer, null);
+  assert.equal(numbers[0].priceMinor, 1500);
+  assert.equal(numbers[0].batch, "legacy");
+  assert.equal(numbers[1].install.lpa, `LPA:1$smdp.example$${tag}-${BASE + 11}`);
+  console.log("✓ numbers: unsold for sale, sold one is its buyer's, sold to an account left out retired; the one without an LPA left out");
 
   // 3. Again: nothing new.
   const second = await runLegacyImport(snapshot, deps);
   assert.equal(second.report["users.new"] ?? 0, 0);
   assert.equal(second.report["users.already"], 3);
   assert.equal(second.report["balances.new"] ?? 0, 0);
-  assert.equal(second.report["esims.new"] ?? 0, 0);
-  assert.equal(second.report["esims.already"], 2);
+  assert.equal(second.report["numbers.already"], 3);
+  assert.equal((second.report["numbers.available"] ?? 0) + (second.report["numbers.sold"] ?? 0) + (second.report["numbers.retired"] ?? 0), 0);
   assert.equal((await storeCreditSummary(String(newUser._id))).find((row) => row.currency === deps.currency)?.balance, 12.35);
   console.log("✓ a second import changes nothing");
   console.log("All migration checks passed.");
@@ -187,12 +184,10 @@ async function cleanup() {
   const users = await User.collection.find({ email: new RegExp(tag) }).project({ _id: 1 }).toArray();
   const ids = users.map((user) => user._id as Id);
   const both = [...ids, ...ids.map(String)];
-  const orders = (await Order.collection.find({ orderNumber: new RegExp(`^MIG-(${Array.from({ length: 10 }, (_, i) => BASE + i).join("|")})$`) }).project({ _id: 1 }).toArray()).map((row) => row._id);
   const lots = await db.collection("storecredittransactions").find({ customerId: { $in: ids } }).project({ _id: 1 }).toArray();
   await db.collection("ledgerentries").deleteMany({ "source.id": { $in: lots.map((lot) => lot._id) } });
   for (const name of ["storecreditaccounts", "storecredittransactions"]) await db.collection(name).deleteMany({ customerId: { $in: ids } });
-  await EsimProfile.collection.deleteMany({ customer: { $in: ids } });
-  await Order.collection.deleteMany({ _id: { $in: orders } });
+  await EsimNumber.collection.deleteMany({ legacyId: { $gte: BASE, $lt: BASE + 100 } });
   await EsimReferral.collection.deleteMany({ $or: [{ referee: { $in: ids } }, { referrer: { $in: ids } }] });
   await EsimReferralCode.collection.deleteMany({ user: { $in: ids } });
   await db.collection("customerprofiles").deleteMany({ userId: { $in: both } });
@@ -206,12 +201,10 @@ async function main() {
   if (process.env.NODE_ENV === "production") throw new Error("Refusing to run against production");
   await connectDB();
   const before = await counts();
-  const restoreProducts = await keepTopupProductAsItWas();
   try {
     await run();
   } finally {
     await cleanup().catch((error) => console.error("cleanup failed:", error));
-    await restoreProducts().catch((error) => console.error("product cleanup failed:", error));
     const after = await counts();
     const changed = [...new Set([...before.keys(), ...after.keys()])]
       .filter((name) => (before.get(name) ?? 0) !== (after.get(name) ?? 0))

@@ -85,21 +85,17 @@ export async function startMigrationRun(apply: boolean, startedBy: string) {
 
 /** What an import writes through: Storify's own store credit, profiles, referral codes. */
 export async function applyDependencies() {
-  const [{ issueStoreCredit }, { ensureCustomerProfile }, { ensureReferralCode, getReferralSettings }, { ensureMigratedProduct }, { getDefaultVendorIds }, { getSettings }] =
+  const [{ issueStoreCredit }, { ensureCustomerProfile }, { ensureReferralCode, getReferralSettings }, { getSettings }] =
     await Promise.all([
       import("@/lib/store-credit/store-credit"),
       import("@/lib/customers/customer"),
       import("@/lib/esim/referral/service"),
-      import("@/lib/esim/migration/product"),
-      import("@/lib/finance/post-events"),
       import("@/models/settings.model"),
     ]);
   const currency = String((await getSettings()).general?.defaultCurrency || "USD").toUpperCase();
   return {
     apply: true,
     currency,
-    product: await ensureMigratedProduct(),
-    vendorId: [...(await getDefaultVendorIds())][0] ?? null,
     referralValidityDays: (await getReferralSettings()).validityDays,
     ensureReferralCode,
     ensureCustomerProfile,

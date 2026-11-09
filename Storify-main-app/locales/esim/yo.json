@@ -865,6 +865,13 @@
       "billTo": "Through month",
       "billDownload": "Download PDF",
       "billFailed": "The bill could not be made"
+    },
+    "captcha": {
+      "label": "Picture code",
+      "placeholder": "Type the characters",
+      "refresh": "New picture",
+      "alt": "Picture code",
+      "invalid": "The picture code is wrong or has run out. Please type the new one."
     }
   },
   "admin": {
@@ -1373,7 +1380,7 @@
       "migSkipped": "A fi í sílẹ̀",
       "migConfirm": "Gbé àwọn olùrà, ìyókù owó, ìtọ́kasí àti eSIM tó ń ṣiṣẹ́ ti ilé-ìtajà àtijọ́ wọlé báyìí? A kò ní fi ímeèlì ránṣẹ́ sí àwọn olùrà. Ṣíṣe é lẹ́ẹ̀kansí lẹ́yìn náà máa fi àwọn tuntun nìkan kún un.",
       "migStarted": "Ó ti bẹ̀rẹ̀; ojú-ìwé yìí máa yí padà nígbà tí ó bá parí",
-      "migHint": "Brings shoppers (with their old passwords), balances, referrals, active data eSIMs and the whole number-card stock over from the old store. Expired data eSIMs and old orders are not imported. Sync every supplier's catalogue first; an eSIM whose plan the supplier no longer lists is put on a disabled stand-in plan.",
+      "migHint": "Brings email-verified, not banned shoppers (with their old passwords), their balances, who referred whom, and the whole number-card stock (unsold numbers and numbers already sold) over from the old store. Data eSIMs and old orders are not imported. A number sold to an account that is not carried over is kept but retired.",
       "migSource": "Ibi ìpamọ́ dátà àtijọ́",
       "migNoSource": "A kò ṣètò rẹ̀ — ṣètò LEGACY_MYSQL_HOST, LEGACY_MYSQL_DATABASE, LEGACY_MYSQL_USER àti LEGACY_MYSQL_PASSWORD nínú .env kí o sì tún bẹ̀rẹ̀.",
       "migImported": "Ohun tí a ti gbé wọlé títí di báyìí",

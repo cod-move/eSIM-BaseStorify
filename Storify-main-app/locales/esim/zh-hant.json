@@ -865,6 +865,13 @@
       "billTo": "結束月份",
       "billDownload": "下載 PDF",
       "billFailed": "賬單生成失敗"
+    },
+    "captcha": {
+      "label": "圖形驗證碼",
+      "placeholder": "輸入圖中字符",
+      "refresh": "換一張",
+      "alt": "圖形驗證碼",
+      "invalid": "驗證碼錯誤或已過期，請輸入新的驗證碼。"
     }
   },
   "admin": {
@@ -1373,7 +1380,7 @@
       "migSkipped": "跳過",
       "migConfirm": "現在導入舊站的顧客、餘額、推薦關係和在用 eSIM 嗎？不會給顧客發郵件。以後再次導入只會補充新增的數據。",
       "migStarted": "已開始；完成後本頁會自動更新",
-      "migHint": "從舊站遷移用戶（保留原密碼）、餘額、推薦關係、在用的流量 eSIM，以及全部號碼卡庫存。已過期的流量 eSIM 和歷史訂單不遷移。請先同步各供應商的套餐庫；供應商已下架的套餐會生成一個停售的佔位套餐，eSIM 照常遷移。",
+      "migHint": "從舊站遷移已驗證郵箱且未封禁的用戶（保留原密碼）、賬戶餘額、上下級推薦關係，以及全部號碼卡庫存（未售出的號碼和已售出的號碼 eSIM）。流量 eSIM 和歷史訂單不遷移。賣給未遷移賬號的號碼會保留，但標記爲停用。",
       "migSource": "舊數據庫",
       "migNoSource": "未配置——請在 .env 設置 LEGACY_MYSQL_HOST、LEGACY_MYSQL_DATABASE、LEGACY_MYSQL_USER 和 LEGACY_MYSQL_PASSWORD 後重啓。",
       "migImported": "已導入",

@@ -1,6 +1,6 @@
 import "server-only";
 
-import type { LegacyEsimRow, LegacyNumberRow, LegacyUserRow } from "./legacy-rows";
+import type { LegacyNumberRow, LegacyUserRow } from "./legacy-rows";
 
 /**
  * Reading the old store's MySQL database (MIG), in production only: the
@@ -11,8 +11,8 @@ import type { LegacyEsimRow, LegacyNumberRow, LegacyUserRow } from "./legacy-row
  *   LEGACY_MYSQL_SSL ("true"), LEGACY_MYSQL_SSL_REJECT_UNAUTHORIZED ("true")
  *
  * the same names the rewrite's importer used. Everything is read inside one
- * read-only transaction with a consistent snapshot, so users and their eSIMs
- * agree with each other however busy the old store still is.
+ * read-only transaction with a consistent snapshot, so users and the numbers
+ * they bought agree with each other however busy the old store still is.
  */
 
 export interface LegacySourceConfig {
@@ -51,12 +51,12 @@ const USER_QUERY = `
          cast(balance as char) balance, password, country_code, city, state, zip,
          address, status, ev, sv, created_at, updated_at
   from users
+  where ev = 1 and status = 1
   order by id
 `;
 
 /**
- * Every number card in stock, sold or not (number cards are left out of the
- * data eSIMs above). The buyer is the order's user, else the user of the
+ * Every number card in stock, sold or not. The buyer is the order's user, else the user of the
  * eSIM row the sale made.
  */
 const NUMBER_QUERY = `
@@ -69,26 +69,8 @@ const NUMBER_QUERY = `
   order by i.id
 `;
 
-/** Active data eSIMs of verified users, with the supplier and plan they were bought on. */
-const ESIM_QUERY = `
-  select e.id, e.user_id, lower(trim(p.slug)) provider_slug, pl.provider_plan_id, pl.name plan_name,
-         oi.purchase_id, e.serial_number, e.provider_sim_id, e.iccid, e.phone_number, e.qr_code,
-         e.activation_deadline, e.expiry_date, e.profile_status, e.remark,
-         cast(e.info as char) info, e.status, e.created_at
-  from esims e
-  join users u on u.id = e.user_id and u.ev = 1
-  left join esim_providers p on p.id = e.esim_provider_id
-  left join order_items oi on oi.id = e.order_item_id
-  left join plans pl on pl.id = oi.plan_id
-  where e.status = 1 and (e.expiry_date is null or e.expiry_date >= now())
-    and coalesce(lower(trim(p.slug)), '') <> 'topconnect'
-    and not exists (select 1 from inventory_esims i where i.iccid = e.iccid)
-  order by e.id
-`;
-
 export interface LegacySnapshot {
   users: LegacyUserRow[];
-  esims: LegacyEsimRow[];
   numbers: LegacyNumberRow[];
 }
 
@@ -110,10 +92,9 @@ export async function readLegacySnapshot(config: LegacySourceConfig): Promise<Le
     await connection.query("SET SESSION TRANSACTION READ ONLY");
     await connection.query("START TRANSACTION WITH CONSISTENT SNAPSHOT");
     const [users] = await connection.query(USER_QUERY);
-    const [esims] = await connection.query(ESIM_QUERY);
     const [numbers] = await connection.query(NUMBER_QUERY);
     await connection.query("COMMIT");
-    return { users: users as LegacyUserRow[], esims: esims as LegacyEsimRow[], numbers: numbers as LegacyNumberRow[] };
+    return { users: users as LegacyUserRow[], numbers: numbers as LegacyNumberRow[] };
   } finally {
     await connection.end().catch(() => undefined);
   }

@@ -1,5 +1,6 @@
 "use client";
 
+import { CaptchaField, captchaHeaders, captchaRejected, captchaUsed, isCaptchaError } from "@/components/esim/captcha-field"; // [esim-patch] P46
 import { useLocaleHref } from "@/hooks/use-locale-navigation";
 import { posthogClient } from "@/lib/analytics/posthog-client";
 import Link from "@/components/language/link";
@@ -82,14 +83,23 @@ export function useRegisterForm({
     onAttempt?.();
 
     try {
-      const result = await signUp.email({
-        name: data.name,
-        email: data.email,
-        password: data.password,
-        callbackURL: localeHref(`/${locale}/email-verified`),
-      });
+      const result = await signUp.email(
+        {
+          name: data.name,
+          email: data.email,
+          password: data.password,
+          callbackURL: localeHref(`/${locale}/email-verified`),
+        },
+        { headers: captchaHeaders() }, // [esim-patch] P46
+      );
 
       if (result.error) {
+        // [esim-patch] P46 a wrong picture code is said under the code; any failure draws a new one.
+        if (isCaptchaError(result.error)) {
+          captchaRejected();
+          return;
+        }
+        captchaUsed();
         // Better Auth's own request limit answers a bare, English 429; the
         // sign-in form already words it in the visitor's language.
         setError(
@@ -348,6 +358,8 @@ export function RegisterFields({ state }: { state: RegisterFormState }) {
             </FormItem>
           )}
         />
+
+        <CaptchaField disabled={isLoading} /> {/* [esim-patch] P46 */}
 
         <Button type="submit" className="w-full" disabled={isLoading}>
           {isLoading ? (
