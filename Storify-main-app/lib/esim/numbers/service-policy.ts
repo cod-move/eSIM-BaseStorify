@@ -55,6 +55,42 @@ export function formatSeconds(seconds: number | null | undefined): string {
   return h ? `${h}:${String(m).padStart(2, "0")}:${s}` : `${m}:${s}`;
 }
 
+/** Most months one statement covers. */
+export const STATEMENT_MAX_MONTHS = 12;
+
+export interface StatementMonth {
+  /** "2026-10". */
+  month: string;
+  /** First day, and the first day of the next month (TopConnect's `finished` is exclusive). */
+  from: string;
+  to: string;
+}
+
+/**
+ * The whole months a statement covers, "YYYY-MM" to "YYYY-MM": completed
+ * months only (UTC), at most twelve, oldest first. A string says what is
+ * wrong.
+ */
+export function statementMonths(from: string, to: string, now: Date): StatementMonth[] | string {
+  const parse = (value: string) => {
+    const match = /^(\d{4})-(\d{2})$/.exec(value);
+    if (!match) return null;
+    const month = Number(match[2]);
+    return month >= 1 && month <= 12 ? Number(match[1]) * 12 + (month - 1) : null;
+  };
+  const start = parse(from);
+  const end = parse(to);
+  if (start === null || end === null) return "Choose the months";
+  if (end < start) return "The last month is before the first";
+  const current = now.getUTCFullYear() * 12 + now.getUTCMonth();
+  if (end >= current) return "Only completed months can be included";
+  if (end - start + 1 > STATEMENT_MAX_MONTHS) return `At most ${STATEMENT_MAX_MONTHS} months at a time`;
+  const label = (index: number) => `${Math.floor(index / 12)}-${String((index % 12) + 1).padStart(2, "0")}`;
+  const months: StatementMonth[] = [];
+  for (let index = start; index <= end; index += 1) months.push({ month: label(index), from: `${label(index)}-01`, to: `${label(index + 1)}-01` });
+  return months;
+}
+
 /** Totals for the history's summary line. */
 export function historyTotals(
   calls: ReadonlyArray<{ kind: "call" | "sms"; costMinor: number | null }> | null,

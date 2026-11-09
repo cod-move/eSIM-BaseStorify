@@ -729,7 +729,17 @@
       "forwardStop": "停止",
       "forwardSet": "着信を転送しています",
       "forwardOff": "転送を停止しました",
-      "forwardInvalid": "+1、+3、+4 で始まる国番号付きの番号を入力してください。"
+      "forwardInvalid": "+1、+3、+4 で始まる国番号付きの番号を入力してください。",
+      "limit": "1日のデータ利用上限",
+      "experimental": "試験運用",
+      "limitHint": "その日のデータ料金がこの金額（{currency}）に達するとデータ通信が止まります。必ず効くとは限らず、料金が上限を超えることや、次の期間までデータが止まったままになることがあります。通話・SMS・パッケージ購入は制限しません。各期間は設定時から24時間です。",
+      "limitNow": "1日 {value}。この期間は {used} 使用、{until} まで。",
+      "limitNone": "1日の上限はありません。",
+      "limitSave": "上限を設定",
+      "limitRemove": "解除",
+      "limitInvalid": "0.10〜100 の金額を入力してください。",
+      "limitSet": "1日の上限を設定しました",
+      "limitRemoved": "1日の上限を解除しました"
     },
     "history": {
       "title": "利用履歴",
@@ -813,7 +823,19 @@
       "releaseSubmit": "手放す",
       "releaseHint": "番号は残高ごとアカウントから完全に外れます。元に戻せません。",
       "releaseConfirm": "確認のため番号を入力してください：{number}",
-      "releaseDone": "番号をアカウントから外しました"
+      "releaseDone": "番号をアカウントから外しました",
+      "voucher": "バウチャーを使う",
+      "voucherHint": "チャージバウチャーの PIN を入力すると、その金額がこの番号の残高に加わります。",
+      "voucherCode": "バウチャー PIN",
+      "voucherRedeem": "使う",
+      "voucherDone": "バウチャーを残高に追加しました",
+      "voucherFailed": "バウチャーを使えませんでした",
+      "bill": "利用明細",
+      "billHint": "過去の各月（最大12か月）の通話・SMS・データ・チャージを、回線の記録から PDF にします。",
+      "billFrom": "開始月",
+      "billTo": "終了月",
+      "billDownload": "PDF をダウンロード",
+      "billFailed": "明細を作成できませんでした"
     }
   },
   "admin": {

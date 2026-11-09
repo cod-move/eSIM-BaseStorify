@@ -729,7 +729,17 @@
       "forwardStop": "Arrêter",
       "forwardSet": "Les appels sont renvoyés",
       "forwardOff": "Renvoi arrêté",
-      "forwardInvalid": "Saisissez un numéro commençant par +1, +3 ou +4, avec l'indicatif du pays."
+      "forwardInvalid": "Saisissez un numéro commençant par +1, +3 ou +4, avec l'indicatif du pays.",
+      "limit": "Plafond quotidien de dépenses data",
+      "experimental": "Expérimental",
+      "limitHint": "Les données s'arrêtent pour la journée une fois ce montant ({currency}) dépensé. Ce n'est pas garanti : les frais peuvent le dépasser et les données peuvent rester coupées jusqu'à la période suivante. Les appels, SMS et forfaits ne sont pas limités. Chaque période dure 24 heures à partir de la mise en place.",
+      "limitNow": "{value} par jour ; {used} utilisés sur cette période, jusqu'au {until}.",
+      "limitNone": "Aucun plafond quotidien.",
+      "limitSave": "Définir le plafond",
+      "limitRemove": "Supprimer",
+      "limitInvalid": "Saisissez un montant entre 0,10 et 100.",
+      "limitSet": "Plafond quotidien défini",
+      "limitRemoved": "Plafond quotidien supprimé"
     },
     "history": {
       "title": "Historique",
@@ -813,7 +823,19 @@
       "releaseSubmit": "Abandonner",
       "releaseHint": "Le numéro quitte votre compte définitivement, avec le crédit restant. C'est définitif.",
       "releaseConfirm": "Saisissez le numéro pour confirmer : {number}",
-      "releaseDone": "Le numéro a été retiré de votre compte"
+      "releaseDone": "Le numéro a été retiré de votre compte",
+      "voucher": "Utiliser un bon",
+      "voucherHint": "Saisissez le code PIN d'un bon de recharge pour ajouter sa valeur au crédit de ce numéro.",
+      "voucherCode": "Code PIN du bon",
+      "voucherRedeem": "Utiliser",
+      "voucherDone": "Bon ajouté au crédit du numéro",
+      "voucherFailed": "Le bon n'a pas pu être utilisé",
+      "bill": "Facture téléphonique",
+      "billHint": "Un PDF des appels, SMS, données et recharges de mois complets passés (jusqu'à 12), d'après les relevés du réseau.",
+      "billFrom": "Du mois",
+      "billTo": "Au mois",
+      "billDownload": "Télécharger le PDF",
+      "billFailed": "La facture n'a pas pu être créée"
     }
   },
   "admin": {

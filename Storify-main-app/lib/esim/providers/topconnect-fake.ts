@@ -11,7 +11,8 @@ import { formatMinor, money } from "./topconnect";
  * EUR); an MSISDN ending in "0000" is unknown. Packet "9" fails ("Not enough
  * funds") whatever the balance. Every card has data, texts, calls and
  * voicemail on, no call forwarding, and a little history (two calls, a text,
- * two data sessions, a voicemail message) for the history commands.
+ * two data sessions, a voicemail message) for the history commands. The
+ * voucher PIN 1234567890123456 puts 5.00 on a card, once.
  */
 
 interface FakeCard {
@@ -22,6 +23,7 @@ interface FakeCard {
   services: { data: boolean; sms: boolean; voice: boolean };
   voicemail: boolean;
   redirect: string | null;
+  dataLimit: { valueMinor: number; since: string; until: string } | null;
 }
 
 export interface FakeTopConnectState {
@@ -32,6 +34,8 @@ export interface FakeTopConnectState {
   calls: Map<string, number>;
   /** Accepted transfers, for the card's transfer log. */
   transfers: Array<{ at: string; orderId: number; msisdn: string; amountMinor: number }>;
+  /** Voucher PINs already used. */
+  vouchersUsed: string[];
   /** Cards asked to reconnect to the network. */
   reconnects: string[];
   /** Text messages sent. */
@@ -47,7 +51,7 @@ const PACKETS = [
 ];
 
 export function newFakeTopConnectState(): FakeTopConnectState {
-  return { accountMinor: 100_000, lastOrderId: 0, cards: new Map(), calls: new Map(), transfers: [], sms: [], reconnects: [], loseAnswers: 0 };
+  return { accountMinor: 100_000, lastOrderId: 0, cards: new Map(), calls: new Map(), transfers: [], sms: [], reconnects: [], vouchersUsed: [], loseAnswers: 0 };
 }
 
 /** The store's one fake gateway, kept while the server process runs. */
@@ -77,6 +81,7 @@ export function fakeTopConnectFetch(state: FakeTopConnectState = shared): FetchL
           services: { data: true, sms: true, voice: true },
           voicemail: true,
           redirect: null,
+          dataLimit: null,
         };
         state.cards.set(key, found);
       }
@@ -277,6 +282,48 @@ export function fakeTopConnectFetch(state: FakeTopConnectState = shared): FetchL
         if (!found) return xml("<makerequest><error_code>1</error_code><error_text>MSISDN not found</error_text><result>FAIL</result></makerequest>");
         state.reconnects.push(found.msisdn);
         return xml(`<makerequest><msisdn>${found.msisdn}</msisdn><scenario_id>1</scenario_id><error_code>0</error_code><error_text>OK</error_text><result>SUCCESS</result></makerequest>`);
+      }
+      case "gprslimit": {
+        const found = card(params.get("onum"));
+        if (!found) return error("gprslimit", "Can't found ONUM");
+        const option = params.get("option");
+        const answer = () => {
+          const limit = found.dataLimit!;
+          return xml(
+            `<gprslimit><onum>${found.msisdn}</onum><result>success</result><active>${limit.since}</active><expire>${limit.until}</expire><period>day</period><count>0</count><value>${formatMinor(limit.valueMinor)}</value><usedvalue>0.00</usedvalue></gprslimit>`,
+          );
+        };
+        const failed = (text: string) => xml(`<gprslimit><onum>${found.msisdn}</onum><result>error</result><text>${text}</text></gprslimit>`);
+        if (option === "status") return found.dataLimit ? answer() : failed("The service is not active");
+        if (option === "deactive") {
+          if (!found.dataLimit) return failed("The service is not defined");
+          found.dataLimit = null;
+          return xml(`<gprslimit><onum>${found.msisdn}</onum><result>success</result></gprslimit>`);
+        }
+        const value = money(params.get("value"));
+        if (value === null || value <= 0) return failed("Incorrect value");
+        if (option === "active") {
+          if (found.dataLimit) return failed("The service is activated yet");
+          const now = new Date();
+          found.dataLimit = { valueMinor: value, since: iso(now), until: iso(new Date(now.getTime() + 86_400_000)) };
+          return answer();
+        }
+        if (option === "update") {
+          if (!found.dataLimit) return failed("The service is not active");
+          found.dataLimit.valueMinor = value;
+          return answer();
+        }
+        return failed("Incorrect option");
+      }
+      case "recharge": {
+        const found = card(params.get("onum"));
+        if (!found) return error("recharge", "Card not found");
+        // One voucher works, once: 5.00.
+        const pin = params.get("pin") ?? "";
+        if (pin !== "1234567890123456" || state.vouchersUsed.includes(pin)) return error("recharge", "Please provide valid PIN to recharge");
+        state.vouchersUsed.push(pin);
+        found.balanceMinor += 500;
+        return xml(`<recharge><onum>${found.msisdn}</onum><amount>5.00</amount><currency>EUR</currency><result>Ok</result></recharge>`);
       }
       case "sms":
       case "sms2": {

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { forwardingAllowed, formatSeconds, formatTraffic, historyTotals, historyWindow, isHistoryDays } from "@/lib/esim/numbers/service-policy";
+import { forwardingAllowed, formatSeconds, formatTraffic, historyTotals, historyWindow, isHistoryDays, statementMonths } from "@/lib/esim/numbers/service-policy";
 
 describe("number service rules", () => {
   it("forwards calls only to North America and Europe", () => {
@@ -32,5 +32,23 @@ describe("number service rules", () => {
     );
     assert.deepEqual(totals, { calls: 2, texts: 1, dataSessions: 2, dataBytes: 1000, costMinor: 82 });
     assert.deepEqual(historyTotals(null, null), { calls: 0, texts: 0, dataSessions: 0, dataBytes: 0, costMinor: 0 });
+  });
+});
+
+describe("phone bill months", () => {
+  const now = new Date("2026-11-09T12:00:00Z");
+  it("covers whole past months, oldest first", () => {
+    assert.deepEqual(statementMonths("2026-09", "2026-10", now), [
+      { month: "2026-09", from: "2026-09-01", to: "2026-10-01" },
+      { month: "2026-10", from: "2026-10-01", to: "2026-11-01" },
+    ]);
+    assert.deepEqual(statementMonths("2025-12", "2025-12", now), [{ month: "2025-12", from: "2025-12-01", to: "2026-01-01" }]);
+  });
+
+  it("refuses the current month, reversed ranges and more than twelve", () => {
+    assert.equal(typeof statementMonths("2026-11", "2026-11", now), "string");
+    assert.equal(typeof statementMonths("2026-10", "2026-09", now), "string");
+    assert.equal(typeof statementMonths("2025-09", "2026-10", now), "string");
+    assert.equal(typeof statementMonths("2026-13", "2026-10", now), "string");
   });
 });

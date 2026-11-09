@@ -729,7 +729,17 @@
       "forwardStop": "Durdur",
       "forwardSet": "Aramalar yönlendiriliyor",
       "forwardOff": "Yönlendirme durduruldu",
-      "forwardInvalid": "+1, +3 veya +4 ile başlayan, ülke kodlu bir numara girin."
+      "forwardInvalid": "+1, +3 veya +4 ile başlayan, ülke kodlu bir numara girin.",
+      "limit": "Daily data spending limit",
+      "experimental": "Experimental",
+      "limitHint": "Data stops for the day once this much ({currency}) is spent on it. It may not always hold: charges can go past it, and data may stay off until the next period. It does not limit calls, texts or packages. Each period is 24 hours from when the limit was set.",
+      "limitNow": "{value} a day; {used} used in this period, until {until}.",
+      "limitNone": "No daily limit.",
+      "limitSave": "Set daily limit",
+      "limitRemove": "Remove",
+      "limitInvalid": "Enter an amount between 0.10 and 100.",
+      "limitSet": "Daily limit set",
+      "limitRemoved": "Daily limit removed"
     },
     "history": {
       "title": "Kullanım geçmişi",
@@ -813,7 +823,19 @@
       "releaseSubmit": "Give it up",
       "releaseHint": "The number leaves your account for good, with any credit left on it. This cannot be undone.",
       "releaseConfirm": "Type the number to confirm: {number}",
-      "releaseDone": "The number was removed from your account"
+      "releaseDone": "The number was removed from your account",
+      "voucher": "Redeem a voucher",
+      "voucherHint": "Enter the PIN of a recharge voucher to add its value to this number's credit.",
+      "voucherCode": "Voucher PIN",
+      "voucherRedeem": "Redeem",
+      "voucherDone": "Voucher added to the number's credit",
+      "voucherFailed": "The voucher could not be used",
+      "bill": "Phone bill",
+      "billHint": "A PDF of the calls, texts, data and credit added in whole past months (up to 12), from the network's records.",
+      "billFrom": "From month",
+      "billTo": "Through month",
+      "billDownload": "Download PDF",
+      "billFailed": "The bill could not be made"
     }
   },
   "admin": {

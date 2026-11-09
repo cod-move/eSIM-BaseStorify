@@ -173,7 +173,7 @@ export default async function AccountNumberPage({ params }: PageProps) {
         </CardContent>
       </Card>
 
-      <NumberServicesCard numberId={number.id} />
+      <NumberServicesCard numberId={number.id} currency={card?.currency ?? "EUR"} />
       <NumberHistoryCard numberId={number.id} currency={card?.currency ?? "EUR"} />
       <NumberDiagnosticsCard numberId={number.id} testSms={!card?.blocked ? <SendSmsButton numberId={number.id} title={title} /> : null} />
       <NumberManageCard

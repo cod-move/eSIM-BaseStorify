@@ -7,11 +7,13 @@ import { EsimProviderLog } from "@/models/esim-provider-log.model";
 import { credentialsOf, findProvider } from "@/lib/esim/provider-service";
 import { withProviderLog } from "@/lib/esim/provider-log";
 import { topConnectClient } from "@/lib/esim/providers/registry";
+import { refreshNumberCard } from "@/lib/esim/numbers/account";
 import type {
   TopConnectActivity,
   TopConnectCallRecord,
   TopConnectLocationUpdate,
   TopConnectClient,
+  TopConnectDataLimit,
   TopConnectDataRecord,
   TopConnectRecharge,
   TopConnectService,
@@ -291,4 +293,84 @@ export async function reconnectNumber(userId: string, numberId: string): Promise
   } catch (error) {
     return { ok: false, message: failure(error) };
   }
+}
+
+// ── daily data spending limit, and vouchers ──────────────────────────────
+
+/** Smallest and largest daily data limit, in cents of the card's currency (as other number shops allow). */
+export const DATA_LIMIT_MIN_MINOR = 10;
+export const DATA_LIMIT_MAX_MINOR = 100_00;
+
+export type DataLimitView = { limit: TopConnectDataLimit | null } | { unavailable: true };
+
+/** The number's daily data spending limit. Null when the number is not the shopper's. */
+export async function numberDataLimit(userId: string, numberId: string): Promise<DataLimitView | null> {
+  const line = await ownedLine(userId, numberId);
+  if (!line) return null;
+  const tc = await gateway();
+  if (!tc) return { unavailable: true };
+  try {
+    return { limit: await tc.client.dataLimit(line.msisdn) };
+  } catch {
+    return { unavailable: true };
+  }
+}
+
+export type DataLimitChange = { ok: true; limit: TopConnectDataLimit | null } | { ok: false; message: string };
+
+/**
+ * Sets the number's repeating daily data spending limit (cents), or removes
+ * it with null. TopConnect counts each 24 hours from when it was set, and it
+ * may let a session run past it. Null when the number is not the shopper's.
+ */
+export async function setNumberDataLimit(userId: string, numberId: string, valueMinor: number | null): Promise<DataLimitChange | null> {
+  const line = await ownedLine(userId, numberId);
+  if (!line) return null;
+  if (line.blocked) return { ok: false, message: "This number is blocked" };
+  if (valueMinor !== null && (!Number.isSafeInteger(valueMinor) || valueMinor < DATA_LIMIT_MIN_MINOR || valueMinor > DATA_LIMIT_MAX_MINOR)) {
+    return { ok: false, message: "Enter a daily limit between 0.10 and 100" };
+  }
+  const tc = await gateway();
+  if (!tc) return { ok: false, message: "Number services are not available right now" };
+  try {
+    const limit = await withProviderLog(
+      { provider: tc.provider, providerCode: "topconnect", operation: "numbers.data-limit", request: { number: String(line.id), valueMinor } },
+      () => tc.client.setDataLimit(line.msisdn, valueMinor),
+    );
+    return { ok: true, limit };
+  } catch (error) {
+    return { ok: false, message: failure(error) };
+  }
+}
+
+/** Wrong voucher PINs a number may try in an hour: PINs must not be guessable by trying. */
+const VOUCHER_TRIES_PER_HOUR = 5;
+
+export type VoucherResult = { ok: true } | { ok: false; message: string };
+
+/** Puts a TopConnect recharge voucher on the number. Null when the number is not the shopper's. */
+export async function redeemNumberVoucher(userId: string, numberId: string, pin: string): Promise<VoucherResult | null> {
+  const line = await ownedLine(userId, numberId);
+  if (!line) return null;
+  if (line.blocked) return { ok: false, message: "This number is blocked" };
+  const failures = await EsimProviderLog.countDocuments({
+    operation: "numbers.voucher",
+    ok: false,
+    "request.number": String(line.id),
+    createdAt: { $gte: new Date(Date.now() - 60 * 60_000) },
+  });
+  if (failures >= VOUCHER_TRIES_PER_HOUR) return { ok: false, message: "Too many wrong codes; try again in an hour" };
+  const tc = await gateway();
+  if (!tc) return { ok: false, message: "Number services are not available right now" };
+  try {
+    // The PIN itself is never logged.
+    await withProviderLog(
+      { provider: tc.provider, providerCode: "topconnect", operation: "numbers.voucher", request: { number: String(line.id), pinEnd: pin.replace(/\D/g, "").slice(-4) } },
+      () => tc.client.redeemVoucher(line.msisdn, pin),
+    );
+  } catch (error) {
+    return { ok: false, message: failure(error) };
+  }
+  await refreshNumberCard(String(line.id), { force: true }).catch(() => false);
+  return { ok: true };
 }

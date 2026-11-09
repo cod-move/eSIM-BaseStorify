@@ -729,7 +729,17 @@
       "forwardStop": "取消轉接",
       "forwardSet": "已開啓來電轉接",
       "forwardOff": "已取消來電轉接",
-      "forwardInvalid": "請輸入以 +1、+3 或 +4 開頭、帶國家區號的號碼。"
+      "forwardInvalid": "請輸入以 +1、+3 或 +4 開頭、帶國家區號的號碼。",
+      "limit": "每日流量花費上限",
+      "experimental": "實驗功能",
+      "limitHint": "當天流量花費達到這個金額（{currency}）後停止上網。不一定完全生效：實際扣費可能超過上限，斷網後也可能要等到下一個週期才恢復。不限制通話、短信和套餐購買。每個週期從設置時起算 24 小時。",
+      "limitNow": "每天 {value}；本週期已用 {used}，到 {until} 結束。",
+      "limitNone": "未設置每日上限。",
+      "limitSave": "設置每日上限",
+      "limitRemove": "取消",
+      "limitInvalid": "請輸入 0.10 到 100 之間的金額。",
+      "limitSet": "已設置每日上限",
+      "limitRemoved": "已取消每日上限"
     },
     "history": {
       "title": "用量記錄",
@@ -813,7 +823,19 @@
       "releaseSubmit": "確認放棄",
       "releaseHint": "號碼會永久離開你的賬戶，剩餘餘額也一併放棄，無法撤回。",
       "releaseConfirm": "請輸入號碼以確認：{number}",
-      "releaseDone": "號碼已從你的賬戶移除"
+      "releaseDone": "號碼已從你的賬戶移除",
+      "voucher": "兌換充值卡",
+      "voucherHint": "輸入充值卡密碼，面值會充進這個號碼的餘額。",
+      "voucherCode": "充值卡密碼",
+      "voucherRedeem": "兌換",
+      "voucherDone": "充值卡已充入號碼餘額",
+      "voucherFailed": "充值卡無法使用",
+      "bill": "話費賬單",
+      "billHint": "生成已結束月份（最多 12 個月）的通話、短信、流量和充值明細 PDF，數據來自運營商記錄。",
+      "billFrom": "起始月份",
+      "billTo": "結束月份",
+      "billDownload": "下載 PDF",
+      "billFailed": "賬單生成失敗"
     }
   },
   "admin": {

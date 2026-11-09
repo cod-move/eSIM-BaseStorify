@@ -729,7 +729,17 @@
       "forwardStop": "Detener",
       "forwardSet": "Las llamadas se desvían",
       "forwardOff": "Desvío detenido",
-      "forwardInvalid": "Introduce un número que empiece por +1, +3 o +4, con el prefijo del país."
+      "forwardInvalid": "Introduce un número que empiece por +1, +3 o +4, con el prefijo del país.",
+      "limit": "Límite diario de gasto en datos",
+      "experimental": "Experimental",
+      "limitHint": "Los datos se detienen ese día cuando se gasta esta cantidad ({currency}). No siempre funciona: los cargos pueden superarlo y los datos pueden seguir cortados hasta el siguiente periodo. No limita llamadas, SMS ni paquetes. Cada periodo dura 24 horas desde que se fijó el límite.",
+      "limitNow": "{value} al día; {used} usados en este periodo, hasta {until}.",
+      "limitNone": "Sin límite diario.",
+      "limitSave": "Fijar límite diario",
+      "limitRemove": "Quitar",
+      "limitInvalid": "Introduce un importe entre 0,10 y 100.",
+      "limitSet": "Límite diario fijado",
+      "limitRemoved": "Límite diario quitado"
     },
     "history": {
       "title": "Historial de uso",
@@ -813,7 +823,19 @@
       "releaseSubmit": "Renunciar",
       "releaseHint": "El número sale de tu cuenta para siempre, con el saldo que le quede. No se puede deshacer.",
       "releaseConfirm": "Escribe el número para confirmar: {number}",
-      "releaseDone": "El número se quitó de tu cuenta"
+      "releaseDone": "El número se quitó de tu cuenta",
+      "voucher": "Canjear un cupón",
+      "voucherHint": "Introduce el PIN de un cupón de recarga para añadir su valor al saldo de este número.",
+      "voucherCode": "PIN del cupón",
+      "voucherRedeem": "Canjear",
+      "voucherDone": "Cupón añadido al saldo del número",
+      "voucherFailed": "No se pudo usar el cupón",
+      "bill": "Factura telefónica",
+      "billHint": "Un PDF de llamadas, SMS, datos y recargas de meses completos pasados (hasta 12), según los registros de la red.",
+      "billFrom": "Desde el mes",
+      "billTo": "Hasta el mes",
+      "billDownload": "Descargar PDF",
+      "billFailed": "No se pudo crear la factura"
     }
   },
   "admin": {

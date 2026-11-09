@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
-import { Activity, AlertTriangle, Loader2, MapPin, QrCode, RefreshCw, RotateCcw, Trash2, UserRoundPlus, Wifi } from "lucide-react";
+import { Activity, AlertTriangle, FileText, Loader2, MapPin, QrCode, RefreshCw, RotateCcw, Ticket, Trash2, UserRoundPlus, Wifi } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -326,6 +326,9 @@ export function NumberManageCard({ numberId, msisdn, title, qr, blocked }: { num
           </div>
         ) : null}
 
+        <VoucherSection numberId={numberId} blocked={blocked} />
+        <BillSection numberId={numberId} />
+
         <div className="space-y-2 rounded-lg border p-3">
           <div className="flex items-center gap-2 text-sm font-medium">
             <UserRoundPlus className="h-4 w-4 text-muted-foreground" />
@@ -406,5 +409,117 @@ export function NumberManageCard({ numberId, msisdn, title, qr, blocked }: { num
         </DialogContent>
       </Dialog>
     </Card>
+  );
+}
+
+/** A TopConnect recharge voucher (its PIN) put on the number. */
+function VoucherSection({ numberId, blocked }: { numberId: string; blocked: boolean }) {
+  const t = useFallbackTranslator(useTranslations());
+  const router = useRouter();
+  const [pin, setPin] = useState("");
+  const [busy, setBusy] = useState(false);
+  const digits = pin.replace(/[\s-]/g, "");
+
+  async function redeem() {
+    setBusy(true);
+    try {
+      await apiClient.post(`/api/esim/me/numbers/${numberId}/voucher`, { pin: digits });
+      toast.success(t("esim.manage.voucherDone", "Voucher added to the number's credit"));
+      setPin("");
+      router.refresh();
+    } catch (error) {
+      toast.error(errorMessage(error, t("esim.manage.voucherFailed", "The voucher could not be used")));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="space-y-2 rounded-lg border p-3">
+      <div className="flex items-center gap-2 text-sm font-medium">
+        <Ticket className="h-4 w-4 text-muted-foreground" />
+        {t("esim.manage.voucher", "Redeem a voucher")}
+      </div>
+      <p className="text-xs text-muted-foreground">{t("esim.manage.voucherHint", "Enter the PIN of a recharge voucher to add its value to this number's credit.")}</p>
+      <div className="flex flex-col gap-2 sm:flex-row">
+        <Input inputMode="numeric" autoComplete="off" placeholder="1234 5678 9012 3456" value={pin} onChange={(event) => setPin(event.target.value)} disabled={blocked || busy} aria-label={t("esim.manage.voucherCode", "Voucher PIN")} />
+        <Button onClick={() => void redeem()} disabled={blocked || busy || !/^\d{6,32}$/.test(digits)}>
+          {busy ? <Loader2 className="me-2 h-4 w-4 animate-spin" /> : null}
+          {t("esim.manage.voucherRedeem", "Redeem")}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+/** The last twelve completed months, newest first, as "YYYY-MM". */
+function pastMonths(now = new Date()): string[] {
+  const months: string[] = [];
+  for (let back = 1; back <= 12; back += 1) {
+    const date = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - back, 1));
+    months.push(`${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, "0")}`);
+  }
+  return months;
+}
+
+/** A phone bill (PDF) for whole past months, downloaded at once. */
+function BillSection({ numberId }: { numberId: string }) {
+  const t = useFallbackTranslator(useTranslations());
+  const months = pastMonths();
+  const [from, setFrom] = useState(months[0]);
+  const [to, setTo] = useState(months[0]);
+  const [busy, setBusy] = useState(false);
+  const label = (month: string) => new Date(`${month}-01T00:00:00Z`).toLocaleString(undefined, { month: "long", year: "numeric", timeZone: "UTC" });
+
+  async function download() {
+    setBusy(true);
+    try {
+      const response = await fetch(`/api/esim/me/numbers/${numberId}/statement?from=${from}&to=${to}`);
+      if (!response.ok) {
+        const payload = await response.json().catch(() => null);
+        throw new Error(payload?.message || t("esim.manage.billFailed", "The bill could not be made"));
+      }
+      const blob = await response.blob();
+      const name = /filename="([^"]+)"/.exec(response.headers.get("content-disposition") ?? "")?.[1] ?? "phone-bill.pdf";
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = name;
+      link.click();
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      toast.error(errorMessage(error, t("esim.manage.billFailed", "The bill could not be made")));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const select = (value: string, onChange: (next: string) => void, aria: string) => (
+    <select className="h-9 rounded-md border bg-background px-2 text-sm" value={value} onChange={(event) => onChange(event.target.value)} aria-label={aria}>
+      {[...months].reverse().map((month) => (
+        <option key={month} value={month}>
+          {label(month)}
+        </option>
+      ))}
+    </select>
+  );
+
+  return (
+    <div className="space-y-2 rounded-lg border p-3">
+      <div className="flex items-center gap-2 text-sm font-medium">
+        <FileText className="h-4 w-4 text-muted-foreground" />
+        {t("esim.manage.bill", "Phone bill")}
+      </div>
+      <p className="text-xs text-muted-foreground">{t("esim.manage.billHint", "A PDF of the calls, texts, data and credit added in whole past months (up to 12), from the network's records.")}</p>
+      <div className="flex flex-wrap items-center gap-2">
+        {select(from, setFrom, t("esim.manage.billFrom", "From month"))}
+        <span className="text-sm text-muted-foreground">–</span>
+        {select(to, setTo, t("esim.manage.billTo", "Through month"))}
+        <Button size="sm" onClick={() => void download()} disabled={busy || to < from}>
+          {busy ? <Loader2 className="me-2 h-4 w-4 animate-spin" /> : null}
+          {t("esim.manage.billDownload", "Download PDF")}
+        </Button>
+      </div>
+    </div>
   );
 }

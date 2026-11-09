@@ -168,6 +168,16 @@ export interface TopConnectActivity {
   currency: string | null;
 }
 
+/** A daily data spending limit (`gprslimit`), in cents of the card's currency. */
+export interface TopConnectDataLimit {
+  valueMinor: number | null;
+  usedMinor: number | null;
+  period: string | null;
+  /** The current 24-hour period: it starts when the limit was set, not at midnight. */
+  periodStart: string | null;
+  periodEnd: string | null;
+}
+
 /** The latest network registration of one kind (`get_lu`). */
 export interface TopConnectLocationUpdate {
   /** "voice_lu", "voice_lu_first", "gprs_lu", "gprs_lu_first". */
@@ -518,6 +528,50 @@ export class TopConnectClient {
       .sort(newestFirst);
   }
 
+  // ── spending limit on data, and vouchers (manual 4.4, 3.5) ───────────────
+
+  /** The daily data spending limit now; null when there is none. */
+  async dataLimit(msisdn: string): Promise<TopConnectDataLimit | null> {
+    try {
+      return parseDataLimit(await this.call("gprslimit", { onum: digitsOnly(msisdn, "msisdn"), option: "status" }));
+    } catch (error) {
+      if (error instanceof ProviderError && /not active|not defined|deactivated/i.test(error.message)) return null;
+      throw error;
+    }
+  }
+
+  /**
+   * Sets a repeating daily data spending limit, in cents of the card's
+   * currency (a new one, or a new value for the one running), or removes it
+   * with null.
+   */
+  async setDataLimit(msisdn: string, valueMinor: number | null): Promise<TopConnectDataLimit | null> {
+    const onum = digitsOnly(msisdn, "msisdn");
+    const current = await this.dataLimit(onum);
+    if (valueMinor === null) {
+      if (!current) return null;
+      try {
+        await this.call("gprslimit", { onum, option: "deactive" });
+      } catch (error) {
+        if (!(error instanceof ProviderError && /deactivated|not defined/i.test(error.message))) throw error;
+      }
+      return null;
+    }
+    if (!Number.isSafeInteger(valueMinor) || valueMinor < 1) throw new ProviderError("rejected", "The limit must be a positive amount", null, "topconnect");
+    const value = formatMinor(valueMinor);
+    const xml = current
+      ? await this.call("gprslimit", { onum, option: "update", value })
+      : await this.call("gprslimit", { onum, option: "active", period: "day", value, count: "0" });
+    return parseDataLimit(xml);
+  }
+
+  /** Puts a TopConnect recharge voucher (its PIN) on the card. */
+  async redeemVoucher(msisdn: string, pin: string): Promise<void> {
+    const code = pin.replace(/[\s-]/g, "");
+    if (!/^\d{6,32}$/.test(code)) throw new ProviderError("rejected", "Please provide valid PIN to recharge", null, "topconnect");
+    await this.call("recharge", { onum: digitsOnly(msisdn, "msisdn"), pin: code });
+  }
+
   // ── troubleshooting (manual 6.1) ─────────────────────────────────────────
 
   /** The latest of each kind of activity: calls, texts, data, recharge, location update. */
@@ -781,6 +835,19 @@ function section(xml: string, name: string): string {
   if (open === -1) return "";
   const close = xml.toLowerCase().indexOf(`</${name}>`, open);
   return xml.slice(open + name.length + 2, close === -1 ? undefined : close);
+}
+
+function parseDataLimit(xml: string): TopConnectDataLimit {
+  if (!/^success$/i.test(tag(xml, "result") ?? "")) throw new ProviderError("invalid_response", "TopConnect did not confirm the data limit", 200, "topconnect");
+  // "2013-07-04 14:34:56.917": the fraction is dropped.
+  const time = (value: string | null) => timestamp(value ? value.replace(/\.\d+$/, "") : null);
+  return {
+    valueMinor: money(tag(xml, "value")),
+    usedMinor: money(tag(xml, "usedvalue")),
+    period: tag(xml, "period"),
+    periodStart: time(tag(xml, "active")),
+    periodEnd: time(tag(xml, "expire")),
+  };
 }
 
 /** The top-level elements of `body`, as [name, inner XML]; the gateway uses no attributes here. */

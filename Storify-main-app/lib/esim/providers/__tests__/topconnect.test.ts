@@ -304,3 +304,30 @@ describe("TopConnect troubleshooting", () => {
     await assert.rejects(client(refused.fetch).reconnect("37254515257"), /cannot be reconnected/);
   });
 });
+
+describe("TopConnect data limit and vouchers", () => {
+  it("sets, changes and removes a daily data limit", async () => {
+    const tc = client(fakeTopConnectFetch(newFakeTopConnectState()));
+    assert.equal(await tc.dataLimit("37254515257"), null);
+    assert.equal((await tc.setDataLimit("37254515257", 50))?.valueMinor, 50);
+    assert.equal((await tc.setDataLimit("37254515257", 120))?.valueMinor, 120);
+    assert.equal((await tc.dataLimit("37254515257"))?.period, "day");
+    assert.equal(await tc.setDataLimit("37254515257", null), null);
+    assert.equal(await tc.dataLimit("37254515257"), null);
+    assert.equal(await tc.setDataLimit("37254515257", null), null);
+  });
+
+  it("reads the manual's limit answer", async () => {
+    const status = answering("<gprslimit><onum>1</onum><result>success</result><active>2013-07-04 14:34:56.917</active><expire>2013-07-05 14:34:56</expire><period>day</period><count>3</count><value>20.00</value><usedvalue>0.01</usedvalue></gprslimit>");
+    assert.deepEqual(await client(status.fetch).dataLimit("37254515257"), { valueMinor: 2000, usedMinor: 1, period: "day", periodStart: "2013-07-04T14:34:56Z", periodEnd: "2013-07-05T14:34:56Z" });
+  });
+
+  it("puts a voucher on the card once", async () => {
+    const state = newFakeTopConnectState();
+    const tc = client(fakeTopConnectFetch(state));
+    await tc.redeemVoucher("37254515257", "1234 5678 9012 3456");
+    assert.equal(state.cards.get("37254515257")?.balanceMinor, 500);
+    await assert.rejects(tc.redeemVoucher("37254515257", "1234567890123456"), /valid PIN/);
+    await assert.rejects(tc.redeemVoucher("37254515257", "abc"), /valid PIN/);
+  });
+});

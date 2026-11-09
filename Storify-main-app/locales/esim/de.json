@@ -729,7 +729,17 @@
       "forwardStop": "Beenden",
       "forwardSet": "Anrufe werden umgeleitet",
       "forwardOff": "Umleitung beendet",
-      "forwardInvalid": "Nummer mit +1, +3 oder +4 und Ländervorwahl eingeben."
+      "forwardInvalid": "Nummer mit +1, +3 oder +4 und Ländervorwahl eingeben.",
+      "limit": "Tägliches Datenkostenlimit",
+      "experimental": "Experimentell",
+      "limitHint": "Daten stoppen für den Tag, sobald so viel ({currency}) dafür ausgegeben ist. Es greift nicht immer: Kosten können darüber gehen, und Daten können bis zur nächsten Periode aus bleiben. Anrufe, SMS und Pakete werden nicht begrenzt. Jede Periode dauert 24 Stunden ab dem Setzen.",
+      "limitNow": "{value} pro Tag; {used} in dieser Periode verbraucht, bis {until}.",
+      "limitNone": "Kein Tageslimit.",
+      "limitSave": "Tageslimit setzen",
+      "limitRemove": "Entfernen",
+      "limitInvalid": "Betrag zwischen 0,10 und 100 eingeben.",
+      "limitSet": "Tageslimit gesetzt",
+      "limitRemoved": "Tageslimit entfernt"
     },
     "history": {
       "title": "Verbrauch",
@@ -813,7 +823,19 @@
       "releaseSubmit": "Aufgeben",
       "releaseHint": "Die Nummer verlässt Ihr Konto endgültig, samt restlichem Guthaben. Das kann nicht rückgängig gemacht werden.",
       "releaseConfirm": "Zur Bestätigung die Nummer eingeben: {number}",
-      "releaseDone": "Die Nummer wurde aus Ihrem Konto entfernt"
+      "releaseDone": "Die Nummer wurde aus Ihrem Konto entfernt",
+      "voucher": "Gutschein einlösen",
+      "voucherHint": "Geben Sie die PIN eines Aufladegutscheins ein, um seinen Wert dem Guthaben dieser Nummer gutzuschreiben.",
+      "voucherCode": "Gutschein-PIN",
+      "voucherRedeem": "Einlösen",
+      "voucherDone": "Gutschein dem Guthaben gutgeschrieben",
+      "voucherFailed": "Der Gutschein konnte nicht verwendet werden",
+      "bill": "Telefonrechnung",
+      "billHint": "Ein PDF der Anrufe, SMS, Daten und Aufladungen ganzer vergangener Monate (bis zu 12), aus den Aufzeichnungen des Netzes.",
+      "billFrom": "Von Monat",
+      "billTo": "Bis Monat",
+      "billDownload": "PDF herunterladen",
+      "billFailed": "Die Rechnung konnte nicht erstellt werden"
     }
   },
   "admin": {

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
-import { ArrowDownLeft, ArrowUpRight, Loader2, MessageSquare, PhoneCall, PhoneForwarded, RefreshCw, Voicemail, Wallet, Wifi } from "lucide-react";
+import { ArrowDownLeft, ArrowUpRight, Gauge, Loader2, MessageSquare, PhoneCall, PhoneForwarded, RefreshCw, Voicemail, Wallet, Wifi } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -12,6 +12,8 @@ import { toast } from "@/components/ui/toast-notification";
 import { useFallbackTranslator } from "@/hooks/use-fallback-translator";
 import { apiClient } from "@/lib/api/client";
 import { formatAmount } from "@/lib/esim/numbers/line";
+import { parseCardAmount } from "@/lib/esim/numbers/op-policy";
+import type { TopConnectDataLimit } from "@/lib/esim/providers/topconnect";
 import { forwardingAllowed, formatSeconds, formatTraffic, HISTORY_DAYS, historyTotals, type HistoryDays } from "@/lib/esim/numbers/service-policy";
 import type { NumberHistory, NumberServices, NumberSwitch } from "@/lib/esim/numbers/services";
 import { cn } from "@/lib/utils";
@@ -26,7 +28,7 @@ import { cn } from "@/lib/utils";
 
 const errorMessage = (error: unknown, fallback: string) => (error instanceof Error && error.message ? error.message : fallback);
 
-export function NumberServicesCard({ numberId }: { numberId: string }) {
+export function NumberServicesCard({ numberId, currency }: { numberId: string; currency: string }) {
   const t = useFallbackTranslator(useTranslations());
   const [services, setServices] = useState<NumberServices | null>(null);
   const [loading, setLoading] = useState(true);
@@ -175,10 +177,100 @@ export function NumberServicesCard({ numberId }: { numberId: string }) {
               )}
               {digits && !forwardValid ? <p className="text-xs text-destructive">{t("esim.services.forwardInvalid", "Enter a number starting with +1, +3 or +4, with its country code.")}</p> : null}
             </div>
+            <DataLimitSection numberId={numberId} currency={currency} blocked={blocked} />
           </>
         ) : null}
       </CardContent>
     </Card>
+  );
+}
+
+type DataLimitView = { limit: TopConnectDataLimit | null } | { unavailable: true };
+
+/** A repeating daily spending limit on data (TopConnect's `gprslimit`): experimental, as TopConnect itself warns. */
+function DataLimitSection({ numberId, currency, blocked }: { numberId: string; currency: string; blocked: boolean }) {
+  const t = useFallbackTranslator(useTranslations());
+  const [view, setView] = useState<DataLimitView | null>(null);
+  const [input, setInput] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  const load = useCallback(async () => {
+    try {
+      const next = await apiClient.get<DataLimitView>(`/api/esim/me/numbers/${numberId}/data-limit`);
+      setView(next);
+      if ("limit" in next && next.limit?.valueMinor) setInput((next.limit.valueMinor / 100).toFixed(2));
+    } catch {
+      setView({ unavailable: true });
+    }
+  }, [numberId]);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  const cents = parseCardAmount(input);
+  const valid = cents !== null && cents >= 10 && cents <= 10_000;
+
+  async function save(valueMinor: number | null) {
+    setBusy(true);
+    try {
+      const result = await apiClient.post<{ limit: TopConnectDataLimit | null }>(`/api/esim/me/numbers/${numberId}/data-limit`, { valueMinor });
+      setView({ limit: result.limit });
+      if (!result.limit) setInput("");
+      toast.success(result.limit ? t("esim.services.limitSet", "Daily limit set") : t("esim.services.limitRemoved", "Daily limit removed"));
+    } catch (error) {
+      toast.error(errorMessage(error, t("esim.services.failed", "The change could not be made")));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const limit = view && "limit" in view ? view.limit : null;
+  return (
+    <div className="space-y-2 rounded-lg border p-3">
+      <div className="flex items-center gap-2 text-sm font-medium">
+        <Gauge className="h-4 w-4 text-muted-foreground" />
+        {t("esim.services.limit", "Daily data spending limit")}
+        <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-900 dark:bg-amber-950/50 dark:text-amber-200">{t("esim.services.experimental", "Experimental")}</span>
+      </div>
+      <p className="text-xs text-muted-foreground">
+        {t(
+          "esim.services.limitHint",
+          "Data stops for the day once this much ({currency}) is spent on it. It may not always hold: charges can go past it, and data may stay off until the next period. It does not limit calls, texts or packages. Each period is 24 hours from when the limit was set.",
+          { currency },
+        )}
+      </p>
+      {view === null ? (
+        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+      ) : "unavailable" in view ? (
+        <p className="text-xs text-muted-foreground">{t("esim.services.unknown", "The network did not say whether this is on.")}</p>
+      ) : (
+        <>
+          <p className="text-xs">
+            {limit
+              ? t("esim.services.limitNow", "{value} a day; {used} used in this period, until {until}.", {
+                  value: limit.valueMinor !== null ? formatAmount(limit.valueMinor, currency) : "—",
+                  used: limit.usedMinor !== null ? formatAmount(limit.usedMinor, currency) : "—",
+                  until: limit.periodEnd ? new Date(limit.periodEnd).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" }) : "—",
+                })
+              : t("esim.services.limitNone", "No daily limit.")}
+          </p>
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <Input inputMode="decimal" placeholder="1.00" value={input} onChange={(event) => setInput(event.target.value)} disabled={blocked || busy} aria-label={t("esim.services.limit", "Daily data spending limit")} />
+            <Button onClick={() => cents !== null && void save(cents)} disabled={!valid || blocked || busy || cents === limit?.valueMinor}>
+              {busy ? <Loader2 className="me-2 h-4 w-4 animate-spin" /> : null}
+              {t("esim.services.limitSave", "Set daily limit")}
+            </Button>
+            {limit ? (
+              <Button variant="outline" onClick={() => void save(null)} disabled={blocked || busy}>
+                {t("esim.services.limitRemove", "Remove")}
+              </Button>
+            ) : null}
+          </div>
+          {input && !valid ? <p className="text-xs text-destructive">{t("esim.services.limitInvalid", "Enter an amount between 0.10 and 100.")}</p> : null}
+        </>
+      )}
+    </div>
   );
 }
 
