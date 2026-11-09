@@ -4,14 +4,26 @@
  */
 
 /**
- * Calls may be forwarded only to North America (+1) and Europe (+3, +4), as
- * other number shops allow: forwarded calls are paid from the card's credit,
- * and these are the cheap destinations.
+ * Any number with its country code may take forwarded calls: TopConnect sets
+ * no limit (its manual forwards to +55 and +380). Forwarded calls are paid
+ * from the card's credit at TopConnect's rates.
  */
-export const FORWARD_PREFIXES = ["1", "3", "4"] as const;
-
 export function forwardingAllowed(digits: string): boolean {
-  return /^\d{6,15}$/.test(digits) && FORWARD_PREFIXES.some((prefix) => digits.startsWith(prefix));
+  return /^[1-9]\d{5,14}$/.test(digits);
+}
+
+/**
+ * SIM software versions TopConnect lets reconnect to the network (manual
+ * 6.1.1): 7.5, 7.5M, 8K, 8KO and Telia postpaid. The manual writes some with
+ * Cyrillic letters (М, К, О), so those count as their Latin twins.
+ */
+const RECONNECT_VERSIONS = new Set(["7.5", "7.5M", "8K", "8KO", "TELIA POSTPAID"]);
+
+/** Whether a SIM may be reconnected; null when its version is not known. */
+export function reconnectSupported(softwareVersion: string | null | undefined): boolean | null {
+  if (!softwareVersion?.trim()) return null;
+  const latin = softwareVersion.trim().toUpperCase().replace(/К/g, "K").replace(/М/g, "M").replace(/О/g, "O").replace(/\s+/g, " ");
+  return RECONNECT_VERSIONS.has(latin);
 }
 
 /** How far back the history goes. */

@@ -1,13 +1,14 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { forwardingAllowed, formatSeconds, formatTraffic, historyTotals, historyWindow, isHistoryDays, statementMonths } from "@/lib/esim/numbers/service-policy";
+import { forwardingAllowed, formatSeconds, formatTraffic, historyTotals, historyWindow, isHistoryDays, reconnectSupported, statementMonths } from "@/lib/esim/numbers/service-policy";
 
 describe("number service rules", () => {
-  it("forwards calls only to North America and Europe", () => {
+  it("forwards calls to any number with its country code", () => {
     assert.equal(forwardingAllowed("447700900123"), true);
     assert.equal(forwardingAllowed("12025550123"), true);
     assert.equal(forwardingAllowed("33612345678"), true);
-    assert.equal(forwardingAllowed("8613800138000"), false);
+    assert.equal(forwardingAllowed("8613800138000"), true);
+    assert.equal(forwardingAllowed("0613800138000"), false);
     assert.equal(forwardingAllowed("4412"), false);
   });
 
@@ -50,5 +51,16 @@ describe("phone bill months", () => {
     assert.equal(typeof statementMonths("2026-10", "2026-09", now), "string");
     assert.equal(typeof statementMonths("2025-09", "2026-10", now), "string");
     assert.equal(typeof statementMonths("2026-13", "2026-10", now), "string");
+  });
+});
+
+describe("reconnecting a SIM", () => {
+  it("is allowed only for the SIM versions TopConnect names, Cyrillic letters included", () => {
+    assert.equal(reconnectSupported("8K"), true);
+    assert.equal(reconnectSupported("8КО"), true);
+    assert.equal(reconnectSupported("7.5М"), true);
+    assert.equal(reconnectSupported("Telia postpaid"), true);
+    assert.equal(reconnectSupported("9E"), false);
+    assert.equal(reconnectSupported(null), null);
   });
 });

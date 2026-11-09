@@ -737,12 +737,12 @@
       "forward": "Renvoi d'appel",
       "forwardInactive": "Désactivé",
       "forwardTo": "Renvoyer vers",
-      "forwardHint": "Renvoyer tous les appels entrants vers un autre numéro. Uniquement les numéros commençant par +1, +3 ou +4 (Amérique du Nord et Europe).",
+      "forwardHint": "Renvoyer tous les appels entrants vers un autre numéro, dans n'importe quel pays. Les appels renvoyés sont payés sur le crédit du numéro.",
       "forwardSave": "Renvoyer",
       "forwardStop": "Arrêter",
       "forwardSet": "Les appels sont renvoyés",
       "forwardOff": "Renvoi arrêté",
-      "forwardInvalid": "Saisissez un numéro commençant par +1, +3 ou +4, avec l'indicatif du pays.",
+      "forwardInvalid": "Saisissez le numéro avec l'indicatif, p. ex. +33 6 12 34 56 78.",
       "limit": "Plafond quotidien de dépenses data",
       "experimental": "Expérimental",
       "limitHint": "Les données s'arrêtent pour la journée une fois ce montant ({currency}) dépensé. Ce n'est pas garanti : les frais peuvent le dépasser et les données peuvent rester coupées jusqu'à la période suivante. Les appels, SMS et forfaits ne sont pas limités. Chaque période dure 24 heures à partir de la mise en place.",
@@ -807,7 +807,8 @@
       "reconnected": "La SIM redémarre. Patientez quelques minutes puis vérifiez le signal.",
       "reconnectFailed": "Le numéro n'a pas pu être reconnecté",
       "reconnectWait": "Reconnecté récemment ; possible à nouveau après {time}.",
-      "note": "Chaque carte montre le dernier relevé de son type ; heures dans votre fuseau horaire."
+      "note": "Chaque carte montre le dernier relevé de son type ; heures dans votre fuseau horaire.",
+      "reconnectUnsupported": "Cette SIM ne peut pas être reconnectée à distance. Redémarrez le téléphone ou activez puis désactivez le mode avion pour qu'elle se réenregistre sur le réseau."
     },
     "manage": {
       "title": "Gérer",

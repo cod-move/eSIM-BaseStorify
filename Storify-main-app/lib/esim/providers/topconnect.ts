@@ -640,6 +640,12 @@ export class TopConnectClient {
       .sort(newestFirst);
   }
 
+  /** The SIM's software version, IMSI and form factor (`gbalance detailed=true`). */
+  async simInfo(msisdn: string): Promise<{ softwareVersion: string | null; imsi: string | null; formFactor: string | null }> {
+    const xml = await this.call("gbalance", { onum: digitsOnly(msisdn, "msisdn"), detailed: "true" });
+    return { softwareVersion: tag(xml, "software_version"), imsi: tag(xml, "imsi"), formFactor: tag(xml, "ffactor") };
+  }
+
   /** The data session open right now, if any. */
   async dataSession(msisdn: string): Promise<{ startedAt: string | null; mccmnc: string | null } | null> {
     const xml = await this.call("checkdatasession", { onum: digitsOnly(msisdn, "msisdn") });

@@ -62,7 +62,12 @@ export function NumberDiagnosticsCard({ numberId, testSms }: { numberId: string;
       toast.success(t("esim.diagnose.reconnected", "The SIM is restarting. Wait a few minutes, then check the signal."));
       setConfirming(false);
     } catch (error) {
-      toast.error(errorMessage(error, t("esim.diagnose.reconnectFailed", "The number could not be reconnected")));
+      const message = errorMessage(error, t("esim.diagnose.reconnectFailed", "The number could not be reconnected"));
+      toast.error(/cannot be reconnected/i.test(message) ? t("esim.diagnose.reconnectUnsupported", "This SIM cannot be reconnected remotely. Restart the phone, or turn airplane mode on and off, to make it register on the network again.") : message);
+      if (/cannot be reconnected/i.test(message)) {
+        setResult((current) => (current ? { ...current, reconnectSupported: false } : current));
+        setConfirming(false);
+      }
     } finally {
       setReconnecting(false);
     }
@@ -201,11 +206,18 @@ export function NumberDiagnosticsCard({ numberId, testSms }: { numberId: string;
 
         <div className="flex flex-wrap gap-2">
           {testSms}
-          <Button variant="outline" size="sm" onClick={() => setConfirming(true)} disabled={Boolean(waitUntil)}>
-            <RotateCcw className="me-2 h-4 w-4" />
-            {t("esim.diagnose.reconnect", "Reconnect to the network")}
-          </Button>
+          {result?.reconnectSupported !== false ? (
+            <Button variant="outline" size="sm" onClick={() => setConfirming(true)} disabled={Boolean(waitUntil)}>
+              <RotateCcw className="me-2 h-4 w-4" />
+              {t("esim.diagnose.reconnect", "Reconnect to the network")}
+            </Button>
+          ) : null}
         </div>
+        {result?.reconnectSupported === false ? (
+          <p className="text-xs text-muted-foreground">
+            {t("esim.diagnose.reconnectUnsupported", "This SIM cannot be reconnected remotely. Restart the phone, or turn airplane mode on and off, to make it register on the network again.")}
+          </p>
+        ) : null}
         {waitUntil ? (
           <p className="text-xs text-muted-foreground">{t("esim.diagnose.reconnectWait", "Reconnected recently; you can do it again after {time}.", { time: when(waitUntil) })}</p>
         ) : null}

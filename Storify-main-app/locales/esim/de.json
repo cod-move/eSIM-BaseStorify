@@ -737,12 +737,12 @@
       "forward": "Rufumleitung",
       "forwardInactive": "Aus",
       "forwardTo": "Umleiten an",
-      "forwardHint": "Alle eingehenden Anrufe an eine andere Nummer umleiten. Nur Nummern mit +1, +3 oder +4 (Nordamerika und Europa).",
+      "forwardHint": "Alle eingehenden Anrufe an eine andere Nummer umleiten, in jedes Land. Umgeleitete Anrufe werden vom Guthaben der Nummer bezahlt.",
       "forwardSave": "Umleiten",
       "forwardStop": "Beenden",
       "forwardSet": "Anrufe werden umgeleitet",
       "forwardOff": "Umleitung beendet",
-      "forwardInvalid": "Nummer mit +1, +3 oder +4 und Ländervorwahl eingeben.",
+      "forwardInvalid": "Nummer mit Ländervorwahl eingeben, z. B. +49 151 23456789.",
       "limit": "Tägliches Datenkostenlimit",
       "experimental": "Experimentell",
       "limitHint": "Daten stoppen für den Tag, sobald so viel ({currency}) dafür ausgegeben ist. Es greift nicht immer: Kosten können darüber gehen, und Daten können bis zur nächsten Periode aus bleiben. Anrufe, SMS und Pakete werden nicht begrenzt. Jede Periode dauert 24 Stunden ab dem Setzen.",
@@ -807,7 +807,8 @@
       "reconnected": "Die SIM startet neu. Warten Sie einige Minuten und prüfen Sie dann das Signal.",
       "reconnectFailed": "Die Nummer konnte nicht neu verbunden werden",
       "reconnectWait": "Kürzlich neu verbunden; wieder möglich nach {time}.",
-      "note": "Jede Karte zeigt den letzten Eintrag ihrer Art; Zeiten in Ihrer Zeitzone."
+      "note": "Jede Karte zeigt den letzten Eintrag ihrer Art; Zeiten in Ihrer Zeitzone.",
+      "reconnectUnsupported": "Diese SIM kann nicht aus der Ferne neu verbunden werden. Starten Sie das Telefon neu oder schalten Sie den Flugmodus ein und aus, damit sie sich neu im Netz anmeldet."
     },
     "manage": {
       "title": "Verwalten",

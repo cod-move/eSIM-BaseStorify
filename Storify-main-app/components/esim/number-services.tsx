@@ -150,7 +150,7 @@ export function NumberServicesCard({ numberId, currency }: { numberId: string; c
                 </span>
               </div>
               <p className="text-xs text-muted-foreground">
-                {t("esim.services.forwardHint", "Forward every incoming call to another number. Only numbers starting with +1, +3 or +4 (North America and Europe).")}
+                {t("esim.services.forwardHint", "Forward every incoming call to another number, in any country. Forwarded calls are paid from the number's credit.")}
               </p>
               {services.forwardTo === undefined ? (
                 <p className="text-xs text-muted-foreground">{t("esim.services.unknown", "The network did not say whether this is on.")}</p>
@@ -158,7 +158,7 @@ export function NumberServicesCard({ numberId, currency }: { numberId: string; c
                 <div className="flex flex-col gap-2 sm:flex-row">
                   <Input
                     inputMode="tel"
-                    placeholder="+44 7700 900123"
+                    placeholder="+1 212 555 0123"
                     value={forwardInput}
                     onChange={(event) => setForwardInput(event.target.value)}
                     disabled={blocked || busy !== null}
@@ -175,7 +175,7 @@ export function NumberServicesCard({ numberId, currency }: { numberId: string; c
                   ) : null}
                 </div>
               )}
-              {digits && !forwardValid ? <p className="text-xs text-destructive">{t("esim.services.forwardInvalid", "Enter a number starting with +1, +3 or +4, with its country code.")}</p> : null}
+              {digits && !forwardValid ? <p className="text-xs text-destructive">{t("esim.services.forwardInvalid", "Enter the number with its country code, e.g. +44 7700 900123.")}</p> : null}
             </div>
             <DataLimitSection numberId={numberId} currency={currency} blocked={blocked} />
           </>

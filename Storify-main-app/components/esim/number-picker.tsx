@@ -19,6 +19,7 @@ import { useCurrency } from "@/providers/currency-provider";
 import { cn } from "@/lib/utils";
 import { cardUsdMinor, formatAmount, numberLineLabel, rechargeProblem } from "@/lib/esim/numbers/line";
 import type { NumberShop, PremiumFilter, ShopNumber, ShopNumberFilters, ShopPacket } from "@/lib/esim/numbers/storefront";
+import { packetVolume } from "@/lib/esim/numbers/packet-groups";
 
 /**
  * The numbers page (NUM-03): filter by country code, digits and premium,
@@ -165,7 +166,7 @@ function groupDigits(digits: string) {
 
 function volumeLabel(packet: ShopPacket, unlimited: string) {
   if (packet.volumeMb === null) return unlimited;
-  return packet.volumeMb >= 1000 && packet.volumeMb % 1000 === 0 ? `${packet.volumeMb / 1000} GB` : `${packet.volumeMb} MB`;
+  return packetVolume(packet.volumeMb) ?? unlimited;
 }
 
 function NumberDialog({ shop, number, locale, onClose }: { shop: NumberShop; number: ShopNumber | null; locale: string; onClose: () => void }) {

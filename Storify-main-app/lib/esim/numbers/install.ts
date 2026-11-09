@@ -20,11 +20,14 @@ export function numberValidUntil(input: { lastUsedAt?: Date | null; soldAt?: Dat
   return until;
 }
 
-/** TopConnect's bytes as "512 MB" / "4.9 GB" (its megabyte is 1,024,000 bytes). */
+/** TopConnect's bytes as "512 MB" / "4.9 GB" (its megabyte is 1,024,000 bytes; 1 GB = 1,024 of them). */
 export function formatCardBytes(bytes: number | null | undefined): string | null {
   if (bytes === null || bytes === undefined || !Number.isFinite(bytes) || bytes < 0) return null;
   const mb = bytes / TOPCONNECT_MB;
-  if (mb >= 1000) return `${(mb / 1000).toFixed(mb >= 10_000 ? 0 : 1)} GB`;
+  if (mb >= 1024) {
+    const gb = mb / 1024;
+    return `${Number.isInteger(gb) ? gb : Number(gb.toFixed(gb >= 10 ? 0 : 1))} GB`;
+  }
   return `${Math.round(mb)} MB`;
 }
 

@@ -17,8 +17,9 @@ describe("number card install details", () => {
 
   it("shows TopConnect's bytes in its own megabytes", () => {
     assert.equal(formatCardBytes(10_240_000), "10 MB");
-    assert.equal(formatCardBytes(5_000 * 1_024_000), "5.0 GB");
-    assert.equal(formatCardBytes(50_000 * 1_024_000), "50 GB");
+    assert.equal(formatCardBytes(5_120 * 1_024_000), "5 GB");
+    assert.equal(formatCardBytes(5_000 * 1_024_000), "4.9 GB");
+    assert.equal(formatCardBytes(51_200 * 1_024_000), "50 GB");
     assert.equal(formatCardBytes(null), null);
     assert.equal(packageLeftPercent(1000, 250), 25);
     assert.equal(packageLeftPercent(0, 10), null);

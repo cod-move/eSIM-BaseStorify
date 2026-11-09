@@ -23,11 +23,12 @@ describe("number data package groups", () => {
   });
 
   it("shows volume and the price per GB", () => {
-    assert.equal(packetVolume(5000), "5 GB");
-    assert.equal(packetVolume(1500), "1.5 GB");
+    assert.equal(packetVolume(5120), "5 GB");
+    assert.equal(packetVolume(1536), "1.5 GB");
+    assert.equal(packetVolume(5000), "4.9 GB");
     assert.equal(packetVolume(500), "500 MB");
     assert.equal(packetVolume(null), null);
-    assert.equal(perGbMinor(800, 5000), 160);
+    assert.equal(perGbMinor(800, 5120), 160);
     assert.equal(perGbMinor(800, null), null);
   });
 });

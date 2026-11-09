@@ -737,12 +737,12 @@
       "forward": "Desvío de llamadas",
       "forwardInactive": "Desactivado",
       "forwardTo": "Desviar a",
-      "forwardHint": "Desvía todas las llamadas entrantes a otro número. Solo números que empiezan por +1, +3 o +4 (Norteamérica y Europa).",
+      "forwardHint": "Desvía todas las llamadas entrantes a otro número, de cualquier país. Las llamadas desviadas se pagan con el saldo del número.",
       "forwardSave": "Desviar",
       "forwardStop": "Detener",
       "forwardSet": "Las llamadas se desvían",
       "forwardOff": "Desvío detenido",
-      "forwardInvalid": "Introduce un número que empiece por +1, +3 o +4, con el prefijo del país.",
+      "forwardInvalid": "Introduce el número con prefijo, p. ej. +34 612 345 678.",
       "limit": "Límite diario de gasto en datos",
       "experimental": "Experimental",
       "limitHint": "Los datos se detienen ese día cuando se gasta esta cantidad ({currency}). No siempre funciona: los cargos pueden superarlo y los datos pueden seguir cortados hasta el siguiente periodo. No limita llamadas, SMS ni paquetes. Cada periodo dura 24 horas desde que se fijó el límite.",
@@ -807,7 +807,8 @@
       "reconnected": "La SIM se está reiniciando. Espera unos minutos y comprueba la señal.",
       "reconnectFailed": "No se pudo reconectar el número",
       "reconnectWait": "Reconectado hace poco; podrás volver a hacerlo después de {time}.",
-      "note": "Cada tarjeta muestra el último registro de su tipo; horas en tu zona horaria."
+      "note": "Cada tarjeta muestra el último registro de su tipo; horas en tu zona horaria.",
+      "reconnectUnsupported": "Esta SIM no se puede reconectar a distancia. Reinicia el teléfono o activa y desactiva el modo avión para que vuelva a registrarse en la red."
     },
     "manage": {
       "title": "Gestionar",

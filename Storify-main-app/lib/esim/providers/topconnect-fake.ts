@@ -277,6 +277,15 @@ export function fakeTopConnectFetch(state: FakeTopConnectState = shared): FetchL
         if (!found) return error("checkdatasession", "Card not found");
         return xml(`<checkdatasession><msisdn>${found.msisdn}</msisdn><sessions></sessions></checkdatasession>`);
       }
+      case "gbalance": {
+        const found = card(params.get("onum"));
+        if (!found) return error("gbalance", "Card not found");
+        // An MSISDN ending in 9 is a SIM version TopConnect will not reconnect.
+        const version = found.msisdn.endsWith("9") ? "9E" : "8K";
+        return xml(
+          `<records><card><onum>${found.msisdn}</onum><blocked>false</blocked><balance>${formatMinor(found.balanceMinor)}</balance><curr>EUR</curr><software_version>${version}</software_version><ffactor>4</ffactor><imsi>248022119989958</imsi></card></records>`,
+        );
+      }
       case "makerequest": {
         const found = card(params.get("onum"));
         if (!found) return xml("<makerequest><error_code>1</error_code><error_text>MSISDN not found</error_text><result>FAIL</result></makerequest>");

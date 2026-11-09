@@ -18,7 +18,7 @@ import type {
   TopConnectRecharge,
   TopConnectService,
 } from "@/lib/esim/providers/topconnect";
-import { forwardingAllowed, historyWindow, type HistoryDays } from "@/lib/esim/numbers/service-policy";
+import { forwardingAllowed, historyWindow, reconnectSupported, type HistoryDays } from "@/lib/esim/numbers/service-policy";
 
 /**
  * A shopper's own number card, as the live store and other number shops
@@ -148,7 +148,7 @@ export async function setNumberForwarding(userId: string, numberId: string, targ
   const digits = target === null ? null : target.replace(/[\s()+-]/g, "");
   if (digits !== null) {
     if (!/^\d{6,15}$/.test(digits)) return { ok: false, message: "Enter the number with its country code" };
-    if (!forwardingAllowed(digits)) return { ok: false, message: "Calls can be forwarded only to numbers starting with +1, +3 or +4" };
+    if (!forwardingAllowed(digits)) return { ok: false, message: "Enter the number with its country code" };
     if (digits === line.msisdn) return { ok: false, message: "A number cannot forward to itself" };
   }
   const tc = await gateway();
@@ -236,6 +236,8 @@ export interface NumberDiagnostics {
   session: { startedAt: string | null; mccmnc: string | null } | null | undefined;
   /** When the number may be reconnected again; null when it may now. */
   reconnectAfter: string | null;
+  /** Whether TopConnect lets this SIM be reconnected (by its software version); null when unknown. */
+  reconnectSupported: boolean | null;
 }
 
 /** How long a reconnect blocks the next one: it restarts the SIM. */
@@ -257,8 +259,8 @@ export async function numberDiagnostics(userId: string, numberId: string): Promi
   if (!line) return null;
   const last = await lastReconnect(line.id);
   const tc = await gateway();
-  if (!tc) return { activity: null, locations: null, session: undefined, reconnectAfter: reconnectAfter(last) };
-  const [activity, locations, session] = await Promise.all([
+  if (!tc) return { activity: null, locations: null, session: undefined, reconnectAfter: reconnectAfter(last), reconnectSupported: null };
+  const [activity, locations, session, sim] = await Promise.all([
     settled(() => tc.client.lastActivity(line.msisdn)),
     settled(() => tc.client.locationUpdates(line.msisdn)),
     (async () => {
@@ -268,8 +270,9 @@ export async function numberDiagnostics(userId: string, numberId: string): Promi
         return undefined;
       }
     })(),
+    settled(() => tc.client.simInfo(line.msisdn)),
   ]);
-  return { activity, locations, session, reconnectAfter: reconnectAfter(last) };
+  return { activity, locations, session, reconnectAfter: reconnectAfter(last), reconnectSupported: reconnectSupported(sim?.softwareVersion) };
 }
 
 export type ReconnectResult = { ok: true; reconnectAfter: string } | { ok: false; message: string; reconnectAfter?: string };
@@ -286,6 +289,9 @@ export async function reconnectNumber(userId: string, numberId: string): Promise
   if (last) return { ok: false, message: "The number was reconnected a few minutes ago; wait before trying again", reconnectAfter: reconnectAfter(last) ?? undefined };
   const tc = await gateway();
   if (!tc) return { ok: false, message: "Number services are not available right now" };
+  // Only some SIM versions may be reconnected: the others are not asked.
+  const sim = await settled(() => tc.client.simInfo(line.msisdn));
+  if (reconnectSupported(sim?.softwareVersion) === false) return { ok: false, message: "This SIM cannot be reconnected from here" };
   try {
     await withProviderLog(
       { provider: tc.provider, providerCode: "topconnect", operation: "numbers.reconnect", request: { number: String(line.id) } },

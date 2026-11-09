@@ -737,12 +737,12 @@
       "forward": "Doorschakelen",
       "forwardInactive": "Uit",
       "forwardTo": "Doorschakelen naar",
-      "forwardHint": "Schakel elke inkomende oproep door naar een ander nummer. Alleen nummers die beginnen met +1, +3 of +4 (Noord-Amerika en Europa).",
+      "forwardHint": "Forward every incoming call to another number, in any country. Forwarded calls are paid from the number's credit.",
       "forwardSave": "Doorschakelen",
       "forwardStop": "Stoppen",
       "forwardSet": "Oproepen worden doorgeschakeld",
       "forwardOff": "Doorschakelen gestopt",
-      "forwardInvalid": "Voer een nummer in dat begint met +1, +3 of +4, met landcode.",
+      "forwardInvalid": "Enter the number with its country code, e.g. +44 7700 900123.",
       "limit": "Daily data spending limit",
       "experimental": "Experimental",
       "limitHint": "Data stops for the day once this much ({currency}) is spent on it. It may not always hold: charges can go past it, and data may stay off until the next period. It does not limit calls, texts or packages. Each period is 24 hours from when the limit was set.",
@@ -807,7 +807,8 @@
       "reconnected": "The SIM is restarting. Wait a few minutes, then check the signal.",
       "reconnectFailed": "The number could not be reconnected",
       "reconnectWait": "Reconnected recently; you can do it again after {time}.",
-      "note": "Each card shows the latest record of its kind; times are in your own time zone."
+      "note": "Each card shows the latest record of its kind; times are in your own time zone.",
+      "reconnectUnsupported": "This SIM cannot be reconnected remotely. Restart the phone, or turn airplane mode on and off, to make it register on the network again."
     },
     "manage": {
       "title": "Manage",

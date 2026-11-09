@@ -17,6 +17,7 @@ import { useRouter } from "@/hooks/use-locale-navigation";
 import { useFallbackTranslator } from "@/hooks/use-fallback-translator";
 import { apiClient } from "@/lib/api/client";
 import type { AdminNumberPackage, AdminNumberPackageList, PacketLoadReport } from "@/lib/esim/admin/number-packages";
+import { packetVolume } from "@/lib/esim/numbers/packet-groups";
 
 /** Admin → eSIM → Number data packages (NUM-02): the packets a number owner can buy. */
 
@@ -88,7 +89,7 @@ export function EsimNumberPackagesAdmin({ list, canManage }: { list: AdminNumber
   }
 
   const volume = (row: AdminNumberPackage) =>
-    row.volumeMb === null ? t("admin.esim.unlimited", "Unlimited") : row.volumeMb >= 1000 && row.volumeMb % 1000 === 0 ? `${row.volumeMb / 1000} GB` : `${row.volumeMb} MB`;
+    row.volumeMb === null ? t("admin.esim.unlimited", "Unlimited") : (packetVolume(row.volumeMb) ?? "—");
   const nextSort = (list.rows.at(-1)?.sortOrder ?? 0) + 10;
 
   const values = draft
