@@ -331,3 +331,29 @@ describe("TopConnect data limit and vouchers", () => {
     await assert.rejects(tc.redeemVoucher("37254515257", "abc"), /valid PIN/);
   });
 });
+
+describe("TopConnect package status", () => {
+  const byCommand = (answers: Record<string, string>): FetchLike => async (input) => {
+    const command = new URL(input).searchParams.get("command") ?? "";
+    return new Response(answers[command] ?? "<error><type>ERROR</type><text>Unknown command</text></error>", { status: 200 });
+  };
+  const packet = "<gprs><packet><package_code>7</package_code><activation_date>2026-11-01 10:00:00</activation_date><expire_date>2026-12-01 10:00:00</expire_date><type>EU 5GB</type><amount>5120000000</amount><dataLeft>4000000000</dataLeft></packet></gprs>";
+
+  it("reads packages from discountm, as the live gateway answers them", async () => {
+    const packages = await client(byCommand({ discountm: `<discountm>${packet}</discountm>` })).activePackages("37254515257");
+    assert.deepEqual(packages.map((entry) => [entry.packetId, entry.name]), [["7", "EU 5GB"]]);
+  });
+
+  it("falls back to discount when discountm names none", async () => {
+    const packages = await client(byCommand({ discountm: "<discountm><gprs><text>No Data Package activated</text></gprs></discountm>", discount: `<discount>${packet}</discount>` })).activePackages("37254515257");
+    assert.equal(packages.length, 1);
+  });
+});
+
+describe("TopConnect voicemail calls", () => {
+  it("lists calls that went to voicemail with the calls", async () => {
+    const answer = answering("<records><voicemail><calldate>2026-11-01 09:00:00</calldate><onum>37254515257</onum><anum>4915112345678</anum><bnum>37254515257</bnum><duration>20</duration><ccost>0.00</ccost><curr>EUR</curr></voicemail></records>");
+    const records = await client(answer.fetch).callRecords("37254515257", "2026-11-01", "2026-11-02");
+    assert.deepEqual(records.map((entry) => [entry.kind, entry.direction, entry.from]), [["voicemail", "in", "4915112345678"]]);
+  });
+});

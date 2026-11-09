@@ -93,7 +93,7 @@ export function statementMonths(from: string, to: string, now: Date): StatementM
 
 /** Totals for the history's summary line. */
 export function historyTotals(
-  calls: ReadonlyArray<{ kind: "call" | "sms"; costMinor: number | null }> | null,
+  calls: ReadonlyArray<{ kind: "call" | "sms" | "voicemail"; costMinor: number | null }> | null,
   data: ReadonlyArray<{ bytes: number | null; costMinor: number | null }> | null,
 ): { calls: number; texts: number; dataSessions: number; dataBytes: number; costMinor: number } {
   const list = calls ?? [];

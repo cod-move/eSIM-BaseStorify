@@ -721,7 +721,7 @@
       "turnedOff": "تم الإيقاف",
       "failed": "تعذّر إجراء التغيير",
       "data": "بيانات الجوال",
-      "dataHint": "عند الإيقاف لا يمكن للرقم استخدام بيانات الجوال.",
+      "dataHint": "Stays on so the number keeps its signal; it cannot be turned off here.",
       "sms": "الرسائل النصية",
       "smsHint": "عند الإيقاف تُحظر الرسائل الصادرة، فتتجنب رسوم الهواتف التي ترسل رسائل التفعيل تلقائيًا.",
       "voice": "المكالمات",
@@ -768,7 +768,8 @@
       "rechargeOut": "تحويل رصيد صادر",
       "rechargeIn": "إضافة رصيد",
       "voicemailFrom": "رسالة من {number}",
-      "note": "من سجلات الشبكة؛ قد تستغرق أحدث المكالمات والجلسات بضع دقائق لتظهر."
+      "note": "من سجلات الشبكة؛ قد تستغرق أحدث المكالمات والجلسات بضع دقائق لتظهر.",
+      "voicemailCall": "Voicemail: call from {number}"
     },
     "diagnose": {
       "title": "Diagnose",

@@ -721,7 +721,7 @@
       "turnedOff": "Ausgeschaltet",
       "failed": "Die Änderung war nicht möglich",
       "data": "Mobile Daten",
-      "dataHint": "Ausgeschaltet kann die Nummer keine mobilen Daten nutzen.",
+      "dataHint": "Bleibt an, damit die Nummer ihr Signal behält; hier nicht abschaltbar.",
       "sms": "SMS",
       "smsHint": "Ausgeschaltet werden ausgehende SMS blockiert. Das verhindert Kosten durch Telefone, die selbst Aktivierungs-SMS senden.",
       "voice": "Anrufe",
@@ -768,7 +768,8 @@
       "rechargeOut": "Guthaben übertragen",
       "rechargeIn": "Guthaben aufgeladen",
       "voicemailFrom": "Nachricht von {number}",
-      "note": "Aus den Aufzeichnungen des Netzes; neue Anrufe und Sitzungen können einige Minuten brauchen."
+      "note": "Aus den Aufzeichnungen des Netzes; neue Anrufe und Sitzungen können einige Minuten brauchen.",
+      "voicemailCall": "Mailbox: Anruf von {number}"
     },
     "diagnose": {
       "title": "Diagnose",

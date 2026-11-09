@@ -721,7 +721,7 @@
       "turnedOff": "Uitgeschakeld",
       "failed": "De wijziging is niet gelukt",
       "data": "Mobiele data",
-      "dataHint": "Uit: het nummer kan geen mobiele data gebruiken.",
+      "dataHint": "Stays on so the number keeps its signal; it cannot be turned off here.",
       "sms": "Sms",
       "smsHint": "Uit: uitgaande sms'jes worden geblokkeerd. Dit voorkomt kosten van telefoons die zelf activeringssms'jes sturen.",
       "voice": "Bellen",
@@ -768,7 +768,8 @@
       "rechargeOut": "Tegoed overgezet",
       "rechargeIn": "Tegoed toegevoegd",
       "voicemailFrom": "Bericht van {number}",
-      "note": "Uit de gegevens van het netwerk; de nieuwste gesprekken en sessies kunnen enkele minuten later verschijnen."
+      "note": "Uit de gegevens van het netwerk; de nieuwste gesprekken en sessies kunnen enkele minuten later verschijnen.",
+      "voicemailCall": "Voicemail: call from {number}"
     },
     "diagnose": {
       "title": "Diagnose",

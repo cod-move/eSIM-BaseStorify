@@ -721,7 +721,7 @@
       "turnedOff": "Turned off",
       "failed": "The change could not be made",
       "data": "Mobile data",
-      "dataHint": "When off, the number cannot use mobile data.",
+      "dataHint": "Stays on so the number keeps its signal; it cannot be turned off here.",
       "sms": "Text messages",
       "smsHint": "When off, outgoing texts are blocked. This stops unexpected charges from phones that send activation texts on their own.",
       "voice": "Calls",
@@ -768,7 +768,8 @@
       "rechargeOut": "Credit moved out",
       "rechargeIn": "Credit added",
       "voicemailFrom": "Message from {number}",
-      "note": "From the network's records; the newest calls and sessions may take a few minutes to appear."
+      "note": "From the network's records; the newest calls and sessions may take a few minutes to appear.",
+      "voicemailCall": "Voicemail: call from {number}"
     },
     "diagnose": {
       "title": "Diagnose",

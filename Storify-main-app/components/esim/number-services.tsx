@@ -82,7 +82,7 @@ export function NumberServicesCard({ numberId, currency }: { numberId: string; c
   }
 
   const switches: Array<{ key: NumberSwitch; icon: typeof Wifi; title: string; hint: string }> = [
-    { key: "data", icon: Wifi, title: t("esim.services.data", "Mobile data"), hint: t("esim.services.dataHint", "When off, the number cannot use mobile data.") },
+    { key: "data", icon: Wifi, title: t("esim.services.data", "Mobile data"), hint: t("esim.services.dataHint", "Stays on so the number keeps its signal; it cannot be turned off here.") },
     {
       key: "sms",
       icon: MessageSquare,
@@ -131,7 +131,7 @@ export function NumberServicesCard({ numberId, currency }: { numberId: string; c
                     ) : (
                       <Switch
                         checked={value === true}
-                        disabled={value === null || blocked || busy !== null}
+                        disabled={value === null || blocked || busy !== null || (key === "data" && value === true)}
                         onCheckedChange={(next) => void toggle(key, next)}
                         aria-label={title}
                       />
@@ -358,7 +358,9 @@ export function NumberHistoryCard({ numberId, currency }: { numberId: string; cu
                       const other = outgoing ? entry.to : entry.from;
                       return (
                         <li key={index} className="flex items-center gap-3 py-2.5 text-sm">
-                          {entry.kind === "sms" ? (
+                          {entry.kind === "voicemail" ? (
+                            <Voicemail className="h-4 w-4 shrink-0 text-muted-foreground" />
+                          ) : entry.kind === "sms" ? (
                             <MessageSquare className="h-4 w-4 shrink-0 text-muted-foreground" />
                           ) : outgoing ? (
                             <ArrowUpRight className="h-4 w-4 shrink-0 text-muted-foreground" />
@@ -367,7 +369,9 @@ export function NumberHistoryCard({ numberId, currency }: { numberId: string; cu
                           )}
                           <div className="min-w-0 flex-1">
                             <div className="truncate font-medium">
-                              {entry.kind === "sms"
+                              {entry.kind === "voicemail"
+                                ? t("esim.history.voicemailCall", "Voicemail: call from {number}", { number: other ? `+${other}` : "—" })
+                                : entry.kind === "sms"
                                 ? outgoing
                                   ? t("esim.history.smsOut", "Text to {number}", { number: other ? `+${other}` : "—" })
                                   : t("esim.history.smsIn", "Text from {number}", { number: other ? `+${other}` : "—" })

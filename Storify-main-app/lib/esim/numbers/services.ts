@@ -123,6 +123,8 @@ export async function setNumberSwitch(userId: string, numberId: string, service:
   const line = await ownedLine(userId, numberId);
   if (!line) return null;
   if (line.blocked) return { ok: false, message: "This number is blocked" };
+  // With data off the card can lose its signal: shoppers may only turn it back on.
+  if (service === "data" && !on) return { ok: false, message: "Mobile data stays on so the number keeps its signal" };
   const tc = await gateway();
   if (!tc) return { ok: false, message: "Number services are not available right now" };
   try {

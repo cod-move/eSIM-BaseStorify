@@ -721,7 +721,7 @@
       "turnedOff": "Désactivé",
       "failed": "La modification n'a pas pu être faite",
       "data": "Données mobiles",
-      "dataHint": "Désactivées, le numéro ne peut pas utiliser les données mobiles.",
+      "dataHint": "Reste activé pour que le numéro garde son signal ; impossible de le couper ici.",
       "sms": "SMS",
       "smsHint": "Désactivés, les SMS sortants sont bloqués. Cela évite les frais des téléphones qui envoient seuls des SMS d'activation.",
       "voice": "Appels",
@@ -768,7 +768,8 @@
       "rechargeOut": "Crédit transféré",
       "rechargeIn": "Crédit ajouté",
       "voicemailFrom": "Message de {number}",
-      "note": "D'après les relevés du réseau ; les appels et sessions récents peuvent mettre quelques minutes à apparaître."
+      "note": "D'après les relevés du réseau ; les appels et sessions récents peuvent mettre quelques minutes à apparaître.",
+      "voicemailCall": "Messagerie : appel de {number}"
     },
     "diagnose": {
       "title": "Diagnostic",

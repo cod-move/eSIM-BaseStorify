@@ -118,7 +118,8 @@ export interface TopConnectVoicemailMessage {
 
 /** A call or text message from `gccdr`. */
 export interface TopConnectCallRecord {
-  kind: "call" | "sms";
+  /** "voicemail": a call that went to voicemail (recorded or not). */
+  kind: "call" | "sms" | "voicemail";
   at: string | null;
   /** Calls: "in" or "out"; texts: the number's own on the sending side is "out". */
   direction: "in" | "out" | null;
@@ -271,10 +272,20 @@ export class TopConnectClient {
     });
   }
 
-  /** The packages on the card now, with their packet codes. */
+  /**
+   * The packages on the card now, with their packet codes. The live gateway
+   * answers the status on `discountm` (as the live store asks it); `discount`
+   * may answer "Unknown command", so it is only the fallback.
+   */
   async activePackages(msisdn: string): Promise<TopConnectActivePackage[]> {
-    const xml = await this.call("discount", { onum: digitsOnly(msisdn, "msisdn"), detailed: "true" });
-    return parsePackages(xml);
+    const onum = digitsOnly(msisdn, "msisdn");
+    try {
+      const packages = parsePackages(await this.call("discountm", { onum }));
+      if (packages.length) return packages;
+    } catch (error) {
+      if (!(error instanceof ProviderError) || error.code === "uncertain") throw error;
+    }
+    return parsePackages(await this.call("discount", { onum, detailed: "true" }));
   }
 
   /**
@@ -473,7 +484,20 @@ export class TopConnectClient {
         currency: tag(node, "curr"),
       };
     });
-    return [...calls, ...texts].sort(newestFirst);
+    // Calls that went to voicemail are records of their own.
+    const voicemail = nodes(xml, "voicemail").map((node): TopConnectCallRecord => ({
+      kind: "voicemail",
+      at: timestamp(tag(node, "calldate")),
+      direction: "in",
+      from: tag(node, "anum"),
+      to: tag(node, "bnum"),
+      seconds: integer(tag(node, "billsec")) ?? integer(tag(node, "duration")),
+      smsType: null,
+      destination: decodeUrl(tag(node, "adest")),
+      costMinor: money(tag(node, "ccost") ?? tag(node, "cost")),
+      currency: tag(node, "curr"),
+    }));
+    return [...calls, ...texts, ...voicemail].filter((entry) => entry.at !== null || entry.kind !== "voicemail").sort(newestFirst);
   }
 
   /** Data sessions between two days (YYYY-MM-DD), newest first. */

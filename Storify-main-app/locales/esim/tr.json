@@ -721,7 +721,7 @@
       "turnedOff": "Kapatıldı",
       "failed": "Değişiklik yapılamadı",
       "data": "Mobil veri",
-      "dataHint": "Kapalıyken numara mobil veri kullanamaz.",
+      "dataHint": "Stays on so the number keeps its signal; it cannot be turned off here.",
       "sms": "SMS",
       "smsHint": "Kapalıyken giden SMS'ler engellenir. Kendiliğinden etkinleştirme SMS'i gönderen telefonların beklenmedik ücretlerini önler.",
       "voice": "Aramalar",
@@ -768,7 +768,8 @@
       "rechargeOut": "Bakiye aktarıldı",
       "rechargeIn": "Bakiye eklendi",
       "voicemailFrom": "{number} numarasından mesaj",
-      "note": "Şebeke kayıtlarından; en yeni aramalar ve oturumlar birkaç dakika sonra görünebilir."
+      "note": "Şebeke kayıtlarından; en yeni aramalar ve oturumlar birkaç dakika sonra görünebilir.",
+      "voicemailCall": "Voicemail: call from {number}"
     },
     "diagnose": {
       "title": "Diagnose",

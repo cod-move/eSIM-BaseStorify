@@ -118,7 +118,7 @@ function StatementDocument({ data }: { data: StatementData }) {
                 ]}
                 rows={month.calls.map((entry) => [
                   day(entry.at),
-                  `${entry.kind === "sms" ? "Text" : "Call"} ${entry.direction === "out" ? "out" : entry.direction === "in" ? "in" : ""}`.trim(),
+                  entry.kind === "voicemail" ? "Voicemail" : `${entry.kind === "sms" ? "Text" : "Call"} ${entry.direction === "out" ? "out" : entry.direction === "in" ? "in" : ""}`.trim(),
                   (entry.direction === "out" ? entry.to : entry.from) ? `+${entry.direction === "out" ? entry.to : entry.from}` : "—",
                   entry.destination ?? "",
                   entry.kind === "call" ? formatSeconds(entry.seconds) : "",

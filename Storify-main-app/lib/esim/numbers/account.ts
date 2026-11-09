@@ -114,8 +114,10 @@ export async function refreshNumberCard(numberId: string, options: { force?: boo
       (result) => ({ blocked: result.card.blocked, packages: result.packages.length }),
     );
     // The detailed list carries packet codes (for cancelling); card_stat's is the fallback.
-    const packages = await withProviderLog({ ...context, operation: "numbers.packages" }, () => client.activePackages(row.msisdn), (result) => ({ packages: result.length }))
+    const detailed = await withProviderLog({ ...context, operation: "numbers.packages" }, () => client.activePackages(row.msisdn), (result) => ({ packages: result.length }))
       .catch(() => stated);
+    // An empty detailed list does not hide packages card_stat did name.
+    const packages = detailed.some((entry) => entry.kind === "gprs") ? detailed : stated;
     await EsimNumber.updateOne(
       { _id: row._id },
       {
