@@ -101,7 +101,25 @@ const BCRYPT = /^\$2[aby]\$\d{2}\$[./A-Za-z0-9]{53}$/;
 const DECIMAL = /^(?:0|[1-9]\d*)(?:\.\d+)?$/;
 const PROFILE_STATUSES = new Set(["released", "installed", "enabled", "disabled", "deleted", "unknown"]);
 
-const text = (value: string | null | undefined) => value?.trim() || null;
+/**
+ * A legacy column as trimmed text. MySQL hands back numbers, dates and
+ * buffers too (a phone or ICCID column typed as a number, a BLOB), so any
+ * value is turned into text first.
+ */
+const text = (value: unknown): string | null => {
+  if (value === null || value === undefined) return null;
+  const raw =
+    typeof value === "string"
+      ? value
+      : Buffer.isBuffer(value)
+        ? value.toString("utf8")
+        : value instanceof Date
+          ? (Number.isNaN(value.getTime()) ? "" : value.toISOString())
+          : typeof value === "number" || typeof value === "bigint" || typeof value === "boolean"
+            ? String(value)
+            : "";
+  return raw.trim() || null;
+};
 const validDate = (value: Date | null | undefined) => (value instanceof Date && !Number.isNaN(value.getTime()) ? value : null);
 const digits = (value: string | null | undefined) => value?.replace(/\D/g, "") ?? "";
 

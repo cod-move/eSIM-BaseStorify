@@ -121,3 +121,13 @@ describe("migrateEsim", () => {
     assert.deepEqual(parseLpa("https://qr.example/1.png"), { smdpAddress: null, matchingId: null });
   });
 });
+
+describe("legacy columns that are not text", () => {
+  it("reads numbers and buffers MySQL hands back as text", () => {
+    const migrated = migrateUser(user({ zip: 10115 as unknown as string, city: Buffer.from(" Berlin ") as unknown as string, state: 0 as unknown as string }), now);
+    assert.equal(typeof migrated, "object");
+    const address = JSON.stringify(migrated);
+    assert.match(address, /"postalCode":"10115"/);
+    assert.match(address, /"city":"Berlin"/);
+  });
+});

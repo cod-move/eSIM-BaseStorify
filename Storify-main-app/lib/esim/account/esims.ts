@@ -227,6 +227,14 @@ export async function refreshEsimProfile(profile: IEsimProfile): Promise<{ refre
     );
   }
   await profile.save();
+  // What the supplier last said, beside the order's own raw record: for a
+  // person checking an eSIM whose state or top-ups look wrong.
+  const latest = { at: now, usage: usage?.raw ?? null, esim: esim?.raw ?? null, error: error ?? null };
+  await EsimProfile.updateOne({ _id: profile._id, raw: { $type: "object" } }, { $set: { "raw.latest": latest } })
+    .then(async (result) => {
+      if (!result.matchedCount) await EsimProfile.updateOne({ _id: profile._id }, [{ $set: { raw: { order: "$raw", latest: { $literal: latest } } } }]);
+    })
+    .catch((reason: unknown) => console.error("[esim] keeping the supplier's answer failed:", reason));
   return done(Boolean(usage || esim), error);
 }
 

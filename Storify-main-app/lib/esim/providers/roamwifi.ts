@@ -157,19 +157,24 @@ export class RoamWifiAdapter implements EsimProviderAdapter {
   async getUsage(ref: EsimRef): Promise<ProviderUsage> {
     // getESIMDetail (doc v2.13 §2.27, api_esim/getESIMDetail) is the card's own
     // record; the order (getOrderInfo) is the fallback when it does not answer.
+    // Why getESIMDetail did not serve, kept in the answer's raw record for a person.
+    let detailProblem: string | null = null;
     if (ref.iccid) {
       try {
         const detail = obj(await this.callData("api_esim/getESIMDetail", { iccid: ref.iccid }));
         if (objArray(detail.esimPackets).length || Object.keys(obj(detail.esimInfo)).length) return mapEsimDetail(detail);
+        detailProblem = "getESIMDetail answered without the card";
       } catch (error) {
         if (error instanceof ProviderError && error.code === "uncertain") throw error;
+        detailProblem = error instanceof Error ? error.message : String(error);
       }
     }
     const orderNum = ref.providerEsimId;
-    if (!orderNum) throw new ProviderError("not_found", "RoamWifi needs the order number of the eSIM");
+    if (!orderNum) throw new ProviderError("not_found", detailProblem ?? "RoamWifi needs the order number of the eSIM");
     let order = obj(await this.callData("api_esim/getOrderInfo", { orderNum }));
     if (!objArray(order.cardApiDtoList).length) order = await this.cardOrder(ref);
-    return mapOrderUsage(order, ref.iccid);
+    const usage = mapOrderUsage(order, ref.iccid);
+    return detailProblem ? { ...usage, raw: { ...usage.raw, getESIMDetailProblem: detailProblem } } : usage;
   }
 
   /**
