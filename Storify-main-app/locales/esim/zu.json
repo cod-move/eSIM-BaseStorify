@@ -450,7 +450,13 @@
       "entryFrom": "Izinombolo ezingu-{count} · kusukela ku-{price}",
       "notReady": "Izinombolo azikwazi ukuthengwa okwamanje. Sicela uzame futhi kamuva noma uxhumane nathi.",
       "creditLine": "Imali esenombolweni",
-      "chargedAtRate": "Ngenani lokushintshaniswa lamanje {amount} = {price}, ngakho uzokhokha {price} lapho ukhokha."
+      "chargedAtRate": "Ngenani lokushintshaniswa lamanje {amount} = {price}, ngakho uzokhokha {price} lapho ukhokha.",
+      "packetCountriesCount": "{count} countries",
+      "packetWorldwide": "Where the number works",
+      "packetData": "Data",
+      "packetValidity": "Validity",
+      "packetPrice": "Price",
+      "perGb": "{price}/GB"
     },
     "number": {
       "blocked": "Ivinjiwe",

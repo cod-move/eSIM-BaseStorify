@@ -44,7 +44,8 @@ export function packetFields(packet: TopConnectDataPackage, fallbackCurrency: st
   return {
     packetId: packet.code,
     name: packet.name.trim().slice(0, 120) || packet.code,
-    validityDays: Math.max(0, packet.durationDays ?? 0),
+    // TopConnect gives hours; a part day counts as a day.
+    validityDays: packet.durationHours && packet.durationHours > 0 ? Math.ceil(packet.durationHours / 24) : 0,
     volumeMb: packet.volumeBytes && packet.volumeBytes > 0 ? Math.round(packet.volumeBytes / TOPCONNECT_MB) : null,
     cost: { amountMinor: packet.priceMinor, currency: (packet.currency ?? fallbackCurrency).toUpperCase() },
   };

@@ -450,7 +450,13 @@
       "entryFrom": "{count} números · desde {price}",
       "notReady": "Ahora mismo no se pueden comprar números. Inténtalo más tarde o contáctanos.",
       "creditLine": "Saldo en el número",
-      "chargedAtRate": "Al tipo de cambio actual {amount} = {price}, así que pagas {price} al finalizar la compra."
+      "chargedAtRate": "Al tipo de cambio actual {amount} = {price}, así que pagas {price} al finalizar la compra.",
+      "packetCountriesCount": "{count} países",
+      "packetWorldwide": "Donde funciona el número",
+      "packetData": "Datos",
+      "packetValidity": "Validez",
+      "packetPrice": "Precio",
+      "perGb": "{price}/GB"
     },
     "number": {
       "blocked": "Bloqueado",

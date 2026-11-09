@@ -8,7 +8,7 @@ const packet = (code: string, priceMinor: number | null, extra: Partial<TopConne
   code,
   name: `Packet ${code}`,
   volumeBytes: 5000 * 1_024_000,
-  durationDays: 7,
+  durationHours: 168,
   priceMinor,
   currency: "EUR",
   ...extra,
@@ -37,7 +37,7 @@ describe("number data packages", () => {
     ];
     const merge = mergeSupplierPackets(
       stored,
-      [packet("814", 800), packet("815", 1300, { volumeBytes: 10000 * 1_024_000, durationDays: 10 }), packet("816", 3000), packet("816", 3000), packet("", 1)],
+      [packet("814", 800), packet("815", 1300, { volumeBytes: 10000 * 1_024_000, durationHours: 240 }), packet("816", 3000), packet("816", 3000), packet("", 1)],
       "EUR",
     );
     assert.deepEqual(merge.create.map((fields) => fields.packetId), ["816"]);
@@ -67,5 +67,17 @@ describe("number data packages", () => {
     assert.equal(regional.marginFloorApplied, true); // 0 % markup, the 10 % floor wins
     assert.equal(regional.retailMinor, 1235);
     assert.equal(packagePricingInput({ countryCodes: [], cost: { amountMinor: 1, currency: "EUR" } }, 1).scope, "global");
+  });
+});
+
+describe("TopConnect package validity", () => {
+  it("counts TopConnect's hours as days, a part day as a day", () => {
+    const fields = (hours: number | null) => packetFields({ code: "1", name: "x", volumeBytes: null, durationHours: hours, priceMinor: 100, currency: "EUR" }, "EUR")?.validityDays;
+    assert.equal(fields(744), 31);
+    assert.equal(fields(24), 1);
+    assert.equal(fields(1), 1);
+    assert.equal(fields(25), 2);
+    assert.equal(fields(0), 0);
+    assert.equal(fields(null), 0);
   });
 });

@@ -450,7 +450,13 @@
       "entryFrom": "Namba {count} · kuanzia {price}",
       "notReady": "Namba haziwezi kununuliwa kwa sasa. Tafadhali jaribu tena baadaye au wasiliana nasi.",
       "creditLine": "Salio kwenye namba",
-      "chargedAtRate": "Kwa kiwango cha sasa cha ubadilishaji {amount} = {price}, kwa hivyo utalipa {price} wakati wa malipo."
+      "chargedAtRate": "Kwa kiwango cha sasa cha ubadilishaji {amount} = {price}, kwa hivyo utalipa {price} wakati wa malipo.",
+      "packetCountriesCount": "{count} countries",
+      "packetWorldwide": "Where the number works",
+      "packetData": "Data",
+      "packetValidity": "Validity",
+      "packetPrice": "Price",
+      "perGb": "{price}/GB"
     },
     "number": {
       "blocked": "Imezuiwa",

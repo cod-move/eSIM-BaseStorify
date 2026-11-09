@@ -450,7 +450,13 @@
       "entryFrom": "{count} رقم · ابتداءً من {price}",
       "notReady": "لا يمكن شراء الأرقام حاليًا. يُرجى المحاولة لاحقًا أو التواصل معنا.",
       "creditLine": "الرصيد على الرقم",
-      "chargedAtRate": "بسعر الصرف الحالي {amount} = {price}، لذا تدفع {price} عند الدفع."
+      "chargedAtRate": "بسعر الصرف الحالي {amount} = {price}، لذا تدفع {price} عند الدفع.",
+      "packetCountriesCount": "{count} countries",
+      "packetWorldwide": "Where the number works",
+      "packetData": "Data",
+      "packetValidity": "Validity",
+      "packetPrice": "Price",
+      "perGb": "{price}/GB"
     },
     "number": {
       "blocked": "محظور",

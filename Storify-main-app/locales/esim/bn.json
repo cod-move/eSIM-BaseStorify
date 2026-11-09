@@ -450,7 +450,13 @@
       "entryFrom": "{count}টি নম্বর · {price} থেকে",
       "notReady": "এই মুহূর্তে নম্বর কেনা যাচ্ছে না। পরে আবার চেষ্টা করুন বা আমাদের সাথে যোগাযোগ করুন।",
       "creditLine": "নম্বরে ব্যালেন্স",
-      "chargedAtRate": "বর্তমান বিনিময় হারে {amount} = {price}, তাই চেকআউটে আপনি {price} দেবেন।"
+      "chargedAtRate": "বর্তমান বিনিময় হারে {amount} = {price}, তাই চেকআউটে আপনি {price} দেবেন।",
+      "packetCountriesCount": "{count} countries",
+      "packetWorldwide": "Where the number works",
+      "packetData": "Data",
+      "packetValidity": "Validity",
+      "packetPrice": "Price",
+      "perGb": "{price}/GB"
     },
     "number": {
       "blocked": "ব্লক করা",

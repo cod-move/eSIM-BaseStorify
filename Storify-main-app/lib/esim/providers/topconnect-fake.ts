@@ -113,7 +113,7 @@ export function fakeTopConnectFetch(state: FakeTopConnectState = shared): FetchL
         // Like the live gateway for a card on no network (stock): the network must be named.
         if (!params.get("mccmnc") && !params.get("sgsnip")) return error("discount", "Please provide mccmnc or sgsnip");
         const packets = PACKETS.map(
-          (packet) => `<datapacket><packetname>${packet.name}</packetname><packetcode>${packet.code}</packetcode><volume>${packet.bytes}</volume><duration>${packet.days}</duration><price>${formatMinor(packet.priceMinor)}000</price><currency>EUR</currency></datapacket>`,
+          (packet) => `<datapacket><packetname>${packet.name}</packetname><packetcode>${packet.code}</packetcode><volume>${packet.bytes}</volume><duration>${packet.days * 24}</duration><price>${formatMinor(packet.priceMinor)}000</price><currency>EUR</currency></datapacket>`,
         ).join("");
         return xml(`<discount><packetrequired>false</packetrequired>${packets}</discount>`);
       }

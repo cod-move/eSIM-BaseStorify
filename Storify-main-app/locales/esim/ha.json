@@ -450,7 +450,13 @@
       "entryFrom": "Lambobi {count} · daga {price}",
       "notReady": "Ba za a iya sayan lambobi yanzu ba. Don Allah sake gwadawa daga baya ko tuntuɓe mu.",
       "creditLine": "Kuɗi a kan lambar",
-      "chargedAtRate": "A farashin musaya na yanzu {amount} = {price}, don haka za ka biya {price} a wurin biya."
+      "chargedAtRate": "A farashin musaya na yanzu {amount} = {price}, don haka za ka biya {price} a wurin biya.",
+      "packetCountriesCount": "{count} countries",
+      "packetWorldwide": "Where the number works",
+      "packetData": "Data",
+      "packetValidity": "Validity",
+      "packetPrice": "Price",
+      "perGb": "{price}/GB"
     },
     "number": {
       "blocked": "An toshe",

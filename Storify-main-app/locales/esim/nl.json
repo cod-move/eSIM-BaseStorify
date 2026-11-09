@@ -450,7 +450,13 @@
       "entryFrom": "{count} nummers · vanaf {price}",
       "notReady": "Nummers kunnen nu niet worden gekocht. Probeer het later opnieuw of neem contact met ons op.",
       "creditLine": "Tegoed op het nummer",
-      "chargedAtRate": "Tegen de huidige wisselkoers is {amount} = {price}, dus je betaalt {price} bij het afrekenen."
+      "chargedAtRate": "Tegen de huidige wisselkoers is {amount} = {price}, dus je betaalt {price} bij het afrekenen.",
+      "packetCountriesCount": "{count} countries",
+      "packetWorldwide": "Where the number works",
+      "packetData": "Data",
+      "packetValidity": "Validity",
+      "packetPrice": "Price",
+      "perGb": "{price}/GB"
     },
     "number": {
       "blocked": "Geblokkeerd",

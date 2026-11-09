@@ -110,9 +110,9 @@ describe("TopConnect client", () => {
   });
 
   it("reads getdiscount's packages with five-decimal prices", async () => {
-    const xml = "<discount><packetrequired>false</packetrequired><datapacket><packetname>Data package 1 week</packetname><packetcode>2</packetcode><volume>1024000</volume><duration>7</duration><price>4.99500</price></datapacket></discount>";
+    const xml = "<discount><packetrequired>false</packetrequired><datapacket><packetname>Data package 1 week</packetname><packetcode>2</packetcode><volume>1024000</volume><duration>168</duration><price>4.99500</price></datapacket></discount>";
     const [packet] = await client(answering(xml).fetch).dataPackages("37282360017");
-    assert.deepEqual(packet, { code: "2", name: "Data package 1 week", volumeBytes: 1024000, durationDays: 7, priceMinor: 500, currency: null });
+    assert.deepEqual(packet, { code: "2", name: "Data package 1 week", volumeBytes: 1024000, durationHours: 168, priceMinor: 500, currency: null });
   });
 
   it("names the network for getdiscount when given (a stock card is on none)", async () => {

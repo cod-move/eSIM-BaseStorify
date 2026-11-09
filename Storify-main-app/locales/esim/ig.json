@@ -450,7 +450,13 @@
       "entryFrom": "Nọmba {count} · site na {price}",
       "notReady": "Enweghị ike ịzụta nọmba ugbu a. Biko nwaa ọzọ ma e mesịa ma ọ bụ kpọtụrụ anyị.",
       "creditLine": "Ego dị na nọmba",
-      "chargedAtRate": "N'ọnụego mgbanwe ugbu a {amount} = {price}, ya mere ị ga-akwụ {price} mgbe ị na-akwụ ụgwọ."
+      "chargedAtRate": "N'ọnụego mgbanwe ugbu a {amount} = {price}, ya mere ị ga-akwụ {price} mgbe ị na-akwụ ụgwọ.",
+      "packetCountriesCount": "{count} countries",
+      "packetWorldwide": "Where the number works",
+      "packetData": "Data",
+      "packetValidity": "Validity",
+      "packetPrice": "Price",
+      "perGb": "{price}/GB"
     },
     "number": {
       "blocked": "Egbochiri ya",

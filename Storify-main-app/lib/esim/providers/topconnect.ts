@@ -82,7 +82,8 @@ export interface TopConnectDataPackage {
   code: string;
   name: string;
   volumeBytes: number | null;
-  durationDays: number | null;
+  /** How long it runs, in hours (TopConnect counts packages in hours: 24 = a day). */
+  durationHours: number | null;
   priceMinor: number | null;
   currency: string | null;
 }
@@ -265,7 +266,7 @@ export class TopConnectClient {
         code,
         name: tag(node, "packetname") ?? code,
         volumeBytes: integer(tag(node, "volume")),
-        durationDays: integer(tag(node, "duration")),
+        durationHours: integer(tag(node, "duration")),
         priceMinor: money(tag(node, "price")),
         currency: tag(node, "currency"),
       }];

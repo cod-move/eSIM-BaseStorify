@@ -450,7 +450,13 @@
       "entryFrom": "{count} numéros · dès {price}",
       "notReady": "Les numéros ne peuvent pas être achetés pour le moment. Réessayez plus tard ou contactez-nous.",
       "creditLine": "Crédit sur le numéro",
-      "chargedAtRate": "Au taux de change actuel, {amount} = {price} : vous payez donc {price} au paiement."
+      "chargedAtRate": "Au taux de change actuel, {amount} = {price} : vous payez donc {price} au paiement.",
+      "packetCountriesCount": "{count} pays",
+      "packetWorldwide": "Là où le numéro fonctionne",
+      "packetData": "Données",
+      "packetValidity": "Validité",
+      "packetPrice": "Prix",
+      "perGb": "{price}/Go"
     },
     "number": {
       "blocked": "Bloqué",

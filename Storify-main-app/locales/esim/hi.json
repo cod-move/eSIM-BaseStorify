@@ -450,7 +450,13 @@
       "entryFrom": "{count} नंबर · {price} से",
       "notReady": "अभी नंबर नहीं खरीदे जा सकते। कृपया बाद में कोशिश करें या हमसे संपर्क करें।",
       "creditLine": "नंबर पर बैलेंस",
-      "chargedAtRate": "मौजूदा विनिमय दर पर {amount} = {price}, इसलिए चेकआउट पर आप {price} चुकाएँगे।"
+      "chargedAtRate": "मौजूदा विनिमय दर पर {amount} = {price}, इसलिए चेकआउट पर आप {price} चुकाएँगे।",
+      "packetCountriesCount": "{count} countries",
+      "packetWorldwide": "Where the number works",
+      "packetData": "Data",
+      "packetValidity": "Validity",
+      "packetPrice": "Price",
+      "perGb": "{price}/GB"
     },
     "number": {
       "blocked": "ब्लॉक",

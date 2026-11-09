@@ -450,7 +450,13 @@
       "entryFrom": "{count}件の番号 · {price}から",
       "notReady": "現在番号を購入できません。しばらくしてからもう一度お試しいただくか、お問い合わせください。",
       "creditLine": "番号のクレジット",
-      "chargedAtRate": "現在の為替レートで {amount} = {price} のため、お支払いは {price} です。"
+      "chargedAtRate": "現在の為替レートで {amount} = {price} のため、お支払いは {price} です。",
+      "packetCountriesCount": "{count}か国・地域",
+      "packetWorldwide": "番号が使える地域",
+      "packetData": "データ量",
+      "packetValidity": "有効期間",
+      "packetPrice": "価格",
+      "perGb": "{price}/GB"
     },
     "number": {
       "blocked": "停止中",

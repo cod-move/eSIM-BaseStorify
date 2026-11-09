@@ -450,7 +450,13 @@
       "entryFrom": "{count} numbers · from {price}",
       "notReady": "Numbers cannot be bought right now. Please try again later or contact us.",
       "creditLine": "Credit on the number",
-      "chargedAtRate": "At the current exchange rate {amount} = {price}, so you pay {price} at checkout."
+      "chargedAtRate": "At the current exchange rate {amount} = {price}, so you pay {price} at checkout.",
+      "packetCountriesCount": "{count} countries",
+      "packetWorldwide": "Where the number works",
+      "packetData": "Data",
+      "packetValidity": "Validity",
+      "packetPrice": "Price",
+      "perGb": "{price}/GB"
     },
     "number": {
       "blocked": "Blocked",

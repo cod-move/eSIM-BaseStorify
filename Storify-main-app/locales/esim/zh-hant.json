@@ -450,7 +450,13 @@
       "entryFrom": "{count} 個號碼 · {price} 起",
       "notReady": "號碼暫時無法購買，請稍後再試或聯繫客服。",
       "creditLine": "號碼話費",
-      "chargedAtRate": "按當前匯率 {amount} = {price}，結賬時按 {price} 支付。"
+      "chargedAtRate": "按當前匯率 {amount} = {price}，結賬時按 {price} 支付。",
+      "packetCountriesCount": "{count} 個國家/地區",
+      "packetWorldwide": "號碼可用的地區",
+      "packetData": "流量",
+      "packetValidity": "有效期",
+      "packetPrice": "價格",
+      "perGb": "{price}/GB"
     },
     "number": {
       "blocked": "已停用",

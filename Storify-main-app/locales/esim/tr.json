@@ -450,7 +450,13 @@
       "entryFrom": "{count} numara · {price} fiyatından",
       "notReady": "Numaralar şu anda satın alınamıyor. Lütfen daha sonra tekrar deneyin veya bizimle iletişime geçin.",
       "creditLine": "Numaradaki bakiye",
-      "chargedAtRate": "Güncel kurla {amount} = {price}, bu yüzden ödemede {price} ödersiniz."
+      "chargedAtRate": "Güncel kurla {amount} = {price}, bu yüzden ödemede {price} ödersiniz.",
+      "packetCountriesCount": "{count} countries",
+      "packetWorldwide": "Where the number works",
+      "packetData": "Data",
+      "packetValidity": "Validity",
+      "packetPrice": "Price",
+      "perGb": "{price}/GB"
     },
     "number": {
       "blocked": "Engellendi",

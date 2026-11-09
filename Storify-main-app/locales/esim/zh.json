@@ -450,7 +450,13 @@
       "entryFrom": "{count} 个号码 · {price} 起",
       "notReady": "号码暂时无法购买，请稍后再试或联系客服。",
       "creditLine": "号码话费",
-      "chargedAtRate": "按当前汇率 {amount} = {price}，结账时按 {price} 支付。"
+      "chargedAtRate": "按当前汇率 {amount} = {price}，结账时按 {price} 支付。",
+      "packetCountriesCount": "{count} 个国家/地区",
+      "packetWorldwide": "号码可用的地区",
+      "packetData": "流量",
+      "packetValidity": "有效期",
+      "packetPrice": "价格",
+      "perGb": "{price}/GB"
     },
     "number": {
       "blocked": "已停用",

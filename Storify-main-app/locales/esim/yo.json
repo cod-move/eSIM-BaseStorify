@@ -450,7 +450,13 @@
       "entryFrom": "Nọ́mbà {count} · láti {price}",
       "notReady": "A kò lè ra nọ́mbà báyìí. Jọ̀wọ́ gbìyànjú lẹ́ẹ̀kansí lẹ́yìn náà tàbí kàn sí wa.",
       "creditLine": "Owó lórí nọ́mbà",
-      "chargedAtRate": "Ní ìwọ̀n pàṣípààrọ̀ lọ́wọ́lọ́wọ́ {amount} = {price}, nítorí náà ìwọ yóò san {price} níbi ìsanwó."
+      "chargedAtRate": "Ní ìwọ̀n pàṣípààrọ̀ lọ́wọ́lọ́wọ́ {amount} = {price}, nítorí náà ìwọ yóò san {price} níbi ìsanwó.",
+      "packetCountriesCount": "{count} countries",
+      "packetWorldwide": "Where the number works",
+      "packetData": "Data",
+      "packetValidity": "Validity",
+      "packetPrice": "Price",
+      "perGb": "{price}/GB"
     },
     "number": {
       "blocked": "A ti dí i",

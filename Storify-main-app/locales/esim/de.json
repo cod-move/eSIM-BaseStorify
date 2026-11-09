@@ -450,7 +450,13 @@
       "entryFrom": "{count} Nummern · ab {price}",
       "notReady": "Nummern können gerade nicht gekauft werden. Bitte versuche es später erneut oder kontaktiere uns.",
       "creditLine": "Guthaben auf der Nummer",
-      "chargedAtRate": "Zum aktuellen Wechselkurs sind {amount} = {price}, du zahlst also {price} an der Kasse."
+      "chargedAtRate": "Zum aktuellen Wechselkurs sind {amount} = {price}, du zahlst also {price} an der Kasse.",
+      "packetCountriesCount": "{count} Länder",
+      "packetWorldwide": "Wo die Nummer funktioniert",
+      "packetData": "Daten",
+      "packetValidity": "Gültigkeit",
+      "packetPrice": "Preis",
+      "perGb": "{price}/GB"
     },
     "number": {
       "blocked": "Gesperrt",

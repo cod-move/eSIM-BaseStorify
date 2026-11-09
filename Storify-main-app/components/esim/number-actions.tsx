@@ -6,7 +6,7 @@ import { Loader2, Plus, Wifi } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { NumberPacketPicker } from "@/components/esim/number-packet-picker";
 import { toast } from "@/components/ui/toast-notification";
 import { useConfirmation } from "@/components/ui/confirmation-dialog";
 import { useCart } from "@/hooks/use-cart";
@@ -88,7 +88,7 @@ export function NumberTopupActions({ numberId, title, options, children }: { num
           setBusy(false);
         }}
       >
-        <DialogContent className="max-w-md">
+        <DialogContent className={open === "packet" ? "max-w-3xl" : "max-w-md"}>
           <DialogHeader>
             <DialogTitle>{open === "packet" ? t("esim.number.buyPacket", "Buy data package") : t("esim.number.addCredit", "Add credit")}</DialogTitle>
             <DialogDescription>{t("esim.number.topupHint", "Paid at checkout, then added to {number} within a few minutes.", { number: title })}</DialogDescription>
@@ -132,23 +132,7 @@ export function NumberTopupActions({ numberId, title, options, children }: { num
             </div>
           ) : open === "packet" ? (
             <div className="space-y-2">
-              <Select value={packet} onValueChange={setPacket}>
-                <SelectTrigger aria-label={t("esim.numbers.packetTitle", "Data package")}>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {options.packets.map((entry) => (
-                    <SelectItem key={entry.id} value={entry.id}>
-                      {entry.name} · {t("esim.numbers.days", "{days} days", { days: entry.validityDays })} · {formatAmount(entry.priceMinor, currency)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {options.packets.find((entry) => entry.id === packet)?.countryCodes.length ? (
-                <p className="text-xs text-muted-foreground">
-                  {t("esim.numbers.packetCountries", "Works in: {countries}", { countries: options.packets.find((entry) => entry.id === packet)!.countryCodes.join(", ") })}
-                </p>
-              ) : null}
+              <NumberPacketPicker packets={options.packets} currency={currency} value={packet} onChange={setPacket} />
               {priceMinor && currency.toUpperCase() !== "USD" ? (
                 <p className="text-xs text-muted-foreground">{t("esim.numbers.chargedAtRate", "At the current exchange rate {amount} = {price}, so you pay {price} at checkout.", { amount: formatAmount(amountMinor, currency), price: formatPrice(priceMinor / 100) })}</p>
               ) : null}
