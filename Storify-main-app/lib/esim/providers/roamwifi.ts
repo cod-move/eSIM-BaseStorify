@@ -155,8 +155,16 @@ export class RoamWifiAdapter implements EsimProviderAdapter {
   }
 
   async getUsage(ref: EsimRef): Promise<ProviderUsage> {
-    // getOrderInfo carries the card's data used and dates (getESIMDetail, §2.27,
-    // waits on RoamWifi whitelisting our IP).
+    // getESIMDetail (doc v2.13 §2.27, api_esim/getESIMDetail) is the card's own
+    // record; the order (getOrderInfo) is the fallback when it does not answer.
+    if (ref.iccid) {
+      try {
+        const detail = obj(await this.callData("api_esim/getESIMDetail", { iccid: ref.iccid }));
+        if (objArray(detail.esimPackets).length || Object.keys(obj(detail.esimInfo)).length) return mapEsimDetail(detail);
+      } catch (error) {
+        if (error instanceof ProviderError && error.code === "uncertain") throw error;
+      }
+    }
     const orderNum = ref.providerEsimId;
     if (!orderNum) throw new ProviderError("not_found", "RoamWifi needs the order number of the eSIM");
     let order = obj(await this.callData("api_esim/getOrderInfo", { orderNum }));
@@ -164,20 +172,21 @@ export class RoamWifiAdapter implements EsimProviderAdapter {
     return mapOrderUsage(order, ref.iccid);
   }
 
+  /**
+   * The renewals an eSIM can take, asked three ways (doc v2.13): the ICCID's
+   * packages at once (§2.21 getIccidSupportPackageInfo); else per SKU the
+   * ICCID supports (§2.17, §2.19); else, as the live store does when the SKU
+   * list comes back empty, per the SKU of the eSIM's own order.
+   */
   async listTopupPlans(ref: EsimRef): Promise<ProviderTopupPlan[]> {
     if (!ref.iccid) throw new ProviderError("not_found", "RoamWifi lists renewals by ICCID");
+    const iccid = ref.iccid;
     const plans = new Map<string, ProviderTopupPlan>();
-    for (const sku of await this.callList("api_esim/getICCIDSupportSkuInfo", { iccid: ref.iccid })) {
-      const packageData = obj(
-        await this.callData("api_esim/getICCIDSkuSupportPackageInfo", {
-          iccid: ref.iccid,
-          skuId: str(sku.skuid),
-        }),
-      );
-      const display = str(packageData.displayEn) || str(packageData.display) || str(sku.display);
+    const add = (packageData: JsonObject, fallbackDisplay = "") => {
+      const display = str(packageData.displayEn) || str(packageData.display) || fallbackDisplay || "RoamWifi";
       for (const pkg of objArray(packageData.esimPackageDtoList)) {
-        const apiCode = str(pkg.apiCode) || str(pkg.apicode);
-        if (!apiCode) continue;
+        const apiCode = str(pkg.apiCode) || str(pkg.apicode) || str(pkg.apiCpde);
+        if (!apiCode || plans.has(apiCode)) continue;
         plans.set(apiCode, {
           topupPlanId: apiCode,
           name: planName(display, pkg),
@@ -187,8 +196,44 @@ export class RoamWifiAdapter implements EsimProviderAdapter {
           raw: pkg,
         });
       }
+    };
+    const optional = async <T>(call: () => Promise<T>): Promise<T | null> => {
+      try {
+        return await call();
+      } catch (error) {
+        if (error instanceof ProviderError && error.code === "uncertain") throw error;
+        return null;
+      }
+    };
+
+    const direct = await optional(() => this.callData("api_esim/getIccidSupportPackageInfo", { iccid }));
+    for (const entry of Array.isArray(direct) ? objArray(direct) : [obj(direct)]) add(entry);
+    if (plans.size) return [...plans.values()];
+
+    let skus = (await optional(() => this.callList("api_esim/getICCIDSupportSkuInfo", { iccid }))) ?? [];
+    if (!skus.length) {
+      const skuId = await optional(() => this.orderSkuId(ref));
+      if (skuId) skus = [{ skuid: skuId }];
+    }
+    for (const sku of skus) {
+      const skuId = str(sku.skuid) || str(sku.skuId);
+      if (!skuId) continue;
+      const packageData = await optional(() => this.callData("api_esim/getICCIDSkuSupportPackageInfo", { iccid, skuId }));
+      if (packageData) add(obj(packageData), str(sku.displayEn) || str(sku.display));
     }
     return [...plans.values()];
+  }
+
+  /** The SKU the eSIM was bought as: from its own record, else its order. */
+  private async orderSkuId(ref: EsimRef): Promise<string | null> {
+    if (ref.iccid) {
+      const detail = obj(await this.callData("api_esim/getESIMDetail", { iccid: ref.iccid }).catch(() => ({})));
+      const fromDetail = objArray(detail.esimPackets).map((packet) => str(packet.skuId)).find(Boolean);
+      if (fromDetail) return fromDetail;
+    }
+    if (!ref.providerEsimId) return null;
+    const order = obj(await this.callData("api_esim/getOrderInfo", { orderNum: ref.providerEsimId }));
+    return str(order.skuId) || str(order.skuid) || objArray(order.cardApiDtoList).map((card) => str(card.skuId) || str(card.skuid)).find(Boolean) || null;
   }
 
   async topup(input: TopupInput): Promise<TopupResult> {
@@ -276,7 +321,9 @@ export class RoamWifiAdapter implements EsimProviderAdapter {
       tokens.delete(this.phoneNumber);
       return this.callRaw(endpoint, payload, false);
     }
-    if (code !== "0") {
+    // Most answers mean success with code "0"; getESIMDetail (doc v2.13 §2.27)
+    // with code 1 and status "Success".
+    if (code !== "0" && !/^success$/i.test(str(body.status))) {
       throw new ProviderError(
         "rejected",
         `RoamWifi ${endpoint} refused: ${str(body.message) || `code ${code || "missing"}`}`,

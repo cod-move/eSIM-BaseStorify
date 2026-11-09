@@ -111,3 +111,53 @@ describe("RoamWifi regional networks", () => {
     assert.deepEqual(plan.coverage.networks.map((network) => [network.countryCode, network.operator]), [["CN", "China Mobile"], ["HK", "CSL"]]);
   });
 });
+
+describe("RoamWifi renewals and card detail (doc v2.13)", () => {
+  const login = { "POST /api_order/login": () => ({ body: { Code: 1, data: { token: "tok" } } }) };
+  const pkg = (apiCode: string) => ({ apiCode, flows: 1, unit: "GB", days: 3, price: 2.66, flowType: 0 });
+
+  it("lists renewals from the ICCID's packages at once", async () => {
+    const { fetch } = fakeFetch({
+      ...login,
+      "POST /api_esim/getIccidSupportPackageInfo": () => ({ body: { code: "0", data: { skuid: 45, displayEn: "Austria", esimPackageDtoList: [pkg("40-0-3-1-G")] } } }),
+    });
+    const adapter = new RoamWifiAdapter({ phoneNumber: `+852${Date.now()}1`, password: "pw", fetch });
+    const plans = await adapter.listTopupPlans({ providerEsimId: "EP1", simId: null, iccid: "8948010000000000001" });
+    assert.deepEqual(plans.map((plan) => [plan.topupPlanId, plan.megabytes, plan.validityDays]), [["40-0-3-1-G", 1024, 3]]);
+  });
+
+  it("falls back to the eSIM's own SKU when the ICCID names none", async () => {
+    const { fetch, sent } = fakeFetch({
+      ...login,
+      "POST /api_esim/getIccidSupportPackageInfo": () => ({ body: { code: "0", data: { esimPackageDtoList: [] } } }),
+      "POST /api_esim/getICCIDSupportSkuInfo": () => ({ body: { code: "0", data: [] } }),
+      "POST /api_esim/getESIMDetail": () => ({ body: { code: 1, status: "Success", data: { esimInfo: { iccid: "x" }, esimPackets: [{ skuId: 28, packageList: [] }] } } }),
+      "POST /api_esim/getICCIDSkuSupportPackageInfo": () => ({ body: { code: "0", data: { displayEn: "Kazakhstan", esimPackageDtoList: [pkg("398-0-7-3-G")] } } }),
+    });
+    const adapter = new RoamWifiAdapter({ phoneNumber: `+852${Date.now()}2`, password: "pw", fetch });
+    const plans = await adapter.listTopupPlans({ providerEsimId: "EP1", simId: null, iccid: "8948010000000000001" });
+    assert.deepEqual(plans.map((plan) => plan.topupPlanId), ["398-0-7-3-G"]);
+    const asked = sent.find((request) => request.url.pathname.endsWith("getICCIDSkuSupportPackageInfo"));
+    assert.equal(new URLSearchParams(asked?.body ?? "").get("skuId"), "28");
+  });
+
+  it("reads usage from getESIMDetail, whose success is code 1", async () => {
+    const { fetch } = fakeFetch({
+      ...login,
+      "POST /api_esim/getESIMDetail": () => ({
+        body: {
+          code: 1,
+          status: "Success",
+          data: {
+            esimInfo: { iccid: "8948010000000000001", dpStatus: "Enable", expireDate: "2030-03-24" },
+            esimPackets: [{ skuId: 28, packageList: [{ flows: 3, unit: "GB", usedMb: 1024, beginDate: "2025-12-17 23:06", endDate: "2030-12-24 23:06" }] }],
+          },
+        },
+      }),
+    });
+    const adapter = new RoamWifiAdapter({ phoneNumber: `+852${Date.now()}3`, password: "pw", fetch });
+    const usage = await adapter.getUsage({ providerEsimId: "EP1", simId: null, iccid: "8948010000000000001" });
+    assert.equal(usage.lifecycleStatus, "in_use");
+    assert.equal(usage.usedBytes, 1024 * 1024 * 1024);
+  });
+});
