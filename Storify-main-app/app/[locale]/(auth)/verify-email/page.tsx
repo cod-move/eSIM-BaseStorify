@@ -1,4 +1,5 @@
-import { VerifyEmailPanel } from "@/components/auth/verify-email-panel";
+// [esim-patch] P47: the eSIM panel (translated, with the spam-folder hint) in place of the official one.
+import { EsimVerifyEmailPanel as VerifyEmailPanel } from "@/components/esim/auth/verify-email-panel";
 
 export default async function Page({
   params,

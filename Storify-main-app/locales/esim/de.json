@@ -872,6 +872,24 @@
       "refresh": "New picture",
       "alt": "Picture code",
       "invalid": "The picture code is wrong or has run out. Please type the new one."
+    },
+    "verifyEmail": {
+      "title": "Prüfen Sie Ihr E-Mail-Postfach",
+      "sentTo": "Wir haben einen Bestätigungslink gesendet an",
+      "sent": "Wir haben einen Bestätigungslink an Ihre E-Mail-Adresse gesendet.",
+      "open": "Öffnen Sie den Link, um Ihre E-Mail-Adresse zu bestätigen und Ihr Konto zu aktivieren. Der Link ist 24 Stunden gültig.",
+      "spam": "Nicht im Posteingang? Sehen Sie im Spam- oder Junk-Ordner nach und markieren Sie die E-Mail als „kein Spam“, damit spätere E-Mails ankommen. Das kann einige Minuten dauern.",
+      "emailLabel": "E-Mail-Adresse",
+      "resend": "Bestätigungs-E-Mail erneut senden",
+      "resent": "Falls dieses Konto noch bestätigt werden muss, wurde ein neuer Link gesendet. Sehen Sie auch im Spam-Ordner nach.",
+      "resendFailed": "Wir konnten gerade keinen weiteren Link senden. Bitte versuchen Sie es gleich noch einmal.",
+      "backToSignIn": "Zurück zur Anmeldung",
+      "invalidTitle": "Bestätigungslink ungültig",
+      "invalid": "Dieser Link ist möglicherweise abgelaufen oder wurde ersetzt. Fordern Sie eine neue Bestätigungs-E-Mail an und versuchen Sie es erneut.",
+      "doneTitle": "E-Mail-Adresse bestätigt",
+      "done": "Ihre E-Mail-Adresse ist bestätigt und Ihr Konto ist bereit. Fahren Sie fort und melden Sie sich an, falls Sie dazu aufgefordert werden.",
+      "requestAnother": "Neuen Link anfordern",
+      "continue": "Weiter"
     }
   },
   "admin": {

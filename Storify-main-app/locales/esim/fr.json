@@ -872,6 +872,24 @@
       "refresh": "New picture",
       "alt": "Picture code",
       "invalid": "The picture code is wrong or has run out. Please type the new one."
+    },
+    "verifyEmail": {
+      "title": "Consultez votre e-mail",
+      "sentTo": "Nous avons envoyé un lien de vérification à",
+      "sent": "Nous avons envoyé un lien de vérification à votre adresse e-mail.",
+      "open": "Ouvrez le lien pour vérifier votre adresse et activer votre compte. Le lien expire dans 24 heures.",
+      "spam": "Pas dans votre boîte de réception ? Regardez dans le dossier spam ou courrier indésirable, et marquez l'e-mail comme « non spam » pour recevoir les suivants. Cela peut prendre quelques minutes.",
+      "emailLabel": "Adresse e-mail",
+      "resend": "Renvoyer l'e-mail de vérification",
+      "resent": "Si ce compte doit encore être vérifié, un nouveau lien a été envoyé. Pensez aussi au dossier spam.",
+      "resendFailed": "Impossible d'envoyer un autre lien pour le moment. Réessayez dans un instant.",
+      "backToSignIn": "Retour à la connexion",
+      "invalidTitle": "Lien de vérification invalide",
+      "invalid": "Ce lien a peut-être expiré ou été remplacé. Demandez un nouvel e-mail de vérification et réessayez.",
+      "doneTitle": "Adresse e-mail vérifiée",
+      "done": "Votre adresse e-mail est vérifiée et votre compte est prêt. Continuez, et connectez-vous si on vous le demande.",
+      "requestAnother": "Demander un autre lien",
+      "continue": "Continuer"
     }
   },
   "admin": {

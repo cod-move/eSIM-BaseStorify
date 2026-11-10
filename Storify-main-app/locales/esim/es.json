@@ -872,6 +872,24 @@
       "refresh": "New picture",
       "alt": "Picture code",
       "invalid": "The picture code is wrong or has run out. Please type the new one."
+    },
+    "verifyEmail": {
+      "title": "Revisa tu correo",
+      "sentTo": "Hemos enviado un enlace de verificación a",
+      "sent": "Hemos enviado un enlace de verificación a tu correo electrónico.",
+      "open": "Abre el enlace para verificar tu correo y activar tu cuenta. El enlace caduca en 24 horas.",
+      "spam": "¿No está en tu bandeja de entrada? Mira en la carpeta de spam o correo no deseado y marca el mensaje como «no es spam» para que lleguen los siguientes. Puede tardar unos minutos.",
+      "emailLabel": "Correo electrónico",
+      "resend": "Reenviar correo de verificación",
+      "resent": "Si esta cuenta aún necesita verificación, se ha enviado un enlace nuevo. Revisa también la carpeta de spam.",
+      "resendFailed": "No hemos podido enviar otro enlace ahora. Inténtalo de nuevo en un momento.",
+      "backToSignIn": "Volver a iniciar sesión",
+      "invalidTitle": "El enlace de verificación no es válido",
+      "invalid": "Puede que el enlace haya caducado o se haya sustituido. Solicita un nuevo correo de verificación e inténtalo otra vez.",
+      "doneTitle": "Correo verificado",
+      "done": "Tu correo está verificado y tu cuenta está lista. Continúa e inicia sesión si se te pide.",
+      "requestAnother": "Solicitar otro enlace",
+      "continue": "Continuar"
     }
   },
   "admin": {

@@ -872,6 +872,24 @@
       "refresh": "New picture",
       "alt": "Picture code",
       "invalid": "The picture code is wrong or has run out. Please type the new one."
+    },
+    "verifyEmail": {
+      "title": "Check your email",
+      "sentTo": "We sent a verification link to",
+      "sent": "We sent a verification link to your email address.",
+      "open": "Open the link to verify your email and activate your account. The link expires in 24 hours.",
+      "spam": "Not in your inbox? Look in your spam or junk folder, and mark the email as \"not spam\" so later emails arrive. It can take a few minutes.",
+      "emailLabel": "Email address",
+      "resend": "Resend verification email",
+      "resent": "A fresh verification link has been sent if this account still needs verification. Check your spam folder too.",
+      "resendFailed": "We could not send another link right now. Please try again shortly.",
+      "backToSignIn": "Back to sign in",
+      "invalidTitle": "Verification link is invalid",
+      "invalid": "This link may have expired or already been replaced. Request a new verification email and try again.",
+      "doneTitle": "Email verified",
+      "done": "Your email address is verified and your account is ready. Continue, and sign in if you are asked to.",
+      "requestAnother": "Request another link",
+      "continue": "Continue"
     }
   },
   "admin": {
