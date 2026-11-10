@@ -11,13 +11,13 @@ import { parseLpa } from "@/lib/esim/numbers/install";
 import { refreshNumberCard } from "@/lib/esim/numbers/account";
 import { getNumberSettings } from "@/lib/esim/numbers/settings";
 import { moveMoney, underTopConnectLock, type MoneyLeg, type TopConnectContext } from "@/lib/esim/numbers/ops";
-import { afterQrLeg, canAffordQr, type QrLeg } from "@/lib/esim/numbers/request-policy";
+import { afterQrLeg, afterReleaseLeg, canAffordQr, creditToClear, type QrLeg } from "@/lib/esim/numbers/request-policy";
 
 /**
  * Asking for things about a number card (lib: models/esim-number-request):
  * a new QR code (fee off the card's credit, then a person orders it from
  * TopConnect and pastes the new code), moving the number to another
- * account, and giving it up.
+ * account, and giving it up (its credit is then taken off the card).
  */
 
 const WAIT_MS = 2 * 60_000;
@@ -106,7 +106,11 @@ export async function requestNewQr(userId: string, numberId: string, key: string
   return reported(saved);
 }
 
-function reported(request: Pick<IEsimNumberRequest, "state" | "lastError" | "resolution">): RequestResult {
+function reported(request: Pick<IEsimNumberRequest, "kind" | "state" | "lastError" | "resolution">): RequestResult {
+  // A given-up number has left the account whatever became of its credit.
+  if (request.kind === "release") {
+    return request.state === "completed" ? { ok: true, state: "completed" } : { ok: true, state: request.state, message: "The number was removed; its remaining credit is being cleared" };
+  }
   switch (request.state) {
     case "failed":
       return { ok: false, message: request.lastError?.message ?? "The request was refused" };
@@ -178,7 +182,23 @@ async function later(request: IEsimNumberRequest, detail?: string) {
   );
 }
 
+/** Takes a given-up number's credit off the card. */
+async function clearCredit(context: TopConnectContext, request: IEsimNumberRequest) {
+  await EsimNumberRequest.updateOne({ _id: request._id }, { $set: { state: "charging" } });
+  const moved = await moveMoney(context, legOf(request, "charge"), -request.feeMinor);
+  const why = moved.message ?? moved.result;
+  switch (afterReleaseLeg(moved.result)) {
+    case "completed":
+      return settle(request, "completed", `${formatAmount(request.feeMinor, request.currency)} of credit cleared`);
+    case "wait":
+      return later(request, moved.message);
+    case "manual":
+      return settle(request, "manual", `Given up, but clearing its ${formatAmount(request.feeMinor, request.currency)} of credit failed (${why}): take it off the card by hand`);
+  }
+}
+
 async function processOne(context: TopConnectContext, request: IEsimNumberRequest) {
+  if (request.kind === "release") return clearCredit(context, request);
   const leg: QrLeg = request.state === "refunding" ? "refund" : "charge";
   if (leg === "charge") await EsimNumberRequest.updateOne({ _id: request._id }, { $set: { state: "charging" } });
   const moved = await moveMoney(context, legOf(request, leg), leg === "charge" ? -request.feeMinor : request.feeMinor);
@@ -199,10 +219,13 @@ async function processOne(context: TopConnectContext, request: IEsimNumberReques
   }
 }
 
-/** Takes due fees and puts back refused ones (one shopper's, or any for the cron) under the TopConnect lock. */
+/**
+ * Takes due fees, puts back refused ones and clears given-up numbers' credit
+ * (one shopper's, or any for the cron) under the TopConnect lock.
+ */
 export async function processNumberRequests(options: { customer?: string; limit?: number; budgetMs?: number } = {}) {
-  const result = { pending: 0, failed: 0, rejected: 0, manual: 0, waiting: 0 };
-  const filter: Record<string, unknown> = { kind: "qr", state: { $in: ["queued", "charging", "refunding"] }, nextAttemptAt: { $lte: new Date() } };
+  const result = { pending: 0, completed: 0, failed: 0, rejected: 0, manual: 0, waiting: 0 };
+  const filter: Record<string, unknown> = { kind: { $in: ["qr", "release"] }, state: { $in: ["queued", "charging", "refunding"] }, nextAttemptAt: { $lte: new Date() } };
   if (options.customer) filter.customer = new mongoose.Types.ObjectId(options.customer);
   if (!(await EsimNumberRequest.exists(filter))) return result;
   const started = Date.now();
@@ -218,6 +241,7 @@ export async function processNumberRequests(options: { customer?: string; limit?
       }
       const state = (await EsimNumberRequest.findById(request._id).select({ state: 1 }).lean())?.state;
       if (state === "pending" || state === "failed" || state === "rejected" || state === "manual") result[state] += 1;
+      else if (state === "completed") result.completed += 1;
       else result.waiting += 1;
     }
   });
@@ -342,20 +366,28 @@ export async function transferNumberOwnership(userId: string, numberId: string, 
 
 /**
  * Gives one of the shopper's numbers up: it leaves the account and is
- * retired (a person decides whether it is sold again); any credit on it
- * stays with it. `confirm` must be the number's digits. Once per `key`.
- * Null when the number is not the shopper's.
+ * retired (a person decides whether it is sold again), and any credit left
+ * on the card is taken off it through TopConnect, so it starts again at 0.
+ * The balance is read fresh first; one that cannot be read stops the
+ * release. `confirm` must be the number's digits. Once per `key`. Null
+ * when the number is not the shopper's.
  */
 export async function releaseNumber(userId: string, numberId: string, input: { confirm: string; key: string }): Promise<RequestResult | null> {
   if (!valid(userId, numberId)) return null;
   const customer = new mongoose.Types.ObjectId(userId);
   const earlier = await EsimNumberRequest.findOne({ customer, key: input.key }).lean();
   if (earlier) return reported(earlier);
+  const listed = await EsimNumber.findOne({ _id: numberId, ...owned(userId) }).select({ msisdn: 1 }).lean();
+  if (!listed) return null;
+  if (input.confirm.replace(/\D/g, "") !== listed.msisdn) return { ok: false, message: "Type the number exactly to confirm" };
+  const busy = await busyWith(listed._id);
+  if (busy) return { ok: false, message: busy };
+  if (!(await refreshNumberCard(numberId, { force: true }))) return { ok: false, message: "The balance could not be read; refresh and try again" };
   const row = await EsimNumber.findOne({ _id: numberId, ...owned(userId) }).select({ msisdn: 1, card: 1, note: 1 }).lean();
   if (!row) return null;
-  if (input.confirm.replace(/\D/g, "") !== row.msisdn) return { ok: false, message: "Type the number exactly to confirm" };
-  const busy = await busyWith(row._id);
-  if (busy) return { ok: false, message: busy };
+  const credit = creditToClear(row.card?.balanceMinor);
+  if (credit === "unknown") return { ok: false, message: "The balance could not be read; refresh and try again" };
+  const currency = (row.card?.currency ?? "EUR").toUpperCase();
 
   const now = new Date();
   const note = [row.note, `Given up by the customer on ${now.toISOString().slice(0, 10)}`].filter(Boolean).join("\n").slice(0, 500);
@@ -367,11 +399,15 @@ export async function releaseNumber(userId: string, numberId: string, input: { c
     key: input.key,
     number: row._id,
     msisdn: row.msisdn,
-    currency: (row.card?.currency ?? "EUR").toUpperCase(),
-    state: "completed",
+    feeMinor: credit,
+    currency,
+    // With credit left it is cleared next (here, or by the cron if TopConnect is busy).
+    state: credit > 0 ? "queued" : "completed",
     nextAttemptAt: now,
-    completedAt: now,
-    history: [{ at: now, event: "completed", detail: `given up with ${row.card?.balanceMinor ?? "unknown"} cents of credit` }],
+    ...(credit > 0 ? {} : { completedAt: now }),
+    history: [{ at: now, event: "given up", detail: credit > 0 ? `${formatAmount(credit, currency)} of credit to clear` : "no credit on the card" }],
   });
-  return { ok: true, state: "completed" };
+  if (credit > 0) await processNumberRequests({ customer: userId, budgetMs: 20_000 });
+  const saved = await EsimNumberRequest.findOne({ customer, key: input.key }).lean();
+  return saved ? reported(saved) : { ok: true, state: "completed" };
 }

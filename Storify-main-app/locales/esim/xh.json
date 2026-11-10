@@ -850,7 +850,7 @@
       "release": "Give up this number",
       "releaseButton": "Give up this number",
       "releaseSubmit": "Give it up",
-      "releaseHint": "The number leaves your account for good, with any credit left on it. This cannot be undone.",
+      "releaseHint": "The number leaves your account for good, and any credit left on the card is cleared to zero. This cannot be undone.",
       "releaseConfirm": "Type the number to confirm: {number}",
       "releaseDone": "The number was removed from your account",
       "voucher": "Redeem a voucher",

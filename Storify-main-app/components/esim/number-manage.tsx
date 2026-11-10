@@ -357,7 +357,7 @@ export function NumberManageCard({ numberId, msisdn, title, qr, blocked }: { num
             <Trash2 className="h-4 w-4" />
             {t("esim.manage.release", "Give up this number")}
           </div>
-          <p className="text-xs text-muted-foreground">{t("esim.manage.releaseHint", "The number leaves your account for good, with any credit left on it. This cannot be undone.")}</p>
+          <p className="text-xs text-muted-foreground">{t("esim.manage.releaseHint", "The number leaves your account for good, and any credit left on the card is cleared to zero. This cannot be undone.")}</p>
           <Button size="sm" variant="destructive" onClick={() => open("release")}>
             {t("esim.manage.releaseButton", "Give up this number")}
           </Button>

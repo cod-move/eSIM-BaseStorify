@@ -850,7 +850,7 @@
       "release": "Diese Nummer aufgeben",
       "releaseButton": "Diese Nummer aufgeben",
       "releaseSubmit": "Aufgeben",
-      "releaseHint": "Die Nummer verlässt Ihr Konto endgültig, samt restlichem Guthaben. Das kann nicht rückgängig gemacht werden.",
+      "releaseHint": "Die Nummer verlässt Ihr Konto endgültig, restliches Guthaben auf der Karte wird auf null gesetzt. Das kann nicht rückgängig gemacht werden.",
       "releaseConfirm": "Zur Bestätigung die Nummer eingeben: {number}",
       "releaseDone": "Die Nummer wurde aus Ihrem Konto entfernt",
       "voucher": "Gutschein einlösen",

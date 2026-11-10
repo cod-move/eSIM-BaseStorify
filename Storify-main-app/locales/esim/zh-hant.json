@@ -850,7 +850,7 @@
       "release": "放棄這個號碼",
       "releaseButton": "放棄這個號碼",
       "releaseSubmit": "確認放棄",
-      "releaseHint": "號碼會永久離開你的賬戶，剩餘餘額也一併放棄，無法撤回。",
+      "releaseHint": "號碼會永久離開你的帳戶，卡上剩餘話費會被清零，無法撤回。",
       "releaseConfirm": "請輸入號碼以確認：{number}",
       "releaseDone": "號碼已從你的賬戶移除",
       "voucher": "兌換充值卡",

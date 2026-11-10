@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { appBaseUrl } from "@/lib/app-url";
 
 /**
  * Opens Airwallex's Hosted Payment Page for one PaymentIntent
@@ -23,9 +24,27 @@ export async function GET(request: NextRequest) {
   } catch {
     back = null;
   }
-  const ownPage = back && back.origin === request.nextUrl.origin && /^\/(?:[a-z-]+\/)?esim\/pay\//.test(back.pathname);
-  if (!/^int_[A-Za-z0-9_]{6,80}$/.test(intent) || !/^[A-Za-z0-9_.-]{10,400}$/.test(secret) || !/^[A-Z]{3}$/.test(currency) || !ownPage || !back) {
-    return new NextResponse("Invalid payment link", { status: 400 });
+  // Behind a proxy this request's own origin is the internal one (http://localhost:3000), so the
+  // way back is matched by the host the browser used, or the configured public origin.
+  const hosts = new Set(
+    [request.headers.get("x-forwarded-host")?.split(",")[0], request.headers.get("host"), request.nextUrl.host]
+      .map((host) => host?.trim().toLowerCase())
+      .filter(Boolean),
+  );
+  const ownPage = Boolean(back) && (hosts.has(back!.host.toLowerCase()) || back!.origin === appBaseUrl()) && /^\/(?:[a-z-]+\/)?esim\/pay\//.test(back!.pathname);
+  // Which part is wrong (never the values), so a refused link can be told apart in the logs.
+  const wrong = !/^int_[A-Za-z0-9_-]{6,80}$/.test(intent)
+    ? "intent"
+    : !/^[A-Za-z0-9_.-]{10,4096}$/.test(secret) // a JWT, often longer than 400 characters
+      ? "secret"
+      : !/^[A-Z]{3}$/.test(currency)
+        ? "currency"
+        : !ownPage || !back
+          ? "back"
+          : null;
+  if (wrong || !back) {
+    console.warn(`[esim] Airwallex launch refused: bad ${wrong} (secret ${secret.length} chars, back host ${back?.host ?? "none"}, hosts ${[...hosts].join(" ")})`);
+    return new NextResponse(`Invalid payment link (${wrong})`, { status: 400 });
   }
 
   const options = {

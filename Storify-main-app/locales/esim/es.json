@@ -850,7 +850,7 @@
       "release": "Renunciar a este número",
       "releaseButton": "Renunciar a este número",
       "releaseSubmit": "Renunciar",
-      "releaseHint": "El número sale de tu cuenta para siempre, con el saldo que le quede. No se puede deshacer.",
+      "releaseHint": "El número sale de tu cuenta para siempre y el saldo que quede en la tarjeta se pone a cero. No se puede deshacer.",
       "releaseConfirm": "Escribe el número para confirmar: {number}",
       "releaseDone": "El número se quitó de tu cuenta",
       "voucher": "Canjear un cupón",

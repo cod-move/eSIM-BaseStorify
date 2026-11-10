@@ -19,7 +19,13 @@ const { Schema, models, model } = mongoose;
  *     an answer that cannot be settled → manual
  *
  * - `transfer`: the number moved to another shopper's account (done at once).
- * - `release`: the shopper gave the number up (done at once).
+ * - `release`: the shopper gave the number up. The number leaves the account
+ *   at once; any credit left on the card is then taken off it (`charge`, the
+ *   card's whole balance in `feeMinor`), so a number sold again starts at 0.
+ *
+ *     queued → charging → completed (credit cleared)
+ *     no credit → completed at once
+ *     refused or unsettled → manual (a person clears it)
  */
 export type NumberRequestKind = "qr" | "transfer" | "release";
 export type NumberRequestState = "queued" | "charging" | "pending" | "completed" | "failed" | "refunding" | "rejected" | "manual";

@@ -850,7 +850,7 @@
       "release": "この番号を手放す",
       "releaseButton": "この番号を手放す",
       "releaseSubmit": "手放す",
-      "releaseHint": "番号は残高ごとアカウントから完全に外れます。元に戻せません。",
+      "releaseHint": "番号はアカウントから完全に外れ、カードに残った残高はゼロになります。元に戻せません。",
       "releaseConfirm": "確認のため番号を入力してください：{number}",
       "releaseDone": "番号をアカウントから外しました",
       "voucher": "バウチャーを使う",

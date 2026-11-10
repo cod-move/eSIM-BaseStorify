@@ -850,7 +850,7 @@
       "release": "Abandonner ce numéro",
       "releaseButton": "Abandonner ce numéro",
       "releaseSubmit": "Abandonner",
-      "releaseHint": "Le numéro quitte votre compte définitivement, avec le crédit restant. C'est définitif.",
+      "releaseHint": "Le numéro quitte votre compte définitivement et le crédit restant sur la carte est remis à zéro. C'est définitif.",
       "releaseConfirm": "Saisissez le numéro pour confirmer : {number}",
       "releaseDone": "Le numéro a été retiré de votre compte",
       "voucher": "Utiliser un bon",
