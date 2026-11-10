@@ -23,6 +23,7 @@ import { planProducts, type PlannedProduct, type VariantPlan } from "@/lib/esim/
 import { ensureCategory } from "@/lib/esim/catalog/category";
 import { ensureTopupProduct } from "@/lib/esim/topup/product";
 import { ensureWalletProduct } from "@/lib/esim/wallet/product";
+import { coverImages, coverPath } from "@/lib/esim/catalog/cover";
 
 /** The destination pages' cache tag (lib/esim/storefront/catalog.ts). */
 const STOREFRONT_TAG = "esim-storefront";
@@ -38,7 +39,8 @@ const STOREFRONT_TAG = "esim-storefront";
  * Re-publishing touches only what the catalogue owns — variants, options and
  * the price — and keeps each variant's id, so carts and orders that point at
  * it stay valid. Name, description, images and status stay as an admin left
- * them. A destination with nothing left to sell goes back to draft; it is
+ * them — except that a product without any picture gets the generated cover
+ * (lib/esim/catalog/cover.ts), and an older cover is moved to the current one. A destination with nothing left to sell goes back to draft; it is
  * never deleted.
  */
 
@@ -284,6 +286,7 @@ async function createProduct(planned: PlannedProduct, status: string) {
     category,
     productType: "esim",
     tags: ["esim"],
+    images: [coverPath(planned.productSlug)],
     price: Math.min(...variants.map((variant) => variant.doc.price)),
     status,
     shipping: { isPhysicalProduct: false },
@@ -312,11 +315,18 @@ async function updateProduct(planned: PlannedProduct, link: IEsimProductLink) {
     return null;
   }
   const { options, variants } = optionsAndVariants(planned, link);
+  const cover = coverImages(planned.productSlug, { images: product.get("images"), media: product.get("media") });
   if (storedFingerprint(product.toObject()) === fingerprint(variants, options)) {
+    if (cover) {
+      await Product.updateOne({ _id: product._id }, { $set: { images: cover } });
+      revalidateProductContent({ slugs: [String(product.get("slug"))] });
+      await markProductsForCatalogSync([product._id]);
+    }
     await writeLink(planned, product._id as mongoose.Types.ObjectId, variants);
-    return "unchanged" as const;
+    return cover ? ("updated" as const) : ("unchanged" as const);
   }
   const before = product.toObject() as unknown as ProductSaveSide;
+  if (cover) product.set("images", cover);
   product.set("options", options);
   product.set("variants", variants.map((variant) => variant.doc));
   product.set("price", Math.min(...variants.map((variant) => variant.doc.price)));

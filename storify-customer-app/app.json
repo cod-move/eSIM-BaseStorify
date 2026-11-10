@@ -1,20 +1,20 @@
 {
   "expo": {
-    "name": "Storify",
+    "name": "CodSIM",
     "slug": "storify-shop",
     "version": "1.0.0",
-    "scheme": "storify",
+    "scheme": "codsim",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "bundleIdentifier": "com.storify.shop",
+      "bundleIdentifier": "cc.codsim.app",
       "config": {
         "usesNonExemptEncryption": false
       }
     },
     "android": {
-      "package": "com.storify.shop",
+      "package": "cc.codsim.app",
       "backgroundColor": "#F6F6F6",
       "adaptiveIcon": {
         "backgroundColor": "#FFFFFF",
