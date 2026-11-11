@@ -27,6 +27,7 @@ export const BUNDLED_LOCALES = [
   'ha',
   'yo',
   'ig',
+  'zh-hant', // [esim-patch] P53 Traditional Chinese, as on the website
 ] as const;
 
 export type BundledLocale = (typeof BUNDLED_LOCALES)[number];
@@ -36,6 +37,8 @@ const RTL_LANGUAGES = new Set(['ar', 'he', 'fa', 'ur', 'ps', 'sd', 'ug', 'yi', '
 
 /** `pt-BR` → `pt` */
 export function languageOf(locale: string): string {
+  // [esim-patch] P53 Traditional Chinese is a language of its own: zh-Hant, zh-TW, zh-HK, zh-MO.
+  if (/^zh[-_](hant|tw|hk|mo)\b/i.test(locale)) return 'zh-hant';
   return locale.split('-')[0]?.toLowerCase() ?? locale;
 }
 

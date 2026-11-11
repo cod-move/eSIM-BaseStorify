@@ -56,8 +56,9 @@ describe('transport', () => {
     expect((error as NetworkError).kind).toBe('offline');
   });
 
-  it('refuses every change, whatever the case of its method, while connected without internet', async () => {
-    mockEmit({ isConnected: true, isInternetReachable: false });
+  // [esim-patch] P55 refused only with no connection at all (src/lib/network.ts)
+  it('refuses every change, whatever the case of its method, while disconnected', async () => {
+    mockEmit({ isConnected: false, isInternetReachable: false });
 
     for (const method of ['put', 'PATCH', 'DELETE']) {
       await expect(transport(URL, { method })).rejects.toBeInstanceOf(NetworkError);
@@ -66,6 +67,15 @@ describe('transport', () => {
       NetworkError
     );
     expect(sent).not.toHaveBeenCalled();
+  });
+
+  // [esim-patch] P55
+  it('sends a change when connected but Android could not reach Google', async () => {
+    mockEmit({ isConnected: true, isInternetReachable: false });
+
+    await transport(URL, { method: 'POST' });
+
+    expect(sent).toHaveBeenCalledTimes(1);
   });
 
   it('still sends a read while offline: it may find the network back', async () => {

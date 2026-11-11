@@ -12,6 +12,7 @@ type PartialMessages = { [key: string]: string | PartialMessages };
 // `require`, not `import`: only the active language's file is read.
 const FILES: Record<string, () => PartialMessages> = {
   zh: () => require('./zh.json'),
+  'zh-hant': () => require('./zh-hant.json'),
 };
 
 export function esimMessagesOf(language: string): PartialMessages {

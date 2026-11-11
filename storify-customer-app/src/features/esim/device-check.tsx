@@ -90,7 +90,12 @@ export function DeviceCheck({ devices }: { devices: EsimDevices }) {
         <Text variant="caption">{t('deviceCaution')}</Text>
       </View>
 
-      <SearchField label={t('searchDevices')} value={query} onChangeText={setQuery} />
+      <SearchField
+        label={t('searchDevices')}
+        placeholder={t('searchDevices')}
+        value={query}
+        onChangeText={setQuery}
+      />
       {found.length === 0 ? (
         <Text className="py-6 text-center text-muted">{t('noDevices')}</Text>
       ) : (

@@ -6,6 +6,7 @@ import { useBottomSpace } from '@/components/shell/tab-bar';
 import { Icon } from '@/components/ui/icon';
 import { NavRow, RowGroup } from '@/components/ui/rows';
 import { Text } from '@/components/ui/text';
+import { APP_FEATURES } from '@/features/esim/app-flags'; // [esim-patch] P52
 
 /**
  * Security: changing the password, and deleting the
@@ -29,22 +30,25 @@ export function SecurityScreen() {
           onPress={() => router.push('/account/security/password')}
         />
       </RowGroup>
-      <RowGroup>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={t('deleteAccount')}
-          accessibilityHint={t('deleteHint')}
-          onPress={() => router.push('/account/security/delete')}
-          className="min-h-[52px] flex-row items-center gap-3 py-3.5 active:opacity-70">
-          <Icon name="trash" size={22} colorClassName="accent-danger" />
-          <View className="flex-1 gap-1">
-            <Text variant="subheading" className="text-danger">
-              {t('deleteAccount')}
-            </Text>
-            <Text className="text-muted">{t('deleteHint')}</Text>
-          </View>
-        </Pressable>
-      </RowGroup>
+      {/* [esim-patch] P52 deleting the account is hidden (APP_FEATURES.accountDeletion) */}
+      {APP_FEATURES.accountDeletion ? (
+        <RowGroup>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('deleteAccount')}
+            accessibilityHint={t('deleteHint')}
+            onPress={() => router.push('/account/security/delete')}
+            className="min-h-[52px] flex-row items-center gap-3 py-3.5 active:opacity-70">
+            <Icon name="trash" size={22} colorClassName="accent-danger" />
+            <View className="flex-1 gap-1">
+              <Text variant="subheading" className="text-danger">
+                {t('deleteAccount')}
+              </Text>
+              <Text className="text-muted">{t('deleteHint')}</Text>
+            </View>
+          </Pressable>
+        </RowGroup>
+      ) : null}
     </ScrollView>
   );
 }

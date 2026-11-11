@@ -26,10 +26,10 @@ else
     if grep -qF "\`$file\`" "$LIST" || grep -qF "\`$short\`" "$LIST"; then
       marks="$(grep -c "\[esim-patch\]" "$file" 2>/dev/null || true)"
       unmarkable=0
-      case "$file" in *.json|*/pnpm-lock.yaml) unmarkable=1 ;; esac
+      case "$file" in *.json|*/pnpm-lock.yaml|*.png|*.jpg|*.jpeg|*.webp|*.gif|*.ico) unmarkable=1 ;; esac
       if [ "$unmarkable" -eq 1 ]; then
-        # JSON 和生成的锁文件不能写注释，只要求登记（改动内容写在 UPSTREAM-PATCHES.md 里）。
-        echo "  已登记  $file（JSON/锁文件，无法加标记）"
+        # JSON、生成的锁文件和图片不能写注释，只要求登记（改动内容写在 UPSTREAM-PATCHES.md 里）。
+        echo "  已登记  $file（JSON/锁文件/图片，无法加标记）"
       else
         echo "  已登记  $file（标记 ${marks:-0} 处）"
       fi

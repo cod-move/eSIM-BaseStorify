@@ -23,6 +23,9 @@ const DESTINATIONS = {
   categories: { href: '/categories', icon: 'grid', label: 'tabs.categories' },
   cart: { href: '/cart', icon: 'cart', label: 'tabs.cart' },
   account: { href: '/account', icon: 'user', label: 'tabs.account' },
+  // [esim-patch] P49 the eSIM tabs (src/app/(tabs)/(6-destinations), (7-esims)).
+  destinations: { href: '/destinations', icon: 'map', label: 'esim.tabDestinations' },
+  esims: { href: '/my-esims', icon: 'sim', label: 'esim.tabEsims' },
   wishlist: { href: '/account/wishlist', icon: 'heart', label: 'shell.destinations.wishlist' },
   notifications: {
     href: '/account/notifications',
@@ -70,7 +73,7 @@ const DESTINATIONS = {
   },
 } as const satisfies Record<
   string,
-  { href: string; icon: IconName; label: `${'tabs' | 'shell'}.${string}`; capability?: string }
+  { href: string; icon: IconName; label: `${'tabs' | 'shell' | 'esim'}.${string}`; capability?: string } // [esim-patch] P49 'esim'
 >;
 
 export type Destination = keyof typeof DESTINATIONS;
@@ -85,6 +88,8 @@ export const TAB_ROUTES = {
   categories: '(3-categories)',
   cart: '(4-cart)',
   account: '(5-account)',
+  destinations: '(6-destinations)', // [esim-patch] P49
+  esims: '(7-esims)', // [esim-patch] P49
 } as const satisfies Partial<Record<Destination, string>>;
 
 export type TabDestination = keyof typeof TAB_ROUTES;
@@ -123,11 +128,12 @@ export type AppLayout = {
 
 /** The design's layout. Search and Categories are tabs; the wishlist opens from Home and Account. */
 export const APP_LAYOUT: AppLayout = {
+  // [esim-patch] P49 Home, Search, Destinations, My eSIMs, Account; the cart opens from Home's header.
   tabs: [
     { destination: 'home' },
     { destination: 'search' },
-    { destination: 'categories' },
-    { destination: 'cart', badge: 'cart' },
+    { destination: 'destinations' },
+    { destination: 'esims' },
     { destination: 'account' },
   ],
   homeHeader: [{ destination: 'wishlist' }, { destination: 'cart', badge: 'cart' }],

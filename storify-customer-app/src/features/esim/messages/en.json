@@ -143,6 +143,20 @@
     "startWhen": "When should it start?",
     "startAsUsual": "As usual",
     "startOnDate": "On a date",
-    "startHint": "The plan starts on this day (UTC), not when you install it."
+    "startHint": "The plan starts on this day (UTC), not when you install it.",
+    "tabDestinations": "Destinations",
+    "tabEsims": "My eSIMs",
+    "signInTitle": "Sign in to see your eSIMs",
+    "signInBody": "Your eSIMs, their usage and top-ups are kept in your account.",
+    "signIn": "Sign in",
+    "language": "Language",
+    "allDestinations": "All destinations",
+    "filterAll": "All",
+    "filterFewer": "Fewer",
+    "filterMore": "+{count} more",
+    "planCount": "{count, plural, one {# plan} other {# plans}}",
+    "filterClear": "Clear filters",
+    "noMatchingPlans": "No plans match these filters.",
+    "showMorePlans": "Show {count} more"
   }
 }

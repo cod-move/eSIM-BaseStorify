@@ -2,11 +2,12 @@ import { Stack } from 'expo-router';
 import { useTranslations } from 'use-intl';
 
 import { ErrorState, LoadingState } from '@/components/ui/state-view';
-import { DestinationBrowser } from '@/features/esim/destination-browser';
-import { useEsimDestinations } from '@/features/esim/use-destinations';
 
-/** Destinations (the eSIM module, APP-02): the website's /esim. */
-export default function EsimDestinationsScreen() {
+import { DestinationBrowser } from './destination-browser';
+import { useEsimDestinations } from './use-destinations';
+
+/** Destinations (APP-02): the website's /esim, and the Destinations tab. */
+export function DestinationsView() {
   const t = useTranslations('esim');
   const destinations = useEsimDestinations();
 

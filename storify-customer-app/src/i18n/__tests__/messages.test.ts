@@ -32,7 +32,10 @@ describe('the phone has no Intl.PluralRules and no Intl.Locale', () => {
   it('has the plural rules of every bundled language', () => {
     for (const locale of BUNDLED_LOCALES) {
       getMessages(locale);
-      expect(Intl.PluralRules.supportedLocalesOf([locale])).toEqual([locale]);
+      // [esim-patch] P53 zh-hant comes back in its canonical case, zh-Hant.
+      expect(
+        Intl.PluralRules.supportedLocalesOf([locale]).map((code) => code.toLowerCase())
+      ).toEqual([locale]);
     }
     // Arabic has six plural forms; English rules would call all of these "other".
     const arabic = new Intl.PluralRules('ar');

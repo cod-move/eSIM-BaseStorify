@@ -143,6 +143,20 @@
     "startWhen": "什么时候开始生效？",
     "startAsUsual": "按套餐默认",
     "startOnDate": "指定日期",
-    "startHint": "套餐将在这一天（UTC）开始生效，而不是安装时。"
+    "startHint": "套餐将在这一天（UTC）开始生效，而不是安装时。",
+    "tabDestinations": "目的地",
+    "tabEsims": "我的eSIM",
+    "signInTitle": "登录后查看你的 eSIM",
+    "signInBody": "你的 eSIM、用量和充值都保存在账户里。",
+    "signIn": "登录",
+    "language": "语言",
+    "allDestinations": "全部目的地",
+    "filterAll": "全部",
+    "filterFewer": "收起",
+    "filterMore": "还有 {count} 个",
+    "planCount": "共 {count} 个套餐",
+    "filterClear": "清除筛选",
+    "noMatchingPlans": "没有符合这些条件的套餐。",
+    "showMorePlans": "再显示 {count} 个"
   }
 }

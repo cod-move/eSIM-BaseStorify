@@ -188,7 +188,8 @@ function NativeLaunch({ phase, onGone }: LaunchProps) {
       <Animated.View
         className="absolute inset-x-0 items-center"
         style={{ bottom: insets.bottom + 28, opacity: arrive }}>
-        <Text variant="caption" className="text-on-scrim opacity-70">
+        {/* [esim-patch] P51: the splash is white, so the version is in the logo's brown */}
+        <Text variant="caption" className="opacity-60" style={{ color: '#3D1E12' }}>
           {t('version', { version: appInfo.version })}
         </Text>
       </Animated.View>

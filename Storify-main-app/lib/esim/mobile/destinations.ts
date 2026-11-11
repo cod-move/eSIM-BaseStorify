@@ -3,7 +3,11 @@ import { MobileApiError } from "@/lib/api-core/errors";
 import { defineRoute } from "@/lib/api-core/registry";
 import { connectDB } from "@/lib/db";
 import { getStoreCurrency } from "@/lib/intl/server-currency";
-import { getDestination, listDestinations } from "@/lib/esim/storefront/catalog";
+import { listDestinations, regionNamesFor } from "@/lib/esim/storefront/catalog";
+import { getLocalizedDestination, localizeDestinations } from "@/lib/esim/storefront/destination-names";
+import { filterPlans } from "@/lib/esim/storefront/plan-filter";
+import { translator } from "@/lib/esim/i18n/server";
+import { planFilterViews } from "./plan-filters";
 import { toEsimDestination, toEsimDestinationDetail } from "./dto";
 
 /**
@@ -21,10 +25,10 @@ export const esimDestinationsRoute = defineRoute({
   cache: { kind: "public", sMaxAge: 300, swr: 600 },
   rateLimit: { bucket: "catalog:esim-destinations", preset: "browse" },
   output: EsimDestinationList,
-  handler: async () => {
+  handler: async ({ locale }) => {
     await connectDB();
     const [destinations, currency] = await Promise.all([listDestinations(), getStoreCurrency()]);
-    const shaped = destinations.map((destination) => toEsimDestination(destination, currency));
+    const shaped = (await localizeDestinations(destinations, locale)).map((destination) => toEsimDestination(destination, currency));
     const byName = (a: { name: string }, b: { name: string }) => a.name.localeCompare(b.name);
     return {
       local: shaped.filter((entry) => entry.scope === "local").sort(byName),
@@ -43,11 +47,18 @@ export const esimDestinationRoute = defineRoute({
   cache: { kind: "public", sMaxAge: 300, swr: 600 },
   rateLimit: { bucket: "catalog:esim-destination", preset: "browse" },
   output: EsimDestinationDetail,
-  handler: async ({ params }) => {
+  handler: async ({ params, locale }) => {
     if (params.scope !== "local" && params.scope !== "multi") throw new MobileApiError(404, "NOT_FOUND", "Destination not found.");
     await connectDB();
-    const [destination, currency] = await Promise.all([getDestination(params.slug, params.scope), getStoreCurrency()]);
-    if (!destination) throw new MobileApiError(404, "NOT_FOUND", "Destination not found.");
-    return toEsimDestinationDetail(destination, currency);
+    const [found, currency, t] = await Promise.all([getLocalizedDestination(params.slug, params.scope, locale), getStoreCurrency(), translator(locale)]);
+    if (!found) throw new MobileApiError(404, "NOT_FOUND", "Destination not found.");
+    // The website's order (shortest first, then kind, data and price); a country's own plans and those of the regions that cover it.
+    const destination = { ...found, variants: filterPlans(found.variants, {}) };
+    const filters = planFilterViews(destination.variants, {
+      t,
+      countryCodes: destination.countries.map((country) => country.code),
+      regionNames: regionNamesFor(destination, locale),
+    });
+    return toEsimDestinationDetail(destination, currency, filters);
   },
 });

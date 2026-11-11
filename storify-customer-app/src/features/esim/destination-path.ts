@@ -1,4 +1,9 @@
+import type { Href } from 'expo-router';
+
 import type { EsimDestination } from '@/contracts/mobile/shop/v1/esim';
+
+/** The Destinations tab (patch P49); typed by hand until the route types are regenerated. */
+export const DESTINATIONS_TAB = '/destinations' as Href;
 
 /**
  * The screen a destination lives at, the website's own paths: a country at

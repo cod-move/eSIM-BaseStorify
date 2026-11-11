@@ -6,6 +6,7 @@ import { formatBytes, remainingPercent } from "@/lib/esim/account/display";
 import type { EsimView } from "@/lib/esim/account/esims";
 import { installLinks } from "@/lib/esim/fulfillment/install-links";
 import { activationDateBounds } from "@/lib/esim/cart/line-attributes";
+import { planFacets, type PlanFilterView } from "./plan-filters";
 
 /** The website's eSIM view (lib/esim/account/esims.ts) in the mobile contract's shape (APP-03/04). */
 
@@ -95,7 +96,7 @@ export function toEsimDestination(destination: Destination, currency: Currency):
   };
 }
 
-export function toEsimDestinationDetail(destination: DestinationDetail, currency: Currency): EsimDestinationDetail {
+export function toEsimDestinationDetail(destination: DestinationDetail, currency: Currency, filters?: PlanFilterView[]): EsimDestinationDetail {
   return {
     ...toEsimDestination(destination, currency),
     productId: destination.productId,
@@ -126,6 +127,11 @@ export function toEsimDestinationDetail(destination: DestinationDetail, currency
       topupMode: variant.topupMode,
       // ORD-03: only where every supplier behind the plan schedules activation.
       ...(variant.scheduledActivation ? { startDate: activationDateBounds() } : {}),
+      ...(variant.productId && variant.productId !== destination.productId ? { productId: variant.productId } : {}),
+      ...(variant.region ? { region: variant.region } : {}),
+      ...(variant.operators?.length ? { operators: variant.operators } : {}),
+      ...(filters?.length ? { facets: planFacets(variant) } : {}),
     })),
+    ...(filters?.length ? { filters } : {}),
   };
 }

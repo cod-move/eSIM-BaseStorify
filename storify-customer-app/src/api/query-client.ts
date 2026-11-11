@@ -95,7 +95,7 @@ if (Platform.OS !== 'web') {
   onlineManager.setEventListener((setOnline) => {
     const subscription = Network.addNetworkStateListener((state) => {
       // "Unknown" counts as online: better a request that fails than one never made.
-      setOnline(state.isConnected !== false && state.isInternetReachable !== false);
+      setOnline(state.isConnected !== false); // [esim-patch] P55 reachability is judged by reaching Google (src/lib/network.ts)
     });
     return () => subscription.remove();
   });

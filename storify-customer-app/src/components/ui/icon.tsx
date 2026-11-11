@@ -156,6 +156,15 @@ const ICONS = {
       <Line x1="2" x2="22" y1="10" y2="10" />
     </>
   ),
+  // [esim-patch] P54 a SIM card with its chip, for My eSIMs
+  sim: (
+    <>
+      <Path d="M7 2h7.5L19 6.5V20a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" />
+      <Rect width="8" height="8" x="8" y="10.5" rx="1.5" />
+      <Path d="M12 10.5v8" />
+      <Path d="M8 14.5h8" />
+    </>
+  ),
   cash: (
     <>
       <Rect width="20" height="12" x="2" y="6" rx="2" />

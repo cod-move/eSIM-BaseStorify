@@ -29,6 +29,8 @@ export function useEsimReferrals() {
     queryKey: queryKeys.esimReferrals(locale),
     queryFn: ({ signal }) => getEsimReferrals(locale, signal),
     staleTime: STALE.private,
+    // Asked again each time the screen opens: the store may have turned referrals on or off since.
+    refetchOnMount: 'always',
   });
 }
 

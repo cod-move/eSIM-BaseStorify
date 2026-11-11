@@ -3,6 +3,7 @@ import { useTranslations } from 'use-intl';
 import { NavRow, RowGroup } from '@/components/ui/rows';
 import { useConfig } from '@/features/config/use-config';
 import { useOpenLink } from '@/features/config/use-open-link';
+import { APP_FEATURES } from '@/features/esim/app-flags'; // [esim-patch] P52
 
 /**
  * The store's privacy policy, terms and account deletion page, as rows on the
@@ -22,7 +23,8 @@ export function PolicyRows() {
     { key: 'deletion', icon: 'trash', title: t('accountDeletion'), url: pages?.accountDeletionUrl },
   ] as const;
 
-  const listed = rows.filter((row) => row.url);
+  // [esim-patch] P52 the deletion row stays hidden while the app offers no account deletion.
+  const listed = rows.filter((row) => row.url && (row.key !== 'deletion' || APP_FEATURES.accountDeletion));
   if (listed.length === 0) return null;
 
   return (

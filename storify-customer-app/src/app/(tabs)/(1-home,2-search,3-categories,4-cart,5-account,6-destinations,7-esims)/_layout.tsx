@@ -21,6 +21,9 @@ const ROOTS = {
   '(3-categories)': 'categories',
   '(4-cart)': 'cart',
   '(5-account)': 'account',
+  // [esim-patch] P49 the eSIM tabs: destinations and my eSIMs.
+  '(6-destinations)': 'destinations',
+  '(7-esims)': 'my-esims',
 } as const satisfies Record<(typeof TAB_ROUTES)[TabDestination], string>;
 
 /**
@@ -33,6 +36,8 @@ export const unstable_settings = {
   '3-categories': { anchor: ROOTS['(3-categories)'] },
   '4-cart': { anchor: ROOTS['(4-cart)'] },
   '5-account': { anchor: ROOTS['(5-account)'] },
+  '6-destinations': { anchor: ROOTS['(6-destinations)'] }, // [esim-patch] P49
+  '7-esims': { anchor: ROOTS['(7-esims)'] }, // [esim-patch] P49
 };
 
 /**

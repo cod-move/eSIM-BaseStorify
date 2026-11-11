@@ -29,7 +29,7 @@ import { Spacer } from './spacer';
 import { SponsoredRail } from './sponsored-rail';
 import { Testimonials } from './testimonials';
 import { VendorList } from './vendor-list';
-import { EsimDestinations, EsimDeviceCheckCard } from '@/features/esim/home-blocks'; // [esim-patch] P8
+import { EsimDestinations, EsimDeviceCheckCard, EsimNumbersEntry } from '@/features/esim/home-blocks'; // [esim-patch] P8
 
 type BlockViews = {
   [K in HomeBlock['type']]: ComponentType<{ block: Extract<HomeBlock, { type: K }> }>;
@@ -76,4 +76,5 @@ export const HOME_BLOCK_VIEWS: BlockViews = {
   // [esim-patch] P8 the eSIM module's blocks (src/features/esim/home-blocks.tsx).
   ESIM_DESTINATIONS: EsimDestinations,
   ESIM_DEVICE_CHECK: EsimDeviceCheckCard,
+  ESIM_NUMBERS_ENTRY: EsimNumbersEntry,
 };

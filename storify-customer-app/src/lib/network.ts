@@ -14,7 +14,9 @@ import { useSyncExternalStore } from 'react';
  * request that fails than one never made.
  */
 export function isOfflineState(state: Network.NetworkState): boolean {
-  return state.isConnected === false || state.isInternetReachable === false;
+  // [esim-patch] P55 only a phone with no connection: Android judges "internet reachable" by
+  // reaching Google, which fails in mainland China and would leave the app offline for good.
+  return state.isConnected === false;
 }
 
 let offline = false;

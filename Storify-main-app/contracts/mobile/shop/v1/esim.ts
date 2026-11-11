@@ -205,6 +205,16 @@ export const EsimPlanOption = z.object({
   topupMode: z.string(),
   /** The shopper may pick the day it starts (UTC days, YYYY-MM-DD); left out when it starts as usual only. */
   startDate: z.object({ min: z.string(), max: z.string() }).optional(),
+  /**
+   * On a country's screen, a region's or the world's plan that covers it too:
+   * the product it is bought as (the cart's `productId`) and the region's name.
+   */
+  productId: z.string().optional(),
+  region: z.string().optional(),
+  /** The operators it runs on, by name; left out when the supplier does not say. */
+  operators: z.array(z.string()).optional(),
+  /** Its values under each of the destination's `filters`, by the filter's `key`. */
+  facets: z.record(z.string(), z.array(z.string())).optional(),
 });
 export type EsimPlanOption = z.infer<typeof EsimPlanOption>;
 
@@ -218,6 +228,21 @@ export const EsimDestinationDetail = EsimDestination.extend({
   countryNames: z.array(z.object({ code: z.string(), name: z.string() })),
   networks: z.array(z.object({ countryCode: z.string(), operator: z.string(), network: z.string().optional() })),
   plans: z.array(EsimPlanOption),
+  /**
+   * The website's plan filters (coverage, data type, days, data, top-up, exit
+   * IP, operator), in order, each with two values or more. A plan shows under
+   * a value when its `facets[key]` holds it; each filter offers what the other
+   * chosen filters leave open.
+   */
+  filters: z
+    .array(
+      z.object({
+        key: z.string(),
+        title: z.string(),
+        options: z.array(z.object({ value: z.string(), label: z.string() })),
+      }),
+    )
+    .optional(),
 });
 export type EsimDestinationDetail = z.infer<typeof EsimDestinationDetail>;
 
@@ -312,6 +337,10 @@ export const EsimDestinationsBlock = z.object({
   searchPlaceholder: z.string().optional(),
   destinations: z.array(EsimDestination),
   showPrice: z.boolean(),
+  /** The website's destination tabs: countries, regions, global, each its most popular. */
+  tabs: z
+    .array(z.object({ scope: EsimScope, label: z.string(), destinations: z.array(EsimDestination) }))
+    .optional(),
 });
 export type EsimDestinationsBlock = z.infer<typeof EsimDestinationsBlock>;
 
@@ -322,6 +351,22 @@ export const EsimDeviceCheckBlock = z.object({
   subtitle: z.string().optional(),
 });
 export type EsimDeviceCheckBlock = z.infer<typeof EsimDeviceCheckBlock>;
+
+/** "Need a phone number?": the way to the numbers on sale (NUM-03), a web page in the app. */
+export const EsimNumbersEntryBlock = z.object({
+  type: z.literal("ESIM_NUMBERS_ENTRY"),
+  id: z.string(),
+  title: z.string(),
+  subtitle: z.string().optional(),
+  buttonLabel: z.string(),
+  /** "12 numbers · from €5.00"; left out when the section hides prices. */
+  summary: z.string().optional(),
+  /** A few numbers on sale, "+44 7700 900123". */
+  samples: z.array(z.string()),
+  /** The website's path of the numbers page. */
+  path: z.string(),
+});
+export type EsimNumbersEntryBlock = z.infer<typeof EsimNumbersEntryBlock>;
 
 /*
  * The balance and referrals (the website's /account/esims/balance and

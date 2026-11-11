@@ -1,14 +1,15 @@
 import { useScrollToTop } from 'expo-router';
 import { useRef, type ComponentType } from 'react';
-import { RefreshControl, ScrollView } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { RefreshControl, ScrollView, View } from 'react-native';
+// [esim-patch] P50 (the header takes the safe area)
 
 import { useTabBarHeight } from '@/components/shell/tab-bar';
 import { Reveal, useReveal } from '@/components/ui/motion';
 import type { HomeBlock } from '@/contracts/mobile/shop/v1';
 
+import { EsimHomeHeader } from '@/features/esim/home-header'; // [esim-patch] P50
+
 import { HOME_BLOCK_VIEWS, UNDRAWN_BLOCKS } from './blocks';
-import { HomeHeader } from './header';
 
 type HomeScreenProps = {
   blocks: HomeBlock[];
@@ -18,7 +19,7 @@ type HomeScreenProps = {
 
 /** Home's content: the header, then the store's blocks in its order, 24 pt apart. */
 export function HomeScreen({ blocks, refreshing, onRefresh }: HomeScreenProps) {
-  const insets = useSafeAreaInsets();
+  // [esim-patch] P50 the safe area is the header's (src/features/esim/home-header.tsx).
   const tabBarHeight = useTabBarHeight();
   const reveal = useReveal();
   const shown = drawnBlocks(blocks);
@@ -26,21 +27,24 @@ export function HomeScreen({ blocks, refreshing, onRefresh }: HomeScreenProps) {
   const scroll = useRef<ScrollView>(null);
   useScrollToTop(scroll);
 
+  // [esim-patch] P50 the eSIM header (logo, language, wishlist, cart) stays above the scrolling page.
   return (
-    <ScrollView
-      ref={scroll}
-      className="flex-1 bg-background"
-      contentContainerClassName="gap-6"
-      // The tab bar's space already holds the bar and the fade above it: a little more is enough.
-      contentContainerStyle={{ paddingTop: insets.top + 8, paddingBottom: tabBarHeight + 8 }}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
-      <HomeHeader />
-      {shown.map((block, index) => (
-        <Reveal key={block.id} entering={reveal(index)}>
-          <BlockView block={block} />
-        </Reveal>
-      ))}
-    </ScrollView>
+    <View className="flex-1 bg-background">
+      <EsimHomeHeader />
+      <ScrollView
+        ref={scroll}
+        className="flex-1 bg-background"
+        contentContainerClassName="gap-6"
+        // The tab bar's space already holds the bar and the fade above it: a little more is enough.
+        contentContainerStyle={{ paddingTop: 16, paddingBottom: tabBarHeight + 8 }}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
+        {shown.map((block, index) => (
+          <Reveal key={block.id} entering={reveal(index)}>
+            <BlockView block={block} />
+          </Reveal>
+        ))}
+      </ScrollView>
+    </View>
   );
 }
 

@@ -46,6 +46,7 @@ const FILES: Record<Exclude<BundledLocale, 'en'>, () => PartialMessages> = {
   ha: () => require('./messages/ha.json'),
   yo: () => require('./messages/yo.json'),
   ig: () => require('./messages/ig.json'),
+  'zh-hant': () => require('./messages/zh-hant.json'), // [esim-patch] P53
 };
 
 const merged = new Map<string, Messages>();

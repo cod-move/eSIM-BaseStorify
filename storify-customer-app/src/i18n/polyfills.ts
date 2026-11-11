@@ -38,6 +38,7 @@ const PLURAL_RULES: Record<Exclude<BundledLocale, 'en'>, () => void> = {
   ha: () => require('@formatjs/intl-pluralrules/locale-data/ha.js'),
   yo: () => require('@formatjs/intl-pluralrules/locale-data/yo.js'),
   ig: () => require('@formatjs/intl-pluralrules/locale-data/ig.js'),
+  'zh-hant': () => require('@formatjs/intl-pluralrules/locale-data/zh.js'), // [esim-patch] P53
 };
 /* eslint-enable @typescript-eslint/no-require-imports */
 

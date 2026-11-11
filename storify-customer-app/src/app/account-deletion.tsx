@@ -3,6 +3,7 @@ import { useTranslations } from 'use-intl';
 
 import { AccountDeletionView } from '@/features/account/account-deletion-view';
 import { useSession } from '@/features/auth/use-session';
+import { APP_FEATURES } from '@/features/esim/app-flags'; // [esim-patch] P52
 
 /**
  * `/account-deletion`: how to delete an account, as on the website. A signed-in
@@ -13,6 +14,8 @@ export default function AccountDeletionScreen() {
   const t = useTranslations('accountDeletion');
   const { isSignedIn } = useSession();
 
+  // [esim-patch] P52 deleting the account is hidden: back to the account.
+  if (!APP_FEATURES.accountDeletion) return <Redirect href="/account" />;
   if (isSignedIn) return <Redirect href="/account/security/delete" />;
 
   return (
