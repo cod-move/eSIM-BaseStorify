@@ -1,5 +1,6 @@
 import * as Network from 'expo-network';
 import { useSyncExternalStore } from 'react';
+import { AppState } from 'react-native';
 
 /**
  * Whether the phone is offline, as expo-network sees it. The offline banner
@@ -29,9 +30,38 @@ function update(next: boolean): void {
   for (const listener of listeners) listener();
 }
 
+/**
+ * [esim-patch] P55 reads the phone's network again. Android does not always
+ * tell a backgrounded app that the network came back (the photo picker, a
+ * locked screen), so a state heard in the background can be stale: it is read
+ * afresh when the app comes to the front, and before a change is refused.
+ */
+function refresh(): Promise<boolean> {
+  return Promise.resolve()
+    .then(() => Network.getNetworkStateAsync())
+    .then(
+      (state) => {
+        update(isOfflineState(state));
+        return offline;
+      },
+      () => offline
+    );
+}
+
+/** Whether the phone is offline, read afresh when it was last heard to be (P55). */
+export function confirmOffline(): Promise<boolean> {
+  watch();
+  return offline ? refresh() : Promise.resolve(false);
+}
+
 function watch(): void {
   if (watching) return;
   watching = true;
+
+  // [esim-patch] P55 back in the front: the state heard in the background may be stale.
+  AppState.addEventListener('change', (status) => {
+    if (status === 'active') void refresh();
+  });
 
   // An event can arrive before the first reading does: then it is the newer one.
   let heard = false;

@@ -1,3 +1,4 @@
+import * as Crypto from 'expo-crypto';
 import { openAuthSessionAsync } from 'expo-web-browser';
 
 import { startRedirectPayment, verifyRedirectPayment } from '@/api/endpoints/redirect-payments';
@@ -27,12 +28,15 @@ export function isRedirectMethod(method: string): method is RedirectPaymentMetho
   return (REDIRECT_PAYMENT_METHODS as readonly string[]).includes(method);
 }
 
-/** One key per tap of the form: a retry of the same request is the same payment. */
+/**
+ * One key per tap of the form: a retry of the same request is the same payment.
+ * The store takes a UUID only.
+ */
 let current: { key: string; body: string } | null = null;
 
 function keyFor(body: string): string {
   if (current?.body === body) return current.key;
-  const key = `redirect-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`;
+  const key = Crypto.randomUUID();
   current = { key, body };
   return key;
 }

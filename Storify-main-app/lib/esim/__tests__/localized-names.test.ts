@@ -14,6 +14,16 @@ describe("destination names by language", () => {
     assert.equal(destinationNameIn({ ...china, slug: "japan", name: "Japan", countries: [{ code: "JP", name: "Japan" }] }, "zh"), "日本");
   });
 
+  it("translates a country the supplier names another way", () => {
+    const one = (name: string, code: string) => ({ slug: name.toLowerCase(), name, scope: "local", countries: [{ code, name }] });
+    for (const [name, code] of [["Palestine", "PS"], ["Curaçao", "CW"], ["Curacao", "CW"], ["Macao", "MO"], ["Macau", "MO"], ["Antigua and Barbuda", "AG"], ["St. Kitts and Nevis", "KN"], ["Trinidad and Tobago", "TT"], ["Hong Kong", "HK"], ["Turkey", "TR"]] as const) {
+      const shown = destinationNameIn(one(name, code), "zh");
+      assert.notEqual(shown, name, name);
+      assert.equal(shown, new Intl.DisplayNames(["zh"], { type: "region" }).of(code), name);
+    }
+    assert.equal(destinationNameIn({ ...china, name: "China 5G" }, "zh"), "China 5G", "still only a plain name");
+  });
+
   it("keeps English pages and names that say more than the country", () => {
     assert.equal(destinationNameIn(china, "en"), "China");
     assert.equal(destinationNameIn(mainland, "zh"), "China mainland");

@@ -5,6 +5,7 @@ import { getProducts } from '@/api/endpoints/products';
 import { STALE } from '@/api/query-client';
 import { queryKeys } from '@/api/query-keys';
 import type { ProductListQuery } from '@/contracts/mobile/shop/v1';
+import { esimLineTarget } from '@/features/esim/line-target'; // [esim-patch] P57
 import { useLocale } from '@/i18n/locale-store';
 
 /**
@@ -40,6 +41,12 @@ export function useOpenProduct(): (product: ProductRef, to?: 'product' | 'review
   };
 
   return (product, to = 'product') => {
+    // [esim-patch] P57 a number, a top-up, balance or a fee is not on the store: its own screen, or nothing.
+    const esim = to === 'product' ? esimLineTarget(product.slug) : undefined;
+    if (esim !== undefined) {
+      if (esim) router.push(esim);
+      return;
+    }
     if (product.slug) {
       open(product.slug, to);
       return;

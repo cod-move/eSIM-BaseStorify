@@ -1,6 +1,6 @@
 import { Platform } from 'react-native';
 
-import { isOffline } from '@/lib/network';
+import { confirmOffline, isOffline } from '@/lib/network';
 
 import { ApiError, NetworkError } from './errors';
 
@@ -38,7 +38,10 @@ function methodOf(input: RequestInfo | URL, init: RequestInit | undefined): stri
  */
 export const transport: typeof fetch = (input, init) => {
   if (!READS.has(methodOf(input, init)) && isOffline()) {
-    return Promise.reject(new NetworkError('offline'));
+    // [esim-patch] P55 asked again first: the last state heard may be from the background.
+    return confirmOffline().then((still) =>
+      still ? Promise.reject(new NetworkError('offline')) : send(input, init)
+    );
   }
   return send(input, init);
 };

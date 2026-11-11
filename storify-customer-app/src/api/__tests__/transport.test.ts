@@ -11,13 +11,16 @@ type MockListener = (next: unknown) => void;
 
 jest.mock('expo-network', () => {
   const listeners = new Set<MockListener>();
+  // [esim-patch] P55 a fresh reading gives the state last emitted.
+  let current: unknown = { isConnected: true, isInternetReachable: true };
   return {
     addNetworkStateListener: (listener: MockListener) => {
       listeners.add(listener);
       return { remove: () => listeners.delete(listener) };
     },
-    getNetworkStateAsync: () => Promise.resolve({ isConnected: true, isInternetReachable: true }),
+    getNetworkStateAsync: () => Promise.resolve(current),
     mockEmit: (next: unknown) => {
+      current = next;
       for (const listener of listeners) listener(next);
     },
   };

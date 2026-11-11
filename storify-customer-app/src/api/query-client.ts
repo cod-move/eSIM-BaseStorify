@@ -1,11 +1,11 @@
 import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister';
 import { QueryClient, focusManager, onlineManager } from '@tanstack/react-query';
 import type { PersistQueryClientOptions } from '@tanstack/react-query-persist-client';
-import * as Network from 'expo-network';
 import { AppState, Platform } from 'react-native';
 
 import manifest from '@/contracts/manifest.json';
 import { appInfo } from '@/lib/device';
+import { isOffline, subscribeToNetwork } from '@/lib/network';
 import { storage } from '@/lib/storage';
 import { STORAGE_KEYS } from '@/lib/storage-keys';
 
@@ -92,11 +92,10 @@ if (Platform.OS !== 'web') {
     focusManager.setFocused(status === 'active');
   });
 
+  // [esim-patch] P55 the app's one network watch (src/lib/network.ts): connected counts as
+  // online, and it is read afresh when the app comes back from the background.
   onlineManager.setEventListener((setOnline) => {
-    const subscription = Network.addNetworkStateListener((state) => {
-      // "Unknown" counts as online: better a request that fails than one never made.
-      setOnline(state.isConnected !== false); // [esim-patch] P55 reachability is judged by reaching Google (src/lib/network.ts)
-    });
-    return () => subscription.remove();
+    setOnline(!isOffline());
+    return subscribeToNetwork(() => setOnline(!isOffline()));
   });
 }
