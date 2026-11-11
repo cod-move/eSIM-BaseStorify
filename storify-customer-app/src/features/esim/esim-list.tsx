@@ -7,13 +7,20 @@ import { Button } from '@/components/ui/button';
 import { Icon } from '@/components/ui/icon';
 import { Reveal, useReveal } from '@/components/ui/motion';
 import { Text } from '@/components/ui/text';
-import type { EsimSummary } from '@/contracts/mobile/shop/v1/esim';
+import type { EsimNumberSummary, EsimSummary } from '@/contracts/mobile/shop/v1/esim';
 
 import { EsimStatus } from './esim-status';
+import { NumberList } from './number-list';
 import { UsageBar } from './usage-bar';
 
-/** The shopper's eSIMs: one card each, 12 pt apart. */
-export function EsimList({ esims }: { esims: EsimSummary[] }) {
+/** The shopper's eSIMs: one card each, 12 pt apart; their phone numbers first, when they have any. */
+export function EsimList({
+  esims,
+  numbers = [],
+}: {
+  esims: EsimSummary[];
+  numbers?: EsimNumberSummary[];
+}) {
   const router = useRouter();
   const tabBar = useTabBarHeight();
   const reveal = useReveal();
@@ -26,6 +33,9 @@ export function EsimList({ esims }: { esims: EsimSummary[] }) {
       className="flex-1 bg-background"
       contentContainerClassName="gap-3 px-4 pt-3"
       contentContainerStyle={{ paddingBottom: tabBar + 16 }}
+      ListHeaderComponent={
+        numbers.length ? <NumberList numbers={numbers} withEsims={esims.length > 0} /> : null
+      }
       ListFooterComponent={
         <Button
           label={t('buyAnother')}

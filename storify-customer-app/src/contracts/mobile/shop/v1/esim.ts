@@ -530,3 +530,400 @@ export const EsimKycSubmitRequest = z.object({
   files: z.record(z.string().max(64), z.string().max(64)),
 });
 export type EsimKycSubmitRequest = z.infer<typeof EsimKycSubmitRequest>;
+
+// ── Phone numbers (TopConnect number cards, NUM-03~09) ─────────────────────
+//
+// GET /esim/numbers is the numbers page: anyone may browse. Buying needs a
+// signed-in shopper: POST /me/esim-numbers/quote checks the choice and
+// answers with the cart line to send as it is (the cart prices it again and
+// holds the number once checkout starts). The shopper's own numbers are under
+// /me/esim-numbers: the list, one number with its card (balance, packages,
+// install details), its top-ups (POST …/topups/quote, a cart line as well),
+// its services, history, diagnostics and the manage actions.
+//
+// Every number amount is in the card's currency (TopConnect's, euros), as
+// `Money`; checkout charges its USD equivalent at the day's rate plus the FX
+// buffer (`usdPerUnit` carries both, for showing what checkout will charge).
+// A refused action answers 409 CONFLICT with one of `ESIM_NUMBER_REASONS`
+// when the store knows why, and its English sentence otherwise.
+
+/** Why a number action was refused (`reason` of a 409). */
+export const ESIM_NUMBER_REASONS = [
+  "SIGN_IN",
+  "NUMBER_TAKEN",
+  "PACKET_GONE",
+  "NOT_PRICED",
+  "BAD_AMOUNT",
+  "BLOCKED",
+  "UNAVAILABLE",
+  "NETWORK_FAILED",
+  "BAD_NUMBER",
+  "SAME_NUMBER",
+  "NOT_PLATFORM_NUMBER",
+  "CURRENCY_MISMATCH",
+  "NOT_ENOUGH_CREDIT",
+  "TRANSFER_OPEN",
+  "REFRESH_RETRY",
+  "QR_OPEN",
+  "RECONNECT_WAIT",
+  "RECONNECT_UNSUPPORTED",
+  "DATA_STAYS_ON",
+  "BAD_LIMIT",
+  "PACKET_NOT_ON_CARD",
+  "NO_ACCOUNT",
+  "SAME_ACCOUNT",
+  "CONFIRM_MISMATCH",
+  "TOO_MANY_TRIES",
+  "REFUSED",
+] as const;
+export type EsimNumberReason = (typeof ESIM_NUMBER_REASONS)[number];
+
+/** GET /esim/numbers — `code` a country calling code, `digits` digits the number contains. */
+export const EsimNumberShopQuery = z.object({
+  code: z.string().regex(/^\d{1,4}$/).optional(),
+  digits: z.string().regex(/^\d{1,12}$/).optional(),
+  premium: z.enum(["all", "standard", "premium"]).optional(),
+  page: z.number().int().min(1).max(10_000).optional(),
+});
+export type EsimNumberShopQuery = z.infer<typeof EsimNumberShopQuery>;
+
+/** A number on sale. `price` is the number with its premium. */
+export const EsimNumberOnSale = z.object({
+  id: z.string(),
+  dialCode: z.string(),
+  nationalNumber: z.string(),
+  /** "+372 5550 1234". */
+  display: z.string(),
+  country: z.string().optional(),
+  numberPrice: Money,
+  /** The memorable-number premium, when there is one. */
+  premium: Money.optional(),
+  price: Money,
+});
+export type EsimNumberOnSale = z.infer<typeof EsimNumberOnSale>;
+
+/** A data package for a number. */
+export const EsimNumberPacket = z.object({
+  id: z.string(),
+  name: z.string(),
+  /** "5 GB", or the word for unlimited. */
+  volume: z.string(),
+  validityDays: z.number().int(),
+  price: Money,
+  perGb: Money.optional(),
+});
+export type EsimNumberPacket = z.infer<typeof EsimNumberPacket>;
+
+/** Packages that cover the same countries, named in the shopper's language. */
+export const EsimNumberPacketGroup = z.object({
+  key: z.string(),
+  countries: z.array(z.object({ code: z.string(), name: z.string() })),
+  packets: z.array(EsimNumberPacket),
+});
+export type EsimNumberPacketGroup = z.infer<typeof EsimNumberPacketGroup>;
+
+/**
+ * The credit that can be put on a number: whole amounts from `min` to `max`,
+ * in cents of `currency`. `usdPerUnit` is null while the currency cannot be
+ * priced (credit cannot be bought then).
+ */
+export const EsimNumberRecharge = z.object({
+  currency: z.string(),
+  minMinor: z.number().int(),
+  maxMinor: z.number().int(),
+  presetMinor: z.number().int(),
+  min: Money,
+  max: Money,
+  suggestions: z.array(z.object({ minor: z.number().int(), money: Money })),
+  usdPerUnit: z.number().nullable(),
+});
+export type EsimNumberRecharge = z.infer<typeof EsimNumberRecharge>;
+
+export const EsimNumberShop = z.object({
+  items: z.array(EsimNumberOnSale),
+  total: z.number().int(),
+  page: z.number().int(),
+  pages: z.number().int(),
+  dialCodes: z.array(z.object({ code: z.string(), country: z.string().optional(), count: z.number().int() })),
+  packetGroups: z.array(EsimNumberPacketGroup),
+  recharge: EsimNumberRecharge,
+  /** False until the store sells numbers: browsing works, buying does not. */
+  buyable: z.boolean(),
+  /** The service and account risks a buyer accepts first, in order. */
+  risks: z.array(z.string()),
+  /** How long checkout holds a number for the shopper. */
+  holdMinutes: z.number().int(),
+});
+export type EsimNumberShop = z.infer<typeof EsimNumberShop>;
+
+/**
+ * GET /esim/numbers/price — what a choice comes to: a number (`id`) with its
+ * credit and package, or (no `id`) credit or a package alone, for a top-up.
+ * `recharge` in cents of the card currency.
+ */
+export const EsimNumberPriceQuery = z.object({
+  id: z.string().regex(/^[a-f0-9]{24}$/i).optional(),
+  recharge: z.number().int().min(0).max(10_000_000).optional(),
+  packet: z.string().regex(/^[a-f0-9]{24}$/i).optional(),
+});
+export type EsimNumberPriceQuery = z.infer<typeof EsimNumberPriceQuery>;
+
+/** `total` in the card currency; `charged` what checkout takes for it (left out while it cannot be priced). */
+export const EsimNumberPrice = z.object({ total: Money, charged: Money.optional() });
+export type EsimNumberPrice = z.infer<typeof EsimNumberPrice>;
+
+/** POST /me/esim-numbers/quote — `recharge` in cents of the card currency. */
+export const EsimNumberQuoteRequest = z.object({
+  id: z.string().regex(/^[a-f0-9]{24}$/i),
+  recharge: z.number().int().min(1).max(10_000_000),
+  packet: z.string().regex(/^[a-f0-9]{24}$/i).optional(),
+});
+export type EsimNumberQuoteRequest = z.infer<typeof EsimNumberQuoteRequest>;
+
+/** POST /me/esim-numbers/{id}/topups/quote — credit or a package, not both. */
+export const EsimNumberTopupQuoteRequest = z.object({
+  recharge: z.number().int().min(1).max(10_000_000).optional(),
+  packet: z.string().regex(/^[a-f0-9]{24}$/i).optional(),
+});
+export type EsimNumberTopupQuoteRequest = z.infer<typeof EsimNumberTopupQuoteRequest>;
+
+/** The cart line to send as it is; `price` is what checkout charges now. */
+export const EsimNumberQuote = z.object({
+  productId: z.string(),
+  variantId: z.string(),
+  lineAttributes: z.record(z.string(), z.unknown()),
+  label: z.string(),
+  price: Money,
+});
+export type EsimNumberQuote = z.infer<typeof EsimNumberQuote>;
+
+export const EsimNumberSummary = z.object({
+  id: z.string(),
+  msisdn: z.string(),
+  display: z.string(),
+  country: z.string().optional(),
+  remark: z.string().optional(),
+  /** Null while the network has not said. */
+  blocked: z.boolean().nullable(),
+  balance: Money.optional(),
+  lastUsedAt: z.string().optional(),
+  /** A number stays the shopper's for a year after it was last used. */
+  validUntil: z.string().optional(),
+});
+export type EsimNumberSummary = z.infer<typeof EsimNumberSummary>;
+
+/** GET /me/esim-numbers */
+export const EsimNumberList = z.object({ items: z.array(EsimNumberSummary) });
+export type EsimNumberList = z.infer<typeof EsimNumberList>;
+
+/** A data package on the card. `packetId` set: it can be cancelled. */
+export const EsimNumberCardPackage = z.object({
+  name: z.string(),
+  packetId: z.string().optional(),
+  /** Bought and waiting for the next data session. */
+  ordered: z.boolean(),
+  total: z.string().optional(),
+  left: z.string().optional(),
+  leftPercent: z.number().optional(),
+  expiresAt: z.string().optional(),
+});
+export type EsimNumberCardPackage = z.infer<typeof EsimNumberCardPackage>;
+
+export const EsimNumberInstall = z.object({
+  lpa: z.string(),
+  qrImage: z.string(),
+  smdpAddress: z.string().optional(),
+  matchingId: z.string().optional(),
+  iosLink: z.string().optional(),
+  androidLink: z.string().optional(),
+  pin1: z.string().optional(),
+  puk1: z.string().optional(),
+  pin2: z.string().optional(),
+  puk2: z.string().optional(),
+});
+export type EsimNumberInstall = z.infer<typeof EsimNumberInstall>;
+
+/** GET /me/esim-numbers/{id}: read from TopConnect as it opens (at most once a minute). */
+export const EsimNumberDetail = EsimNumberSummary.extend({
+  iccid: z.string(),
+  orderNumber: z.string().optional(),
+  /** The card currency: every amount on this number is in it. */
+  currency: z.string(),
+  /** When the network last answered; null before it ever has. */
+  checkedAt: z.string().nullable(),
+  /** The last read failed: what is shown is from `checkedAt`. */
+  stale: z.boolean(),
+  /** The balance in cents, for checking a transfer against it. */
+  balanceMinor: z.number().int().nullable(),
+  packages: z.array(EsimNumberCardPackage),
+  /** Paid for and still being put on the number, worded for the shopper. */
+  pending: z.array(z.string()),
+  install: EsimNumberInstall.optional(),
+  /** What can be bought for it; `buyable` false when not now. */
+  topups: z.object({ buyable: z.boolean(), recharge: EsimNumberRecharge, packetGroups: z.array(EsimNumberPacketGroup) }),
+  /** The shopper's other numbers, offered as transfer targets. */
+  transferTargets: z.array(z.object({ msisdn: z.string(), title: z.string() })),
+  /** A new QR code: whether it can be asked for, its fee, the latest request. */
+  qr: z.object({
+    enabled: z.boolean(),
+    fee: Money,
+    latest: z.object({ state: z.string(), createdAt: z.string(), note: z.string().optional() }).optional(),
+  }),
+  /** The sender "SMS to myself" starts with. */
+  smsSender: z.string(),
+  smsMaxChars: z.number().int(),
+});
+export type EsimNumberDetail = z.infer<typeof EsimNumberDetail>;
+
+/** PATCH /me/esim-numbers/{id} — the shopper's own name for it; empty clears it. */
+export const EsimNumberRemarkRequest = z.object({ remark: z.string().max(100) });
+export const EsimNumberRemark = z.object({ remark: z.string().nullable() });
+export type EsimNumberRemark = z.infer<typeof EsimNumberRemark>;
+
+/** POST /me/esim-numbers/{id}/refresh, /packets/cancel: the number as it now is. */
+export const EsimNumberRefreshRequest = z.object({});
+export const EsimNumberPacketCancelRequest = z.object({ packetId: z.string().regex(/^\d{1,9}$/) });
+
+/** The switches on a number. */
+export const ESIM_NUMBER_SWITCHES = ["data", "sms", "voice", "voicemail"] as const;
+export type EsimNumberSwitch = (typeof ESIM_NUMBER_SWITCHES)[number];
+
+/** GET /me/esim-numbers/{id}/services — null where the network did not say. */
+export const EsimNumberServices = z.object({
+  data: z.boolean().nullable(),
+  sms: z.boolean().nullable(),
+  voice: z.boolean().nullable(),
+  voicemail: z.boolean().nullable(),
+  /** Digits with the country code; null when calls are not forwarded; left out when unknown. */
+  forwardTo: z.string().nullable().optional(),
+  forwardKnown: z.boolean(),
+  blocked: z.boolean(),
+});
+export type EsimNumberServices = z.infer<typeof EsimNumberServices>;
+
+/** POST /me/esim-numbers/{id}/services */
+export const EsimNumberSwitchRequest = z.object({ service: z.enum(ESIM_NUMBER_SWITCHES), on: z.boolean() });
+export const EsimNumberSwitchResult = z.object({ service: z.enum(ESIM_NUMBER_SWITCHES), on: z.boolean() });
+export type EsimNumberSwitchResult = z.infer<typeof EsimNumberSwitchResult>;
+
+/** POST /me/esim-numbers/{id}/forward — `to` null stops forwarding. */
+export const EsimNumberForwardRequest = z.object({ to: z.string().trim().max(24).nullable() });
+export const EsimNumberForward = z.object({ forwardTo: z.string().nullable() });
+export type EsimNumberForward = z.infer<typeof EsimNumberForward>;
+
+/** A daily data spending limit, in the card currency. */
+export const EsimNumberDataLimit = z.object({
+  /** False when the network did not answer. */
+  known: z.boolean(),
+  limit: z
+    .object({
+      value: Money.optional(),
+      valueMinor: z.number().int().optional(),
+      used: Money.optional(),
+      periodEnd: z.string().optional(),
+    })
+    .nullable(),
+  minMinor: z.number().int(),
+  maxMinor: z.number().int(),
+});
+export type EsimNumberDataLimit = z.infer<typeof EsimNumberDataLimit>;
+
+/** POST /me/esim-numbers/{id}/data-limit — `valueMinor` null removes the limit. */
+export const EsimNumberDataLimitRequest = z.object({ valueMinor: z.number().int().nullable() });
+
+export const ESIM_NUMBER_HISTORY_DAYS = [7, 30, 90] as const;
+
+/** GET /me/esim-numbers/{id}/history?days=7|30|90 — each list null when the network did not answer for it. */
+export const EsimNumberHistoryQuery = z.object({ days: z.number().int().optional() });
+export const EsimNumberHistory = z.object({
+  days: z.number().int(),
+  totals: z.object({ calls: z.number().int(), texts: z.number().int(), data: z.string(), cost: Money }),
+  calls: z
+    .array(
+      z.object({
+        kind: z.enum(["call", "sms", "voicemail"]),
+        direction: z.enum(["in", "out"]).nullable(),
+        /** The other party, digits with the country code. */
+        party: z.string().optional(),
+        at: z.string().optional(),
+        duration: z.string().optional(),
+        destination: z.string().optional(),
+        cost: Money.optional(),
+      }),
+    )
+    .nullable(),
+  data: z
+    .array(z.object({ at: z.string().optional(), network: z.string().optional(), traffic: z.string(), cost: Money.optional() }))
+    .nullable(),
+  recharges: z
+    .array(z.object({ at: z.string().optional(), kind: z.enum(["voucher", "transfer", "automatic", "web"]), out: z.boolean(), amount: Money.optional() }))
+    .nullable(),
+  voicemails: z.array(z.object({ id: z.string(), at: z.string().optional(), from: z.string().optional() })).nullable(),
+});
+export type EsimNumberHistory = z.infer<typeof EsimNumberHistory>;
+
+/** GET /me/esim-numbers/{id}/diagnostics — what the network last saw. */
+export const EsimNumberDiagnostics = z.object({
+  /** Null when the network did not answer for the list. */
+  activity: z
+    .array(
+      z.object({
+        type: z.string(),
+        at: z.string().optional(),
+        detail: z.string().optional(),
+        cost: Money.optional(),
+      }),
+    )
+    .nullable(),
+  /** The latest registration; left out when unknown, null when there is none yet. */
+  location: z.object({ at: z.string().optional(), network: z.string() }).nullable().optional(),
+  locationKnown: z.boolean(),
+  /** The open data session; null when none; left out when unknown. */
+  session: z.object({ startedAt: z.string().optional(), network: z.string().optional() }).nullable().optional(),
+  sessionKnown: z.boolean(),
+  /** Reconnected recently: not again before this. */
+  reconnectAfter: z.string().optional(),
+  /** False when this SIM cannot be reconnected remotely; null when unknown. */
+  reconnectSupported: z.boolean().nullable(),
+});
+export type EsimNumberDiagnostics = z.infer<typeof EsimNumberDiagnostics>;
+
+/** POST /me/esim-numbers/{id}/reconnect */
+export const EsimNumberReconnect = z.object({ reconnectAfter: z.string() });
+export type EsimNumberReconnect = z.infer<typeof EsimNumberReconnect>;
+
+/** POST /me/esim-numbers/{id}/sms — a text to the number itself, to check it receives. */
+export const EsimNumberSmsRequest = z.object({
+  from: z.string().trim().regex(/^\+?\d{3,15}$/),
+  message: z.string().trim().min(1).max(640),
+});
+
+/** POST /me/esim-numbers/{id}/transfer — credit to another of the platform's numbers; once per `key`. */
+export const EsimNumberTransferRequest = z.object({
+  to: z.string().trim().regex(/^\+?[\d\s()-]{6,24}$/),
+  amountMinor: z.number().int().min(1).max(10_000_000),
+  key: z.string().trim().min(8).max(100),
+});
+
+/** POST /me/esim-numbers/{id}/qr, /owner, /release — each once per `key`. */
+export const EsimNumberQrRequest = z.object({ key: z.string().trim().min(8).max(80) });
+export const EsimNumberOwnerRequest = z.object({ email: z.string().trim().email().max(200), key: z.string().trim().min(8).max(80) });
+export const EsimNumberReleaseRequest = z.object({ confirm: z.string().trim().max(24), key: z.string().trim().min(8).max(80) });
+
+/** POST /me/esim-numbers/{id}/voucher — a recharge voucher's PIN. */
+export const EsimNumberVoucherRequest = z.object({ pin: z.string().trim().min(6).max(40) });
+
+/**
+ * What an action did. `state` "completed" when done; otherwise it is being
+ * carried out (`message` says so, in English when the app has no words).
+ */
+export const EsimNumberActionResult = z.object({ state: z.string(), message: z.string().optional() });
+export type EsimNumberActionResult = z.infer<typeof EsimNumberActionResult>;
+
+/** GET /me/esim-numbers/{id}/statement?from=YYYY-MM&to=YYYY-MM — the phone bill, a PDF. */
+export const EsimNumberStatementQuery = z.object({
+  from: z.string().regex(/^\d{4}-\d{2}$/),
+  to: z.string().regex(/^\d{4}-\d{2}$/),
+});
+export const EsimNumberStatement = z.object({ fileName: z.string(), pdfBase64: z.string() });
+export type EsimNumberStatement = z.infer<typeof EsimNumberStatement>;

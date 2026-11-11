@@ -10,11 +10,8 @@ import type {
   EsimDeviceCheckBlock,
   EsimNumbersEntryBlock,
 } from '@/contracts/mobile/shop/v1/esim';
-import { useConfig } from '@/features/config/use-config';
 import { BlockTitle } from '@/features/home/blocks/block-title';
-import { useOpenPage } from '@/features/web/use-open-page';
 import { cn } from '@/lib/cn';
-import { joinWebsiteUrl } from '@/lib/links';
 
 import { DestinationGrid } from './destination-card';
 import { DestinationFlag } from './destination-flag';
@@ -146,18 +143,16 @@ function DestinationTabs({ block }: { block: EsimDestinationsBlock }) {
   );
 }
 
-/** "Need a phone number?" (NUM-03): the numbers page, a web page in the app. */
+/** "Need a phone number?" (NUM-03): the app's own numbers page (the website's /esim/numbers). */
 export function EsimNumbersEntry({ block }: { block: EsimNumbersEntryBlock }) {
-  const openPage = useOpenPage();
-  const website = useConfig().data?.store.websiteUrl;
+  const router = useRouter();
 
   return (
     <View className="px-4">
       <Pressable
         accessibilityRole="link"
         accessibilityLabel={block.title}
-        disabled={!website}
-        onPress={() => website && openPage(joinWebsiteUrl(website, block.path))}
+        onPress={() => router.push('/esim/numbers')}
         className="gap-3 rounded-2xl border border-border bg-surface p-4 active:opacity-80">
         <View className="flex-row items-center gap-3">
           <View className="size-11 items-center justify-center rounded-full bg-accent">
@@ -171,7 +166,9 @@ export function EsimNumbersEntry({ block }: { block: EsimNumbersEntryBlock }) {
         {block.samples.length ? (
           <View className="flex-row flex-wrap gap-2">
             {block.samples.map((sample) => (
-              <View key={sample} className="rounded-full border border-border bg-background px-3 py-1">
+              <View
+                key={sample}
+                className="rounded-full border border-border bg-background px-3 py-1">
                 <Text variant="caption" className="text-foreground">
                   {sample}
                 </Text>
@@ -185,7 +182,12 @@ export function EsimNumbersEntry({ block }: { block: EsimNumbersEntryBlock }) {
           </Text>
           <View className="flex-row items-center gap-1 rounded-full bg-accent px-4 py-2">
             <Text className="text-accent-foreground">{block.buttonLabel}</Text>
-            <Icon name="chevron-right" size={16} directional colorClassName="accent-accent-foreground" />
+            <Icon
+              name="chevron-right"
+              size={16}
+              directional
+              colorClassName="accent-accent-foreground"
+            />
           </View>
         </View>
       </Pressable>
