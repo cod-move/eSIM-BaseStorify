@@ -12,6 +12,21 @@ import { esimDevicesRoute } from "./devices";
 import { esimKycFileRoute, esimKycRoute, esimKycSubmitRoute } from "./kyc";
 import { toEsimDetail, toEsimSummary } from "./dto";
 import { esimTopupQuoteRoute, esimTopupsRoute } from "./topups";
+import { esimNumberPriceRoute, esimNumberQuoteRoute, esimNumberShopRoute } from "./number-shop";
+import { cancelMyNumberPacketRoute, myNumberRemarkRoute, myNumberRoute, myNumbersRoute, myNumberTopupQuoteRoute, refreshMyNumberRoute } from "./numbers";
+import {
+  forwardMyNumberRoute,
+  myNumberDataLimitRoute,
+  myNumberDiagnosticsRoute,
+  myNumberHistoryRoute,
+  myNumberServicesRoute,
+  reconnectMyNumberRoute,
+  setMyNumberDataLimitRoute,
+  setMyNumberServiceRoute,
+  smsMyNumberRoute,
+  transferFromMyNumberRoute,
+} from "./number-services";
+import { myNumberOwnerRoute, myNumberQrRoute, myNumberStatementRoute, myNumberVoucherRoute, releaseMyNumberRoute } from "./number-manage";
 
 /**
  * The shopper app's eSIMs (APP-03/04): the website's own readers
@@ -111,5 +126,33 @@ export const cancelMyEsimRoute = defineRoute({
   },
 });
 
+/** The phone numbers (NUM-03~09): the numbers page and the shopper's own numbers. */
+const ESIM_NUMBER_ROUTES: readonly RouteEntry[] = [
+  esimNumberShopRoute,
+  esimNumberPriceRoute,
+  esimNumberQuoteRoute,
+  myNumbersRoute,
+  myNumberRoute,
+  myNumberRemarkRoute,
+  refreshMyNumberRoute,
+  cancelMyNumberPacketRoute,
+  myNumberTopupQuoteRoute,
+  myNumberServicesRoute,
+  setMyNumberServiceRoute,
+  forwardMyNumberRoute,
+  myNumberDataLimitRoute,
+  setMyNumberDataLimitRoute,
+  myNumberHistoryRoute,
+  myNumberDiagnosticsRoute,
+  reconnectMyNumberRoute,
+  smsMyNumberRoute,
+  transferFromMyNumberRoute,
+  myNumberQrRoute,
+  myNumberOwnerRoute,
+  releaseMyNumberRoute,
+  myNumberVoucherRoute,
+  myNumberStatementRoute,
+];
+
 /** The eSIM module's shopper endpoints, for the API's route list (patch P22). */
-export const esimShopRoutes: readonly RouteEntry[] = [myEsimsRoute, myEsimRoute, refreshMyEsimRoute, esimDestinationsRoute, esimDestinationRoute, esimTopupsRoute, esimTopupQuoteRoute, esimDevicesRoute, esimWalletRoute, esimReferralsRoute, esimReferralCodeRoute, esimKycRoute, esimKycFileRoute, esimKycSubmitRoute, cancelMyEsimRoute];
+export const esimShopRoutes: readonly RouteEntry[] = [myEsimsRoute, myEsimRoute, refreshMyEsimRoute, esimDestinationsRoute, esimDestinationRoute, esimTopupsRoute, esimTopupQuoteRoute, esimDevicesRoute, esimWalletRoute, esimReferralsRoute, esimReferralCodeRoute, esimKycRoute, esimKycFileRoute, esimKycSubmitRoute, cancelMyEsimRoute, ...ESIM_NUMBER_ROUTES];
