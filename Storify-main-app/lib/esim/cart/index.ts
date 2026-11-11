@@ -184,6 +184,17 @@ export async function esimCartLine(
 }
 
 /**
+ * A checkout refusal of the cart, as for an item out of stock. The website's
+ * checkout and the app show `message`, so it is the sentence itself rather
+ * than "Validation failed: stock"; the field map keeps it under `stock` too.
+ */
+function cartRefusal(sentence: string): ValidationError {
+  const error = new ValidationError({ stock: [sentence] });
+  error.message = sentence;
+  return error;
+}
+
+/**
  * The unit price of each day-priced eSIM line and each top-up line, keyed by
  * the line object, for the checkout re-pricing to use instead of the
  * variant's price. Lines not in the map are priced as Storify prices them.
@@ -215,7 +226,7 @@ export async function esimLinePrices<T extends { variantId?: unknown; lineAttrib
       : (item.quantity ?? 1) !== 1
         ? "Add one amount at a time"
         : await walletLine((item.lineAttributes as EsimLineAttributes | undefined)?.wallet, context.userId ?? undefined);
-    if (typeof wallet === "string") throw new ValidationError({ stock: [wallet] });
+    if (typeof wallet === "string") throw cartRefusal(wallet);
     item.lineAttributes = wallet.lineAttributes;
     prices.set(item, toUnits(wallet.priceMinor));
   }
@@ -225,7 +236,7 @@ export async function esimLinePrices<T extends { variantId?: unknown; lineAttrib
     const topup = (item.quantity ?? 1) !== 1
       ? "A top-up is bought one at a time; remove the extra from your cart"
       : await topupLine(attributes.topup, context.userId ?? undefined, false);
-    if (typeof topup === "string") throw new ValidationError({ stock: [topup] });
+    if (typeof topup === "string") throw cartRefusal(topup);
     item.lineAttributes = topup.lineAttributes;
     prices.set(item, toUnits(topup.priceMinor));
   }
@@ -236,7 +247,7 @@ export async function esimLinePrices<T extends { variantId?: unknown; lineAttrib
     const number = (item.quantity ?? 1) !== 1
       ? "A number is bought one at a time; remove the extra from your cart"
       : await numberCartLine(attributes.number, context.userId ?? undefined, { reserve: true });
-    if (typeof number === "string") throw new ValidationError({ stock: [number] });
+    if (typeof number === "string") throw cartRefusal(number);
     item.lineAttributes = number.lineAttributes;
     prices.set(item, toUnits(number.priceMinor));
   }
@@ -246,7 +257,7 @@ export async function esimLinePrices<T extends { variantId?: unknown; lineAttrib
     const topup = (item.quantity ?? 1) !== 1
       ? "A number top-up is bought one at a time; remove the extra from your cart"
       : await numberTopupLine(attributes.numberTopup, context.userId ?? undefined);
-    if (typeof topup === "string") throw new ValidationError({ stock: [topup] });
+    if (typeof topup === "string") throw cartRefusal(topup);
     item.lineAttributes = topup.lineAttributes;
     prices.set(item, toUnits(topup.priceMinor));
   }
@@ -255,19 +266,15 @@ export async function esimLinePrices<T extends { variantId?: unknown; lineAttrib
   // CAT-09: a plan the suppliers no longer sell is refused like an item out of stock.
   const gone = await unsellableVariants([...info.keys()]);
   if (gone.size) {
-    throw new ValidationError({
-      stock: [`No longer available: ${[...gone.values()].join(", ")}. Remove it from your cart and choose another plan.`],
-    });
+    throw cartRefusal(`No longer available: ${[...gone.values()].join(", ")}. Remove it from your cart and choose another plan.`);
   }
   // KYC-03: plans that need identity verification are paid for only by a verified shopper.
   if ((await variantsNeedingKyc([...info.keys()])).size) {
     const verified = context.userId ? (await kycState(context.userId)).status === "approved" : false;
     if (!verified) {
-      throw new ValidationError({
-        stock: [context.userId
+      throw cartRefusal(context.userId
           ? "An eSIM in your cart needs identity verification. Verify your identity in My eSIMs → Identity verification, then check out."
-          : "An eSIM in your cart needs identity verification: sign in and verify your identity first."],
-      });
+          : "An eSIM in your cart needs identity verification: sign in and verify your identity first.");
     }
   }
   const bounds = activationDateBounds();
@@ -277,10 +284,10 @@ export async function esimLinePrices<T extends { variantId?: unknown; lineAttrib
     // ORD-03: a start date stays only where it can still be kept.
     const activateOn = lineActivationDate(item.lineAttributes);
     if (activateOn && !variant.scheduled) {
-      throw new ValidationError({ stock: ["An eSIM in your cart can no longer be given a start date: add it to your cart again."] });
+      throw cartRefusal("An eSIM in your cart can no longer be given a start date: add it to your cart again.");
     }
     if (activateOn && (activateOn < bounds.min || activateOn > bounds.max)) {
-      throw new ValidationError({ stock: [`The start date ${activateOn} of an eSIM in your cart has passed: choose a new one between ${bounds.min} and ${bounds.max}.`] });
+      throw cartRefusal(`The start date ${activateOn} of an eSIM in your cart has passed: choose a new one between ${bounds.min} and ${bounds.max}.`);
     }
     const dated = activateOn ? { activateOn } : {};
     if (!variant.perDay) {
@@ -303,7 +310,7 @@ async function withPaymentFees<T extends { variantId?: unknown; lineAttributes?:
 ): Promise<Map<T, number>> {
   if (!fees.length) return prices;
   if (fees.length > 1 || fees.some((fee) => (fee.quantity ?? 1) !== 1)) {
-    throw new ValidationError({ stock: ["The payment fee in your cart is out of date: reload the checkout."] });
+    throw cartRefusal("The payment fee in your cart is out of date: reload the checkout.");
   }
   const baseMinor = others.reduce((sum, item) => sum + Math.round((prices.get(item) ?? Number(item.price ?? 0)) * 100) * (item.quantity ?? 1), 0);
   const fee = fees[0];

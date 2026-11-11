@@ -77,6 +77,9 @@ export function CheckoutContent({
     if (error.reason === 'PAYMENTS_PAUSED') return t('paymentsPaused');
     // The stock sentences say what to do; the shopper stays signed in.
     if (error.code === 'EMAIL_NOT_VERIFIED' || error.code === 'VALIDATION_ERROR') {
+      // [esim-patch] P56 a cart refusal (an eSIM no longer sold, a stale top-up…) says what to do.
+      const cartRefusal = error.errors?.stock?.[0];
+      if (cartRefusal) return cartRefusal;
       return errorMessage(error);
     }
     return t('placeFailed');
