@@ -74,8 +74,13 @@ export function useCheckoutForm() {
   const guestsWelcome = config.data?.features.guestCheckout === true;
   const contactPhone = phone.trim() || undefined;
 
+  // [esim-patch] P56 nothing in the cart ships (an eSIM, a top-up): no address is asked for or sent,
+  // as on the website (patch P28). Known from the last quote; a half-typed address would be refused.
+  const [addressless, setAddressless] = useState(false);
   const address = guest ? undefined : (chosen ?? book.data?.[0]);
-  const shippingAddress = guest
+  const shippingAddress = addressless
+    ? undefined
+    : guest
     ? guestQuoteAddress(guestAddress, contactPhone)
     : address
       ? toQuoteAddress(address, me.data?.name)
@@ -96,6 +101,9 @@ export function useCheckoutForm() {
     known && (!guest || guestsWelcome)
   );
   // The one place the quote's methods are narrowed to those this version can take.
+  // [esim-patch] P56 the app offers no pickup, so NOT_REQUIRED means nothing in the cart ships.
+  const nothingShips = quote !== undefined && quote.shipping.status === 'NOT_REQUIRED';
+  if (quote && nothingShips !== addressless) setAddressless(nothingShips);
   const methods = quote ? payableMethods(quote.paymentMethods) : [];
   const method = picked ?? startingMethod(methods);
   const placing = usePlaceOrder();
@@ -138,6 +146,7 @@ export function useCheckoutForm() {
     repricing,
     guest,
     signInNeeded,
+    addressless: nothingShips, // [esim-patch] P56
     address,
     setAddress,
     email,

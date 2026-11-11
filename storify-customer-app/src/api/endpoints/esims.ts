@@ -7,6 +7,7 @@ import {
   EsimKyc,
   EsimKycFile,
   type EsimKycSubmitRequest,
+  EsimPlanDetails,
   EsimReferralCode,
   EsimReferrals,
   EsimWallet,
@@ -64,6 +65,24 @@ export function getEsimDestination(
       signal,
     },
     EsimDestinationDetail
+  );
+}
+
+/** One plan explained: what the website's plan details say, and where it works. */
+export function getEsimPlanDetails(
+  locale: string,
+  scope: 'local' | 'multi',
+  slug: string,
+  variantId: string,
+  signal: AbortSignal
+) {
+  return api.data(
+    {
+      locale,
+      path: `/esim/destinations/${scope}/${encodeURIComponent(slug)}/plans/${encodeURIComponent(variantId)}`,
+      signal,
+    },
+    EsimPlanDetails
   );
 }
 

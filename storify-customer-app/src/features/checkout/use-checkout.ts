@@ -35,7 +35,7 @@ export type GuestAddress = Omit<AddressForm, 'label' | 'phone'>;
  * web build takes cash on delivery alone.
  */
 const PAYABLE_FLOWS: readonly CheckoutPaymentMethod['flow'][] =
-  Platform.OS === 'web' ? ['cod'] : ['cod', 'card'];
+  Platform.OS === 'web' ? ['cod'] : ['cod', 'card', 'redirect']; // [esim-patch] P56 a gateway's own page (src/features/esim/redirect-payment.ts)
 
 /**
  * The quote of the form as it stands, asked again (debounced) on every change.

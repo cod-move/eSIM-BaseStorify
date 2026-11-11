@@ -246,6 +246,41 @@ export const EsimDestinationDetail = EsimDestination.extend({
 });
 export type EsimDestinationDetail = z.infer<typeof EsimDestinationDetail>;
 
+/**
+ * GET /esim/destinations/{scope}/{slug}/plans/{variantId}: one plan explained,
+ * as the website's plan details: rows of a label and what it says (in the
+ * shopper's language), and the countries it works in with their operators.
+ */
+export const EsimPlanDetails = z.object({
+  variantId: z.string(),
+  /** "5GB", as on the plan's card. */
+  title: z.string(),
+  /** "Total data", "Unlimited". */
+  kind: z.string(),
+  /** "7 days", "1–30 days". */
+  days: z.string(),
+  price: Money,
+  rows: z.array(
+    z.object({
+      key: z.string(),
+      label: z.string(),
+      text: z.string(),
+      /** More lines under the text (the top-up rules). */
+      lines: z.array(z.string()).optional(),
+      /** A warning under it. */
+      note: z.string().optional(),
+    }),
+  ),
+  coverage: z.array(
+    z.object({
+      code: z.string(),
+      name: z.string(),
+      operators: z.array(z.object({ operator: z.string(), network: z.string().optional() })),
+    }),
+  ),
+});
+export type EsimPlanDetails = z.infer<typeof EsimPlanDetails>;
+
 /*
  * Top-ups (the website's /account/esims/{id}/topup, APP-06).
  *

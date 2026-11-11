@@ -157,6 +157,15 @@
     "planCount": "共 {count} 个套餐",
     "filterClear": "清除筛选",
     "noMatchingPlans": "没有符合这些条件的套餐。",
-    "showMorePlans": "再显示 {count} 个"
+    "showMorePlans": "再显示 {count} 个",
+    "codeFormat": "邀请码需为 4 到 16 位字母或数字。",
+    "codeReserved": "这个邀请码是保留的，请换一个。",
+    "codeTaken": "这个邀请码已被使用，请换一个。",
+    "retry": "重试",
+    "planDetails": "套餐详情",
+    "choosePlan": "选择此套餐",
+    "planCoverage": "适用国家和地区",
+    "showAllCountries": "显示全部 {count} 个",
+    "viewDetails": "查看详情"
   }
 }

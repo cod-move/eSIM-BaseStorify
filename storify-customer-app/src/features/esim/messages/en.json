@@ -157,6 +157,15 @@
     "planCount": "{count, plural, one {# plan} other {# plans}}",
     "filterClear": "Clear filters",
     "noMatchingPlans": "No plans match these filters.",
-    "showMorePlans": "Show {count} more"
+    "showMorePlans": "Show {count} more",
+    "codeFormat": "A code is 4 to 16 letters or digits.",
+    "codeReserved": "That code is reserved. Choose another.",
+    "codeTaken": "That code is taken. Choose another.",
+    "retry": "Try again",
+    "planDetails": "Plan details",
+    "choosePlan": "Choose this plan",
+    "planCoverage": "Where it works",
+    "showAllCountries": "Show all {count}",
+    "viewDetails": "View details"
   }
 }

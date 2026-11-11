@@ -121,8 +121,9 @@ export function CheckoutContent({
           </>
         )}
         {customFields('contact')}
-        <SectionTitle>{t('deliveryLocation')}</SectionTitle>
-        {form.guest ? (
+        {/* [esim-patch] P56 nothing ships: no address, no delivery method. */}
+        {form.addressless ? null : <SectionTitle>{t('deliveryLocation')}</SectionTitle>}
+        {form.addressless ? null : form.guest ? (
           <GuestAddressForm
             fields={quote.form.addressFields}
             address={form.guestAddress}
@@ -143,8 +144,12 @@ export function CheckoutContent({
           />
         )}
         {customFields('delivery')}
-        <SectionTitle>{t('deliveryMethod')}</SectionTitle>
-        <DeliverySection shipping={quote.shipping} errors={errors} onChoose={form.chooseOption} />
+        {form.addressless ? null : (
+          <>
+            <SectionTitle>{t('deliveryMethod')}</SectionTitle>
+            <DeliverySection shipping={quote.shipping} errors={errors} onChoose={form.chooseOption} />
+          </>
+        )}
         <SectionTitle>{t('items')}</SectionTitle>
         <ItemsSection lines={quote.lines} />
         <SectionTitle>{t('paymentMethod')}</SectionTitle>

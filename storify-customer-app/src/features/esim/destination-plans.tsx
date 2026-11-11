@@ -15,6 +15,7 @@ import { useSetCartLine } from '@/features/cart/use-cart';
 import { addDays, daysBetween, readableDay } from '@/features/esim/start-date';
 import { DestinationFlag } from '@/features/esim/destination-flag';
 import { chooseFilter, filterPlans, openValues, type PlanFilters } from '@/features/esim/plan-filter';
+import { PlanDetailsSheet } from '@/features/esim/plan-details-sheet';
 import { useLocale } from '@/i18n/locale-store';
 import { useErrorMessage } from '@/i18n/use-error-message';
 import { cn } from '@/lib/cn';
@@ -23,10 +24,28 @@ import { cn } from '@/lib/cn';
 const COLLAPSED = 6;
 /** Plans shown at first, and added by "Show more". */
 const PAGE = 20;
+/** Filters the app does not offer (the website does): too many values to be of use on a phone. */
+const HIDDEN_FILTERS = new Set(['operator']);
+/** Where the list starts: a single country's total-data plans, when there are such and others. */
+const STARTING_FILTERS: [string, string][] = [
+  ['coverage', 'local'],
+  ['kind', 'total'],
+];
+
+function startingFilters(destination: EsimDestinationDetail): PlanFilters {
+  let filters: PlanFilters = {};
+  for (const [key, value] of STARTING_FILTERS) {
+    const filter = destination.filters?.find((entry) => entry.key === key);
+    if (filter?.options.some((option) => option.value === value)) {
+      filters = chooseFilter(destination.plans, filters, key, value);
+    }
+  }
+  return filters;
+}
 
 /**
  * A destination's plans (APP-02), filtered as on the website (coverage, data
- * type, days, data, top-up, exit IP, operator): pick one — and for a day-priced plan the
+ * type, days, data, top-up, exit IP; the operator filter is left out). A plan's details open from its card: pick one — and for a day-priced plan the
  * days, for one that takes it the day it starts (ORD-03) — and add it to the
  * cart. The cart prices the choice; the app shows
  * only the prices the store sent.
@@ -38,7 +57,9 @@ export function DestinationPlans({ destination }: { destination: EsimDestination
   const describe = useErrorMessage();
   const tabBar = useTabBarHeight();
   const setLine = useSetCartLine();
-  const [filters, setFilters] = useState<PlanFilters>({});
+  const [filters, setFilters] = useState<PlanFilters>(() => startingFilters(destination));
+  // The plan whose details are open.
+  const [detailed, setDetailed] = useState<EsimPlanOption | null>(null);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [limit, setLimit] = useState(PAGE);
   const shown = useMemo(() => filterPlans(destination.plans, filters), [destination.plans, filters]);
@@ -63,7 +84,7 @@ export function DestinationPlans({ destination }: { destination: EsimDestination
     if (!option.startDate) setStartOffset(null);
   };
 
-  const add = () => {
+  const add = (onAdded?: () => void) => {
     if (!plan) return;
     setLine.mutate(
       {
@@ -81,11 +102,13 @@ export function DestinationPlans({ destination }: { destination: EsimDestination
           : {}),
       },
       {
-        onSuccess: () =>
+        onSuccess: () => {
+          onAdded?.();
           toast.show({
             message: t('added'),
             action: { label: t('viewCart'), onPress: () => router.push('/cart') },
-          }),
+          });
+        },
         onError: (error: unknown) => toast.show({ message: describe(error) }),
       }
     );
@@ -111,7 +134,7 @@ export function DestinationPlans({ destination }: { destination: EsimDestination
 
         {destination.filters?.length ? (
           <View className="gap-4 rounded-2xl bg-surface p-4">
-            {destination.filters.map((filter) => {
+            {destination.filters.filter((filter) => !HIDDEN_FILTERS.has(filter.key)).map((filter) => {
               const open = openValues(destination.plans, filters, filter.key);
               const long = filter.options.length > COLLAPSED + 1;
               const chosen = filters[filter.key];
@@ -193,6 +216,10 @@ export function DestinationPlans({ destination }: { destination: EsimDestination
                 plan={option}
                 selected={option.variantId === plan?.variantId}
                 onPress={() => choose(option)}
+                onDetails={() => {
+                  choose(option);
+                  setDetailed(option);
+                }}
               />
             ))}
             {shown.length > limit ? (
@@ -282,10 +309,19 @@ export function DestinationPlans({ destination }: { destination: EsimDestination
             label={t('addToCart')}
             trailing={plan.perDay ? undefined : plan.price.formatted}
             loading={setLine.isPending}
-            onPress={add}
+            onPress={() => add()}
           />
         </View>
       ) : null}
+
+      <PlanDetailsSheet
+        scope={destination.pathScope}
+        slug={destination.slug}
+        plan={detailed}
+        onClose={() => setDetailed(null)}
+        onAdd={() => add(() => setDetailed(null))}
+        adding={setLine.isPending}
+      />
     </View>
   );
 }
@@ -294,10 +330,12 @@ function PlanCard({
   plan,
   selected,
   onPress,
+  onDetails,
 }: {
   plan: EsimPlanOption;
   selected: boolean;
   onPress: () => void;
+  onDetails: () => void;
 }) {
   const t = useTranslations('esim');
   return (
@@ -326,6 +364,15 @@ function PlanCard({
             {plan.operators.slice(0, 3).join(', ')}
             {plan.operators.length > 3 ? ` +${plan.operators.length - 3}` : ''}
           </Text>
+        ) : null}
+        {selected ? (
+          <Pressable
+            accessibilityRole="button"
+            onPress={onDetails}
+            hitSlop={8}
+            className="self-start pt-1 active:opacity-70">
+            <Text className="text-link">{t('viewDetails')}</Text>
+          </Pressable>
         ) : null}
       </View>
       <Price price={plan.price} from={Boolean(plan.perDay)} size="md" />

@@ -98,6 +98,13 @@ export const esimReferralsRoute = defineRoute({
   },
 });
 
+/** Why a code was refused, for the app to say in the shopper's language. */
+function referralCodeReason(message: string): string {
+  if (/taken/i.test(message)) return "REFERRAL_CODE_TAKEN";
+  if (/reserved/i.test(message)) return "REFERRAL_CODE_RESERVED";
+  return "REFERRAL_CODE_FORMAT";
+}
+
 /** PATCH /me/esim-referrals/code */
 export const esimReferralCodeRoute = defineRoute({
   id: "me.esimReferrals.code",
@@ -115,7 +122,7 @@ export const esimReferralCodeRoute = defineRoute({
       const code = await setReferralCode(session.user.id, input.code);
       return { code, link: `${appBaseUrl()}/esim/invite/${code}` };
     } catch (error) {
-      if (error instanceof ReferralCodeError) throw new MobileApiError(422, "VALIDATION_ERROR", error.message);
+      if (error instanceof ReferralCodeError) throw new MobileApiError(422, "VALIDATION_ERROR", error.message, { reason: referralCodeReason(error.message) });
       throw error;
     }
   },

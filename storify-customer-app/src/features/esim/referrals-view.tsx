@@ -8,10 +8,19 @@ import { Button } from '@/components/ui/button';
 import { Text } from '@/components/ui/text';
 import { TextField } from '@/components/ui/text-field';
 import { useToast } from '@/components/ui/toast';
+import { isApiError } from '@/api/errors';
 import { ESIM_REWARD_STATUSES, type EsimReferrals } from '@/contracts/mobile/shop/v1/esim';
 import { useErrorMessage } from '@/i18n/use-error-message';
 
 import { useSetReferralCode } from './use-account';
+
+/** The store's own rule for a code (lib/esim/referral/rules.ts). */
+const CODE_PATTERN = /^[A-Z0-9]{4,16}$/;
+const CODE_REFUSALS = {
+  REFERRAL_CODE_FORMAT: 'codeFormat',
+  REFERRAL_CODE_RESERVED: 'codeReserved',
+  REFERRAL_CODE_TAKEN: 'codeTaken',
+} as const;
 
 type Rate = EsimReferrals['offer']['commission'];
 type RewardStatus = (typeof ESIM_REWARD_STATUSES)[number];
@@ -88,15 +97,25 @@ export function ReferralsView({ centre }: { centre: EsimReferrals }) {
             label={t('saveCode')}
             variant="secondary"
             loading={setCode.isPending}
-            onPress={() =>
-              setCode.mutate(code.trim(), {
+            onPress={() => {
+              const wanted = code.trim().toUpperCase();
+              // Said before asking the store: 4 to 16 letters and digits.
+              if (!CODE_PATTERN.test(wanted)) {
+                toast.show({ message: t('codeFormat') });
+                return;
+              }
+              setCode.mutate(wanted, {
                 onSuccess: (saved) => {
                   setCodeText(saved.code);
                   toast.show({ message: t('codeSaved') });
                 },
-                onError: (error: unknown) => toast.show({ message: describe(error) }),
-              })
-            }
+                onError: (error: unknown) => {
+                  const reason = isApiError(error) ? error.reason : undefined;
+                  const key = reason && reason in CODE_REFUSALS ? CODE_REFUSALS[reason as keyof typeof CODE_REFUSALS] : undefined;
+                  toast.show({ message: key ? t(key) : describe(error) });
+                },
+              });
+            }}
           />
         ) : null}
       </View>
