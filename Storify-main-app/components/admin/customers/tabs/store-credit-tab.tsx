@@ -21,6 +21,7 @@ import { toast } from "@/components/ui/toast-notification";
 import { formatCurrency } from "@/lib/intl/money";
 import { resolveCurrency } from "@/lib/intl/currencies";
 import { useAppSettings } from "@/providers/app-settings-provider";
+import { StoreCreditDeductButton } from "@/components/esim/admin/store-credit-deduct"; // [esim-patch] P62
 
 type Balance = {
   currency: string;
@@ -145,6 +146,7 @@ export function StoreCreditTab({ customerId }: { customerId: string }) {
   const describe = (row: HistoryRow) => {
     if (row.type === "expire") return "Expired";
     if (row.type === "redeem") {
+      if (row.source === "admin_deduction") return "Deducted by the store"; // [esim-patch] P62
       return row.status === "held" ? "Held for a checkout" : "Spent on an order";
     }
     return SOURCE_LABELS[row.source] || "Credit";
@@ -155,10 +157,20 @@ export function StoreCreditTab({ customerId }: { customerId: string }) {
       <CardHeader className="flex flex-row items-center justify-between gap-3 space-y-0">
         <CardTitle>Store credit</CardTitle>
         {canIssue ? (
+          <div className="flex gap-2">
+            {/* [esim-patch] P62 take money off the balance, beside giving it */}
+            <StoreCreditDeductButton
+              customerId={customerId}
+              currency={currency}
+              balance={balances.find((entry) => entry.currency === currency)?.balance ?? 0}
+              format={money}
+              onDone={() => setReloadKey((key) => key + 1)}
+            />
           <Button type="button" size="sm" variant="outline" onClick={openDialog}>
             <Plus className="mr-1.5 h-4 w-4" />
             Give credit
           </Button>
+          </div>
         ) : null}
       </CardHeader>
       <CardContent className="space-y-6">

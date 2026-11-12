@@ -79,6 +79,7 @@ export function CustomerStoreCredit() {
   const describe = (row: HistoryRow) => {
     if (row.type === "expire") return tr("account.storeCreditExpired", "Expired");
     if (row.type === "redeem") {
+      if (row.source === "admin_deduction") return tr("esim.wallet.deducted", "Deducted by the store"); // [esim-patch] P62
       return row.status === "held"
         ? tr("account.storeCreditHeld", "Held for an order being paid")
         : tr("account.storeCreditSpent", "Spent on an order");

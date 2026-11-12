@@ -229,6 +229,7 @@
       "pay": "Uhlawula",
       "checkout": "Qhubeka uye ekuhlawuleni",
       "lineName": "Ukugcwalisa isipaji",
+      "deducted": "Kutsalwe yivenkile",
       "failed": "Ayikwazanga ukuqala ukugcwalisa",
       "unavailable": "Ukongeza imali kwibhalansi yakho akufumaneki okwangoku.",
       "note": "Ibhalansi yakho isetyenziswa xa uhlawula ii-eSIM nokugcwalisa. Imali eyongezwe kwibhalansi yakho ayibuyiselwa kwikhadi lakho.",

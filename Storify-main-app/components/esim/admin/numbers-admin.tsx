@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
-import { ChevronLeft, ChevronRight, Loader2, Pencil, Search, Trash2, Upload } from "lucide-react";
+import { ChevronLeft, ChevronRight, Loader2, Pencil, Search, Trash2, Upload, Wallet } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -19,6 +19,7 @@ import { useFallbackTranslator } from "@/hooks/use-fallback-translator";
 import { apiClient } from "@/lib/api/client";
 import type { AdminNumber, AdminNumberFilters, AdminNumberList, NumberImportReport } from "@/lib/esim/admin/numbers";
 import type { EsimNumberStatus } from "@/models/esim-number.model";
+import { NumberCreditDialog } from "@/components/esim/admin/number-credit-dialog";
 
 /** Admin → eSIM → Numbers (NUM-01): the number-card stock. The query string is the table's state. */
 
@@ -54,6 +55,7 @@ export function EsimNumbersAdmin({ list, filters, canManage }: { list: AdminNumb
   const [search, setSearch] = useState(filters.search ?? "");
   const [editing, setEditing] = useState<{ row: AdminNumber; price: string; premium: string; note: string } | null>(null);
   const [importing, setImporting] = useState(false);
+  const [credit, setCredit] = useState<AdminNumber | null>(null);
   const [busy, setBusy] = useState(false);
 
   const statusLabel = (status: EsimNumberStatus | "all") =>
@@ -196,6 +198,9 @@ export function EsimNumbersAdmin({ list, filters, canManage }: { list: AdminNumb
                     <TableCell className="text-xs text-muted-foreground">{row.batch ?? ""}</TableCell>
                     {canManage ? (
                       <TableCell className="whitespace-nowrap text-right">
+                        <Button size="sm" variant="ghost" aria-label={t("admin.esim.cardCredit.button", "Card credit")} title={t("admin.esim.cardCredit.button", "Card credit")} onClick={() => setCredit(row)}>
+                          <Wallet className="h-4 w-4" />
+                        </Button>
                         {free(row) ? (
                           <>
                             <Button
@@ -298,6 +303,13 @@ export function EsimNumbersAdmin({ list, filters, canManage }: { list: AdminNumb
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <NumberCreditDialog
+        numberId={credit?.id ?? null}
+        title={credit ? `+${credit.dialCode} ${credit.nationalNumber}` : ""}
+        canManage={canManage}
+        onClose={() => setCredit(null)}
+      />
 
       <ImportDialog
         currency={list.currency}

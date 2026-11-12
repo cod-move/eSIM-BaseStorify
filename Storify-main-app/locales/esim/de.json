@@ -229,6 +229,7 @@
       "pay": "Du zahlst",
       "checkout": "Weiter zur Kasse",
       "lineName": "Guthaben-Aufladung",
+      "deducted": "Vom Shop abgezogen",
       "failed": "Aufladung konnte nicht gestartet werden",
       "unavailable": "Einzahlungen auf das Guthaben sind derzeit nicht möglich.",
       "note": "Dein Guthaben wird an der Kasse für eSIMs und Aufladungen verwendet. Eingezahltes Guthaben wird nicht auf deine Karte erstattet.",

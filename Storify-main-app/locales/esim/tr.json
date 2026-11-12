@@ -229,6 +229,7 @@
       "pay": "Ödeyeceğiniz",
       "checkout": "Ödemeye geç",
       "lineName": "Cüzdan yüklemesi",
+      "deducted": "Mağaza tarafından düşüldü",
       "failed": "Yükleme başlatılamadı",
       "unavailable": "Bakiyenize para eklemek şu anda kullanılamıyor.",
       "note": "Bakiyeniz ödeme sırasında eSIM'ler ve yüklemeler için kullanılır. Bakiyenize eklenen para kartınıza iade edilmez.",

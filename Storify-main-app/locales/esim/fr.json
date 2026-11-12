@@ -229,6 +229,7 @@
       "pay": "Vous payez",
       "checkout": "Passer au paiement",
       "lineName": "Recharge du porte-monnaie",
+      "deducted": "Déduit par la boutique",
       "failed": "Impossible de lancer la recharge",
       "unavailable": "L'ajout d'argent au solde n'est pas disponible pour le moment.",
       "note": "Votre solde sert à payer les eSIM et les recharges. L'argent ajouté à votre solde n'est pas remboursé sur votre carte.",

@@ -229,6 +229,7 @@
       "pay": "Uzokhokha",
       "checkout": "Qhubekela ekukhokheni",
       "lineName": "Ukugcwalisa isikhwama",
+      "deducted": "Kudonswe yisitolo",
       "failed": "Ayikwazanga ukuqala ukugcwalisa",
       "unavailable": "Ukwengeza imali ebhalansini yakho akutholakali okwamanje.",
       "note": "Ibhalansi yakho isetshenziswa lapho ukhokha ama-eSIM nokugcwalisa. Imali eyengezwe ebhalansini yakho ayibuyiselwa ekhadini lakho.",

@@ -42,6 +42,9 @@ export const STORE_CREDIT_SOURCES = [
   // [esim-patch] P12 balance a shopper paid for (an eSIM wallet top-up). Booked by
   // the order that sold it (lib/finance/postings.ts, P19), so the lot posts nothing.
   "wallet_topup",
+  // [esim-patch] P62 taken off the balance by an admin (a `redeem` row, spent;
+  // lib/esim/wallet/admin-deduct.ts books it as the reverse of goodwill).
+  "admin_deduction",
 ] as const;
 export type StoreCreditSource = (typeof STORE_CREDIT_SOURCES)[number];
 

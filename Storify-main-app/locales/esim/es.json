@@ -229,6 +229,7 @@
       "pay": "Pagas",
       "checkout": "Continuar al pago",
       "lineName": "Recarga del monedero",
+      "deducted": "Descontado por la tienda",
       "failed": "No se pudo iniciar la recarga",
       "unavailable": "Ahora mismo no se puede añadir dinero al saldo.",
       "note": "Tu saldo se usa al pagar eSIM y recargas. El dinero añadido al saldo no se reembolsa a tu tarjeta.",

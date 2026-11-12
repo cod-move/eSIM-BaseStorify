@@ -229,6 +229,7 @@
       "pay": "Unalipa",
       "checkout": "Endelea kulipa",
       "lineName": "Kuongeza salio la pochi",
+      "deducted": "Imekatwa na duka",
       "failed": "Haikuweza kuanza kuongeza salio",
       "unavailable": "Kuongeza pesa kwenye salio lako hakupatikani kwa sasa.",
       "note": "Salio lako hutumika wakati wa kulipa kwa eSIM na kuongeza salio. Pesa ulizoongeza kwenye salio hazirejeshwi kwenye kadi yako.",

@@ -229,6 +229,7 @@
       "pay": "Jy betaal",
       "checkout": "Gaan voort na betaal",
       "lineName": "Beursie-oplaai",
+      "deducted": "Deur die winkel afgetrek",
       "failed": "Kon nie die oplaai begin nie",
       "unavailable": "Om geld by jou saldo te voeg is tans nie beskikbaar nie.",
       "note": "Jou saldo word by betaal vir eSIM's en oplaaie gebruik. Geld wat by jou saldo gevoeg is, word nie na jou kaart terugbetaal nie.",

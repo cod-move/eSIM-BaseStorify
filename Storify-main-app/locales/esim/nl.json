@@ -229,6 +229,7 @@
       "pay": "Je betaalt",
       "checkout": "Doorgaan naar afrekenen",
       "lineName": "Saldo-opwaardering",
+      "deducted": "Afgetrokken door de winkel",
       "failed": "Kon de opwaardering niet starten",
       "unavailable": "Geld toevoegen aan je saldo is op dit moment niet mogelijk.",
       "note": "Je saldo wordt bij het afrekenen gebruikt voor eSIM's en opwaarderingen. Geld dat aan je saldo is toegevoegd, wordt niet teruggestort op je kaart.",
