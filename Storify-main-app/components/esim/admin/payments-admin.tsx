@@ -152,7 +152,8 @@ export function EsimPaymentsAdmin({ methods, payments, attention, canManage }: {
   const { confirm } = useConfirmation();
   const [busy, setBusy] = useState<string | null>(null);
   const when = (value: string | null) => (value ? new Date(value).toLocaleString() : "—");
-  const money = (row: AdminPayment) => `${(row.amountMinor / 100).toFixed(2)} ${row.currency}`;
+  const money = (row: AdminPayment) =>
+    `${(row.amountMinor / 100).toFixed(2)} ${row.currency}${row.paidAs ? ` (paid ${(row.paidAs.amountMinor / 100).toFixed(2)} ${row.paidAs.currency})` : ""}`;
   const methodName = (code: string) => methods.find((method) => method.code === code)?.name ?? code;
   const outcomeText = (row: AdminPayment) =>
     row.outcome === "order"

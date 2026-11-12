@@ -1,11 +1,11 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { ChevronRight, Gift, Phone, Plus, Smartphone, Wallet } from "lucide-react";
+import { ChevronLeft, ChevronRight, Gift, Phone, Plus, Smartphone, Wallet } from "lucide-react";
 import Link from "@/components/language/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { connectDB } from "@/lib/db";
 import { getAccountSession } from "@/lib/customers/account-data";
-import { listCustomerEsims } from "@/lib/esim/account/esims";
+import { pageCustomerEsims } from "@/lib/esim/account/esims";
 import { formatBytes, remainingPercent } from "@/lib/esim/account/display";
 import { EsimStatusBadge, UsageBar } from "@/components/esim/esim-status-badge";
 import { storeCreditSummary } from "@/lib/store-credit/store-credit";
@@ -15,20 +15,25 @@ import { formatAmount } from "@/lib/esim/numbers/line";
 
 interface PageProps {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
 /** "My eSIMs" (USR-01): the shopper's numbers (NUM-06), then every eSIM they bought, newest first. The layout has already required a session. */
-export default async function AccountEsimsPage({ params }: PageProps) {
+export default async function AccountEsimsPage({ params, searchParams }: PageProps) {
   const { locale } = await params;
+  const query = await searchParams;
+  const wantedPage = Number(Array.isArray(query.page) ? query.page[0] : query.page) || 1;
   setRequestLocale(locale);
   const t = await getTranslations();
   const tr = (key: string, fallback: string, values?: Record<string, string | number>) =>
     t.has(key) ? t(key, values) : fallback.replace(/\{(\w+)\}/g, (_, name) => String(values?.[name] ?? ""));
   const session = await getAccountSession();
   await connectDB();
-  const [esims, balances, numbers] = session
-    ? await Promise.all([listCustomerEsims(session.user.id), storeCreditSummary(session.user.id), listCustomerNumbers(session.user.id)])
-    : [[], [], []];
+  const [esimPage, balances, numbers] = session
+    ? await Promise.all([pageCustomerEsims(session.user.id, wantedPage), storeCreditSummary(session.user.id), listCustomerNumbers(session.user.id)])
+    : [{ items: [], page: 1, totalPages: 1, total: 0 }, [], []];
+  const esims = esimPage.items;
+  const pageHref = (page: number) => (page > 1 ? `/account/esims?page=${page}` : "/account/esims");
   const balance = balances.find((entry) => entry.currency === "USD")?.balance ?? 0;
   const date = new Intl.DateTimeFormat(locale, { dateStyle: "medium" });
 
@@ -159,6 +164,33 @@ export default async function AccountEsimsPage({ params }: PageProps) {
               </Link>
             );
           })}
+          {esimPage.totalPages > 1 ? (
+            <nav className="flex items-center justify-between gap-3 pt-2 text-sm" aria-label={tr("esim.account.pages", "Pages")}>
+              {esimPage.page > 1 ? (
+                <Button asChild variant="outline" size="sm">
+                  <Link href={pageHref(esimPage.page - 1)}>
+                    <ChevronLeft className="me-1 h-4 w-4 rtl:rotate-180" />
+                    {tr("esim.account.previous", "Previous")}
+                  </Link>
+                </Button>
+              ) : (
+                <span />
+              )}
+              <span className="text-muted-foreground">
+                {tr("esim.account.pageOf", "Page {page} of {pages}", { page: esimPage.page, pages: esimPage.totalPages })}
+              </span>
+              {esimPage.page < esimPage.totalPages ? (
+                <Button asChild variant="outline" size="sm">
+                  <Link href={pageHref(esimPage.page + 1)}>
+                    {tr("esim.account.next", "Next")}
+                    <ChevronRight className="ms-1 h-4 w-4 rtl:rotate-180" />
+                  </Link>
+                </Button>
+              ) : (
+                <span />
+              )}
+            </nav>
+          ) : null}
         </div>
       )}
     </div>

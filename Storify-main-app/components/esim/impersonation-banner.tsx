@@ -14,14 +14,61 @@ export function ImpersonationBanner({ locale }: { locale: string }) {
   const t = useFallbackTranslator(useTranslations());
   const { data } = useSession();
   const [leaving, setLeaving] = useState(false);
-  const impersonatedBy = (data?.session as { impersonatedBy?: string | null } | undefined)?.impersonatedBy;
+  const [problem, setProblem] = useState<string | null>(null);
+  const [loginHref, setLoginHref] = useState<string | null>(null);
+  const impersonatedBy = (
+    data?.session as { impersonatedBy?: string | null } | undefined
+  )?.impersonatedBy;
   if (!data || !impersonatedBy) return null;
 
   const leave = async () => {
     setLeaving(true);
-    const response = await fetch("/api/auth/esim/stop-impersonating", { method: "POST", credentials: "include" }).catch(() => null);
-    const body = (await response?.json().catch(() => null)) as { restored?: boolean } | null;
-    window.location.assign(body?.restored ? `/${locale}/admin/customers` : `/${locale}/login`);
+    setProblem(null);
+    const response = await fetch("/api/auth/esim/stop-impersonating", {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: "{}",
+    }).catch(() => null);
+    const body = (await response?.json().catch(() => null)) as {
+      restored?: boolean;
+      reason?: string;
+      message?: string;
+      error?: string;
+    } | null;
+    if (!response?.ok) {
+      // Say why, rather than landing somewhere unexpected.
+      setProblem(
+        `${response ? `HTTP ${response.status}` : "Network error"}${body?.message || body?.error ? `: ${body.message || body.error}` : ""}`,
+      );
+      setLeaving(false);
+      return;
+    }
+    // A full load, so the admin's session is read fresh. The default language has no prefix in the
+    // address (next-intl "as-needed"): keep the one the page has, if any.
+    const path = window.location.pathname;
+    const prefix =
+      path === `/${locale}` || path.startsWith(`/${locale}/`)
+        ? `/${locale}`
+        : "";
+    if (body?.restored) {
+      // A full load on purpose: the session just changed, and a client navigation would keep the customer's.
+      // eslint-disable-next-line @next/next/no-location-assign-relative-destination
+      window.location.assign(`${prefix}/admin/customers`);
+      return;
+    }
+    // The customer's session is closed but the admin's could not be put back: say why, then sign in again.
+    setProblem(
+      t(
+        "esim.impersonation.notRestored",
+        "Could not return to the admin ({reason}). Please sign in again.",
+        {
+          reason: body?.reason ?? "unknown",
+        },
+      ),
+    );
+    setLoginHref(`${prefix}/login`);
+    setLeaving(false);
   };
 
   return (
@@ -33,16 +80,29 @@ export function ImpersonationBanner({ locale }: { locale: string }) {
         {t(
           "esim.impersonation.viewing",
           "Signed in as {email} from the admin. Paying and account changes are blocked.",
-        ).replace("{email}", data.user.email)}
+          { email: data.user.email || data.user.name || "—" },
+        )}
       </span>
-      <button
-        type="button"
-        onClick={leave}
-        disabled={leaving}
-        className="rounded-md bg-amber-950 px-3 py-0.5 text-xs font-semibold text-amber-50 hover:bg-amber-900 disabled:opacity-60"
-      >
-        {leaving ? t("esim.impersonation.returning", "Returning…") : t("esim.impersonation.return", "Return to admin")}
-      </button>
+      {problem ? <span className="text-xs text-red-900">{problem}</span> : null}
+      {loginHref ? (
+        <a
+          href={loginHref}
+          className="rounded-md bg-amber-950 px-3 py-0.5 text-xs font-semibold text-amber-50 hover:bg-amber-900"
+        >
+          {t("esim.impersonation.signInAgain", "Sign in again")}
+        </a>
+      ) : (
+        <button
+          type="button"
+          onClick={leave}
+          disabled={leaving}
+          className="rounded-md bg-amber-950 px-3 py-0.5 text-xs font-semibold text-amber-50 hover:bg-amber-900 disabled:opacity-60"
+        >
+          {leaving
+            ? t("esim.impersonation.returning", "Returning…")
+            : t("esim.impersonation.return", "Return to admin")}
+        </button>
+      )}
     </div>
   );
 }

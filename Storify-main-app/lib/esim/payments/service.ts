@@ -13,6 +13,7 @@ import { CHECKOUT_CLOSED_BEFORE_PAYMENT, finalizeCapturedAttempt, findAttemptByG
 import { closeCheckoutAttempt } from "@/lib/checkout/checkout-attempt-store";
 import { paymentMethodDefinition, PAYMENT_METHOD_DEFINITIONS, type PaymentMethodDefinition } from "./registry";
 import { IGNORED_NOTICE, PaymentPluginError, type Credentials, type NoticeContext, type PayRequest } from "./plugins/types";
+import { noticeMatch } from "./notice-match";
 
 /**
  * Extension payments (PAY, patch P15): the methods on offer (checkout lists
@@ -333,9 +334,8 @@ export async function receiveNotice(methodCode: string, body: Record<string, unk
     return { accepted: true, text: accepted };
   }
 
-  const amountWrong = notice.amountMinor !== null && notice.amountMinor !== payment.amountMinor;
-  const currencyWrong = notice.currency !== null && notice.currency.toUpperCase() !== payment.currency;
-  if (amountWrong || currencyWrong) {
+  const match = noticeMatch(payment, notice, Boolean(definition.plugin.convertsCurrency));
+  if (match === "wrong") {
     const message = `Paid ${notice.amountMinor ?? "?"} ${notice.currency ?? payment.currency} (minor units) for ${payment.amountMinor} ${payment.currency}`;
     if (payment.error !== message) {
       await EsimPayment.updateOne({ _id: payment._id }, { $set: { error: message } });
@@ -346,7 +346,15 @@ export async function receiveNotice(methodCode: string, body: Record<string, unk
 
   await EsimPayment.updateOne(
     { _id: payment._id, state: { $ne: "paid" } },
-    { $set: { state: "paid", paidAt: new Date(), ...(notice.gatewayPaymentId ? { gatewayPaymentId: notice.gatewayPaymentId } : {}) } },
+    {
+      $set: {
+        state: "paid",
+        paidAt: new Date(),
+        ...(notice.gatewayPaymentId ? { gatewayPaymentId: notice.gatewayPaymentId } : {}),
+        // What the shopper was charged, when the gateway converted it: a refund is made in that.
+        ...(match === "converted" ? { paidAs: { amountMinor: notice.amountMinor, currency: notice.currency!.toUpperCase() }, error: null } : {}),
+      },
+    },
   );
   await settlePayment(String(payment._id)).catch((error) => console.error(`Settling payment ${payment.reference} failed:`, error));
   return { accepted: true, text: accepted };

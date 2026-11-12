@@ -54,7 +54,11 @@
       "remark": "名稱",
       "addRemark": "添加名稱，例如「日本旅行」",
       "remarkFailed": "名稱保存失敗",
-      "buyNew": "購買新的 eSIM"
+      "buyNew": "購買新的 eSIM",
+      "pages": "分頁",
+      "previous": "上一頁",
+      "next": "下一頁",
+      "pageOf": "第 {page} / {pages} 頁"
     },
     "browse": {
       "title": "eSIM 目的地",
@@ -894,7 +898,9 @@
     "impersonation": {
       "viewing": "你正以 {email} 的身份查看（後台登錄）。付款和修改賬號已停用。",
       "return": "返回後台",
-      "returning": "正在返回…"
+      "returning": "正在返回…",
+      "notRestored": "返回後台失敗（{reason}），請重新登入。",
+      "signInAgain": "重新登入"
     }
   },
   "admin": {

@@ -102,6 +102,28 @@ export async function listCustomerEsims(userId: string): Promise<EsimView[]> {
   return profiles.map((profile) => view(profile, plans.get(String(profile.plan))));
 }
 
+export const ESIMS_PER_PAGE = 10;
+
+/** One page of the account's eSIMs, newest first, for the "My eSIMs" page. */
+export async function pageCustomerEsims(
+  userId: string,
+  page: number,
+  pageSize = ESIMS_PER_PAGE,
+): Promise<{ items: EsimView[]; page: number; totalPages: number; total: number }> {
+  const filter = await ownerFilter(userId);
+  const total = await EsimProfile.countDocuments(filter);
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  // A page past the end (the list shrank, or a typed address) shows the last one.
+  const current = Math.min(Math.max(1, Math.floor(page) || 1), totalPages);
+  const profiles = await EsimProfile.find(filter)
+    .sort({ createdAt: -1 })
+    .skip((current - 1) * pageSize)
+    .limit(pageSize)
+    .lean<IEsimProfile[]>();
+  const plans = await plansFor(profiles);
+  return { items: profiles.map((profile) => view(profile, plans.get(String(profile.plan)))), page: current, totalPages, total };
+}
+
 /** The eSIM if this account owns it (see the ownership rule above), else null. */
 export async function findOwnedEsim(userId: string, esimId: string) {
   if (!mongoose.isValidObjectId(esimId)) return null;

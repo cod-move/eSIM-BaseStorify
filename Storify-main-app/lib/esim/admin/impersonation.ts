@@ -72,8 +72,12 @@ export function esimImpersonation(): BetterAuthPlugin {
           if (!session) throw new APIError("INTERNAL_SERVER_ERROR", { message: "Could not open the customer's session." });
 
           const dontRemember = await ctx.getSignedCookie(ctx.context.authCookies.dontRememberToken.name, ctx.context.secret);
+          // The admin's token as the browser holds it, which is what the way back must find.
+          const cookieToken = await ctx.getSignedCookie(ctx.context.authCookies.sessionToken.name, ctx.context.secret);
+          const adminToken = typeof cookieToken === "string" && cookieToken ? cookieToken : current.session.token;
+          if (!adminToken) throw new APIError("INTERNAL_SERVER_ERROR", { message: "Could not read the admin session to come back to." });
           const marker = ctx.context.createAuthCookie(IMPERSONATION_COOKIE, { maxAge: IMPERSONATION_SECONDS });
-          await ctx.setSignedCookie(marker.name, `${current.session.token}:${dontRemember || ""}`, ctx.context.secret, marker.attributes);
+          await ctx.setSignedCookie(marker.name, `${adminToken}:${dontRemember || ""}`, ctx.context.secret, marker.attributes);
           deleteSessionCookie(ctx);
           await setSessionCookie(ctx, { session, user: target as never }, true);
 
@@ -96,11 +100,23 @@ export function esimImpersonation(): BetterAuthPlugin {
 
           const [adminToken, dontRemember] = (typeof saved === "string" ? saved : "").split(":");
           const adminSession = adminToken ? await ctx.context.internalAdapter.findSession(adminToken) : null;
-          if (!adminSession || (adminId && adminSession.session.userId !== adminId)) {
-            // The admin's own session ended meanwhile: they sign in again.
+          const reason = !adminToken
+            ? "no-saved-admin-session"
+            : !adminSession
+              ? "admin-session-ended"
+              : adminSession.session.expiresAt < new Date()
+                ? "admin-session-expired"
+                : adminId && adminSession.session.userId !== adminId
+                  ? "admin-mismatch"
+                  : null;
+          if (reason || !adminSession) {
+            // The admin signs in again; the reason goes back so the banner can say it.
+            console.warn("[esim] stop-impersonating: admin session not restored:", reason);
             deleteSessionCookie(ctx);
-            return ctx.json({ ok: true, restored: false });
+            return ctx.json({ ok: true, restored: false, reason });
           }
+          // The stand-in session was "don't remember me"; the admin's may not have been.
+          if (!dontRemember) expireCookie(ctx, ctx.context.authCookies.dontRememberToken);
           await setSessionCookie(ctx, adminSession, !!dontRemember);
           if (current) {
             await record(ctx.request, adminSession.user as { id: string; email?: string; role?: string }, "Returned from a customer's account", current.user as { id: string; email: string });

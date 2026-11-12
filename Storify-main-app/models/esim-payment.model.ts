@@ -72,6 +72,8 @@ export interface IEsimPayment extends mongoose.Document {
   currency: string;
   state: EsimPaymentState;
   gatewayPaymentId?: string;
+  /** What the shopper was actually charged, when the gateway converted it to their currency (Airwallex). */
+  paidAs?: { amountMinor: number; currency: string };
   /** What the shopper was handed: a page to go to, or QR data. */
   pay?: { kind: "redirect" | "qr"; data: string };
   customerId?: mongoose.Types.ObjectId;
@@ -102,6 +104,10 @@ const EsimPaymentSchema = new Schema<IEsimPayment>(
     currency: { type: String, required: true, uppercase: true, match: /^[A-Z]{3}$/ },
     state: { type: String, enum: ESIM_PAYMENT_STATES, default: "started" },
     gatewayPaymentId: { type: String, trim: true },
+    paidAs: {
+      type: new Schema({ amountMinor: { type: Number, required: true }, currency: { type: String, required: true, uppercase: true } }, { _id: false }),
+      default: undefined,
+    },
     pay: {
       type: new Schema({ kind: { type: String, enum: ["redirect", "qr"], required: true }, data: { type: String, required: true, maxlength: 4000 } }, { _id: false }),
       default: undefined,

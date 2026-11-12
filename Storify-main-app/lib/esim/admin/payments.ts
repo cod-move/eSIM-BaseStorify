@@ -121,6 +121,8 @@ export interface AdminPayment {
   state: string;
   email: string | null;
   gatewayPaymentId: string | null;
+  /** What the shopper was charged, when the gateway converted it (Airwallex): refunds are made in this. */
+  paidAs: { amountMinor: number; currency: string } | null;
   outcome: string | null;
   orderId: string | null;
   orderNumber: string | null;
@@ -156,6 +158,7 @@ export async function listAdminPayments(filter: { attention?: boolean; limit?: n
     state: row.state,
     email: row.email ?? null,
     gatewayPaymentId: row.gatewayPaymentId ?? null,
+    paidAs: row.paidAs ? { amountMinor: row.paidAs.amountMinor, currency: row.paidAs.currency } : null,
     outcome: row.settlement?.outcome ?? null,
     orderId: row.settlement?.orderId ? String(row.settlement.orderId) : null,
     orderNumber: row.settlement?.orderNumber ?? null,

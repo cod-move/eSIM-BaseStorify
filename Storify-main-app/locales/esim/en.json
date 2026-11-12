@@ -54,7 +54,11 @@
       "remark": "Name",
       "addRemark": "Add a name, e.g. \"Japan trip\"",
       "remarkFailed": "Could not save the name",
-      "buyNew": "Buy a new eSIM"
+      "buyNew": "Buy a new eSIM",
+      "pages": "Pages",
+      "previous": "Previous",
+      "next": "Next",
+      "pageOf": "Page {page} of {pages}"
     },
     "browse": {
       "title": "eSIM destinations",
@@ -894,7 +898,9 @@
     "impersonation": {
       "viewing": "Signed in as {email} from the admin. Paying and account changes are blocked.",
       "return": "Return to admin",
-      "returning": "Returning…"
+      "returning": "Returning…",
+      "notRestored": "Could not return to the admin ({reason}). Please sign in again.",
+      "signInAgain": "Sign in again"
     }
   },
   "admin": {

@@ -80,6 +80,13 @@ export interface PaymentPlugin {
   readonly secretKeys: readonly string[];
   /** Settlement currencies the plugin can be asked to charge. */
   readonly currencies: readonly string[];
+  /**
+   * The gateway may charge the shopper in another currency it converts to
+   * itself (Airwallex's automatic currency conversion): a paid notice for the
+   * very payment it was asked for is then accepted in that currency
+   * (lib/esim/payments/notice-match.ts).
+   */
+  readonly convertsCurrency?: boolean;
   start(request: PayRequest, credentials: Credentials, fetcher: FetchLike): Promise<PayStart>;
   /**
    * Reads a notification body (JSON or form fields). `null` when it is not

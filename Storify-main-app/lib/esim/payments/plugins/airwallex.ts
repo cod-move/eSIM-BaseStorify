@@ -96,6 +96,9 @@ export const airwallexPlugin: PaymentPlugin = {
   credentialKeys: ["clientId", "apiKey", "webhookSecret", "env", "methods"],
   secretKeys: ["apiKey", "webhookSecret"],
   currencies: CURRENCIES,
+  // With automatic currency conversion on in the account, the shopper may pay
+  // in their own currency and the intent is reported in it.
+  convertsCurrency: true,
   acknowledge: { accepted: "ok", rejected: "rejected" },
 
   async start(request: PayRequest, credentials: Credentials, fetcher: FetchLike): Promise<PayStart> {
