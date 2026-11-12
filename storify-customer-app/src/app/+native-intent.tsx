@@ -1,3 +1,4 @@
+import { isRedirectReturn, returnScreen } from '@/features/esim/redirect-return'; // [esim-patch] P58
 import { isStripeReturn } from '@/features/payments/stripe-return';
 import { resolveAppLink, toAppPath } from '@/lib/links';
 
@@ -16,9 +17,17 @@ import { resolveAppLink, toAppPath } from '@/lib/links';
  * `null` opens no screen: Stripe's way back after a bank's check belongs to the
  * Payment Sheet, and checkout stays where it is under it.
  */
-export function redirectSystemPath({ path }: { path: string; initial: boolean }): string | null {
+export function redirectSystemPath({
+  path,
+  initial,
+}: {
+  path: string;
+  initial: boolean;
+}): string | null {
   try {
     if (isStripeReturn(path)) return null;
+    // [esim-patch] P58 the way back from a gateway's page belongs to the payment waiting for it.
+    if (isRedirectReturn(path)) return returnScreen(initial);
     // Expo's development launcher opens the app with an address of its own.
     if (path.includes('expo-development-client')) return path;
     if (/^https?:\/\//i.test(path)) {

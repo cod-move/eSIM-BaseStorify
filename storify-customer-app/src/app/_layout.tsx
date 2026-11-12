@@ -35,6 +35,9 @@ const restarting = applyDirection(useLocaleStore.getState().locale);
  */
 export const unstable_settings = { anchor: '(tabs)' };
 
+// [esim-patch] P58 a screen that fails to draw shows a way to try again, not a white page.
+export { CrashScreen as ErrorBoundary } from '@/features/esim/crash-screen';
+
 export default function RootLayout() {
   if (restarting) return null;
 

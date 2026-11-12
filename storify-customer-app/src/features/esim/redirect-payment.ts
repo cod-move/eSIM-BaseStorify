@@ -1,5 +1,6 @@
 import * as Crypto from 'expo-crypto';
 import { openAuthSessionAsync } from 'expo-web-browser';
+import { Linking } from 'react-native';
 
 import { startRedirectPayment, verifyRedirectPayment } from '@/api/endpoints/redirect-payments';
 import {
@@ -11,6 +12,7 @@ import {
 import type { PaymentResult } from '@/features/payments/success-params';
 
 import { redirectPending } from './redirect-pending';
+import { redirectStarted } from './redirect-return';
 
 /**
  * Paying on a gateway's own page (APP-09, patch P24): the flow the store's
@@ -82,6 +84,43 @@ export function resultOf(
   }
 }
 
+/** How long a return link may trail the app coming to the front (P58). */
+const LINK_GRACE_MS = 800;
+
+/**
+ * The page in the browser, until the shopper is back in the app: the URL of
+ * the link back, or `null` when they came back another way.
+ *
+ * On Android the browser counts as closed as soon as the app is in front
+ * again, and the link that brought it there can arrive a moment later: it is
+ * listened for here too, and waited for that moment (P58).
+ */
+async function openPage(url: string, returnUrl: string): Promise<string | null> {
+  let heard: string | null = null;
+  let onHeard: (() => void) | null = null;
+  const subscription = Linking.addEventListener('url', (event) => {
+    if (!event.url.startsWith(returnUrl)) return;
+    heard = event.url;
+    onHeard?.();
+  });
+  try {
+    const session = await openAuthSessionAsync(url, returnUrl);
+    if (session.type === 'success') return session.url;
+    if (heard === null) {
+      await new Promise<void>((resolve) => {
+        const timer = setTimeout(resolve, LINK_GRACE_MS);
+        onHeard = () => {
+          clearTimeout(timer);
+          resolve();
+        };
+      });
+    }
+    return heard;
+  } finally {
+    subscription.remove();
+  }
+}
+
 /** Pays on the gateway's page; `null` when the shopper gave up there. */
 export async function payByRedirect(
   locale: string,
@@ -91,9 +130,16 @@ export async function payByRedirect(
   const body = { ...request, paymentMethod: method };
   const payment = await startRedirectPayment(locale, body, keyFor(JSON.stringify(body)));
   current = null;
-  const session = await openAuthSessionAsync(payment.url, payment.returnUrl);
-  const cameBack = session.type === 'success';
-  const returnParams = cameBack ? paramsOf(session.url) : undefined;
+  // [esim-patch] P58 remembered while the page is open: Android may close the app meanwhile.
+  redirectStarted.write({ method, reference: payment.reference });
+  let link: string | null;
+  try {
+    link = await openPage(payment.url, payment.returnUrl);
+  } finally {
+    redirectStarted.clear();
+  }
+  const cameBack = link !== null;
+  const returnParams = link !== null ? paramsOf(link) : undefined;
   const verification = await verifyRedirectPayment(locale, {
     paymentMethod: method,
     reference: payment.reference,
