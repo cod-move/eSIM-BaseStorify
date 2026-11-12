@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { decimalToMinor, migrateNumber, migrateUser, type LegacyNumberRow, type LegacyUserRow } from "../legacy-rows";
+import { decimalToMinor, migrateEsim, migrateNumber, migrateUser, type LegacyEsimRow, type LegacyNumberRow, type LegacyUserRow } from "../legacy-rows";
 
 const HASH = `$2y$10$${"a".repeat(53)}`;
 const now = new Date("2026-10-27T00:00:00Z");
@@ -126,5 +126,86 @@ describe("legacy columns that are not text", () => {
     const address = JSON.stringify(migrated);
     assert.match(address, /"postalCode":"10115"/);
     assert.match(address, /"city":"Berlin"/);
+  });
+});
+
+const esim = (overrides: Partial<LegacyEsimRow> = {}): LegacyEsimRow => ({
+  id: 31,
+  user_id: 7,
+  iccid: "8985 2400 0000 1234 567",
+  phone_number: null,
+  qr_code: "LPA:1$rsp.esimaccess.com$ABC123",
+  serial_number: null,
+  provider_sim_id: null,
+  info: JSON.stringify({ esimTranNo: "T-99", order_num: "R-5", license_cli: "L-1", order_id: "M-2", stellar_esim_id: "S-E" }),
+  status: 1,
+  profile_status: "IN_USE",
+  expiry_date: new Date("2026-11-20T00:00:00Z"),
+  activation_deadline: null,
+  remark: " trip ",
+  created_at: new Date("2026-10-01T00:00:00Z"),
+  provider_slug: "esimaccess",
+  provider_plan_id: "CKH491",
+  order_number: "ORD123",
+  ...overrides,
+});
+
+describe("legacy data eSIMs", () => {
+  it("carries an eSIM still in use, with the supplier's own id", () => {
+    const migrated = migrateEsim(esim(), now);
+    assert.ok(typeof migrated === "object");
+    assert.equal(migrated.providerCode, "esimaccess");
+    assert.equal(migrated.providerPlanId, "CKH491");
+    assert.equal(migrated.iccid, "8985240000001234567");
+    assert.equal(migrated.providerEsimId, "T-99");
+    assert.equal(migrated.activationCode, "LPA:1$rsp.esimaccess.com$ABC123");
+    assert.equal(migrated.smdpAddress, "rsp.esimaccess.com");
+    assert.equal(migrated.matchingId, "ABC123");
+    assert.equal(migrated.orderNumber, "LEGACY-ORD123");
+    assert.equal(migrated.remark, "trip");
+    assert.equal(migrated.userLegacyId, 7);
+  });
+
+  it("leaves out what has ended", () => {
+    assert.equal(migrateEsim(esim({ expiry_date: new Date("2026-10-26T00:00:00Z") }), now), "esim.expired");
+    assert.equal(migrateEsim(esim({ expiry_date: null, activation_deadline: new Date("2026-10-01T00:00:00Z") }), now), "esim.expired");
+    assert.equal(migrateEsim(esim({ profile_status: "USED_EXPIRED" }), now), "esim.expired");
+    assert.equal(migrateEsim(esim({ profile_status: "REVOKED" }), now), "esim.expired");
+    assert.equal(migrateEsim(esim({ status: 3 }), now), "esim.cancelled");
+  });
+
+  it("keeps one that has not started counting down", () => {
+    const migrated = migrateEsim(esim({ expiry_date: null, profile_status: "GOT_RESOURCE" }), now);
+    assert.ok(typeof migrated === "object");
+    assert.equal(migrated.expiresAt, null);
+  });
+
+  it("only data eSIMs of the suppliers served here; number cards are the number import's", () => {
+    assert.equal(migrateEsim(esim({ provider_slug: "topconnect" }), now), "esim.not-data");
+    assert.equal(migrateEsim(esim({ provider_slug: "airalo" }), now), "esim.not-data");
+    assert.equal(migrateEsim(esim({ iccid: "123" }), now), "esim.no-iccid");
+    assert.equal(migrateEsim(esim({ provider_plan_id: null }), now), "esim.no-plan");
+  });
+
+  it("finds each supplier's id where the old store kept it", () => {
+    const of = (slug: string, extra: Partial<LegacyEsimRow> = {}) => {
+      const migrated = migrateEsim(esim({ provider_slug: slug, ...extra }), now);
+      assert.ok(typeof migrated === "object");
+      return { providerEsimId: migrated.providerEsimId, simId: migrated.simId };
+    };
+    assert.deepEqual(of("stellar", { provider_sim_id: "SIM-1" }), { providerEsimId: "S-E", simId: "SIM-1" });
+    assert.deepEqual(of("roamwifi"), { providerEsimId: "R-5", simId: null });
+    assert.deepEqual(of("bnesim"), { providerEsimId: "8985240000001234567", simId: "L-1" });
+    assert.deepEqual(of("mobimatter"), { providerEsimId: "M-2", simId: null });
+  });
+
+  it("reads a bare activation code and a QR address", () => {
+    const bare = migrateEsim(esim({ qr_code: "smdp.example.com$XYZ" }), now);
+    assert.ok(typeof bare === "object");
+    assert.equal(bare.activationCode, "LPA:1$smdp.example.com$XYZ");
+    const url = migrateEsim(esim({ qr_code: "https://example.com/qr.png" }), now);
+    assert.ok(typeof url === "object");
+    assert.equal(url.activationCode, null);
+    assert.equal(url.qrCodeUrl, "https://example.com/qr.png");
   });
 });

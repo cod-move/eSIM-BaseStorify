@@ -6,8 +6,9 @@
  * which ran against the live database on 2026-08-08 and reconciled to zero
  * differences: only email-verified users, Laravel bcrypt hashes kept as they
  * are (patch P16 upgrades them at first sign-in), status 1 active and anything
- * else banned. Here banned users are not imported at all, data eSIMs are not
- * imported, and the whole number-card stock is.
+ * else banned. Here banned users are not imported at all, the whole
+ * number-card stock is, and of the data eSIMs only those still in use (not
+ * expired, not cancelled).
  */
 
 export interface LegacyUserRow {
@@ -94,7 +95,12 @@ export type SkipReason =
   | "user.banned"
   | "number.no-iccid"
   | "number.no-msisdn"
-  | "number.no-lpa";
+  | "number.no-lpa"
+  | "esim.not-data"
+  | "esim.cancelled"
+  | "esim.expired"
+  | "esim.no-iccid"
+  | "esim.no-plan";
 
 const BCRYPT = /^\$2[aby]\$\d{2}\$[./A-Za-z0-9]{53}$/;
 const DECIMAL = /^(?:0|[1-9]\d*)(?:\.\d+)?$/;
@@ -203,6 +209,130 @@ export function migrateNumber(row: LegacyNumberRow, now = new Date()): MigratedN
     sold,
     userLegacyId: sold && Number(row.user_id) > 0 ? Number(row.user_id) : null,
     soldAt: sold ? (validDate(row.sold_at) ?? validDate(row.created_at) ?? now) : null,
+    createdAt: validDate(row.created_at) ?? now,
+  };
+}
+
+/** A data eSIM sold in the old store (`esims`), with its plan and supplier. */
+export interface LegacyEsimRow {
+  id: number;
+  user_id: number | null;
+  iccid: string | null;
+  phone_number: string | null;
+  qr_code: string | null;
+  serial_number: string | null;
+  provider_sim_id: string | null;
+  /** JSON text (or already parsed): the supplier's ids — esimTranNo, order_num, license_cli, … */
+  info: unknown;
+  /** 1 active, 3 cancelled, else pending. */
+  status: number;
+  profile_status: string | null;
+  expiry_date: Date | null;
+  activation_deadline: Date | null;
+  remark: string | null;
+  created_at: Date | null;
+  /** `esim_providers.slug`. */
+  provider_slug: string | null;
+  /** `plans.provider_plan_id` of the order line. */
+  provider_plan_id: string | null;
+  order_number: string | null;
+}
+
+export interface MigratedEsim {
+  legacyId: number;
+  userLegacyId: number | null;
+  providerCode: string;
+  providerPlanId: string;
+  iccid: string;
+  /** How the supplier is asked about it (lib/esim/providers/types.ts EsimRef). */
+  providerEsimId: string | null;
+  simId: string | null;
+  activationCode: string | null;
+  smdpAddress: string | null;
+  matchingId: string | null;
+  qrCodeUrl: string | null;
+  expiresAt: Date | null;
+  activationDeadline: Date | null;
+  remark: string | null;
+  orderNumber: string;
+  createdAt: Date;
+}
+
+/** Old supplier slug → provider code here. TopConnect cards are the number import's. */
+const DATA_PROVIDERS: Record<string, string> = {
+  esimaccess: "esimaccess",
+  stellar: "stellar",
+  roamwifi: "roamwifi",
+  bnesim: "bnesim",
+  mobimatter: "mobimatter",
+};
+
+/** What the suppliers call an eSIM that can no longer be used. */
+const ENDED_PROFILES = new Set(["USED_EXPIRED", "EXPIRED", "CANCEL", "CANCELED", "CANCELLED", "REVOKED", "DELETED", "TERMINATED", "CLOSED"]);
+
+function infoOf(value: unknown): Record<string, unknown> {
+  let parsed = value;
+  if (typeof value === "string" || Buffer.isBuffer(value)) {
+    try {
+      parsed = JSON.parse(String(value));
+    } catch {
+      return {};
+    }
+  }
+  return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? (parsed as Record<string, unknown>) : {};
+}
+
+/**
+ * A data eSIM of the old store that is still in use: active, a supplier
+ * served here, not past its expiry (or, never installed, its install
+ * deadline), and not ended at the supplier. One with no expiry yet has not
+ * started counting down: it is kept.
+ */
+export function migrateEsim(row: LegacyEsimRow, now = new Date()): MigratedEsim | SkipReason {
+  const providerCode = DATA_PROVIDERS[(text(row.provider_slug) ?? "").toLowerCase()];
+  if (!providerCode) return "esim.not-data";
+  if (Number(row.status) !== 1) return "esim.cancelled";
+  const expiresAt = validDate(row.expiry_date);
+  const activationDeadline = validDate(row.activation_deadline);
+  if (expiresAt && expiresAt.getTime() <= now.getTime()) return "esim.expired";
+  if (!expiresAt && activationDeadline && activationDeadline.getTime() <= now.getTime()) return "esim.expired";
+  if (ENDED_PROFILES.has((text(row.profile_status) ?? "").toUpperCase())) return "esim.expired";
+  const iccid = (text(row.iccid) ?? "").replace(/[^0-9Ff]/g, "").toUpperCase();
+  if (!/^\d{18,22}F?$/.test(iccid)) return "esim.no-iccid";
+  const providerPlanId = text(row.provider_plan_id);
+  if (!providerPlanId) return "esim.no-plan";
+
+  const info = infoOf(row.info);
+  const serial = text(row.serial_number);
+  const ids: Record<string, { providerEsimId: string | null; simId: string | null }> = {
+    esimaccess: { providerEsimId: text(info.esimTranNo), simId: null },
+    stellar: { providerEsimId: text(info.stellar_esim_id), simId: text(row.provider_sim_id) ?? text(info.stellar_sim_id) ?? serial },
+    roamwifi: { providerEsimId: text(info.order_num), simId: null },
+    bnesim: { providerEsimId: iccid, simId: text(info.license_cli) },
+    mobimatter: { providerEsimId: text(info.orderId) ?? text(info.order_id) ?? serial, simId: null },
+  };
+
+  const code = text(row.qr_code);
+  // "LPA:1$smdp$code", or the bare "smdp$code" some suppliers hand out.
+  const body = code ? code.replace(/^LPA:/i, "").replace(/^1\$/, "") : "";
+  const lpa = /^[A-Za-z0-9.-]+\.[A-Za-z]{2,}\$[^$\s]+(\$.*)?$/.test(body) ? `LPA:1$${body}` : null;
+  const [, smdpAddress = null, matchingId = null] = lpa ? lpa.split("$") : [];
+  const remark = text(row.remark);
+  return {
+    legacyId: Number(row.id),
+    userLegacyId: Number(row.user_id) > 0 ? Number(row.user_id) : null,
+    providerCode,
+    providerPlanId,
+    iccid,
+    ...ids[providerCode],
+    activationCode: lpa,
+    smdpAddress: smdpAddress || null,
+    matchingId: matchingId || null,
+    qrCodeUrl: code && /^https?:\/\//i.test(code) ? code : null,
+    expiresAt,
+    activationDeadline,
+    remark: remark ? remark.slice(0, 100) : null,
+    orderNumber: `LEGACY-${text(row.order_number) ?? row.id}`.slice(0, 64),
     createdAt: validDate(row.created_at) ?? now,
   };
 }

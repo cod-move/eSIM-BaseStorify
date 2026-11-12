@@ -47,6 +47,8 @@ const COLLAPSED_OPTIONS = 12;
 /** Fewer hidden than this, and a filter shows them all. */
 const MIN_HIDDEN = 3;
 const collapses = (count: number) => count - COLLAPSED_OPTIONS >= MIN_HIDDEN;
+/** Filters that list only the values the other choices leave, not the rest faded: too many otherwise. */
+const ONLY_OPEN = new Set<PlanFilterKey>(["data", "operator"]);
 const FILTER_ICONS: Record<PlanFilterKey, LucideIcon> = { coverage: MapPin, kind: Layers, days: CalendarDays, data: Database, topup: RefreshCw, breakout: Globe2, operator: RadioTower };
 /** Operators named on a card before "+N". */
 const SHOWN_OPERATORS = 3;
@@ -71,10 +73,14 @@ export function PlanBrowser({ productId, destinationName, variants, countryCodes
   const { formatPrice } = useCurrency();
   const { addItem } = useCart();
   const router = useRouter();
-  // Total data first when there is any, and other kinds too (else it is no choice).
+  // A single country's total-data plans first, when there are such and others (else it is no choice).
   const [filters, setFilters] = useState<PlanFilters>(() => {
+    let start: PlanFilters = {};
     const kinds = new Set(variants.map((variant) => dataKindOf(variant)));
-    return kinds.has("total") && kinds.size > 1 ? { kind: "total" } : {};
+    if (kinds.has("total") && kinds.size > 1) start = chooseFilter(variants, start, "kind", "total");
+    const scopes = new Set(variants.map((variant) => variant.coverageScope ?? "local"));
+    if (scopes.has("local") && scopes.size > 1) start = chooseFilter(variants, start, "coverage", "local");
+    return start;
   });
   const [page, setPage] = useState(1);
   const [adding, setAdding] = useState<string | null>(null);
@@ -92,8 +98,16 @@ export function PlanBrowser({ productId, destinationName, variants, countryCodes
   const nameOf = (variant: StorefrontVariant) => (variant.region ? t("esim.page.title", "{name} eSIM", { name: variant.region }) : name);
 
   // A long filter shows its first values, and the chosen one, until opened.
-  const visibleValues = (key: PlanFilterKey) => {
+  /** A filter's values: all of them, or for data and operator only what the other choices leave. */
+  const offeredValues = (key: PlanFilterKey) => {
     const values = allValues[key].map((option) => option.value);
+    if (!ONLY_OPEN.has(key)) return values;
+    const left = new Set(open[key].filter((option) => Number.isFinite(option.fromPriceMinor)).map((option) => option.value));
+    return values.filter((value) => left.has(value) || value === filters[key]);
+  };
+
+  const visibleValues = (key: PlanFilterKey) => {
+    const values = offeredValues(key);
     if (expanded[key] || !collapses(values.length)) return values;
     const first = values.slice(0, COLLAPSED_OPTIONS);
     const chosen = filters[key];
@@ -258,7 +272,7 @@ export function PlanBrowser({ productId, destinationName, variants, countryCodes
                     </button>
                   );
                 })}
-                {collapses(allValues[key].length) ? (
+                {collapses(offeredValues(key).length) ? (
                   <button
                     type="button"
                     onClick={() => setExpanded((current) => ({ ...current, [key]: !current[key] }))}
@@ -266,7 +280,7 @@ export function PlanBrowser({ productId, destinationName, variants, countryCodes
                   >
                     {expanded[key]
                       ? t("esim.plans.fewer", "Fewer")
-                      : t("esim.plans.more", "+{count} more", { count: allValues[key].length - COLLAPSED_OPTIONS })}
+                      : t("esim.plans.more", "+{count} more", { count: offeredValues(key).length - COLLAPSED_OPTIONS })}
                   </button>
                 ) : null}
               </div>

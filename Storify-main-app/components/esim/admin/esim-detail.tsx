@@ -103,7 +103,7 @@ export function EsimAdminDetail({ detail, canManage }: { detail: Detail; canMana
             <CardTitle className="text-base">{t("admin.esim.overview", "Overview")}</CardTitle>
           </CardHeader>
           <CardContent>
-            {row(t("admin.esim.order", "Order"), <Link href={`/admin/orders/${profile.order}`} className="hover:underline">{profile.orderNumber}</Link>)}
+            {row(t("admin.esim.order", "Order"), profile.orderNumber.startsWith("LEGACY-") ? profile.orderNumber : <Link href={`/admin/orders/${profile.order}`} className="hover:underline">{profile.orderNumber}</Link>)}
             {row(t("admin.esim.customer", "Customer"), detail.customer?.email ?? "—")}
             {row(t("admin.esim.supplier", "Supplier"), `${profile.providerCode} · ${plan?.providerPlanId ?? "—"}`)}
             {row(t("admin.esim.supplierOrder", "Supplier order"), <span className="font-mono text-xs">{profile.providerOrderId ?? "—"}</span>)}

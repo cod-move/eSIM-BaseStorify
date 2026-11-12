@@ -26,6 +26,8 @@ const COLLAPSED = 6;
 const PAGE = 20;
 /** Filters the app does not offer (the website does): too many values to be of use on a phone. */
 const HIDDEN_FILTERS = new Set(['operator']);
+/** Filters that list only the values the other choices leave, not the rest dimmed: too many otherwise. */
+const ONLY_OPEN = new Set(['data', 'operator']);
 /** Where the list starts: a single country's total-data plans, when there are such and others. */
 const STARTING_FILTERS: [string, string][] = [
   ['coverage', 'local'],
@@ -136,14 +138,18 @@ export function DestinationPlans({ destination }: { destination: EsimDestination
           <View className="gap-4 rounded-2xl bg-surface p-4">
             {destination.filters.filter((filter) => !HIDDEN_FILTERS.has(filter.key)).map((filter) => {
               const open = openValues(destination.plans, filters, filter.key);
-              const long = filter.options.length > COLLAPSED + 1;
               const chosen = filters[filter.key];
+              // Data and operator list only what the other choices leave; other filters dim the rest.
+              const offered = ONLY_OPEN.has(filter.key)
+                ? filter.options.filter(
+                    (option) => open.has(option.value) || option.value === chosen
+                  )
+                : filter.options;
+              const long = offered.length > COLLAPSED + 1;
               const options =
                 long && !expanded[filter.key]
-                  ? filter.options.filter(
-                      (option, index) => index < COLLAPSED || option.value === chosen
-                    )
-                  : filter.options;
+                  ? offered.filter((option, index) => index < COLLAPSED || option.value === chosen)
+                  : offered;
               return (
                 <View key={filter.key} className="gap-2">
                   <Text variant="subheading">{filter.title}</Text>
@@ -179,7 +185,7 @@ export function DestinationPlans({ destination }: { destination: EsimDestination
                         <Text className="text-link">
                           {expanded[filter.key]
                             ? t('filterFewer')
-                            : t('filterMore', { count: filter.options.length - COLLAPSED })}
+                            : t('filterMore', { count: offered.length - COLLAPSED })}
                         </Text>
                       </Pressable>
                     ) : null}

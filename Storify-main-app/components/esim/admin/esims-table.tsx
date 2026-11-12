@@ -56,11 +56,15 @@ export function EsimsTable({
     {
       id: "order",
       header: t("admin.esim.order", "Order"),
-      cell: (row) => (
-        <Link href={`/admin/orders/${row.orderId}`} className="hover:underline">
-          {row.orderNumber}
-        </Link>
-      ),
+      // Carried over from the old store: no order here to open.
+      cell: (row) =>
+        row.orderNumber.startsWith("LEGACY-") ? (
+          row.orderNumber
+        ) : (
+          <Link href={`/admin/orders/${row.orderId}`} className="hover:underline">
+            {row.orderNumber}
+          </Link>
+        ),
     },
     { id: "customer", header: t("admin.esim.customer", "Customer"), cell: (row) => row.customer ?? "—" },
     {

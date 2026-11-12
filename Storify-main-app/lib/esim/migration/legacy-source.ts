@@ -1,6 +1,6 @@
 import "server-only";
 
-import type { LegacyNumberRow, LegacyUserRow } from "./legacy-rows";
+import type { LegacyEsimRow, LegacyNumberRow, LegacyUserRow } from "./legacy-rows";
 
 /**
  * Reading the old store's MySQL database (MIG), in production only: the
@@ -69,9 +69,29 @@ const NUMBER_QUERY = `
   order by i.id
 `;
 
+/**
+ * The data eSIMs that may still be in use: active and not past their expiry
+ * (none yet: not started). The rest of the rules — supplier, install
+ * deadline, ended at the supplier — are migrateEsim's, so they are counted.
+ * The QR picture (`qr_code_image`) is not read: the activation code is enough.
+ */
+const ESIM_QUERY = `
+  select e.id, e.user_id, e.iccid, e.phone_number, e.qr_code, e.serial_number, e.provider_sim_id,
+         e.info, e.status, e.profile_status, e.expiry_date, e.activation_deadline, e.remark, e.created_at,
+         p.slug provider_slug, pl.provider_plan_id, o.order_number
+  from esims e
+  left join esim_providers p on p.id = e.esim_provider_id
+  left join order_items oi on oi.id = e.order_item_id
+  left join plans pl on pl.id = oi.plan_id
+  left join orders o on o.id = oi.order_id
+  where e.status = 1 and (e.expiry_date is null or e.expiry_date > now())
+  order by e.id
+`;
+
 export interface LegacySnapshot {
   users: LegacyUserRow[];
   numbers: LegacyNumberRow[];
+  esims?: LegacyEsimRow[];
 }
 
 export async function readLegacySnapshot(config: LegacySourceConfig): Promise<LegacySnapshot> {
@@ -93,8 +113,9 @@ export async function readLegacySnapshot(config: LegacySourceConfig): Promise<Le
     await connection.query("START TRANSACTION WITH CONSISTENT SNAPSHOT");
     const [users] = await connection.query(USER_QUERY);
     const [numbers] = await connection.query(NUMBER_QUERY);
+    const [esims] = await connection.query(ESIM_QUERY);
     await connection.query("COMMIT");
-    return { users: users as LegacyUserRow[], numbers: numbers as LegacyNumberRow[] };
+    return { users: users as LegacyUserRow[], numbers: numbers as LegacyNumberRow[], esims: esims as LegacyEsimRow[] };
   } finally {
     await connection.end().catch(() => undefined);
   }

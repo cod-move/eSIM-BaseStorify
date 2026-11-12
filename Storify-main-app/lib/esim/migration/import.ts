@@ -7,7 +7,9 @@ import { EsimNumber } from "@/models/esim-number.model";
 import { EsimReferral } from "@/models/esim-referral.model";
 import { LEDGER_ACCOUNT, LEDGER_BOOK } from "@/lib/finance/accounts";
 import { postLedgerEntries, postingKey } from "@/lib/finance/ledger";
-import { migrateNumber, migrateUser, type MigratedUser, type SkipReason } from "./legacy-rows";
+import { EsimPlan } from "@/models/esim-plan.model";
+import { EsimProfile } from "@/models/esim-profile.model";
+import { migrateEsim, migrateNumber, migrateUser, type MigratedUser, type SkipReason } from "./legacy-rows";
 import type { LegacySnapshot } from "./legacy-source";
 import { phoneNumber } from "@/lib/esim/numbers/import";
 
@@ -17,8 +19,7 @@ import { phoneNumber } from "@/lib/esim/numbers/import";
  *
  * Every row is linked to what it became (`EsimLegacyLink`), so a second run
  * finds the links and changes nothing, and a run that stopped half way is
- * finished by the next one. Old orders, payments and data eSIMs are not
- * imported.
+ * finished by the next one. Old orders and payments are not imported.
  *
  *  - user: only email-verified accounts that are not banned. Created with the
  *    old bcrypt hash (patch P16 upgrades it at first sign-in), or linked to
@@ -32,6 +33,10 @@ import { phoneNumber } from "@/lib/esim/numbers/import";
  *  - number: every number card in the old stock (`inventory_esims`).
  *    Unsold ones stay for sale; sold ones belong to their buyer, or are
  *    retired when the buyer was not imported.
+ *  - esim: data eSIMs still in use (lib/esim/migration/legacy-rows.ts
+ *    migrateEsim), of imported shoppers, on a plan the catalogue here has.
+ *    Issued as they are, under "LEGACY-<old order number>" and no order
+ *    here; the usage sync then brings what is left from the supplier.
  */
 
 export interface ImportOptions {
@@ -272,7 +277,83 @@ export async function runLegacyImport(snapshot: LegacySnapshot, options: ImportO
     await link("number", number.legacyId, created._id);
   }
 
+  // 5. Data eSIMs still in use, to their owner, on the plan they were bought on.
+  const esimLinks = await linksOf("esim");
+  const plans = new Map<string, { _id: Id; topup?: { supported?: boolean; window?: string } } | null>();
+  for (const row of snapshot.esims ?? []) {
+    const esim = migrateEsim(row, now);
+    if (isSkip(esim)) {
+      skipped.add(esim);
+      continue;
+    }
+    if (esimLinks.has(esim.legacyId)) {
+      report.add("esims.already");
+      continue;
+    }
+    const customer = esim.userLegacyId ? (userIds.get(esim.userLegacyId) ?? null) : null;
+    if (!customer) {
+      skipped.add("esim.no-user");
+      continue;
+    }
+    const planKey = `${esim.providerCode}:${esim.providerPlanId}`;
+    if (!plans.has(planKey)) {
+      plans.set(
+        planKey,
+        await EsimPlan.findOne({ providerCode: esim.providerCode, providerPlanId: esim.providerPlanId })
+          .select({ _id: 1, topup: 1 })
+          .lean<{ _id: Id; topup?: { supported?: boolean; window?: string } }>(),
+      );
+    }
+    const plan = plans.get(planKey);
+    if (!plan) {
+      // The catalogue here has not got that plan (not synced, or the supplier dropped it): a later run takes it.
+      skipped.add(`esim.plan-missing.${esim.providerCode}`);
+      continue;
+    }
+    const existing = await EsimProfile.findOne({ iccid: esim.iccid }).select("_id").lean();
+    if (existing) {
+      report.add("esims.matched");
+      if (options.apply) await link("esim", esim.legacyId, existing._id, true);
+      continue;
+    }
+    report.add(`esims.new.${esim.providerCode}`);
+    if (!options.apply) continue;
+    const created = await EsimProfile.create({
+      customer,
+      email: null,
+      // Old orders are not imported: the eSIM stands on its own, under the old order number.
+      order: new mongoose.Types.ObjectId(),
+      orderNumber: esim.orderNumber,
+      lineIndex: 0,
+      unit: 1,
+      plan: plan._id,
+      providerCode: esim.providerCode,
+      providerOrderId: null,
+      providerEsimId: esim.providerEsimId,
+      simId: esim.simId,
+      iccid: esim.iccid,
+      status: "fulfilled",
+      // The usage sync asks the supplier for what is left and the real dates.
+      usageAvailable: true,
+      installation: {
+        activationCode: esim.activationCode,
+        smdpAddress: esim.smdpAddress,
+        matchingId: esim.matchingId,
+        qrCodeUrl: esim.qrCodeUrl,
+        apn: null,
+      },
+      fulfilledAt: esim.createdAt,
+      expiresAt: esim.expiresAt,
+      topupDeadline: plan.topup?.supported && plan.topup.window === "before_expiry" ? esim.expiresAt : null,
+      activationDeadline: esim.activationDeadline,
+      remark: esim.remark,
+      raw: { legacyId: esim.legacyId },
+    });
+    await link("esim", esim.legacyId, created._id);
+  }
+
   report.add("users.read", snapshot.users.length);
   report.add("numbers.read", snapshot.numbers?.length ?? 0);
+  report.add("esims.read", snapshot.esims?.length ?? 0);
   return { report: report.counts, skipped: skipped.counts };
 }
