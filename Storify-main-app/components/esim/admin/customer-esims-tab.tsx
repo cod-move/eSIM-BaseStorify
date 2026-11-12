@@ -13,9 +13,28 @@ import { formatBytes } from "@/lib/esim/account/display";
 import type { Display } from "@/lib/esim/account/display";
 import type { AdminEsimRow } from "@/lib/esim/admin/esims";
 
+interface NumberRow {
+  id: string;
+  msisdn: string;
+  iccid: string;
+  providerCode: string;
+  status: string;
+  soldAt: string | null;
+  balanceMinor: number | null;
+  currency: string | null;
+  blocked: boolean | null;
+  lastUsedAt: string | null;
+}
+
 interface Page {
   rows: AdminEsimRow[];
-  pagination: { page: number; pageSize: number; total: number; totalPages: number };
+  pagination: {
+    page: number;
+    pageSize: number;
+    total: number;
+    totalPages: number;
+  };
+  numbers: NumberRow[];
 }
 
 /**
@@ -30,12 +49,15 @@ export function CustomerEsimsTab({ customerId }: { customerId: string }) {
   const [data, setData] = useState<Page | null>(null);
   const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
-  const date = (value: string | null) => (value ? new Date(value).toLocaleDateString() : "—");
+  const date = (value: string | null) =>
+    value ? new Date(value).toLocaleDateString() : "—";
 
   useEffect(() => {
     let active = true;
     apiClient
-      .get<Page>(`/api/esim/admin/customers/${customerId}/esims?page=${page}&pageSize=10`)
+      .get<Page>(
+        `/api/esim/admin/customers/${customerId}/esims?page=${page}&pageSize=10`,
+      )
       .then((result) => {
         if (!active) return;
         setData(result);
@@ -55,20 +77,31 @@ export function CustomerEsimsTab({ customerId }: { customerId: string }) {
   if (failed) {
     return (
       <p className="py-6 text-sm text-muted-foreground">
-        {t("admin.esim.customerEsimsFailed", "The eSIMs could not be loaded (no eSIM access, or try again).")}
+        {t(
+          "admin.esim.customerEsimsFailed",
+          "The eSIMs could not be loaded (no eSIM access, or try again).",
+        )}
       </p>
     );
   }
 
   const columns: DataTableColumn<AdminEsimRow>[] = [
-    { id: "iccid", header: "ICCID", cell: (row) => <span className="font-mono text-xs">{row.iccid ?? "—"}</span> },
+    {
+      id: "iccid",
+      header: "ICCID",
+      cell: (row) => (
+        <span className="font-mono text-xs">{row.iccid ?? "—"}</span>
+      ),
+    },
     {
       id: "plan",
       header: t("admin.esim.plan", "Plan"),
       cell: (row) => (
         <div>
           <div>{row.plan}</div>
-          <div className="text-xs text-muted-foreground">{row.providerCode}</div>
+          <div className="text-xs text-muted-foreground">
+            {row.providerCode}
+          </div>
         </div>
       ),
     },
@@ -79,7 +112,11 @@ export function CustomerEsimsTab({ customerId }: { customerId: string }) {
         row.orderNumber.startsWith("LEGACY-") ? (
           row.orderNumber
         ) : (
-          <Link href={`/admin/orders/${row.orderId}`} className="hover:underline" onClick={(event) => event.stopPropagation()}>
+          <Link
+            href={`/admin/orders/${row.orderId}`}
+            className="hover:underline"
+            onClick={(event) => event.stopPropagation()}
+          >
             {row.orderNumber}
           </Link>
         ),
@@ -88,32 +125,109 @@ export function CustomerEsimsTab({ customerId }: { customerId: string }) {
       id: "status",
       header: t("admin.esim.status", "Status"),
       cell: (row) => (
-        <EsimStatusBadge display={{ status: row.status, tone: row.tone } as Display} label={t(`esim.status.${row.status}`, row.statusLabel)} />
+        <EsimStatusBadge
+          display={{ status: row.status, tone: row.tone } as Display}
+          label={t(`esim.status.${row.status}`, row.statusLabel)}
+        />
       ),
     },
     {
       id: "usage",
       header: t("admin.esim.dataLeft", "Data left"),
-      cell: (row) => (row.totalBytes ? `${formatBytes(row.remainingBytes)} / ${formatBytes(row.totalBytes)}` : "—"),
+      cell: (row) =>
+        row.totalBytes
+          ? `${formatBytes(row.remainingBytes)} / ${formatBytes(row.totalBytes)}`
+          : "—",
     },
-    { id: "expiresAt", header: t("admin.esim.expires", "Expires"), cell: (row) => date(row.expiresAt) },
+    {
+      id: "expiresAt",
+      header: t("admin.esim.expires", "Expires"),
+      cell: (row) => date(row.expiresAt),
+    },
+  ];
+
+  const numberColumns: DataTableColumn<NumberRow>[] = [
+    {
+      id: "msisdn",
+      header: t("admin.esim.number", "Number"),
+      cell: (row) => <span className="font-mono">{row.msisdn}</span>,
+    },
+    {
+      id: "iccid",
+      header: "ICCID",
+      cell: (row) => <span className="font-mono text-xs">{row.iccid}</span>,
+    },
+    {
+      id: "status",
+      header: t("admin.esim.status", "Status"),
+      cell: (row) => (
+        <div>
+          <div>{t(`admin.esim.numberStatus_${row.status}`, row.status)}</div>
+          {row.blocked ? (
+            <div className="text-xs text-destructive">
+              {t("admin.esim.numberBlocked", "Blocked")}
+            </div>
+          ) : null}
+        </div>
+      ),
+    },
+    {
+      id: "balance",
+      header: t("admin.esim.numberBalance", "Card balance"),
+      cell: (row) =>
+        row.balanceMinor === null
+          ? "—"
+          : `${(row.balanceMinor / 100).toFixed(2)} ${row.currency ?? ""}`.trim(),
+    },
+    {
+      id: "lastUsedAt",
+      header: t("admin.esim.numberLastUsed", "Last used"),
+      cell: (row) => date(row.lastUsedAt),
+    },
+    {
+      id: "soldAt",
+      header: t("admin.esim.numberSoldAt", "Bought"),
+      cell: (row) => date(row.soldAt),
+    },
   ];
 
   return (
-    <DataTable<AdminEsimRow>
-      title={t("admin.sidebar.esimEsims", "eSIMs")}
-      data={data?.rows ?? []}
-      columns={columns}
-      keyField="id"
-      isLoading={loading}
-      loadingMode="rows"
-      pagination={data?.pagination}
-      onPageChange={(next) => {
-        setLoading(true);
-        setPage(next);
-      }}
-      onRowClick={(row) => router.push(`/admin/esim/esims/${row.id}`)}
-      emptyMessage={t("admin.esim.customerNoEsims", "This customer has no eSIMs.")}
-    />
+    <div className="space-y-6">
+      <DataTable<AdminEsimRow>
+        title={t("admin.sidebar.esimEsims", "eSIMs")}
+        data={data?.rows ?? []}
+        columns={columns}
+        keyField="id"
+        isLoading={loading}
+        loadingMode="rows"
+        pagination={data?.pagination}
+        onPageChange={(next) => {
+          setLoading(true);
+          setPage(next);
+        }}
+        onRowClick={(row) => router.push(`/admin/esim/esims/${row.id}`)}
+        emptyMessage={t(
+          "admin.esim.customerNoEsims",
+          "This customer has no eSIMs.",
+        )}
+      />
+      <DataTable<NumberRow>
+        title={t("admin.esim.customerNumbers", "Number cards")}
+        data={data?.numbers ?? []}
+        columns={numberColumns}
+        keyField="id"
+        isLoading={loading && !data}
+        loadingMode="rows"
+        onRowClick={(row) =>
+          router.push(
+            `/admin/esim/numbers?search=${encodeURIComponent(row.msisdn)}`,
+          )
+        }
+        emptyMessage={t(
+          "admin.esim.customerNoNumbers",
+          "This customer has no number cards.",
+        )}
+      />
+    </div>
   );
 }

@@ -738,6 +738,11 @@ function createAuth(
 
             return { data: minted };
           },
+          // [esim-patch] P61 the sign-in log: when, how and from where (lib/esim/account/sign-ins.ts). Never blocks.
+          after: async (session, ctx) => {
+            const { recordSignIn } = await import("@/lib/esim/account/sign-ins");
+            await recordSignIn(session as Record<string, unknown>, ctx?.path);
+          },
         },
         // However a session ends — Better Auth's own /sign-out, a revocation,
         // an expired session cleared on read, the account deleted — the app

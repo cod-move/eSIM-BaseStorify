@@ -13,7 +13,9 @@ import {
   StickyNote,
   Wallet,
   Smartphone, // [esim-patch] P59
+  LogIn, // [esim-patch] P61
 } from "lucide-react";
+import { CustomerSignInsTab } from "@/components/esim/admin/customer-sign-ins-tab"; // [esim-patch] P61
 import { CustomerEsimsTab } from "@/components/esim/admin/customer-esims-tab"; // [esim-patch] P59
 import { ImpersonateButton } from "@/components/esim/admin/impersonate-button"; // [esim-patch] P60
 import { Button } from "@/components/ui/button";
@@ -592,6 +594,8 @@ export function CustomerDetailShell({
             // [esim-patch] P59: the customer's eSIMs, in the admin area only.
             ...(area === "admin" ? [{ value: "esims", label: "eSIMs", icon: Smartphone }] : []),
             { value: "activity", label: "Activity", icon: Activity },
+            // [esim-patch] P61: the account's sign-in log, in the admin area only.
+            ...(area === "admin" ? [{ value: "sign-ins", label: "Sign-ins", icon: LogIn }] : []),
             ...(loyaltyEnabled
               ? [{ value: "loyalty", label: "Loyalty", icon: Award }]
               : []),
@@ -665,6 +669,13 @@ export function CustomerDetailShell({
         {area === "admin" && (
           <TabsContent value="esims">
             <CustomerEsimsTab customerId={customerId} />
+          </TabsContent>
+        )}
+
+        {/* [esim-patch] P61 */}
+        {area === "admin" && (
+          <TabsContent value="sign-ins">
+            <CustomerSignInsTab customerId={customerId} />
           </TabsContent>
         )}
 
