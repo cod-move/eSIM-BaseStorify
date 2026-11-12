@@ -61,12 +61,13 @@ function view(profile: IEsimProfile, plan: IEsimPlan | undefined): EsimView {
   return {
     id: String(profile._id),
     orderNumber: profile.orderNumber,
-    planName: planTitle(plan?.name ?? "eSIM", profile.durationDays),
+    // A migrated eSIM whose plan is not here shows the old plan it carries.
+    planName: planTitle(plan?.name ?? profile.legacyPlan?.name ?? "eSIM", profile.durationDays),
     destination: plan?.destination ?? "",
     emoji: plan?.emoji ?? null,
-    dataLabel: plan?.data.label ?? "",
-    dataType: plan?.data.type ?? "total",
-    validityDays: profile.durationDays ?? plan?.validityDays ?? 0,
+    dataLabel: plan?.data.label ?? profile.legacyPlan?.label ?? "",
+    dataType: plan?.data.type ?? profile.legacyPlan?.dataType ?? "total",
+    validityDays: profile.durationDays ?? plan?.validityDays ?? profile.legacyPlan?.validityDays ?? 0,
     providerCode: profile.providerCode,
     iccid: profile.iccid,
     display: displayOf({

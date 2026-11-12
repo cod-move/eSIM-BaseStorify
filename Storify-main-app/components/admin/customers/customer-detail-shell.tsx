@@ -12,7 +12,9 @@ import {
   Award,
   StickyNote,
   Wallet,
+  Smartphone, // [esim-patch] P59
 } from "lucide-react";
+import { CustomerEsimsTab } from "@/components/esim/admin/customer-esims-tab"; // [esim-patch] P59
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -578,6 +580,8 @@ export function CustomerDetailShell({
           {[
             { value: "profile", label: "Profile", icon: User },
             { value: "orders", label: "Orders", icon: ShoppingBag },
+            // [esim-patch] P59: the customer's eSIMs, in the admin area only.
+            ...(area === "admin" ? [{ value: "esims", label: "eSIMs", icon: Smartphone }] : []),
             { value: "activity", label: "Activity", icon: Activity },
             ...(loyaltyEnabled
               ? [{ value: "loyalty", label: "Loyalty", icon: Award }]
@@ -647,6 +651,13 @@ export function CustomerDetailShell({
         <TabsContent value="store-credit">
           <StoreCreditTab customerId={customerId} />
         </TabsContent>
+
+        {/* [esim-patch] P59 */}
+        {area === "admin" && (
+          <TabsContent value="esims">
+            <CustomerEsimsTab customerId={customerId} />
+          </TabsContent>
+        )}
 
         <TabsContent value="notes" className="space-y-6">
           {isFetching ? (

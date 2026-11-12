@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { decimalToMinor, migrateEsim, migrateNumber, migrateUser, type LegacyEsimRow, type LegacyNumberRow, type LegacyUserRow } from "../legacy-rows";
+import { decimalToMinor, migrateEsim, UNKNOWN_LEGACY_PLAN, migrateNumber, migrateUser, type LegacyEsimRow, type LegacyNumberRow, type LegacyUserRow } from "../legacy-rows";
 
 const HASH = `$2y$10$${"a".repeat(53)}`;
 const now = new Date("2026-10-27T00:00:00Z");
@@ -184,7 +184,29 @@ describe("legacy data eSIMs", () => {
     assert.equal(migrateEsim(esim({ provider_slug: "topconnect" }), now), "esim.not-data");
     assert.equal(migrateEsim(esim({ provider_slug: "airalo" }), now), "esim.not-data");
     assert.equal(migrateEsim(esim({ iccid: "123" }), now), "esim.no-iccid");
-    assert.equal(migrateEsim(esim({ provider_plan_id: null }), now), "esim.no-plan");
+  });
+
+  it("keeps one whose plan is gone", () => {
+    const migrated = migrateEsim(esim({ provider_plan_id: null }), now);
+    assert.ok(typeof migrated === "object");
+    assert.equal(migrated.providerPlanId, UNKNOWN_LEGACY_PLAN);
+    assert.equal(migrated.legacyPlan.name, "Old store plan");
+  });
+
+  it("reads the old plan's name, days and data", () => {
+    const plan = (extra: Partial<LegacyEsimRow>) => {
+      const migrated = migrateEsim(esim({ plan_name: "Japan 3GB 7 Days", plan_period: 7, ...extra }), now);
+      assert.ok(typeof migrated === "object");
+      return migrated.legacyPlan;
+    };
+    assert.deepEqual(plan({ plan_data_volume: String(3 * 1024 ** 3), plan_data_type: 1 }), {
+      providerPlanId: "CKH491", name: "Japan 3GB 7 Days", validityDays: 7, megabytes: 3072, dataType: "total", label: "3 GB",
+    });
+    assert.equal(plan({ plan_data_volume: "-1" }).dataType, "unlimited");
+    assert.equal(plan({ plan_data_volume: "-1" }).megabytes, 0);
+    assert.equal(plan({ plan_data_volume: String(500 * 1024 ** 2), plan_data_type: 2 }).label, "500 MB");
+    assert.equal(plan({ plan_data_volume: String(500 * 1024 ** 2), plan_data_type: 2 }).dataType, "daily_throttled");
+    assert.equal(plan({ plan_data_volume: String(1024 ** 3), plan_traffic_type: "daypass_plan" }).dataType, "daily_cutoff");
   });
 
   it("finds each supplier's id where the old store kept it", () => {

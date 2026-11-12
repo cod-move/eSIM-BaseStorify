@@ -34,9 +34,11 @@ import { phoneNumber } from "@/lib/esim/numbers/import";
  *    Unsold ones stay for sale; sold ones belong to their buyer, or are
  *    retired when the buyer was not imported.
  *  - esim: data eSIMs still in use (lib/esim/migration/legacy-rows.ts
- *    migrateEsim), of imported shoppers, on a plan the catalogue here has.
+ *    migrateEsim), of imported shoppers, on the plan they were bought on.
  *    Issued as they are, under "LEGACY-<old order number>" and no order
- *    here; the usage sync then brings what is left from the supplier.
+ *    here; the usage sync then brings what is left from the supplier. One
+ *    whose plan the catalogue here has not got comes with no plan: it shows
+ *    the old plan it carries (`legacyPlan`) and takes no top-up.
  */
 
 export interface ImportOptions {
@@ -304,19 +306,17 @@ export async function runLegacyImport(snapshot: LegacySnapshot, options: ImportO
           .lean<{ _id: Id; topup?: { supported?: boolean; window?: string } }>(),
       );
     }
-    const plan = plans.get(planKey);
-    if (!plan) {
-      // The catalogue here has not got that plan (not synced, or the supplier dropped it): a later run takes it.
-      skipped.add(`esim.plan-missing.${esim.providerCode}`);
-      continue;
-    }
     const existing = await EsimProfile.findOne({ iccid: esim.iccid }).select("_id").lean();
     if (existing) {
       report.add("esims.matched");
       if (options.apply) await link("esim", esim.legacyId, existing._id, true);
       continue;
     }
+    // The catalogue here may not have that plan (not synced, or the supplier dropped it): the eSIM
+    // comes anyway, with no plan, and shows the old plan it carries (`legacyPlan`).
+    const plan = plans.get(planKey) ?? null;
     report.add(`esims.new.${esim.providerCode}`);
+    if (!plan) report.add(`esims.without-plan.${esim.providerCode}`);
     if (!options.apply) continue;
     const created = await EsimProfile.create({
       customer,
@@ -326,7 +326,7 @@ export async function runLegacyImport(snapshot: LegacySnapshot, options: ImportO
       orderNumber: esim.orderNumber,
       lineIndex: 0,
       unit: 1,
-      plan: plan._id,
+      plan: plan?._id ?? null,
       providerCode: esim.providerCode,
       providerOrderId: null,
       providerEsimId: esim.providerEsimId,
@@ -344,9 +344,10 @@ export async function runLegacyImport(snapshot: LegacySnapshot, options: ImportO
       },
       fulfilledAt: esim.createdAt,
       expiresAt: esim.expiresAt,
-      topupDeadline: plan.topup?.supported && plan.topup.window === "before_expiry" ? esim.expiresAt : null,
+      topupDeadline: plan?.topup?.supported && plan.topup.window === "before_expiry" ? esim.expiresAt : null,
       activationDeadline: esim.activationDeadline,
       remark: esim.remark,
+      legacyPlan: esim.legacyPlan,
       raw: { legacyId: esim.legacyId },
     });
     await link("esim", esim.legacyId, created._id);

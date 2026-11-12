@@ -24,6 +24,8 @@ export interface AdminEsimFilters {
   provider?: string;
   /** The shopper-facing status (lib/esim/account/display.ts). */
   lifecycle?: string;
+  /** One shopper's eSIMs: theirs by account, and their guest ones by email. */
+  owner?: { userId: string | null; email: string | null };
 }
 
 const escapeRegex = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -32,6 +34,15 @@ async function query(filters: AdminEsimFilters) {
   const match: Record<string, unknown> = {};
   if (filters.provider) match.providerCode = filters.provider;
   if (filters.lifecycle) match["lifecycle.status"] = filters.lifecycle;
+  if (filters.owner) {
+    const owners: Record<string, unknown>[] = [];
+    if (filters.owner.userId && mongoose.isValidObjectId(filters.owner.userId)) {
+      owners.push({ customer: new mongoose.Types.ObjectId(filters.owner.userId) });
+    }
+    if (filters.owner.email) owners.push({ customer: null, email: filters.owner.email.toLowerCase() });
+    // No account and no email: nobody's.
+    match.$and = [{ $or: owners.length ? owners : [{ _id: null }] }];
+  }
   const search = filters.search?.trim();
   if (search) {
     const digits = search.replace(/\s+/g, "");
@@ -93,7 +104,7 @@ export async function listAdminEsims(filters: AdminEsimFilters, options: { page?
       orderNumber: profile.orderNumber,
       orderId: String(profile.order),
       customer: (profile.customer && emailById.get(String(profile.customer))) || profile.email,
-      plan: planTitle(plan?.name ?? "eSIM", profile.durationDays),
+      plan: planTitle(plan?.name ?? profile.legacyPlan?.name ?? "eSIM", profile.durationDays),
       providerCode: profile.providerCode,
       status: display.status,
       statusLabel: display.label,
@@ -133,7 +144,19 @@ export async function getAdminEsim(id: string) {
     JSON.stringify({
       profile: { ...profile, installation: { ...profile.installation, activationCode: profile.installation.activationCode ? "(hidden)" : null } },
       customer: user ? { email: user.email, name: user.name ?? null } : profile.email ? { email: profile.email, name: null } : null,
-      plan: plan ? { ...plan, title: planTitle(plan.name, profile.durationDays) } : null,
+      plan: plan
+        ? { ...plan, title: planTitle(plan.name, profile.durationDays) }
+        : profile.legacyPlan
+          ? {
+              // A migrated eSIM whose plan is not here: the old plan, as the old store described it.
+              title: `${planTitle(profile.legacyPlan.name, profile.durationDays)} (old store)`,
+              providerPlanId: profile.legacyPlan.providerPlanId,
+              destination: "",
+              data: { megabytes: profile.legacyPlan.megabytes, label: profile.legacyPlan.label, type: profile.legacyPlan.dataType },
+              validityDays: profile.legacyPlan.validityDays,
+              topup: { supported: false },
+            }
+          : null,
       display,
       packages,
       job,

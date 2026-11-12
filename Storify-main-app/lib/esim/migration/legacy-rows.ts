@@ -99,8 +99,7 @@ export type SkipReason =
   | "esim.not-data"
   | "esim.cancelled"
   | "esim.expired"
-  | "esim.no-iccid"
-  | "esim.no-plan";
+  | "esim.no-iccid";
 
 const BCRYPT = /^\$2[aby]\$\d{2}\$[./A-Za-z0-9]{53}$/;
 const DECIMAL = /^(?:0|[1-9]\d*)(?:\.\d+)?$/;
@@ -235,8 +234,31 @@ export interface LegacyEsimRow {
   provider_slug: string | null;
   /** `plans.provider_plan_id` of the order line. */
   provider_plan_id: string | null;
+  /** The old plan as it was sold, for a stand-in when the catalogue here has not got it. */
+  plan_name?: string | null;
+  /** Days. */
+  plan_period?: number | string | null;
+  /** Bytes; negative is unlimited. */
+  plan_data_volume?: number | string | null;
+  /** 1 total, 2 daily (slowed), 3 daily (cut off), 4 unlimited. */
+  plan_data_type?: number | string | null;
+  /** daypass_plan, total_plan, lifetime_plan, unlimited_plan. */
+  plan_traffic_type?: string | null;
   order_number: string | null;
 }
+
+/** The old plan an eSIM was sold on, as far as the old store knew it. */
+export interface LegacyPlanInfo {
+  providerPlanId: string;
+  name: string;
+  validityDays: number;
+  megabytes: number;
+  dataType: "total" | "unlimited" | "daily_throttled" | "daily_cutoff" | "lifetime";
+  label: string;
+}
+
+/** The plan id given to eSIMs whose old order line has no plan left. */
+export const UNKNOWN_LEGACY_PLAN = "legacy-unknown";
 
 export interface MigratedEsim {
   legacyId: number;
@@ -256,6 +278,7 @@ export interface MigratedEsim {
   remark: string | null;
   orderNumber: string;
   createdAt: Date;
+  legacyPlan: LegacyPlanInfo;
 }
 
 /** Old supplier slug → provider code here. TopConnect cards are the number import's. */
@@ -299,8 +322,8 @@ export function migrateEsim(row: LegacyEsimRow, now = new Date()): MigratedEsim 
   if (ENDED_PROFILES.has((text(row.profile_status) ?? "").toUpperCase())) return "esim.expired";
   const iccid = (text(row.iccid) ?? "").replace(/[^0-9Ff]/g, "").toUpperCase();
   if (!/^\d{18,22}F?$/.test(iccid)) return "esim.no-iccid";
-  const providerPlanId = text(row.provider_plan_id);
-  if (!providerPlanId) return "esim.no-plan";
+  // An order line whose plan is gone still gave a working eSIM: it is kept, with no plan here.
+  const providerPlanId = text(row.provider_plan_id) ?? UNKNOWN_LEGACY_PLAN;
 
   const info = infoOf(row.info);
   const serial = text(row.serial_number);
@@ -334,5 +357,36 @@ export function migrateEsim(row: LegacyEsimRow, now = new Date()): MigratedEsim 
     remark: remark ? remark.slice(0, 100) : null,
     orderNumber: `LEGACY-${text(row.order_number) ?? row.id}`.slice(0, 64),
     createdAt: validDate(row.created_at) ?? now,
+    legacyPlan: legacyPlanInfo(row, providerPlanId),
   };
+}
+
+const MB = 1024 * 1024;
+
+/** The old plan's name, days and data, read the way the old store showed them. */
+export function legacyPlanInfo(row: LegacyEsimRow, providerPlanId: string): LegacyPlanInfo {
+  const days = Math.max(0, Math.round(Number(row.plan_period) || 0));
+  const bytes = Number(row.plan_data_volume);
+  const dataKind = Number(row.plan_data_type);
+  const traffic = (text(row.plan_traffic_type) ?? "").toLowerCase();
+  const unlimited = (Number.isFinite(bytes) && bytes < 0) || dataKind === 4 || traffic === "unlimited_plan";
+  const dataType: LegacyPlanInfo["dataType"] = unlimited
+    ? "unlimited"
+    : dataKind === 2
+      ? "daily_throttled"
+      : dataKind === 3 || traffic === "daypass_plan"
+        ? "daily_cutoff"
+        : traffic === "lifetime_plan"
+          ? "lifetime"
+          : "total";
+  const megabytes = !unlimited && Number.isFinite(bytes) && bytes > 0 ? Math.round(bytes / MB) : 0;
+  const label = unlimited
+    ? "Unlimited"
+    : megabytes >= 1024
+      ? `${Math.round((megabytes / 1024) * 100) / 100} GB`
+      : megabytes > 0
+        ? `${megabytes} MB`
+        : "";
+  const name = text(row.plan_name) ?? (providerPlanId === UNKNOWN_LEGACY_PLAN ? "Old store plan" : providerPlanId);
+  return { providerPlanId, name: name.slice(0, 200), validityDays: days, megabytes, dataType, label };
 }

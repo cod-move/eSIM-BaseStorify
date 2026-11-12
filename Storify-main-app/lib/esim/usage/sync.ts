@@ -99,7 +99,7 @@ export async function runUsageSync(
         lifecycle: profile.lifecycle?.status ?? null,
         previousLifecycle: looked ? previous : undefined,
         installed: profile.lifecycle?.installed ?? null,
-        counted: !plan || plan.data.type === "total" || plan.data.type === "lifetime",
+        counted: ["total", "lifetime", undefined].includes(plan?.data.type ?? profile.legacyPlan?.dataType),
         totalBytes: profile.usage?.totalBytes ?? null,
         remainingBytes: profile.usage?.remainingBytes ?? null,
         expiresAt: profile.expiresAt,

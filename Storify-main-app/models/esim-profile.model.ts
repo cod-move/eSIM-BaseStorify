@@ -18,7 +18,8 @@ export interface IEsimProfile extends mongoose.Document {
   orderNumber: string;
   lineIndex: number;
   unit: number;
-  plan: mongoose.Types.ObjectId;
+  /** Null only on an eSIM migrated from the old store whose plan the catalogue here has not got (see `legacyPlan`). */
+  plan: mongoose.Types.ObjectId | null;
   providerCode: string;
   providerOrderId: string | null;
   providerEsimId: string | null;
@@ -105,9 +106,24 @@ export interface IEsimProfile extends mongoose.Document {
    * snapshots existed and on imported ones.
    */
   snapshot: EsimSaleSnapshot | null;
+  /**
+   * On an eSIM migrated from the old store (MIG): its old plan as the old
+   * store described it, shown when `plan` is null. Not a sale: reports never
+   * read it.
+   */
+  legacyPlan: EsimLegacyPlan | null;
   raw: unknown;
   createdAt: Date;
   updatedAt: Date;
+}
+
+export interface EsimLegacyPlan {
+  providerPlanId: string;
+  name: string;
+  validityDays: number;
+  megabytes: number;
+  dataType: "total" | "unlimited" | "daily_throttled" | "daily_cutoff" | "lifetime";
+  label: string;
 }
 
 export interface EsimSaleSnapshot {
@@ -137,7 +153,7 @@ const EsimProfileSchema = new Schema<IEsimProfile>(
     orderNumber: { type: String, required: true },
     lineIndex: { type: Number, required: true, min: 0 },
     unit: { type: Number, required: true, min: 1 },
-    plan: { type: Schema.Types.ObjectId, ref: "EsimPlan", required: true },
+    plan: { type: Schema.Types.ObjectId, ref: "EsimPlan", default: null },
     providerCode: { type: String, required: true },
     providerOrderId: str,
     providerEsimId: str,
@@ -234,6 +250,7 @@ const EsimProfileSchema = new Schema<IEsimProfile>(
     },
     usageSyncedAt: date,
     snapshot: { type: Schema.Types.Mixed, default: null },
+    legacyPlan: { type: Schema.Types.Mixed, default: null },
     raw: { type: Schema.Types.Mixed, select: false },
   },
   { timestamps: true },

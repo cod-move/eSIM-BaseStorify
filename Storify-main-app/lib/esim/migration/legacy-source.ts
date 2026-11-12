@@ -78,7 +78,9 @@ const NUMBER_QUERY = `
 const ESIM_QUERY = `
   select e.id, e.user_id, e.iccid, e.phone_number, e.qr_code, e.serial_number, e.provider_sim_id,
          e.info, e.status, e.profile_status, e.expiry_date, e.activation_deadline, e.remark, e.created_at,
-         p.slug provider_slug, pl.provider_plan_id, o.order_number
+         p.slug provider_slug, pl.provider_plan_id, pl.name plan_name, pl.period plan_period,
+         cast(pl.data_volume as char) plan_data_volume, pl.data_type plan_data_type,
+         pl.traffic_type plan_traffic_type, o.order_number
   from esims e
   left join esim_providers p on p.id = e.esim_provider_id
   left join order_items oi on oi.id = e.order_item_id

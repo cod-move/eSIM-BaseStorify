@@ -46,7 +46,7 @@ interface Copy {
 }
 
 function copyOf(kind: ReminderKind, profile: IEsimProfile, plan: Pick<IEsimPlan, "name" | "topup"> | null, storeName: string, canTopup: boolean): Copy {
-  const name = planTitle(plan?.name ?? "eSIM", profile.durationDays);
+  const name = planTitle(plan?.name ?? profile.legacyPlan?.name ?? "eSIM", profile.durationDays);
   const page = `${base()}/account/esims/${profile._id}`;
   const topupLink = canTopup ? `${page}/topup` : null;
   const when = (date: Date | null) => (date ? date.toUTCString().replace(/:\d\d GMT$/, " UTC") : "");
