@@ -28,6 +28,7 @@ import {
 import { getSettings, Settings } from "@/models/settings.model";
 import { isMobileApiPath, mobileGate } from "@/lib/api-core/gate";
 import { resolveMobileAppSettings } from "@/lib/settings/mobile-app";
+import { blockedWhileImpersonating, hasImpersonationMarker } from "@/lib/esim/admin/impersonation-guard"; // [esim-patch] P60
 
 /**
  * The store's default language owns the unprefixed URLs (`/products`), every
@@ -548,6 +549,17 @@ export async function proxy(request: NextRequest) {
   // takes it from this header (its sign-in limit keys on it), and the
   // maintenance allow-list below checks it; a client-sent value is replaced.
   stampClientIp(request.headers);
+
+  // [esim-patch] P60 an admin signed in as a customer looks, but does not pay or change the account.
+  if (
+    hasImpersonationMarker(request.cookies.getAll().map((cookie) => cookie.name)) &&
+    blockedWhileImpersonating(request.method, pathname)
+  ) {
+    return NextResponse.json(
+      { success: false, error: "Not available while an admin is signed in as this customer." },
+      { status: 403 },
+    );
+  }
 
   // Before the static-file test below, which would let a dotted mobile path
   // (`/products/a.b`) walk past the mobile API's maintenance and switch.

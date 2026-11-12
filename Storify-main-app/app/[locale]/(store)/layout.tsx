@@ -41,6 +41,7 @@ import { getAuthPageSettings } from "@/lib/auth/auth-page-settings";
 import { demoLoginCredentials } from "@/lib/auth/demo-login";
 import { storefrontMobileMenu, storefrontMobileTabs } from "@/lib/esim/admin/mobile-nav"; // [esim-patch] P32 P33
 import { EsimMobileMenuProvider } from "@/components/esim/mobile-menu-context"; // [esim-patch] P33
+import { ImpersonationBanner } from "@/components/esim/impersonation-banner"; // [esim-patch] P60
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -291,6 +292,8 @@ export default async function StoreLayout({ children, params }: LayoutProps) {
           {/* "extras" groups the floating chrome (bottom nav + its height
               reservation + assistant) so the focused-checkout mode can hide
               everything chrome in one [data-store-chrome] rule. */}
+          {/* [esim-patch] P60 an admin signed in as this customer: whose account, and the way back. */}
+          <ImpersonationBanner locale={locale} />
           {demoTemplates ? (
             <TemplateDemoPill
               locale={locale}

@@ -15,6 +15,7 @@ import {
   Smartphone, // [esim-patch] P59
 } from "lucide-react";
 import { CustomerEsimsTab } from "@/components/esim/admin/customer-esims-tab"; // [esim-patch] P59
+import { ImpersonateButton } from "@/components/esim/admin/impersonate-button"; // [esim-patch] P60
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -222,6 +223,7 @@ export function CustomerDetailShell({
    * admin from so much as unsubscribing that customer.
    */
   const [isGuestProfile, setIsGuestProfile] = useState(false);
+  const [esimAccountId, setEsimAccountId] = useState<string | null>(null); // [esim-patch] P60
   const [lifetimePoints, setLifetimePoints] = useState(0);
   /** The saved country the store's country policy replaced on load, if any. */
   const [replacedShippingCountry, setReplacedShippingCountry] = useState("");
@@ -304,6 +306,7 @@ export function CustomerDetailShell({
         setSavedForm(loaded);
         setReplacedShippingCountry(country.replaced);
         setIsGuestProfile(Boolean(profile.isGuest) || !user);
+        setEsimAccountId(user?._id ? String(user._id) : null); // [esim-patch] P60
         // Rows written before consent became a record carry only the boolean;
         // read them as the state they mean rather than as "never asked".
         setConsent({
@@ -565,13 +568,19 @@ export function CustomerDetailShell({
         data={header ?? LOADING_HEADER}
         loading={isFetching}
         actions={
-          canSendAccountEmail && header?.accountEmail && header.email ? (
-            <AccountEmailButton
-              customerId={customerId}
-              kind={header.accountEmail}
-              email={header.email}
-            />
-          ) : null
+          <>
+            {canSendAccountEmail && header?.accountEmail && header.email ? (
+              <AccountEmailButton
+                customerId={customerId}
+                kind={header.accountEmail}
+                email={header.email}
+              />
+            ) : null}
+            {/* [esim-patch] P60 sign in as the customer (admin area, accounts only; full admins are checked by the server). */}
+            {area === "admin" && esimAccountId ? (
+              <ImpersonateButton userId={esimAccountId} email={header?.email ?? null} locale={locale} />
+            ) : null}
+          </>
         }
       />
 

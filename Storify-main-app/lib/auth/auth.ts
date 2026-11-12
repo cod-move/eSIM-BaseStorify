@@ -63,6 +63,7 @@ import type { CreatedUser } from "@/lib/auth/user-created";
 import { hashPassword } from "better-auth/crypto"; // [esim-patch] P16
 import { verifyAnyPassword } from "@/lib/esim/migration/legacy-password"; // [esim-patch] P16
 import { pictureCodeGuard } from "@/lib/esim/captcha/guard"; // [esim-patch] P46
+import { esimImpersonation } from "@/lib/esim/admin/impersonation"; // [esim-patch] P60
 
 /**
  * Better Auth Server Configuration
@@ -555,7 +556,8 @@ function createAuth(
       storeStateStrategy: "cookie",
     },
     // [esim-patch] P46 the picture code on email sign-in and sign-up, checked first.
-    plugins: [pictureCodeGuard(), twoFactor(), shopAppTransport(), activityLog(), passwordlessCustomerAccess()],
+    // [esim-patch] P60 an admin signing in as a customer from the customer page.
+    plugins: [pictureCodeGuard(), twoFactor(), shopAppTransport(), activityLog(), passwordlessCustomerAccess(), esimImpersonation()],
     databaseHooks: {
       user: {
         create: {

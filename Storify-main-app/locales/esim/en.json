@@ -890,6 +890,11 @@
       "done": "Your email address is verified and your account is ready. Continue, and sign in if you are asked to.",
       "requestAnother": "Request another link",
       "continue": "Continue"
+    },
+    "impersonation": {
+      "viewing": "Signed in as {email} from the admin. Paying and account changes are blocked.",
+      "return": "Return to admin",
+      "returning": "Returning…"
     }
   },
   "admin": {
@@ -1621,7 +1626,13 @@
       "qrNote": "Note for the customer (needed to decline)",
       "qrSave": "Save the new code",
       "qrDecline": "Decline and refund",
-      "payAirwallexHint": "In the Airwallex web app (Developer → Webhooks), add this notification URL for payment_intent.succeeded and payment_intent.cancelled, and paste its secret into webhookSecret. clientId and apiKey come from Developer → API keys. env: prod, or demo for the sandbox. methods is optional, e.g. card,applepay,googlepay,alipaycn,wechatpay."
+      "payAirwallexHint": "In the Airwallex web app (Developer → Webhooks), add this notification URL for payment_intent.succeeded and payment_intent.cancelled, and paste its secret into webhookSecret. clientId and apiKey come from Developer → API keys. env: prod, or demo for the sandbox. methods is optional, e.g. card,applepay,googlepay,alipaycn,wechatpay.",
+      "impersonate": {
+        "button": "Sign in as customer",
+        "title": "Sign in as this customer?",
+        "description": "You will see the store as {email} for up to an hour. Paying, topping up and changing the account are blocked. This is recorded in the audit log. Return to the admin from the banner at the top of the store.",
+        "confirm": "Sign in as customer"
+      }
     },
     "sidebar": {
       "esim": "eSIM",

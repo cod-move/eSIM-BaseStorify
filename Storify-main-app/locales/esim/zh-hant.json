@@ -890,6 +890,11 @@
       "done": "你的郵箱已通過驗證，賬戶已可使用。點擊繼續，如有提示請登錄。",
       "requestAnother": "重新獲取鏈接",
       "continue": "繼續"
+    },
+    "impersonation": {
+      "viewing": "你正以 {email} 的身份查看（後台登錄）。付款和修改賬號已停用。",
+      "return": "返回後台",
+      "returning": "正在返回…"
     }
   },
   "admin": {
@@ -1621,7 +1626,13 @@
       "qrNote": "給客戶的說明（拒絕時必填）",
       "qrSave": "保存新激活碼",
       "qrDecline": "拒絕並退款",
-      "payAirwallexHint": "在 Airwallex 後臺（開發者 → Webhooks）把上面的回調地址添加爲通知地址，訂閱 payment_intent.succeeded 和 payment_intent.cancelled，再把它的密鑰填入 webhookSecret。clientId 和 apiKey 在 開發者 → API 密鑰 中獲取。env 填 prod，沙盒測試填 demo。methods 可不填，例如 card,applepay,googlepay,alipaycn,wechatpay。"
+      "payAirwallexHint": "在 Airwallex 後臺（開發者 → Webhooks）把上面的回調地址添加爲通知地址，訂閱 payment_intent.succeeded 和 payment_intent.cancelled，再把它的密鑰填入 webhookSecret。clientId 和 apiKey 在 開發者 → API 密鑰 中獲取。env 填 prod，沙盒測試填 demo。methods 可不填，例如 card,applepay,googlepay,alipaycn,wechatpay。",
+      "impersonate": {
+        "button": "以客戶身份登錄",
+        "title": "以這個客戶的身份登錄？",
+        "description": "你將以 {email} 的身份查看前台，最長 1 小時。期間不能付款、充值或修改賬號，此操作會記入審計日誌。點前台頂部提示條裡的「返回後台」即可回來。",
+        "confirm": "以客戶身份登錄"
+      }
     },
     "sidebar": {
       "esim": "eSIM",
