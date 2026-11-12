@@ -306,7 +306,16 @@ export async function runLegacyImport(snapshot: LegacySnapshot, options: ImportO
           .lean<{ _id: Id; topup?: { supported?: boolean; window?: string } }>(),
       );
     }
-    const existing = await EsimProfile.findOne({ iccid: esim.iccid }).select("_id").lean();
+    // The same eSIM already here: by ICCID, or — without one — by the supplier's own ids.
+    const sameIds = [
+      ...(esim.simId ? [{ providerCode: esim.providerCode, simId: esim.simId }] : []),
+      ...(esim.providerEsimId ? [{ providerCode: esim.providerCode, providerEsimId: esim.providerEsimId }] : []),
+    ];
+    const existing = esim.iccid
+      ? await EsimProfile.findOne({ iccid: esim.iccid }).select("_id").lean()
+      : sameIds.length
+        ? await EsimProfile.findOne({ $or: sameIds }).select("_id").lean()
+        : null;
     if (existing) {
       report.add("esims.matched");
       if (options.apply) await link("esim", esim.legacyId, existing._id, true);
@@ -317,6 +326,7 @@ export async function runLegacyImport(snapshot: LegacySnapshot, options: ImportO
     const plan = plans.get(planKey) ?? null;
     report.add(`esims.new.${esim.providerCode}`);
     if (!plan) report.add(`esims.without-plan.${esim.providerCode}`);
+    if (!esim.iccid) report.add(`esims.without-iccid.${esim.providerCode}`);
     if (!options.apply) continue;
     const created = await EsimProfile.create({
       customer,

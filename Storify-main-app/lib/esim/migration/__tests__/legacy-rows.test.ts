@@ -183,7 +183,19 @@ describe("legacy data eSIMs", () => {
   it("only data eSIMs of the suppliers served here; number cards are the number import's", () => {
     assert.equal(migrateEsim(esim({ provider_slug: "topconnect" }), now), "esim.not-data");
     assert.equal(migrateEsim(esim({ provider_slug: "airalo" }), now), "esim.not-data");
-    assert.equal(migrateEsim(esim({ iccid: "123" }), now), "esim.no-iccid");
+  });
+
+  it("keeps one without an ICCID that the supplier knows by another id", () => {
+    const stellar = migrateEsim(esim({ provider_slug: "stellar", iccid: null, provider_sim_id: "SIM-9" }), now);
+    assert.ok(typeof stellar === "object");
+    assert.equal(stellar.iccid, null);
+    assert.equal(stellar.simId, "SIM-9");
+    const bad = migrateEsim(esim({ iccid: "123" }), now);
+    assert.ok(typeof bad === "object");
+    assert.equal(bad.iccid, null);
+    assert.equal(bad.providerEsimId, "T-99");
+    // bnesim's own id is its ICCID: without either, nothing to ask about.
+    assert.equal(migrateEsim(esim({ provider_slug: "bnesim", iccid: null, info: "{}" }), now), "esim.no-id");
   });
 
   it("keeps one whose plan is gone", () => {

@@ -99,7 +99,7 @@ export type SkipReason =
   | "esim.not-data"
   | "esim.cancelled"
   | "esim.expired"
-  | "esim.no-iccid";
+  | "esim.no-id";
 
 const BCRYPT = /^\$2[aby]\$\d{2}\$[./A-Za-z0-9]{53}$/;
 const DECIMAL = /^(?:0|[1-9]\d*)(?:\.\d+)?$/;
@@ -265,7 +265,8 @@ export interface MigratedEsim {
   userLegacyId: number | null;
   providerCode: string;
   providerPlanId: string;
-  iccid: string;
+  /** Null when the old store had none (a Stellar eSIM known by its SIM id). */
+  iccid: string | null;
   /** How the supplier is asked about it (lib/esim/providers/types.ts EsimRef). */
   providerEsimId: string | null;
   simId: string | null;
@@ -320,8 +321,9 @@ export function migrateEsim(row: LegacyEsimRow, now = new Date()): MigratedEsim 
   if (expiresAt && expiresAt.getTime() <= now.getTime()) return "esim.expired";
   if (!expiresAt && activationDeadline && activationDeadline.getTime() <= now.getTime()) return "esim.expired";
   if (ENDED_PROFILES.has((text(row.profile_status) ?? "").toUpperCase())) return "esim.expired";
-  const iccid = (text(row.iccid) ?? "").replace(/[^0-9Ff]/g, "").toUpperCase();
-  if (!/^\d{18,22}F?$/.test(iccid)) return "esim.no-iccid";
+  // Some suppliers (Stellar) name an eSIM by their SIM id before, or without, an ICCID: it comes without one.
+  const digits = (text(row.iccid) ?? "").replace(/[^0-9Ff]/g, "").toUpperCase();
+  const iccid = /^\d{18,22}F?$/.test(digits) ? digits : null;
   // An order line whose plan is gone still gave a working eSIM: it is kept, with no plan here.
   const providerPlanId = text(row.provider_plan_id) ?? UNKNOWN_LEGACY_PLAN;
 
@@ -334,6 +336,8 @@ export function migrateEsim(row: LegacyEsimRow, now = new Date()): MigratedEsim 
     bnesim: { providerEsimId: iccid, simId: text(info.license_cli) },
     mobimatter: { providerEsimId: text(info.orderId) ?? text(info.order_id) ?? serial, simId: null },
   };
+  // Nothing to ask the supplier about it by: it cannot be shown or kept up to date here.
+  if (!iccid && !ids[providerCode].providerEsimId && !ids[providerCode].simId) return "esim.no-id";
 
   const code = text(row.qr_code);
   // "LPA:1$smdp$code", or the bare "smdp$code" some suppliers hand out.
