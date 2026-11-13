@@ -1,6 +1,7 @@
 import { Platform } from 'react-native';
 
 import { confirmOffline, isOffline } from '@/lib/network';
+import { xhrFetch } from '@/features/esim/xhr-fetch'; // [esim-patch] P68
 
 import { ApiError, NetworkError } from './errors';
 
@@ -20,7 +21,14 @@ const mockFetch: typeof fetch | undefined =
 
 // The real `fetch` is called through a wrapper: taken off the global object it
 // loses the receiver a browser insists on.
-const send: typeof fetch = mockFetch ?? ((input, init) => fetch(input, init));
+// [esim-patch] P68 a form with a file goes by XMLHttpRequest on the phone: Expo's global `fetch`
+// refuses React Native's `{ uri, name, type }` parts ("Unsupported FormDataPart implementation").
+const send: typeof fetch =
+  mockFetch ??
+  ((input, init) =>
+    Platform.OS !== 'web' && typeof FormData !== 'undefined' && init?.body instanceof FormData
+      ? xhrFetch(input, init)
+      : fetch(input, init));
 
 const READS = new Set(['GET', 'HEAD', 'OPTIONS']);
 
