@@ -18,6 +18,7 @@ import {
 import { CustomerSignInsTab } from "@/components/esim/admin/customer-sign-ins-tab"; // [esim-patch] P61
 import { CustomerEsimsTab } from "@/components/esim/admin/customer-esims-tab"; // [esim-patch] P59
 import { ImpersonateButton } from "@/components/esim/admin/impersonate-button"; // [esim-patch] P60
+import { CustomerEmailButton } from "@/components/esim/admin/customer-email-button"; // [esim-patch] P69
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -581,6 +582,10 @@ export function CustomerDetailShell({
             {/* [esim-patch] P60 sign in as the customer (admin area, accounts only; full admins are checked by the server). */}
             {area === "admin" && esimAccountId ? (
               <ImpersonateButton userId={esimAccountId} email={header?.email ?? null} locale={locale} />
+            ) : null}
+            {/* [esim-patch] P69 write to the customer by email (admin area; the server reads the address). */}
+            {area === "admin" && !readOnly && header?.email ? (
+              <CustomerEmailButton customerId={customerId} email={header.email} />
             ) : null}
           </>
         }
