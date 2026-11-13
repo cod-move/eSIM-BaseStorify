@@ -1701,7 +1701,16 @@
         "stateManual": "需人工核對",
         "stateWaiting": "處理中",
         "close": "關閉"
-      }
+      },
+      "couponScope": "適用範圍",
+      "couponScopeAll": "全部商品",
+      "couponScopeNumbers": "僅號碼卡",
+      "couponScopeTravel": "全部流量 eSIM",
+      "couponScopeDestinations": "指定目的地",
+      "couponScopeCustom": "自訂（保持不變）",
+      "couponScopeChosen": "已選 {count} 個",
+      "couponScopeLoading": "載入中…",
+      "couponScopeFailed": "適用範圍選項載入失敗（沒有 eSIM 權限？）。優惠券保持原來的適用範圍。"
     },
     "sidebar": {
       "esim": "eSIM",

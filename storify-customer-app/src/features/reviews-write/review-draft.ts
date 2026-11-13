@@ -8,6 +8,7 @@ import type {
   ReviewPhoto,
   UploadPolicy,
 } from '@/contracts/mobile/shop/v1';
+import { uploadName } from '@/features/esim/upload-name'; // [esim-patch] P65
 
 /**
  * A photo of the review being written: one already on the review (kept when
@@ -79,6 +80,7 @@ export function pickedPhoto(
   const type = asset.mimeType;
   if (!type || !policy.allowedTypes.includes(type)) return { refused: 'type' };
   if (asset.fileSize !== undefined && asset.fileSize > policy.maxBytes) return { refused: 'size' };
-  const name = asset.fileName ?? `photo.${type.slice(type.indexOf('/') + 1)}`;
+  // [esim-patch] P65 an ASCII name: Android's HTTP client throws on any other character in it.
+  const name = uploadName(type, asset.fileName);
   return { file: { uri: asset.uri, name, type } };
 }

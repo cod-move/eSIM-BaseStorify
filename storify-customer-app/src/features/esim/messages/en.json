@@ -447,7 +447,7 @@
     "topupSearchNone": "No top-up matches your search.",
     "previous": "Previous",
     "next": "Next",
-    "uploadInterrupted": "The server cut off the upload, most likely because the picture is too large. Try a smaller one, or try again later.",
+    "uploadInterrupted": "The photo could not be sent ({detail}). Please try again, or choose another photo.",
     "openSettings": "Open settings"
   }
 }

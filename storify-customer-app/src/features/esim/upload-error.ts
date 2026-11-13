@@ -9,9 +9,15 @@ import { confirmOffline } from '@/lib/network';
  * connection rather than answering.
  */
 export class UploadInterruptedError extends Error {
+  /** What the phone's HTTP client said, for the shopper to pass on: "Network request failed", … */
+  readonly detail: string;
+
   constructor(cause: unknown) {
-    super('The upload was cut off by the server', { cause });
+    super('The upload did not go through', { cause });
     this.name = 'UploadInterruptedError';
+    // The transport's NetworkError wraps the client's own error.
+    const inner = cause instanceof Error && cause.cause instanceof Error ? cause.cause : cause;
+    this.detail = inner instanceof Error ? inner.message.slice(0, 120) : String(inner ?? '').slice(0, 120);
   }
 }
 

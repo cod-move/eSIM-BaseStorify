@@ -1701,7 +1701,16 @@
         "stateManual": "Check by hand",
         "stateWaiting": "Waiting",
         "close": "Close"
-      }
+      },
+      "couponScope": "Applies to",
+      "couponScopeAll": "All products",
+      "couponScopeNumbers": "Number cards only",
+      "couponScopeTravel": "All travel eSIMs",
+      "couponScopeDestinations": "Chosen destinations",
+      "couponScopeCustom": "Custom (kept as it is)",
+      "couponScopeChosen": "{count} chosen",
+      "couponScopeLoading": "Loading…",
+      "couponScopeFailed": "The choices could not be loaded (no eSIM access?). The coupon keeps what it applies to."
     },
     "sidebar": {
       "esim": "eSIM",

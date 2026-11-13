@@ -31,6 +31,7 @@ import {
 } from "../types";
 import { generateStorageKey, ownerPrefix } from "../key";
 import { isVectorImageType } from "../content-type";
+import { headerSafeMetadata } from "@/lib/esim/storage/header-safe-metadata"; // [esim-patch] P66
 import {
   awsRegion,
   clientRegion,
@@ -139,7 +140,7 @@ export class S3CompatibleProvider implements StorageService {
       Key: key,
       ContentType: options.contentType,
       ContentLength: options.fileSize,
-      Metadata: options.metadata,
+      Metadata: headerSafeMetadata(options.metadata), // [esim-patch] P66 ASCII-only headers
     });
 
     const uploadUrl = await getSignedUrl(this.client, command, {
@@ -181,7 +182,7 @@ export class S3CompatibleProvider implements StorageService {
       ContentDisposition: isVectorImageType(options.contentType)
         ? "attachment"
         : undefined,
-      Metadata: options.metadata,
+      Metadata: headerSafeMetadata(options.metadata), // [esim-patch] P66 ASCII-only headers
     });
 
     await this.client.send(command);
@@ -315,7 +316,7 @@ export class S3CompatibleProvider implements StorageService {
         Body: file,
         ContentType: options.contentType,
         ContentLength: options.fileSize,
-        Metadata: options.metadata,
+        Metadata: headerSafeMetadata(options.metadata), // [esim-patch] P66 ASCII-only headers
       }),
     );
 

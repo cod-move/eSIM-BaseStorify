@@ -447,7 +447,7 @@
     "topupSearchNone": "沒有符合的充值包。",
     "previous": "上一頁",
     "next": "下一頁",
-    "uploadInterrupted": "上傳被伺服器中斷，可能是圖片太大。請換一張小一點的圖片，或稍後再試。",
+    "uploadInterrupted": "照片沒有傳送成功（{detail}）。請重試，或換一張照片。",
     "openSettings": "去設定"
   }
 }

@@ -8,6 +8,7 @@ import {
 
 import type { FormFile } from '@/api/transport';
 import type { AttachmentPolicy, ChatMessageProduct, ProductCard } from '@/contracts/mobile/shop/v1';
+import { uploadName } from '@/features/esim/upload-name'; // [esim-patch] P65
 
 /** What the shopper adds to a message before sending it: a product to share, or a file. */
 export type MessageAttachment =
@@ -48,7 +49,8 @@ export function checkedFile(
   if (typeof picked.size === 'number' && picked.size > accepted.maxBytes) {
     return { problem: 'size' };
   }
-  return { attachment: { kind: 'file', file: { uri: picked.uri, name: picked.name, type } } };
+  // [esim-patch] P65 an ASCII name: Android's HTTP client throws on any other character in it.
+  return { attachment: { kind: 'file', file: { uri: picked.uri, name: uploadName(type, picked.name), type } } };
 }
 
 /** A product of the catalog as a message shares it: its card, without what a card alone needs. */

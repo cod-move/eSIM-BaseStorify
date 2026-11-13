@@ -27,6 +27,7 @@ import { FormError } from '@/features/auth/screens/auth-sheet';
 import { useLocale } from '@/i18n/locale-store';
 import { useErrorMessage } from '@/i18n/use-error-message';
 import { explainUploadFailure, UploadInterruptedError } from '@/features/esim/upload-error'; // [esim-patch] P65
+import { uploadName } from '@/features/esim/upload-name'; // [esim-patch] P65
 
 import { AccentPicker } from './accent-picker';
 import { Avatar } from './account-parts';
@@ -61,7 +62,8 @@ function pickedFile(result: ImagePickerResult): FormFile | undefined {
   const asset = result.canceled ? undefined : result.assets[0];
   if (!asset) return undefined;
   const type = asset.mimeType ?? 'image/jpeg';
-  const name = asset.fileName ?? `photo.${type.slice(type.indexOf('/') + 1)}`;
+  // [esim-patch] P65 always an ASCII name: Android's HTTP client throws on any other character.
+  const name = uploadName(type, asset.fileName);
   return { uri: asset.uri, name, type };
 }
 
@@ -143,7 +145,7 @@ function ProfilePicture({ me }: { me: Me }) {
     ? t('cameraDenied')
     : change.isError
       ? change.error instanceof UploadInterruptedError // [esim-patch] P65
-        ? tEsim('uploadInterrupted')
+        ? tEsim('uploadInterrupted', { detail: change.error.detail || '—' })
         : describe(change.error)
       : undefined;
 

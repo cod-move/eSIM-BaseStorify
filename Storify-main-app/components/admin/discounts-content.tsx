@@ -44,6 +44,8 @@ import {
 import { NativeSelect } from "@/components/ui/native-select";
 import { buildAdminCommerceTableHeader } from "@/components/admin/admin-commerce-table-header";
 import { useAdminPhrase } from "@/hooks/use-admin-phrase";
+import { CouponScopeFields } from "@/components/esim/admin/coupon-scope-fields"; // [esim-patch] P67
+import type { CouponScopeValue } from "@/lib/esim/admin/coupon-scope-mode"; // [esim-patch] P67
 
 type CouponType = "percentage" | "fixed" | "free_shipping";
 type CouponStatus = "active" | "inactive" | "expired";
@@ -67,6 +69,9 @@ interface AdminCoupon {
   fundedBy?: "platform" | "vendor";
   /** Offered in the shopper app's coupon list. */
   listed?: boolean;
+  // [esim-patch] P67
+  applicableProducts?: string[];
+  applicableCategories?: string[];
 }
 
 interface DiscountsContentProps {
@@ -97,6 +102,8 @@ type CouponFormState = {
   status: CouponStatus;
   fundedBy: "platform" | "vendor";
   listed: boolean;
+  /** [esim-patch] P67 Storify's applicableProducts / applicableCategories. */
+  scope: CouponScopeValue;
 };
 
 const DEFAULT_FORM: CouponFormState = {
@@ -114,6 +121,7 @@ const DEFAULT_FORM: CouponFormState = {
   status: "active",
   fundedBy: "platform",
   listed: false,
+  scope: { applicableProducts: [], applicableCategories: [] }, // [esim-patch] P67
 };
 
 function getThrowableMessage(error: unknown, fallback: string) {
@@ -153,6 +161,11 @@ function toFormState(coupon?: AdminCoupon | null): CouponFormState {
     status: coupon.status,
     fundedBy: coupon.fundedBy === "vendor" ? "vendor" : "platform",
     listed: coupon.listed === true,
+    // [esim-patch] P67
+    scope: {
+      applicableProducts: (coupon.applicableProducts ?? []).map(String),
+      applicableCategories: (coupon.applicableCategories ?? []).map(String),
+    },
   };
 }
 
@@ -228,6 +241,11 @@ export function DiscountsContent({
     if (formState.perUserLimit) payload.perUserLimit = Number(formState.perUserLimit);
     // Only the store's own coupons choose; a vendor's coupon is always theirs.
     if (isStoreCoupon) payload.fundedBy = formState.fundedBy;
+    // [esim-patch] P67 sent in full, so a choice of "all products" clears an earlier limit.
+    if (isStoreCoupon) {
+      payload.applicableProducts = formState.scope.applicableProducts;
+      payload.applicableCategories = formState.scope.applicableCategories;
+    }
 
     return payload;
   };
@@ -692,6 +710,16 @@ export function DiscountsContent({
                             "স্টোর দিলে বিক্রেতারা পুরো দামে বিক্রির মতোই টাকা পাবেন। এখন থেকে দেওয়া অর্ডারে প্রযোজ্য।",
                           )}
                     </p>
+                  </div>
+                ) : null}
+
+                {/* [esim-patch] P67 what the coupon applies to: everything, number cards, travel eSIMs, chosen destinations. */}
+                {isStoreCoupon ? (
+                  <div className="md:col-span-2">
+                    <CouponScopeFields
+                      value={formState.scope}
+                      onChange={(scope) => setFormState((current) => ({ ...current, scope }))}
+                    />
                   </div>
                 ) : null}
 
