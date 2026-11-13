@@ -4,7 +4,7 @@ import { withApi } from "@/lib/api/handler";
 import { NotFoundError } from "@/lib/api/errors";
 import { listAdminEsims } from "@/lib/esim/admin/esims";
 import { ESIM_READ } from "@/lib/esim/admin/route";
-import { CustomerProfile } from "@/models";
+import { CustomerProfile, User } from "@/models";
 import { EsimNumber } from "@/models/esim-number.model";
 
 /**
@@ -26,13 +26,19 @@ export const GET = withApi<{ id: string }>(
         email?: string | null;
       } | null>();
     if (!profile) throw new NotFoundError("Customer not found");
+    // An account's profile keeps no email (it is on the account): read it
+    // there, so eSIMs bought as a guest with that email before signing up
+    // are listed too, as the shopper's own My eSIMs page lists them.
+    const accountEmail = profile.userId
+      ? (await User.findById(profile.userId).select("email").lean<{ email?: string } | null>())?.email ?? null
+      : null;
     const url = new URL(request.url);
     const [list, numbers] = await Promise.all([
       listAdminEsims(
         {
           owner: {
             userId: profile.userId ? String(profile.userId) : null,
-            email: profile.email ?? null,
+            email: profile.email ?? accountEmail,
           },
         },
         {

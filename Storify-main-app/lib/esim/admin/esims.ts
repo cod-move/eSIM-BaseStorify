@@ -47,6 +47,20 @@ async function customerPagesOf(profiles: Array<Pick<IEsimProfile, "customer" | "
   ]);
   const userPage = new Map(byUser.map((row) => [String(row.userId), String(row._id)]));
   const emailPage = new Map(byEmail.map((row) => [row.email.toLowerCase(), String(row._id)]));
+  // A guest who signed up afterwards: their guest row became the account's,
+  // so the email leads to the account, and the account to its page.
+  const signedUp = emails.filter((email) => !emailPage.has(email));
+  if (signedUp.length) {
+    const accounts = await User.find({ email: { $in: signedUp } }).select({ email: 1 }).lean<Array<{ _id: mongoose.Types.ObjectId; email: string }>>();
+    const pages = accounts.length
+      ? await CustomerProfile.find({ userId: { $in: accounts.map((account) => account._id) } }).select({ userId: 1 }).lean<Array<{ _id: mongoose.Types.ObjectId; userId: mongoose.Types.ObjectId }>>()
+      : [];
+    const pageByUser = new Map(pages.map((row) => [String(row.userId), String(row._id)]));
+    for (const account of accounts) {
+      const page = pageByUser.get(String(account._id));
+      if (page) emailPage.set(account.email.toLowerCase(), page);
+    }
+  }
   return (profile: Pick<IEsimProfile, "customer" | "email">): string | null =>
     profile.customer
       ? userPage.get(String(profile.customer)) ?? null
