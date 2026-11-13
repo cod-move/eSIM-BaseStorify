@@ -1,7 +1,7 @@
 import "server-only";
 
 import { connectDB, mongoose } from "@/lib/db";
-import { User } from "@/models";
+import { CustomerProfile, User } from "@/models";
 import { EsimFulfillment } from "@/models/esim-fulfillment.model";
 import { EsimPackage } from "@/models/esim-package.model";
 import { EsimPlan } from "@/models/esim-plan.model";
@@ -29,6 +29,31 @@ export interface AdminEsimFilters {
 }
 
 const escapeRegex = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+/**
+ * The customer page (a CustomerProfile id) of each eSIM's shopper: the
+ * account's profile, or for a guest the guest row kept under their email.
+ */
+async function customerPagesOf(profiles: Array<Pick<IEsimProfile, "customer" | "email">>) {
+  const userIds = [...new Set(profiles.map((profile) => profile.customer).filter(Boolean).map(String))];
+  const emails = [...new Set(profiles.filter((profile) => !profile.customer && profile.email).map((profile) => String(profile.email).toLowerCase()))];
+  const [byUser, byEmail] = await Promise.all([
+    userIds.length
+      ? CustomerProfile.find({ userId: { $in: userIds.map((id) => new mongoose.Types.ObjectId(id)) } }).select({ userId: 1 }).lean<Array<{ _id: mongoose.Types.ObjectId; userId: mongoose.Types.ObjectId }>>()
+      : [],
+    emails.length
+      ? CustomerProfile.find({ email: { $in: emails }, isGuest: true }).select({ email: 1 }).lean<Array<{ _id: mongoose.Types.ObjectId; email: string }>>()
+      : [],
+  ]);
+  const userPage = new Map(byUser.map((row) => [String(row.userId), String(row._id)]));
+  const emailPage = new Map(byEmail.map((row) => [row.email.toLowerCase(), String(row._id)]));
+  return (profile: Pick<IEsimProfile, "customer" | "email">): string | null =>
+    profile.customer
+      ? userPage.get(String(profile.customer)) ?? null
+      : profile.email
+        ? emailPage.get(String(profile.email).toLowerCase()) ?? null
+        : null;
+}
 
 async function query(filters: AdminEsimFilters) {
   const match: Record<string, unknown> = {};
@@ -64,6 +89,8 @@ export interface AdminEsimRow {
   orderNumber: string;
   orderId: string;
   customer: string | null;
+  /** The admin customer page's id (a CustomerProfile), when the shopper has one. */
+  customerId: string | null;
   plan: string;
   providerCode: string;
   status: string;
@@ -84,9 +111,10 @@ export async function listAdminEsims(filters: AdminEsimFilters, options: { page?
     EsimProfile.find(match).sort({ createdAt: -1 }).skip((page - 1) * pageSize).limit(pageSize).select({ raw: 0 }).lean<IEsimProfile[]>(),
     EsimProfile.countDocuments(match),
   ]);
-  const [plans, users] = await Promise.all([
+  const [plans, users, pageOf] = await Promise.all([
     EsimPlan.find({ _id: { $in: profiles.map((profile) => profile.plan) } }).select({ name: 1, topup: 1 }).lean(),
     User.find({ _id: { $in: profiles.map((profile) => profile.customer).filter(Boolean) } }).select({ email: 1 }).lean<Array<{ _id: mongoose.Types.ObjectId; email: string }>>(),
+    customerPagesOf(profiles),
   ]);
   const planById = new Map(plans.map((plan) => [String(plan._id), plan]));
   const emailById = new Map(users.map((user) => [String(user._id), user.email]));
@@ -104,6 +132,7 @@ export async function listAdminEsims(filters: AdminEsimFilters, options: { page?
       orderNumber: profile.orderNumber,
       orderId: String(profile.order),
       customer: (profile.customer && emailById.get(String(profile.customer))) || profile.email,
+      customerId: pageOf(profile),
       plan: planTitle(plan?.name ?? profile.legacyPlan?.name ?? "eSIM", profile.durationDays),
       providerCode: profile.providerCode,
       status: display.status,
@@ -124,7 +153,7 @@ export async function getAdminEsim(id: string) {
   if (!mongoose.isValidObjectId(id)) return null;
   const profile = await EsimProfile.findById(id).select({ raw: 0 }).lean<IEsimProfile | null>();
   if (!profile) return null;
-  const [plan, packages, job, logs, user] = await Promise.all([
+  const [plan, packages, job, logs, user, pageOf] = await Promise.all([
     EsimPlan.findById(profile.plan).select({ name: 1, providerPlanId: 1, destination: 1, data: 1, validityDays: 1, topup: 1 }).lean(),
     EsimPackage.find({ esim: profile._id }).sort({ createdAt: 1 }).lean(),
     EsimFulfillment.findOne({ order: profile.order, lineIndex: profile.lineIndex, unit: profile.unit }).lean(),
@@ -133,6 +162,7 @@ export async function getAdminEsim(id: string) {
       .limit(30)
       .lean(),
     profile.customer ? User.findById(profile.customer).select({ email: 1, name: 1 }).lean<{ email: string; name?: string } | null>() : null,
+    customerPagesOf([profile]),
   ]);
   const display = displayOf({
     status: profile.status,
@@ -143,7 +173,11 @@ export async function getAdminEsim(id: string) {
   return JSON.parse(
     JSON.stringify({
       profile: { ...profile, installation: { ...profile.installation, activationCode: profile.installation.activationCode ? "(hidden)" : null } },
-      customer: user ? { email: user.email, name: user.name ?? null } : profile.email ? { email: profile.email, name: null } : null,
+      customer: user
+        ? { email: user.email, name: user.name ?? null, customerId: pageOf(profile) }
+        : profile.email
+          ? { email: profile.email, name: null, customerId: pageOf(profile) }
+          : null,
       plan: plan
         ? { ...plan, title: planTitle(plan.name, profile.durationDays) }
         : profile.legacyPlan

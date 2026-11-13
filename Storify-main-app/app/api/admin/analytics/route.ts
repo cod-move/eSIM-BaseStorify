@@ -1,3 +1,4 @@
+import { NOT_WALLET_TOPUP_ORDER } from "@/lib/esim/stats/sales-match"; // [esim-patch] P71
 import { connectDB } from "@/lib/db";
 import { getSettings, Order, Product, User, Vendor } from "@/models";
 import { narrowedToStoreCurrency } from "@/lib/intl/currency-scope";
@@ -73,7 +74,7 @@ export const GET = withApi(
       // in the collection, abandoned gateway attempts and cancellations alike.
       Order.countDocuments(
         mergeScopeFilter(
-          { ...placedOrderMatch(), status: { $ne: "cancelled" } },
+          { ...placedOrderMatch(), status: { $ne: "cancelled" }, ...NOT_WALLET_TOPUP_ORDER }, // [esim-patch] P71
           orderScope,
         ),
       ),
@@ -194,6 +195,7 @@ export const GET = withApi(
             createdAt: { $gte: previousStartDate, $lt: startDate },
             ...placedOrderMatch(),
             status: { $ne: "cancelled" },
+            ...NOT_WALLET_TOPUP_ORDER, // [esim-patch] P71
           },
           orderScope,
         ),

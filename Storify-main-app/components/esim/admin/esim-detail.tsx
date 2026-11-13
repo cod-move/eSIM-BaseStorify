@@ -17,7 +17,7 @@ import { formatBytes, remainingPercent, type Display } from "@/lib/esim/account/
 /* eslint-disable @typescript-eslint/no-explicit-any -- the detail is the serialised documents, shown as they are */
 type Detail = {
   profile: any;
-  customer: { email: string; name: string | null } | null;
+  customer: { email: string; name: string | null; customerId: string | null } | null;
   plan: any;
   display: Display;
   packages: any[];
@@ -104,7 +104,16 @@ export function EsimAdminDetail({ detail, canManage }: { detail: Detail; canMana
           </CardHeader>
           <CardContent>
             {row(t("admin.esim.order", "Order"), profile.orderNumber.startsWith("LEGACY-") ? profile.orderNumber : <Link href={`/admin/orders/${profile.order}`} className="hover:underline">{profile.orderNumber}</Link>)}
-            {row(t("admin.esim.customer", "Customer"), detail.customer?.email ?? "—")}
+            {row(
+              t("admin.esim.customer", "Customer"),
+              detail.customer?.customerId ? (
+                <Link href={`/admin/customers/${detail.customer.customerId}`} className="text-store-link hover:underline">
+                  {detail.customer.email}
+                </Link>
+              ) : (
+                detail.customer?.email ?? "—"
+              ),
+            )}
             {row(t("admin.esim.supplier", "Supplier"), `${profile.providerCode} · ${plan?.providerPlanId ?? "—"}`)}
             {row(t("admin.esim.supplierOrder", "Supplier order"), <span className="font-mono text-xs">{profile.providerOrderId ?? "—"}</span>)}
             {row(t("admin.esim.issued", "Issued"), when(profile.fulfilledAt))}

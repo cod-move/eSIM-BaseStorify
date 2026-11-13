@@ -1,3 +1,4 @@
+import { NOT_WALLET_TOPUP_ORDER } from "@/lib/esim/stats/sales-match"; // [esim-patch] P71
 import { ORDER_STATUS, PAYMENT_STATUS } from "@/config/app.config";
 // The one allowlist of methods whose money a gateway holds. Imported rather
 // than restated so a new gateway is added in a single place; the module it
@@ -184,6 +185,8 @@ export function placedOrderMatch(): Record<string, unknown> {
  */
 export const COLLECTED_ORDER_MATCH: Record<string, unknown> = {
   status: { $ne: ORDER_STATUS.CANCELLED },
+  // [esim-patch] P71 a wallet top-up is the shopper's balance, not a sale: counted when spent.
+  ...NOT_WALLET_TOPUP_ORDER,
   $or: [
     {
       paymentStatus: {

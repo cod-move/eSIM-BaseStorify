@@ -1,3 +1,4 @@
+import { NOT_WALLET_TOPUP_ORDER } from "@/lib/esim/stats/sales-match"; // [esim-patch] P71
 import { cache } from "react";
 import { connectDB } from "@/lib/db";
 import { getSettings, Order, PaymentTransaction, Product, User } from "@/models";
@@ -89,7 +90,8 @@ const loadOrderMetrics = cache(async (): Promise<MonthlyChannelRow[]> => {
   const { collectedOnly, discountedOrderExpr } = await buildOrderSumExprs();
 
   return Order.aggregate<MonthlyChannelRow>([
-    { $match: { ...placedOrderMatch(), status: { $ne: "cancelled" } } },
+    // [esim-patch] P71 wallet top-ups are not sales or orders here.
+    { $match: { ...placedOrderMatch(), status: { $ne: "cancelled" }, ...NOT_WALLET_TOPUP_ORDER } },
     {
       $group: {
         _id: {
@@ -194,6 +196,7 @@ export async function getCollectedSales(
       $match: {
         ...placedOrderMatch(),
         status: { $ne: "cancelled" },
+        ...NOT_WALLET_TOPUP_ORDER, // [esim-patch] P71
         createdAt: { $gte: from, $lte: to },
       },
     },
@@ -246,6 +249,7 @@ const loadRangedOrderRowsCached = cache(
         $match: {
           ...placedOrderMatch(),
           status: { $ne: "cancelled" },
+          ...NOT_WALLET_TOPUP_ORDER, // [esim-patch] P71
           createdAt: { $gte: new Date(previousFromMs), $lte: new Date(toMs) },
         },
       },

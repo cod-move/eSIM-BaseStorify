@@ -66,7 +66,15 @@ export function EsimsTable({
           </Link>
         ),
     },
-    { id: "customer", header: t("admin.esim.customer", "Customer"), cell: (row) => row.customer ?? "—" },
+    { id: "customer", header: t("admin.esim.customer", "Customer"), cell: (row) =>
+        row.customer && row.customerId ? (
+          <Link href={`/admin/customers/${row.customerId}`} className="text-store-link hover:underline">
+            {row.customer}
+          </Link>
+        ) : (
+          row.customer ?? "—"
+        ),
+    },
     {
       id: "plan",
       header: t("admin.esim.plan", "Plan"),

@@ -17,6 +17,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { WarningBanner } from "@/components/ui/warning-banner";
 import { cn } from "@/lib/utils";
+import { InboxCustomerLink } from "@/components/esim/admin/inbox-customer-link"; // [esim-patch] P70
 import { ConversationAssignmentControl } from "@/components/chat/conversation-assignment-control";
 import { channelLabel } from "@/lib/conversations/channels";
 import type {
@@ -241,6 +242,8 @@ export function ConversationDetails({
   return (
     <div className="min-h-0 flex-1 overflow-y-auto">
       <div className="flex flex-col items-center gap-2 px-4 pb-4 pt-6 text-center">
+        {/* [esim-patch] P70 the avatar opens the customer page (admin and staff inboxes). */}
+        <InboxCustomerLink userId={viewerMode === "store" ? conversation.customerUserId : null} label={displayName}>
         <Avatar className="size-20">
           {avatarImage ? (
             <AvatarImage src={avatarImage} alt={displayName} />
@@ -249,6 +252,7 @@ export function ConversationDetails({
             {getInitials(displayName)}
           </AvatarFallback>
         </Avatar>
+        </InboxCustomerLink>
         <div>
           <h3 className="text-base font-semibold">{displayName}</h3>
           <p className="mt-0.5 text-xs text-muted-foreground">

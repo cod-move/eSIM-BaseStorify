@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/toast-notification";
 import { cn } from "@/lib/utils";
 import { createRequestAbort } from "@/lib/request-abort";
+import { InboxCustomerLink } from "@/components/esim/admin/inbox-customer-link"; // [esim-patch] P70
 import { WhatsAppTemplateComposer } from "@/components/chat/whatsapp-template-composer";
 import type {
   ConversationDraftPreview,
@@ -1203,6 +1204,8 @@ export function ConversationInbox({
                 <ArrowLeft className="rtl:rotate-180" />
               </Button>
 
+              {/* [esim-patch] P70 the avatar opens the customer page (admin and staff inboxes). */}
+              <InboxCustomerLink userId={viewerMode === "store" ? selectedConversation.customerUserId : null} label={headerName}>
               <Avatar className="size-9 shrink-0">
                 {headerImage ? (
                   <AvatarImage
@@ -1214,6 +1217,7 @@ export function ConversationInbox({
                   {getInitials(headerName)}
                 </AvatarFallback>
               </Avatar>
+              </InboxCustomerLink>
 
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-semibold leading-tight">

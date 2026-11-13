@@ -57,7 +57,7 @@ export default async function AccountEsimsPage({ params, searchParams }: PagePro
       </div>
 
       <Link href="/account/esims/balance" className="block">
-        <Card className="transition-colors hover:bg-muted/40">
+        <Card className="gap-0 py-0 transition-colors hover:bg-muted/40">
           <CardContent className="flex items-center justify-between gap-4 p-4 text-sm">
             <span className="flex items-center gap-3">
               <Wallet className="h-5 w-5 shrink-0 text-primary" aria-hidden />
@@ -73,7 +73,7 @@ export default async function AccountEsimsPage({ params, searchParams }: PagePro
         </Card>
       </Link>
       <Link href="/account/esims/referrals" className="block">
-        <Card className="transition-colors hover:bg-muted/40">
+        <Card className="gap-0 py-0 transition-colors hover:bg-muted/40">
           <CardContent className="flex items-center justify-between gap-4 p-4 text-sm">
             <span className="flex items-center gap-3">
               <Gift className="h-5 w-5 shrink-0 text-primary" aria-hidden />
@@ -92,7 +92,7 @@ export default async function AccountEsimsPage({ params, searchParams }: PagePro
           <h2 className="text-base font-semibold">{tr("esim.number.myNumbers", "My numbers")}</h2>
           {numbers.map((number) => (
             <Link key={number.id} href={`/account/esims/numbers/${number.id}`} className="block">
-              <Card className="transition-colors hover:bg-muted/40">
+              <Card className="gap-0 py-0 transition-colors hover:bg-muted/40">
                 <CardContent className="flex items-center gap-4 p-4">
                   <Phone className="h-6 w-6 shrink-0 text-primary" />
                   <div className="min-w-0 flex-1 space-y-1">
@@ -136,7 +136,7 @@ export default async function AccountEsimsPage({ params, searchParams }: PagePro
             const percent = remainingPercent(esim.usage?.totalBytes, esim.usage?.remainingBytes);
             return (
               <Link key={esim.id} href={`/account/esims/${esim.id}`} className="block">
-                <Card className="transition-colors hover:bg-muted/40">
+                <Card className="gap-0 py-0 transition-colors hover:bg-muted/40">
                   <CardContent className="flex items-center gap-4 p-4">
                     <div className="text-2xl" aria-hidden>{esim.emoji ?? "📶"}</div>
                     <div className="min-w-0 flex-1 space-y-1.5">
