@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import type { FetchLike } from "../http";
-import { TopConnectClient, TopConnectOrderIdError, formatMinor, money, probeTopConnect } from "../topconnect";
+import { TopConnectClient, TopConnectOrderIdError, TopConnectOrderUsedError, formatMinor, money, probeTopConnect } from "../topconnect";
 import { fakeTopConnectFetch, newFakeTopConnectState } from "../topconnect-fake";
 import { ProviderError } from "../types";
 
@@ -137,6 +137,14 @@ describe("TopConnect client", () => {
     await assert.rejects(
       client(gateway.fetch).transfer({ msisdn: "37254515257", amountMinor: 500, currency: "EUR", orderId: 7 }),
       (error: unknown) => error instanceof TopConnectOrderIdError && error.expected === 32,
+    );
+  });
+
+  it("names the order id a completed order already has", async () => {
+    const gateway = answering("<sbalance><type>ERROR</type><text>Unable to retry completed order: 3153</text></sbalance>");
+    await assert.rejects(
+      client(gateway.fetch).transfer({ msisdn: "37254515257", amountMinor: 500, currency: "EUR", orderId: 3153 }),
+      (error: unknown) => error instanceof TopConnectOrderUsedError && error.orderId === 3153,
     );
   });
 

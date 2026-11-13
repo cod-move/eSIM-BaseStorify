@@ -3,6 +3,20 @@ import { describe, it } from "node:test";
 import { afterActivation, afterTransfer, MAX_UNCERTAIN_ACTIVATIONS, MAX_UNCERTAIN_TRANSFERS } from "../numbers/op-policy";
 import { refundAmount } from "../fulfillment/refund-amount";
 
+describe("number card transfers: an id already used by a completed order", () => {
+  it("takes a fresh id when the first send of the id hits someone else's order", () => {
+    assert.deepEqual(afterTransfer({ orderId: 3153, tries: 0 }, { kind: "taken" }), { do: "fresh_id" });
+  });
+
+  it("checks the card's log on a resend, since the order may be ours", () => {
+    const sent = { orderId: 3153, tries: 1 };
+    assert.deepEqual(afterTransfer(sent, { kind: "taken" }), { do: "check_log" });
+    assert.deepEqual(afterTransfer(sent, { kind: "taken" }, true), { do: "done", last: 3153 });
+    assert.deepEqual(afterTransfer(sent, { kind: "taken" }, false), { do: "fresh_id" });
+    assert.equal(afterTransfer(sent, { kind: "taken" }, null).do, "manual");
+  });
+});
+
 describe("number card transfers", () => {
   it("is done on an answer, and refused on a refusal", () => {
     assert.deepEqual(afterTransfer({ orderId: 41, tries: 0 }, { kind: "ok" }), { do: "done", last: 41 });

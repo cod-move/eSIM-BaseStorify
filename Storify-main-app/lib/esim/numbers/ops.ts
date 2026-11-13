@@ -8,7 +8,7 @@ import { EsimNumberSequence } from "@/models/esim-number-sequence.model";
 import { credentialsOf, findProvider } from "@/lib/esim/provider-service";
 import { withProviderLog } from "@/lib/esim/provider-log";
 import { topConnectClient } from "@/lib/esim/providers/registry";
-import { TopConnectOrderIdError, type TopConnectClient } from "@/lib/esim/providers/topconnect";
+import { TopConnectOrderIdError, TopConnectOrderUsedError, type TopConnectClient } from "@/lib/esim/providers/topconnect";
 import { ProviderError } from "@/lib/esim/providers/types";
 import { afterActivation, afterTransfer, type TransferAnswer } from "@/lib/esim/numbers/op-policy";
 
@@ -113,13 +113,24 @@ async function releaseLock(owner: string) {
   await EsimNumberSequence.updateOne({ _id: SEQUENCE, "lease.owner": owner }, { $set: { lease: null } });
 }
 
-/** The next id to send: one past the last the store knows of, asking the account when it knows none. */
+/**
+ * The next id to send: one past the account's last, asked every time. Others
+ * move the account's counter too (the old store still sends on the same
+ * account; TopConnect's own sensitive operations count), so the store's own
+ * `last` alone goes stale. It is the floor when the account cannot be asked.
+ */
 async function nextOrderId(context: Context): Promise<number> {
   const sequence = await EsimNumberSequence.findById(SEQUENCE).lean();
-  if (typeof sequence?.last === "number") return sequence.last + 1;
-  const account = await logged(context, "numbers.account", {}, () => context.client.account());
-  await EsimNumberSequence.updateOne({ _id: SEQUENCE }, { $set: { last: account.lastOrderId } });
-  return account.lastOrderId + 1;
+  const known = typeof sequence?.last === "number" ? sequence.last : null;
+  let accountLast: number | null = null;
+  try {
+    accountLast = (await logged(context, "numbers.account", {}, () => context.client.account())).lastOrderId;
+  } catch (error) {
+    if (known === null) throw error;
+  }
+  const last = Math.max(known ?? 0, accountLast ?? 0);
+  await noteLast(last);
+  return last + 1;
 }
 
 async function noteLast(last: number) {
@@ -171,7 +182,9 @@ export async function moveMoney(context: Context, leg: MoneyLeg, amountMinor: nu
     } catch (error) {
       answer = error instanceof TopConnectOrderIdError
         ? { kind: "clash", expected: error.expected }
-        : error instanceof ProviderError && (error.code === "uncertain" || error.code === "invalid_response")
+        : error instanceof TopConnectOrderUsedError
+          ? { kind: "taken" }
+          : error instanceof ProviderError && (error.code === "uncertain" || error.code === "invalid_response")
           ? { kind: "uncertain", message: error.message }
           : { kind: "refused", message: error instanceof Error ? error.message : String(error) };
     }
@@ -191,6 +204,20 @@ export async function moveMoney(context: Context, leg: MoneyLeg, amountMinor: nu
         await model.updateOne({ _id: doc._id }, { $set: { [field]: { orderId: step.orderId, tries: 0, done: false, at: null } } });
         doc.set(field, { orderId: step.orderId, tries: 0, done: false, at: null });
         continue;
+      case "fresh_id": {
+        // Our id belongs to someone else's completed order: never ours to resend.
+        await noteLast(orderId);
+        const fresh = await nextOrderId(context);
+        await model.updateOne(
+          { _id: doc._id },
+          {
+            $set: { [field]: { orderId: fresh, tries: 0, done: false, at: null } },
+            $push: { history: { at: new Date(), event: `${field} id taken`, detail: `order id ${orderId} was used; next ${fresh}` } },
+          },
+        );
+        doc.set(field, { orderId: fresh, tries: 0, done: false, at: null });
+        continue;
+      }
       case "wait":
         return { result: "wait", message: answer.kind === "uncertain" ? answer.message : undefined };
       case "refused":

@@ -200,6 +200,18 @@ export class TopConnectOrderIdError extends ProviderError {
   }
 }
 
+/**
+ * `sbalance` refused the order id because a completed order already has it
+ * ("Unable to retry completed order: N"). Nothing moved by this call; whether
+ * an earlier send of ours was that order, only the card's transfer log says.
+ */
+export class TopConnectOrderUsedError extends ProviderError {
+  constructor(readonly orderId: number, message: string) {
+    super("rejected", message, 200, "topconnect");
+    this.name = "TopConnectOrderUsedError";
+  }
+}
+
 export class TopConnectClient {
   private readonly baseUrl: string;
   private readonly fetcher: FetchLike;
@@ -709,6 +721,9 @@ export class TopConnectClient {
     if (error !== null) {
       const expected = /Incorrect OrderID value, must be:\s*(\d+)/i.exec(error);
       if (expected) throw new TopConnectOrderIdError(Number(expected[1]), error);
+      // The id was already used by a completed order (another sender on the account, or our own earlier send).
+      const used = /Unable to retry completed order:?\s*(\d+)/i.exec(error);
+      if (used) throw new TopConnectOrderUsedError(Number(used[1]), error);
       throw new ProviderError(/not found/i.test(error) ? "not_found" : "rejected", error, response.status, "topconnect");
     }
     return body;

@@ -13,18 +13,26 @@
  * - "must be N" on a resend, N not past our id: our id was never used; send N.
  * - No answer / a server error: unknown whether it moved. Wait and resend the
  *   same id, a few times, then a person decides.
+ * - "Unable to retry completed order" (`taken`) on the first send of an id:
+ *   another sender's completed order has it. Nothing moved; send again with
+ *   a fresh id from the account.
+ * - `taken` on a resend: our earlier send may be that order. The card's
+ *   transfer log tells which; without it, a person decides.
  * - A refusal: nothing moved.
  */
 
 export type TransferAnswer =
   | { kind: "ok" }
   | { kind: "clash"; expected: number }
+  | { kind: "taken" }
   | { kind: "uncertain"; message: string }
   | { kind: "refused"; message: string };
 
 export type TransferStep =
   | { do: "done"; last: number }
   | { do: "resend"; orderId: number }
+  /** Send again with a fresh id, asked of the account. */
+  | { do: "fresh_id" }
   | { do: "check_log" }
   | { do: "wait" }
   | { do: "refused"; message: string }
@@ -55,6 +63,13 @@ export function afterTransfer(sent: { orderId: number; tries: number }, answer: 
       if (logged === true) return { do: "done", last: sent.orderId };
       if (logged === false) return { do: "resend", orderId: answer.expected };
       return { do: "manual", reason: `Order id ${sent.orderId} was used, and the card's transfer log could not be read to tell whether by this transfer` };
+    }
+    case "taken": {
+      if (sent.tries === 0) return { do: "fresh_id" };
+      if (logged === undefined) return { do: "check_log" };
+      if (logged === true) return { do: "done", last: sent.orderId };
+      if (logged === false) return { do: "fresh_id" };
+      return { do: "manual", reason: `Order id ${sent.orderId} belongs to a completed order, and the card's transfer log could not be read to tell whether it is this transfer` };
     }
   }
 }
