@@ -441,6 +441,13 @@
       "releaseSubmit": "确认放弃",
       "releaseDone": "号码已从你的账户移除",
       "cancel": "取消"
-    }
+    },
+    "topupSearch": "搜索，如 5GB、7 天、欧洲",
+    "topupSearchLabel": "搜索充值包",
+    "topupSearchNone": "没有符合的充值包。",
+    "previous": "上一页",
+    "next": "下一页",
+    "uploadInterrupted": "上传被服务器中断，可能是图片太大。请换一张小一点的图片，或稍后再试。",
+    "openSettings": "去设置"
   }
 }

@@ -441,6 +441,13 @@
       "releaseSubmit": "Give it up",
       "releaseDone": "The number was removed from your account",
       "cancel": "Cancel"
-    }
+    },
+    "topupSearch": "Search, e.g. 5GB, 7 days, Europe",
+    "topupSearchLabel": "Search top-ups",
+    "topupSearchNone": "No top-up matches your search.",
+    "previous": "Previous",
+    "next": "Next",
+    "uploadInterrupted": "The server cut off the upload, most likely because the picture is too large. Try a smaller one, or try again later.",
+    "openSettings": "Open settings"
   }
 }

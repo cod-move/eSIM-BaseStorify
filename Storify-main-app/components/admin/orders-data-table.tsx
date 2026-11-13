@@ -600,6 +600,22 @@ export function OrdersDataTable({
         cell: (row) => {
           // A walk-in POS sale is filed under its cashier: it names nobody.
           const walkIn = isPosWalkIn(row);
+          // [esim-patch] P64 the account's name and email open its customer page (the page maps the user id, P63).
+          const customerHref = !walkIn && row.customerId?._id ? `${basePath}/customers/${row.customerId._id}` : null;
+          if (customerHref) {
+            return (
+              <Link
+                href={customerHref}
+                onClick={(event) => event.stopPropagation()}
+                className="block min-w-0 hover:underline"
+              >
+                <TextCell value={row.customerId?.name || t("common.guest")} />
+                <div className="text-xs text-muted-foreground">
+                  <TextCell value={row.customerId?.email} truncate maxWidth="220px" />
+                </div>
+              </Link>
+            );
+          }
           return (
             <div className="min-w-0">
               <TextCell

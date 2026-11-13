@@ -104,12 +104,10 @@ export function DestinationPlans({ destination }: { destination: EsimDestination
           : {}),
       },
       {
+        // Straight to the cart: the shopper buys one eSIM at a time far more often than several.
         onSuccess: () => {
           onAdded?.();
-          toast.show({
-            message: t('added'),
-            action: { label: t('viewCart'), onPress: () => router.push('/cart') },
-          });
+          router.push('/cart');
         },
         onError: (error: unknown) => toast.show({ message: describe(error) }),
       }

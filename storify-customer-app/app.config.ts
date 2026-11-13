@@ -84,9 +84,10 @@ export default ({ config }: ConfigContext): ExpoConfig => {
         'android.permission.INTERNET',
         'android.permission.ACCESS_NETWORK_STATE',
         'android.permission.POST_NOTIFICATIONS',
+        // [esim-patch] P65 the profile picture opens the camera: blocked, the system never asked and the app only said "denied".
+        'android.permission.CAMERA',
       ],
       blockedPermissions: [
-        'android.permission.CAMERA',
         'android.permission.READ_EXTERNAL_STORAGE',
         'android.permission.WRITE_EXTERNAL_STORAGE',
         'android.permission.ACCESS_WIFI_STATE',

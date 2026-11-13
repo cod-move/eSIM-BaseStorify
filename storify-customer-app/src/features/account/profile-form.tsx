@@ -7,7 +7,7 @@ import {
   type ImagePickerResult,
 } from 'expo-image-picker';
 import { useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { Linking, Pressable, View } from 'react-native'; // [esim-patch] P65 Linking
 import { useTranslations } from 'use-intl';
 
 import { uploadPhoto } from '@/api/endpoints/uploads';
@@ -26,6 +26,7 @@ import { GENDERS, type Me } from '@/contracts/mobile/shop/v1';
 import { FormError } from '@/features/auth/screens/auth-sheet';
 import { useLocale } from '@/i18n/locale-store';
 import { useErrorMessage } from '@/i18n/use-error-message';
+import { explainUploadFailure, UploadInterruptedError } from '@/features/esim/upload-error'; // [esim-patch] P65
 
 import { AccentPicker } from './accent-picker';
 import { Avatar } from './account-parts';
@@ -46,7 +47,8 @@ const INVALID = {
 } as const satisfies Record<ProfileField, string>;
 
 /** A phone photo is many megabytes: compressed this much it is still sharp at the avatar's size. */
-const QUALITY = 0.7;
+// [esim-patch] P65 0.7 → 0.5: smaller files stay under a web server's upload limit more often.
+const QUALITY = 0.5;
 const PICK: ImagePickerOptions = {
   mediaTypes: 'images',
   allowsEditing: true,
@@ -75,7 +77,10 @@ export function usePictureChange() {
 
   return useMutation({
     mutationFn: async (file: FormFile | null) => {
-      const imageUploadId = file ? (await uploadPhoto(locale, file)).id : null;
+      // [esim-patch] P65 a cut connection while online is the server refusing the file, not "offline".
+      const imageUploadId = file
+        ? (await explainUploadFailure(() => uploadPhoto(locale, file))).id
+        : null;
       return updateMe(locale, { imageUploadId });
     },
     onSuccess: (me) => queryClient.setQueryData(queryKeys.me(locale), me),
@@ -105,19 +110,27 @@ function ProfilePicture({ me }: { me: Me }) {
   const change = usePictureChange();
   const [open, setOpen] = useState(false);
   const [cameraDenied, setCameraDenied] = useState(false);
+  const [cameraBlocked, setCameraBlocked] = useState(false); // [esim-patch] P65
+  const tEsim = useTranslations('esim'); // [esim-patch] P65
   const hasPicture = Boolean(me.image ?? me.imageUrl);
 
   const send = (file: FormFile | null) => {
     setOpen(false);
     setCameraDenied(false);
+    setCameraBlocked(false); // [esim-patch] P65
     change.mutate(file, {
       onSuccess: () => toast.show({ message: t(file ? 'pictureSaved' : 'pictureRemoved') }),
     });
   };
   const fromCamera = async () => {
+    // [esim-patch] P65 the system asks here (CAMERA is declared again, app.config.ts); once refused for good, Settings.
     const permission = await requestCameraPermissionsAsync();
     setCameraDenied(!permission.granted);
-    if (!permission.granted) return;
+    setCameraBlocked(!permission.granted && !permission.canAskAgain);
+    if (!permission.granted) {
+      setOpen(false);
+      return;
+    }
     const file = pickedFile(await launchCameraAsync(PICK));
     if (file) send(file);
   };
@@ -129,7 +142,9 @@ function ProfilePicture({ me }: { me: Me }) {
   const problem = cameraDenied
     ? t('cameraDenied')
     : change.isError
-      ? describe(change.error)
+      ? change.error instanceof UploadInterruptedError // [esim-patch] P65
+        ? tEsim('uploadInterrupted')
+        : describe(change.error)
       : undefined;
 
   return (
@@ -146,6 +161,15 @@ function ProfilePicture({ me }: { me: Me }) {
       </View>
       {change.isPending ? <Text variant="caption">{t('pictureSaving')}</Text> : null}
       <FormError message={problem} />
+      {/* [esim-patch] P65 refused for good: the way to Settings, where only the shopper can turn it on. */}
+      {cameraBlocked ? (
+        <Button
+          label={tEsim('openSettings')}
+          variant="secondary"
+          size="sm"
+          onPress={() => void Linking.openSettings()}
+        />
+      ) : null}
 
       <Sheet visible={open} onClose={() => setOpen(false)} title={t('picture')}>
         <PictureRow icon="camera" label={t('pictureCamera')} onPress={fromCamera} />
