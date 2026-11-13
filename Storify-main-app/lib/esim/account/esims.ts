@@ -11,6 +11,7 @@ import { withProviderLog } from "@/lib/esim/provider-log";
 import { displayOf, planTitle, type Display } from "@/lib/esim/account/display";
 import { ProviderError, type ProviderEsim, type ProviderUsage } from "@/lib/esim/providers/types";
 import { shownBundles } from "@/lib/esim/providers/registry";
+import { fillMissingIccid } from "@/lib/esim/account/iccid-backfill";
 
 /**
  * A shopper's own eSIMs (USR-01..06): listing, one eSIM, refreshing its usage
@@ -250,6 +251,10 @@ export async function refreshEsimProfile(profile: IEsimProfile): Promise<{ refre
     );
   }
   await profile.save();
+  // An eSIM that came without an ICCID (Stellar, migrated ones) takes it once its supplier names one.
+  if (!profile.iccid && esim?.iccid && (await fillMissingIccid(profile._id, esim.iccid).catch(() => false))) {
+    profile.iccid = esim.iccid;
+  }
   // What the supplier last said, beside the order's own raw record: for a
   // person checking an eSIM whose state or top-ups look wrong.
   const latest = { at: now, usage: usage?.raw ?? null, esim: esim?.raw ?? null, error: error ?? null };

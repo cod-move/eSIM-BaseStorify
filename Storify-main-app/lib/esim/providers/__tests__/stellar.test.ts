@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { StellarAdapter, mapPlan, topupRule } from "../stellar";
+import { StellarAdapter, mapEsim, mapPlan, normalizeIccid, stellarIccid, topupRule } from "../stellar";
 import { ProviderError, type JsonObject } from "../types";
 import { fakeFetch } from "./helpers";
 
@@ -243,6 +243,21 @@ describe("Stellar purchase", () => {
     const result = await adapter.purchase({ providerPlanId: "p", durationDays: null, idempotencyKey: "k" });
     assert.equal(result.status, "processing");
     assert.equal(result.providerOrderId, "order-3");
+  });
+
+  it("keeps the ICCID an eSIM read carries, and none otherwise", () => {
+    assert.equal(mapEsim(card).iccid, null);
+    assert.equal(mapEsim({ ...card, iccid: "8944 4765 0000 1234 567" }).iccid, "8944476500001234567");
+    assert.equal(mapEsim({ ...card, sim: { iccid: "894447650000123456f" } }).iccid, "894447650000123456F");
+    assert.equal(mapEsim({ ...card, installation: { ...card.installation, iccid: "8944476500001234567" } }).iccid, "8944476500001234567");
+  });
+
+  it("never takes a sim_id, a malformed value or two different ICCIDs for one", () => {
+    assert.equal(stellarIccid({ iccid: "1234567890123456" }), null);
+    assert.equal(stellarIccid({ iccid: "89ABC" }), null);
+    assert.equal(stellarIccid({ iccid: 8944476500001234567 }), null);
+    assert.equal(stellarIccid({ iccid: "8944476500001234567", sim: { iccid: "8944476500009999999" } }), null);
+    assert.equal(normalizeIccid("89-44-476500001234567"), "8944476500001234567");
   });
 
   it("only addresses eSIMs by a 16-digit sim_id", async () => {

@@ -39,8 +39,8 @@ import {
  * Stellar wholesale API (https://wholesale.stellarsecurity.com/api/v1).
  *
  * Ported from the live esim_php adapter. Stellar settles in EUR, prices in
- * cents, and addresses an eSIM by a 16-digit `sim_id` — it deliberately does
- * not expose the ICCID. Writes carry an `Idempotency-Key`, so a retried order
+ * cents, and addresses an eSIM by a 16-digit `sim_id`; an ICCID, when an
+ * eSIM read carries one, is kept but never used to address it. Writes carry an `Idempotency-Key`, so a retried order
  * or top-up with the same key is answered with the original.
  */
 
@@ -550,6 +550,34 @@ function topupStatus(value: string): TopupResult["status"] {
   return "processing";
 }
 
+/**
+ * A real ICCID: "89" (telecom), 18–22 digits in all, maybe a trailing F
+ * filler. Only a string: a JSON number that long has already lost digits.
+ */
+export function normalizeIccid(value: JsonValue | undefined): string | null {
+  if (typeof value !== "string") return null;
+  const text = value.replace(/[\s-]/g, "").toUpperCase();
+  return /^89\d{16,20}F?$/.test(text) ? text : null;
+}
+
+/**
+ * The ICCID on a Stellar eSIM or usage read, when it carries one. Stellar
+ * names eSIMs by `sim_id` and long gave no ICCID, so it is read wherever it
+ * turns up (top level, or under `sim` / `installation` / `lifecycle` /
+ * `profile`) and only when it is a well-formed ICCID; a sim_id is never one.
+ * Two different ICCIDs on one card are not trusted: null.
+ */
+export function stellarIccid(card: JsonObject): string | null {
+  const found = new Set<string>();
+  for (const node of [card, obj(card.sim), obj(card.installation), obj(card.lifecycle), obj(card.profile)]) {
+    for (const key of ["iccid", "ICCID", "sim_iccid"]) {
+      const iccid = normalizeIccid(node[key]);
+      if (iccid) found.add(iccid);
+    }
+  }
+  return found.size === 1 ? [...found][0] : null;
+}
+
 export function mapEsim(card: JsonObject): ProviderEsim {
   const lifecycle = obj(card.lifecycle);
   const installation = obj(card.installation);
@@ -559,7 +587,7 @@ export function mapEsim(card: JsonObject): ProviderEsim {
   return {
     providerEsimId: strOrNull(card.id),
     simId: simId || null,
-    iccid: null,
+    iccid: stellarIccid(card),
     status: fulfillmentStatus(str(card.status)),
     usageAvailable: bool(card.usage_available) === true,
     lifecycle: {
