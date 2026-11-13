@@ -42,6 +42,9 @@ import {
 
 const DEFAULT_BASE_URL = "https://api.bnesim.com/v2.0";
 const LIFETIME_DAYS = 3650;
+/** The product catalogue comes in one answer with no paging; it is far larger than other calls'. */
+const CATALOGUE_MAX_BYTES = 64 * 1024 * 1024;
+
 /** BNESIM unlimited plans: 3 GB a day at full speed, then 1 Mbps. */
 const UNLIMITED_DAILY_MB = 3 * 1024;
 
@@ -142,8 +145,8 @@ export class BnesimAdapter implements EsimProviderAdapter {
     if (!iccid) return pending(status.raw);
     const detail = simcardOf(await this.detail(iccid));
     const esim = mapCard(detail, licenseCli);
-    if (!esim.installation.activationCode) return pending(detail);
-    return { status: "fulfilled", providerOrderId, charged: null, esim, raw: detail };
+    if (!esim.installation.activationCode) return pending(withoutCatalogue(detail));
+    return { status: "fulfilled", providerOrderId, charged: null, esim, raw: withoutCatalogue(detail) };
   }
 
   async getEsim(ref: EsimRef) {
@@ -153,10 +156,10 @@ export class BnesimAdapter implements EsimProviderAdapter {
 
   async getUsage(ref: EsimRef): Promise<ProviderUsage> {
     const detail = simcardOf(await this.detail(iccidOf(ref)));
+    // The card's own data is in `data_credit_details`. `products` (only with
+    // with_products=1) is the catalogue the card could buy, not what it holds.
     const credits = dataCredits(detail.data_credit_details);
-    const products = objArray(detail.products);
-    const totalMb = credits.reduce((sum, credit) => sum + firstNumber(credit, ["total", "total_mb", "total_volume", "volume", "data_total"]), 0)
-      || products.reduce((sum, product) => sum + (num(product.volume) ?? 0), 0);
+    const totalMb = credits.reduce((sum, credit) => sum + firstNumber(credit, ["total", "total_mb", "total_volume", "volume", "data_total"]), 0);
     const remainingMb = credits.length
       ? credits.reduce((sum, credit) => sum + firstNumber(credit, ["remaining", "remaining_mb", "remaining_volume", "volume_remaining", "available_volume"]), 0)
       : totalMb;
@@ -171,26 +174,24 @@ export class BnesimAdapter implements EsimProviderAdapter {
       expiresAt,
       syncedAt: null,
       stale: null,
-      raw: detail,
+      raw: withoutCatalogue(detail),
     };
   }
 
   /**
-   * Products the card can be recharged with: those covering the countries of
-   * its current products, or every product when it holds none we can read.
+   * Products the card can be recharged with: the whole catalogue BNESIM
+   * offers for this card (get-detail with_products=1, the one call that asks
+   * for it). A BNESIM card can take data for any country, not only the one
+   * it was bought for, so nothing is left out by country.
    */
   async listTopupPlans(ref: EsimRef): Promise<ProviderTopupPlan[]> {
-    const detail = simcardOf(await this.detail(iccidOf(ref)));
+    const detail = simcardOf(await this.detail(iccidOf(ref), true));
     const licenseCli = str(detail.license_cli);
-    const [products, areas] = await Promise.all([this.products(), this.areas()]);
-    const index = areaIndex(areas);
-    const held = new Set(objArray(detail.products).flatMap((product) => coverageOf(product, index).countries));
-    const offered = held.size
-      ? products.filter((product) => coverageOf(product, index).countries.some((code) => held.has(code)))
-      : products;
-    return offered.flatMap((product) => {
+    const seen = new Set<string>();
+    return objArray(detail.products).flatMap((product) => {
       const id = str(product.id);
-      if (!id) return [];
+      if (!id || seen.has(id)) return [];
+      seen.add(id);
       return [{
         topupPlanId: licenseCli ? `${id}|${licenseCli}` : id,
         name: str(product.name) || id,
@@ -224,16 +225,28 @@ export class BnesimAdapter implements EsimProviderAdapter {
     return objArray((await this.call("/enterprise/products/get-regions-countries", undefined, "GET")).areas);
   }
 
+  /** The whole catalogue: one answer, larger than any other call's (well over 8 MB). */
   private async products() {
-    return objArray((await this.call("/enterprise/products/get-products", {})).products);
+    return objArray((await this.call("/enterprise/products/get-products", {}, "POST", true, CATALOGUE_MAX_BYTES)).products);
   }
 
   private async cards(licenseCli: string) {
     return objArray(obj((await this.call("/enterprise/simcard/get-all", { license_cli: licenseCli })).data).sim_cards);
   }
 
-  private async detail(iccid: string) {
-    return this.call("/enterprise/simcard/get-detail", { iccid, with_products: "1" });
+  /**
+   * One card. Without `withProducts` the catalogue BNESIM would add (about
+   * 1.7 MB, the same for every card) is left out: the answer is a few KB, and
+   * what is kept of it on the eSIM (`raw`) stays that size.
+   */
+  private async detail(iccid: string, withProducts = false) {
+    return this.call(
+      "/enterprise/simcard/get-detail",
+      { iccid, with_products: withProducts ? "1" : "0" },
+      "POST",
+      true,
+      withProducts ? CATALOGUE_MAX_BYTES : undefined,
+    );
   }
 
   private async activationStatus(transaction: string) {
@@ -241,16 +254,17 @@ export class BnesimAdapter implements EsimProviderAdapter {
     return { state: str(raw.activation_status).toUpperCase() || "PENDING", raw };
   }
 
-  private async call(path: string, form?: Record<string, string>, method: "GET" | "POST" = "POST", retry = true): Promise<JsonObject> {
+  private async call(path: string, form?: Record<string, string>, method: "GET" | "POST" = "POST", retry = true, maxBytes?: number): Promise<JsonObject> {
     const { ok, status, body } = await requestJson(this.fetcher, {
       method,
       url: `${this.baseUrl}${path}`,
       headers: { Authorization: `Bearer ${await this.token()}` },
       ...(method === "POST" ? { form: form ?? {} } : {}),
+      ...(maxBytes ? { maxBytes, timeoutMs: 120_000 } : {}),
     });
     if (status === 401 && retry) {
       tokens.delete(this.apiKey);
-      return this.call(path, form, method, false);
+      return this.call(path, form, method, false, maxBytes);
     }
     if (!ok) {
       throw new ProviderError(status >= 500 ? "uncertain" : "rejected", `BNESIM ${path} failed with HTTP ${status}${str(body.message) ? `: ${str(body.message)}` : ""}`, status);
@@ -408,7 +422,7 @@ export function mapCard(card: JsonObject, licenseCli: string | null): ProviderEs
     lifecycle: {
       status: lifecycle(card, 0, 0, expiresAt),
       profileStatus: null,
-      installed: null,
+      installed: typeof card.is_installed === "boolean" ? card.is_installed : null,
       installationDetectedAt: null,
       activationDetectedAt: null,
     },
@@ -423,8 +437,16 @@ export function mapCard(card: JsonObject, licenseCli: string | null): ProviderEs
     bundles: [],
     fulfilledAt: null,
     expiresAt,
-    raw: card,
+    raw: withoutCatalogue(card),
   };
+}
+
+/** A card as kept on the eSIM: never the catalogue an answer may carry beside it. */
+function withoutCatalogue(card: JsonObject): JsonObject {
+  if (!("products" in card)) return card;
+  const { products: _catalogue, ...rest } = card;
+  void _catalogue;
+  return rest;
 }
 
 interface AreaIndex {

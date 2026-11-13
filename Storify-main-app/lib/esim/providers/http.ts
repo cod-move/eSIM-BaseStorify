@@ -21,6 +21,8 @@ export interface HttpRequest {
   /** Sent as application/x-www-form-urlencoded instead of a JSON body. */
   form?: Record<string, string>;
   timeoutMs?: number;
+  /** The largest answer accepted, in bytes (8 MB unless a whole catalogue is asked for). */
+  maxBytes?: number;
 }
 
 const DEFAULT_TIMEOUT_MS = 35_000;
@@ -59,8 +61,9 @@ export async function requestJson(
     throw new ProviderError("uncertain", `Provider request to ${url.pathname} did not complete`);
   }
 
+  const maxBytes = request.maxBytes ?? MAX_RESPONSE_BYTES;
   const declared = Number(response.headers.get("content-length") ?? 0);
-  if (declared > MAX_RESPONSE_BYTES) {
+  if (declared > maxBytes) {
     throw new ProviderError("invalid_response", "Provider response is too large", response.status);
   }
   let text: string;
@@ -69,7 +72,7 @@ export async function requestJson(
   } catch {
     throw new ProviderError("uncertain", `Provider response from ${url.pathname} was cut off`, response.status);
   }
-  if (text.length > MAX_RESPONSE_BYTES) {
+  if (text.length > maxBytes) {
     throw new ProviderError("invalid_response", "Provider response is too large", response.status);
   }
 

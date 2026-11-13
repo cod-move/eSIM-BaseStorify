@@ -138,46 +138,124 @@ describe("BNESIM purchase, step by step", () => {
 });
 
 describe("BNESIM usage and top-ups", () => {
-  const detail = {
-    data: {
-      simcard_details: {
-        iccid: "8988000000000000003",
-        license_cli: "CLI-3",
-        simcard_status: "ACTIVE",
-        products: [{ id: "P1", product_coverage: [{ country_iso2: "JP" }] }],
-        data_credit_details: { JP: { "30": { total: 5120, remaining: 1024, expiration_date: "2099-01-01 00:00:00" } } },
-      },
-    },
+  const card = {
+    iccid: "8988000000000000003",
+    license_cli: "CLI-3",
+    simcard_status: "ACTIVE",
+    data_credit_details: { JP: { "30": { total: 5120, remaining: 1024, expiration_date: "2099-01-01 00:00:00" } } },
   };
+  // What the card could buy: sent only when the call asks for it (with_products=1).
+  const catalogue = [
+    { id: "JP-1G", name: "Japan 1GB", volume: 1024, duration: 7, price: 2, product_coverage: [{ country_iso2: "JP" }] },
+    { id: "FR-1G", volume: 1024, duration: 7, price: 2, product_coverage: [{ country_iso2: "FR" }] },
+    { id: "JP-1G", name: "Japan 1GB", volume: 1024, duration: 7, price: 2, product_coverage: [{ country_iso2: "JP" }] },
+  ];
+  const detailRoute = (request: SentRequest) => ({
+    body: { data: { simcard_details: form(request).with_products === "1" ? { ...card, products: catalogue } : card } },
+  });
 
-  it("reads nested data credits", async () => {
-    const { bnesim } = adapter({ "POST /v2.0/enterprise/simcard/get-detail": () => ({ body: detail }) });
+  it("reads nested data credits, without asking for the catalogue", async () => {
+    const { bnesim, sent } = adapter({ "POST /v2.0/enterprise/simcard/get-detail": detailRoute });
     const usage = await bnesim.getUsage({ providerEsimId: null, simId: null, iccid: "8988000000000000003" });
+    assert.equal(form(sent.find((request) => request.url.pathname.endsWith("/get-detail"))!).with_products, "0");
+    assert.ok(!("products" in (usage.raw as Record<string, unknown>)), "the catalogue is never kept with the card");
     assert.equal(usage.totalBytes, 5120 * 1024 * 1024);
     assert.equal(usage.remainingBytes, 1024 * 1024 * 1024);
     assert.equal(usage.lifecycleStatus, "in_use");
     assert.equal(usage.expiresAt, new Date("2099-01-01T00:00:00").toISOString());
   });
 
-  it("offers products for the card's countries and recharges with its license", async () => {
+  it("offers the card's whole catalogue, any country, and recharges with its license", async () => {
     const { bnesim, sent } = adapter({
-      "POST /v2.0/enterprise/simcard/get-detail": () => ({ body: detail }),
-      "POST /v2.0/enterprise/products/get-products": () => ({
-        body: { products: [
-          { id: "JP-1G", name: "Japan 1GB", volume: 1024, duration: 7, price: 2, product_coverage: [{ country_iso2: "JP" }] },
-          { id: "FR-1G", volume: 1024, duration: 7, price: 2, product_coverage: [{ country_iso2: "FR" }] },
-        ] },
-      }),
-      "GET /v2.0/enterprise/products/get-regions-countries": () => ({ body: AREAS }),
+      "POST /v2.0/enterprise/simcard/get-detail": detailRoute,
       "POST /v2.0/enterprise/simcard/recharge": () => ({ body: { success: true, activationTransaction: "RC-1" } }),
     });
     const plans = await bnesim.listTopupPlans({ providerEsimId: null, simId: null, iccid: "8988000000000000003" });
-    assert.deepEqual(plans.map((plan) => plan.topupPlanId), ["JP-1G|CLI-3"]);
+    assert.deepEqual(plans.map((plan) => plan.topupPlanId), ["JP-1G|CLI-3", "FR-1G|CLI-3"], "every product the card can take, each once");
+    assert.equal(form(sent.find((request) => request.url.pathname.endsWith("/get-detail"))!).with_products, "1");
+    assert.ok(!sent.some((request) => request.url.pathname.endsWith("/get-products")), "not the whole store catalogue");
     assert.deepEqual(plans[0].cost, { currency: "USD", amountMinor: 200 });
     const result = await bnesim.topup({ esim: { providerEsimId: null, simId: null, iccid: "8988000000000000003" }, topupPlanId: "JP-1G|CLI-3", idempotencyKey: "provider-topup:1" });
     assert.equal(result.providerTopupId, "RC-1");
     assert.deepEqual(form(sent.find((request) => request.url.pathname.endsWith("/recharge"))!), { iccid: "8988000000000000003", product_id: "JP-1G", license_cli: "CLI-3" });
     assert.equal(bnesim.nonIdempotent.topup, true, "the top-up job must not retry an uncertain recharge");
+  });
+});
+
+describe("BNESIM card as it really answers", () => {
+  // A real card (trimmed): one never-expiring 1 GB China credit, 883 MB left.
+  const real = {
+    iccid: "8910300000052190566",
+    simcard_status: "ACTIVE",
+    state: "INACTIVE",
+    is_installed: true,
+    smdp_address: "LPA:1$consumer.e-sim.global$",
+    matching_id: "TN0000",
+    license_cli: "562004035",
+    data_credit_details: {
+      China: {
+        "no expiration": {
+          remaining_mb: 883.2114248275757,
+          expiration: "no expiration",
+          region: "China",
+          data_total: 1024,
+          iso: "CN",
+          unlimited: 0,
+          product: { product: "109422", name: "Surf 1 GB in China", volume: 1024, duration: "180" },
+        },
+      },
+    },
+    areas: [{ country_name: "China", country_iso2: "CN" }],
+  };
+  const route = (request: SentRequest) => ({
+    body: {
+      data: {
+        simcard_details:
+          form(request).with_products === "1"
+            ? {
+                ...real,
+                products: [
+                  { id: "CN-3G", name: "Surf 3 GB in China", volume: 3072, duration: 180, price: 6, product_coverage: [{ country_iso2: "CN" }] },
+                  { id: "TR-1G", volume: 1024, duration: 180, price: 3, product_coverage: [{ country_iso2: "TR" }] },
+                ],
+              }
+            : real,
+      },
+    },
+  });
+  const ref = { providerEsimId: null, simId: null, iccid: "8910300000052190566" };
+
+  it("reads its data, its no-expiry and its installation", async () => {
+    const { bnesim } = adapter({ "POST /v2.0/enterprise/simcard/get-detail": route });
+    const usage = await bnesim.getUsage(ref);
+    assert.equal(usage.totalBytes, 1024 * 1024 * 1024);
+    assert.equal(usage.remainingBytes, Math.round(883.2114248275757 * 1024 * 1024));
+    assert.equal(usage.expiresAt, null, '"no expiration" is no date');
+    assert.equal(usage.lifecycleStatus, "in_use");
+    const esim = await bnesim.getEsim(ref);
+    assert.equal(esim.lifecycle.installed, true);
+    assert.equal(esim.installation.activationCode, "LPA:1$consumer.e-sim.global$TN0000");
+  });
+
+  it("offers top-ups for other countries too", async () => {
+    const { bnesim } = adapter({ "POST /v2.0/enterprise/simcard/get-detail": route });
+    const plans = await bnesim.listTopupPlans(ref);
+    assert.deepEqual(plans.map((plan) => plan.topupPlanId), ["CN-3G|562004035", "TR-1G|562004035"]);
+  });
+});
+
+describe("BNESIM catalogue size", () => {
+  it("accepts a catalogue over 8 MB in one answer", async () => {
+    const filler = "x".repeat(9 * 1024 * 1024);
+    const { bnesim } = adapter({
+      "POST /v2.0/enterprise/products/get-products": () => ({
+        body: { products: [{ id: "JP-LIFE", name: "Japan", volume: 1024, duration: 180, price: 5, product_coverage: [{ country_iso2: "JP" }], note: filler }] },
+      }),
+      "GET /v2.0/enterprise/products/get-regions-countries": () => ({ body: AREAS }),
+    });
+    const plans = [];
+    for await (const plan of bnesim.listPlans()) plans.push(plan);
+    assert.equal(plans.length, 1);
   });
 });
 
