@@ -76,7 +76,7 @@ export function EsimAdminDetail({ detail, canManage }: { detail: Detail; canMana
           <h1 className="mt-1 text-2xl font-bold tracking-tight">{plan?.title ?? "eSIM"}</h1>
           <div className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
             <EsimStatusBadge display={detail.display} label={t(`esim.status.${detail.display.status}`, detail.display.label)} />
-            <span className="font-mono">{profile.iccid ?? "—"}</span>
+            <span className="font-mono">{profile.iccid ?? (profile.simId ? `SIM ID ${profile.simId}` : "—")}</span>
           </div>
         </div>
         {canManage ? (

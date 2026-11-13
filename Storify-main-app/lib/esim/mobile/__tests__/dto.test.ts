@@ -20,6 +20,7 @@ function view(overrides: Partial<EsimView> = {}): EsimView {
     validityDays: 7,
     providerCode: "stellar",
     iccid: "8985200000000001234",
+    simId: null,
     display: displayOf({ status: "fulfilled", lifecycle: "in_use", topupSupported: true, topupWindow: "before_expiry" }),
     remark: null,
     usage: { totalBytes: 5 * GB, usedBytes: 1 * GB, remainingBytes: 4 * GB, expiresAt: null, syncedAt: new Date("2026-10-27T10:00:00Z"), stale: false },
@@ -60,6 +61,14 @@ describe("the mobile eSIM shapes", () => {
     assert.equal(detail.install?.iosLink, "https://esimsetup.apple.com/esim_qrcode_provisioning?carddata=LPA%3A1%24rsp.example%24ABC");
     assert.equal(detail.install?.matchingId, "ABC");
     assert.equal(detail.canTopup, true);
+  });
+
+  it("shows the SIM id only when there is no ICCID", async () => {
+    const withIccid = EsimDetail.parse(await toEsimDetail(view()));
+    assert.equal(withIccid.simId, undefined);
+    const stellar = EsimDetail.parse(await toEsimDetail(view({ iccid: null, simId: "3491403151236324" })));
+    assert.equal(stellar.iccid, undefined);
+    assert.equal(stellar.simId, "3491403151236324");
   });
 
   it("no install details for an eSIM being issued, failed or cancelled", async () => {

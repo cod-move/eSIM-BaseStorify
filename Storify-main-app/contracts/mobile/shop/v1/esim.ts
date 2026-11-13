@@ -108,6 +108,8 @@ export type EsimInstall = z.infer<typeof EsimInstall>;
 export const EsimDetail = EsimSummary.extend({
   orderNumber: z.string(),
   iccid: z.string().optional(),
+  /** The supplier's SIM id, sent only when there is no ICCID (Stellar masks it). */
+  simId: z.string().optional(),
   /** The plan's allowance as sold: "5 GB", "Unlimited". */
   dataLabel: z.string(),
   validityDays: z.number(),

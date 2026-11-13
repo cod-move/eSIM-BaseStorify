@@ -103,6 +103,7 @@ export function EsimDetailView({ esim }: { esim: EsimDetail }) {
           <Fact label={t('topupBefore')} value={date(esim.topupDeadline)} />
         ) : null}
         {esim.iccid ? <Fact label={t('iccid')} value={esim.iccid} /> : null}
+        {!esim.iccid && esim.simId ? <Fact label={t('simId')} value={esim.simId} /> : null}
         <Fact label={t('order')} value={esim.orderNumber} />
       </View>
     </ScrollView>

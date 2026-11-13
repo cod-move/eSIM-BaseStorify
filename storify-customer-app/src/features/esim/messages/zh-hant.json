@@ -26,6 +26,7 @@
     "installBefore": "請在此前安裝",
     "topupBefore": "請在此前充值",
     "iccid": "ICCID",
+    "simId": "SIM ID",
     "order": "訂單",
     "installTitle": "安裝 eSIM",
     "installNow": "在本機安裝",

@@ -214,6 +214,8 @@ export default async function AccountEsimPage({ params }: PageProps) {
         <CardContent className="divide-y">
           {row(tr("esim.account.orderNumber", "Order"), esim.orderNumber)}
           {row("ICCID", esim.iccid)}
+          {/* No ICCID from the supplier (Stellar masks it): its SIM id tells two eSIMs of one plan apart. */}
+          {esim.iccid ? null : row("SIM ID", esim.simId)}
           {row(tr("esim.account.plan", "Plan"), [esim.dataLabel, esim.validityDays ? tr("esim.account.days", "{count} days", { count: esim.validityDays }) : ""].filter(Boolean).join(" · "))}
           {row(tr("esim.account.issuedAt", "Issued"), esim.fulfilledAt ? date.format(esim.fulfilledAt) : null)}
           {row(tr("esim.account.installBefore", "Install before"), esim.display.canInstall && esim.activationDeadline ? date.format(esim.activationDeadline) : null)}

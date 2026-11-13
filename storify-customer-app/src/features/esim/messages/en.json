@@ -26,6 +26,7 @@
     "installBefore": "Install before",
     "topupBefore": "Top up before",
     "iccid": "ICCID",
+    "simId": "SIM ID",
     "order": "Order",
     "installTitle": "Install this eSIM",
     "installNow": "Install on this phone",

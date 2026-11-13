@@ -35,6 +35,12 @@ export interface EsimView {
   validityDays: number;
   providerCode: string;
   iccid: string | null;
+  /**
+   * The supplier's SIM id, shown where there is no ICCID to tell two eSIMs
+   * of one plan apart (Stellar answers the ICCID masked). Null when the
+   * ICCID is known.
+   */
+  simId: string | null;
   display: Display;
   remark: string | null;
   usage: IEsimProfile["usage"];
@@ -71,6 +77,7 @@ function view(profile: IEsimProfile, plan: IEsimPlan | undefined): EsimView {
     validityDays: profile.durationDays ?? plan?.validityDays ?? profile.legacyPlan?.validityDays ?? 0,
     providerCode: profile.providerCode,
     iccid: profile.iccid,
+    simId: profile.iccid ? null : profile.simId || null,
     display: displayOf({
       status: profile.status,
       lifecycle: profile.lifecycle?.status ?? null,

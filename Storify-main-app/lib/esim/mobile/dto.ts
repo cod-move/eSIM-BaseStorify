@@ -55,6 +55,7 @@ export async function toEsimDetail(view: EsimView, cancellation?: EsimDetail["ca
     ...toEsimSummary(view),
     orderNumber: view.orderNumber,
     ...(view.iccid ? { iccid: view.iccid } : {}),
+    ...(view.simId ? { simId: view.simId } : {}),
     dataLabel: view.dataLabel,
     validityDays: view.validityDays,
     ...(view.fulfilledAt ? { fulfilledAt: iso(view.fulfilledAt) } : {}),
