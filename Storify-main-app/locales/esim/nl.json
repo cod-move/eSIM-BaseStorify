@@ -1616,11 +1616,9 @@
       "qrEnabled": "Shoppers may ask for a new QR code",
       "qrFee": "New QR code fee",
       "qrRequests": "New QR code requests",
-      "qrRequestsHint": "Order the new eSIM profile from TopConnect, then paste its full activation code (LPA:1$…). It replaces the number's code. Declining puts the fee back on the number.",
       "qrRequestsNone": "No open requests.",
       "qrAnswer": "Answer",
       "qrNote": "Note for the customer (needed to decline)",
-      "qrSave": "Save the new code",
       "qrDecline": "Decline and refund",
       "payAirwallexHint": "In the Airwallex web app (Developer → Webhooks), add this notification URL for payment_intent.succeeded and payment_intent.cancelled, and paste its secret into webhookSecret. clientId and apiKey come from Developer → API keys. env: prod, or demo for the sandbox. methods is optional, e.g. card,applepay,googlepay,alipaycn,wechatpay."
     },

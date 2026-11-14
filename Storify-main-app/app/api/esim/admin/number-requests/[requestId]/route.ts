@@ -8,11 +8,11 @@ import { ESIM_WRITE, auditEsim } from "@/lib/esim/admin/route";
 import { completeQrRequest, rejectQrRequest } from "@/lib/esim/numbers/requests";
 
 const AnswerSchema = z.discriminatedUnion("action", [
-  z.object({ action: z.literal("complete"), lpa: z.string().trim().min(10).max(400), note: z.string().trim().max(500).optional() }),
+  z.object({ action: z.literal("complete"), card: z.string().trim().min(20).max(600), note: z.string().trim().max(500).optional() }),
   z.object({ action: z.literal("reject"), note: z.string().trim().min(1).max(500) }),
 ]);
 
-/** A person answers a new-QR-code request: the new activation code, or declined (the fee goes back on the number). */
+/** A person answers a new-QR-code request: the new card the number moves to (ICCID LPA PIN1 PUK1 PIN2 PUK2), or declined (the fee goes back on the number). */
 export const POST = withApi<{ requestId: string }>(ESIM_WRITE, async ({ request, params, session }) => {
   const body = await validateBody(request, AnswerSchema);
   await connectDB();
@@ -22,7 +22,7 @@ export const POST = withApi<{ requestId: string }>(ESIM_WRITE, async ({ request,
   await auditEsim(request, session, {
     resourceId: `esim:number-request:${params.requestId}`,
     resourceName: "Number new QR code request",
-    summary: body.action === "complete" ? "Saved a new activation code for a number" : "Declined a new QR code request",
+    summary: body.action === "complete" ? "Moved a number to a new eSIM card (ICCID, activation code, PIN/PUK)" : "Declined a new QR code request",
     before: result.before,
     after: result.after,
   });

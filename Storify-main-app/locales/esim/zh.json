@@ -1627,11 +1627,11 @@
       "qrEnabled": "允许客户申请新二维码",
       "qrFee": "新二维码手续费",
       "qrRequests": "新二维码申请",
-      "qrRequestsHint": "先在 TopConnect 申请新的 eSIM 配置文件，再把完整激活码（LPA:1$…）粘贴到这里，会替换号码原来的激活码。拒绝申请会把手续费退回号码。",
+      "qrRequestsHint": "先在 TopConnect 申请新的 eSIM 配置文件，并在 TopConnect 把号码转到新卡上，再把新卡的整行内容粘贴到这里：ICCID LPA PIN1 PUK1 PIN2 PUK2，用空格分开。号码会转到这个 ICCID，并换上新的激活码和 PIN/PUK。拒绝申请会把手续费退回号码。",
       "qrRequestsNone": "没有待处理的申请。",
       "qrAnswer": "处理",
       "qrNote": "给客户的说明（拒绝时必填）",
-      "qrSave": "保存新激活码",
+      "qrSave": "把号码转到新卡",
       "qrDecline": "拒绝并退款",
       "payAirwallexHint": "在 Airwallex 后台（开发者 → Webhooks）把上面的回调地址添加为通知地址，订阅 payment_intent.succeeded 和 payment_intent.cancelled，再把它的密钥填入 webhookSecret。clientId 和 apiKey 在 开发者 → API 密钥 中获取。env 填 prod，沙盒测试填 demo。methods 可不填，例如 card,applepay,googlepay,alipaycn,wechatpay。",
       "impersonate": {
@@ -1710,7 +1710,13 @@
       "couponScopeCustom": "自定义（保持不变）",
       "couponScopeChosen": "已选 {count} 个",
       "couponScopeLoading": "加载中…",
-      "couponScopeFailed": "适用范围选项加载失败（没有 eSIM 权限？）。优惠券保持原来的适用范围。"
+      "couponScopeFailed": "适用范围选项加载失败（没有 eSIM 权限？）。优惠券保持原来的适用范围。",
+      "qrConfirmTitle": "把 +{number} 转到 ICCID {iccid}？",
+      "qrConfirmText": "号码会换上新的 ICCID、激活码和 PIN/PUK，客户会看到新的二维码。TopConnect 转好号码后，旧 eSIM 就不能用了。",
+      "qrCardFields": "请粘贴一行：ICCID LPA PIN1 PUK1 PIN2 PUK2，用空格分开",
+      "qrCardIccid": "第一项必须是新的 ICCID（18–22 位数字）",
+      "qrCardLpa": "第二项必须是完整激活码：LPA:1$地址$激活码",
+      "qrCardPin": "PIN 和 PUK 必须是 4–10 位数字"
     },
     "sidebar": {
       "esim": "eSIM",

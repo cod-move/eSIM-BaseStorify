@@ -145,3 +145,37 @@ export function dollarsToCents(raw: string): number | null {
   if (!match) return null;
   return Number(match[1]) * 100 + Number((match[2] ?? "").padEnd(2, "0"));
 }
+
+/** A number's new card, as TopConnect sends it for a new QR code. */
+export interface ReplacementCard {
+  iccid: string;
+  lpa: string;
+  pin1: string | null;
+  puk1: string | null;
+  pin2: string | null;
+  puk2: string | null;
+}
+
+/**
+ * The line an admin pastes when a number moves to a new eSIM profile, in
+ * the import's order without the number: `ICCID LPA PIN1 PUK1 PIN2 PUK2`,
+ * split by spaces (or commas, semicolons, tabs). The ICCID and the LPA are
+ * needed; a PIN or PUK that is not 4–10 digits is refused rather than lost.
+ */
+export function parseReplacementCard(input: string): { ok: true; card: ReplacementCard } | { ok: false; reason: "fields" | "iccid" | "lpa" | "pin" } {
+  const text = input.trim();
+  const fields = text.split(/[,;\t]/.test(text) ? /\s*[,;\t]\s*/ : /\s+/).map((field) => field.replace(/^"|"$/g, "").trim()).filter(Boolean);
+  if (fields.length < 2 || fields.length > 6) return { ok: false, reason: "fields" };
+  const [iccidField, lpaField, ...secrets] = fields;
+  const iccid = iccidField!.toUpperCase();
+  if (!/^\d{18,22}F?$/.test(iccid)) return { ok: false, reason: "iccid" };
+  const lpa = activationCode(lpaField!);
+  if (!lpa) return { ok: false, reason: "lpa" };
+  if (secrets.some((value) => secretCode(value) === null)) return { ok: false, reason: "pin" };
+  const [pin1, puk1, pin2, puk2] = [0, 1, 2, 3].map((index) => secretCode(secrets[index]));
+  return { ok: true, card: { iccid, lpa, pin1: pin1!, puk1: puk1!, pin2: pin2!, puk2: puk2! } };
+}
+
+/** The same card whatever the trailing "F" TopConnect sometimes adds. */
+export const sameIccid = (a: string | null | undefined, b: string | null | undefined) =>
+  !!a && !!b && a.toUpperCase().replace(/F$/, "") === b.toUpperCase().replace(/F$/, "");

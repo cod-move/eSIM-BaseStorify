@@ -7,8 +7,12 @@ import { EsimNumberOp } from "@/models/esim-number-op.model";
 import { EsimNumberTransfer } from "@/models/esim-number-transfer.model";
 import { EsimNumberRequest, type IEsimNumberRequest } from "@/models/esim-number-request.model";
 import { formatAmount } from "@/lib/esim/numbers/line";
-import { parseLpa } from "@/lib/esim/numbers/install";
+import { parseReplacementCard, sameIccid } from "@/lib/esim/numbers/import";
+import { credentialsOf, findProvider } from "@/lib/esim/provider-service";
+import { withProviderLog } from "@/lib/esim/provider-log";
+import { topConnectClient } from "@/lib/esim/providers/registry";
 import { refreshNumberCard } from "@/lib/esim/numbers/account";
+import { noticeQrAnswered } from "@/lib/esim/numbers/request-notices";
 import { getNumberSettings } from "@/lib/esim/numbers/settings";
 import { moveMoney, underTopConnectLock, type MoneyLeg, type TopConnectContext } from "@/lib/esim/numbers/ops";
 import { afterQrLeg, afterReleaseLeg, canAffordQr, creditToClear, type QrLeg } from "@/lib/esim/numbers/request-policy";
@@ -16,7 +20,7 @@ import { afterQrLeg, afterReleaseLeg, canAffordQr, creditToClear, type QrLeg } f
 /**
  * Asking for things about a number card (lib: models/esim-number-request):
  * a new QR code (fee off the card's credit, then a person orders it from
- * TopConnect and pastes the new code), moving the number to another
+ * TopConnect and pastes the new card, which the number moves to), moving the number to another
  * account, and giving it up (its credit is then taken off the card).
  */
 
@@ -131,7 +135,7 @@ async function tellAdmins(request: Pick<IEsimNumberRequest, "_id" | "msisdn" | "
   const { notifyAdminsPaymentAnomaly } = await import("@/lib/notifications/notifications");
   await notifyAdminsPaymentAnomaly({
     title: "New QR code requested",
-    message: `+${request.msisdn} needs a new QR code (fee ${formatAmount(request.feeMinor, request.currency)} taken). Order it from TopConnect and paste the new activation code under Admin → eSIM → Numbers.`,
+    message: `+${request.msisdn} needs a new QR code (fee ${formatAmount(request.feeMinor, request.currency)} taken). Order it from TopConnect, move the number to the new ICCID there, then paste the new card (ICCID LPA PIN1 PUK1 PIN2 PUK2) under Admin → eSIM → Numbers.`,
     dedupeKey: `esim-number-qr:${String(request._id)}`,
     link: "/admin/esim/numbers",
   }).catch(console.error);
@@ -273,32 +277,76 @@ export async function listQrRequests(options: { open?: boolean; limit?: number }
 
 export type AdminAnswer = { ok: true; before: Record<string, unknown>; after: Record<string, unknown> } | { ok: false; message: string };
 
-/** The new code is in: it replaces the number's install code, and the request is done. */
-export async function completeQrRequest(adminId: string, requestId: string, input: { lpa: string; note?: string | null }): Promise<AdminAnswer> {
+const REPLACEMENT_PROBLEMS = {
+  fields: "Paste one line: ICCID LPA PIN1 PUK1 PIN2 PUK2, split by spaces",
+  iccid: "The first field must be the new ICCID (18–22 digits)",
+  lpa: "The second field must be the full activation code: LPA:1$address$code",
+  pin: "PIN and PUK codes must be 4–10 digits",
+} as const;
+
+/**
+ * The new card is in: the number moves to the new ICCID with its activation
+ * code and PIN/PUK codes, and the request is done. The number must already
+ * be on that ICCID at TopConnect (`card_stat` is asked, nothing is changed
+ * there); the ICCID may not belong to another number here.
+ */
+export async function completeQrRequest(adminId: string, requestId: string, input: { card: string; note?: string | null }): Promise<AdminAnswer> {
   if (!valid(requestId)) return { ok: false, message: "Request not found" };
-  const lpa = input.lpa.trim();
-  const parsed = parseLpa(lpa);
-  if (!/^LPA:1\$/i.test(lpa) || !parsed.smdpAddress || !parsed.matchingId) return { ok: false, message: "Paste the full activation code: LPA:1$address$code" };
+  const parsed = parseReplacementCard(input.card);
+  if (!parsed.ok) return { ok: false, message: REPLACEMENT_PROBLEMS[parsed.reason] };
+  const next = parsed.card;
   const request = await EsimNumberRequest.findOne({ _id: requestId, kind: "qr" });
   if (!request) return { ok: false, message: "Request not found" };
   if (request.state !== "pending" && request.state !== "manual") return { ok: false, message: "This request is not waiting for a new code" };
-  const number = await EsimNumber.findById(request.number).select({ install: 1 });
+  const number = await EsimNumber.findById(request.number).select({ msisdn: 1, iccid: 1, install: 1 });
   if (!number) return { ok: false, message: "Number not found" };
-  // The audit log names the codes by their last characters, never in full.
+  if (sameIccid(number.iccid, next.iccid)) return { ok: false, message: "This is the ICCID the number already has; paste the new card's line" };
+  if (number.install.lpa === next.lpa) return { ok: false, message: "This is the activation code the number already has" };
+  const other = await EsimNumber.findOne({ _id: { $ne: number._id }, iccid: { $in: [next.iccid, next.iccid.replace(/F$/, ""), `${next.iccid.replace(/F$/, "")}F`] } }).select({ msisdn: 1 }).lean();
+  if (other) return { ok: false, message: `This ICCID belongs to +${other.msisdn} here` };
+  const atTopConnect = await topConnectIccid(String(number._id), number.msisdn);
+  if (!atTopConnect.ok) return atTopConnect;
+  if (atTopConnect.iccid && !sameIccid(atTopConnect.iccid, next.iccid)) {
+    return { ok: false, message: `TopConnect still has +${number.msisdn} on ICCID …${atTopConnect.iccid.slice(-6)}. Move the number to the new ICCID at TopConnect first` };
+  }
+
+  // The audit log names the activation codes by their last characters, never in full, and no PIN or PUK.
   const masked = (code: string) => `…${code.slice(-6)}`;
-  const before = { lpa: masked(number.install.lpa) };
-  if (number.install.lpa === lpa) return { ok: false, message: "This is the code the number already has" };
-  number.set("install.lpa", lpa);
+  const before = { iccid: number.iccid, lpa: masked(number.install.lpa) };
+  const previous = number.iccid;
+  number.set("iccid", next.iccid);
+  number.set("install", { lpa: next.lpa, pin1: next.pin1, puk1: next.puk1, pin2: next.pin2, puk2: next.puk2 });
+  // Read the card again below (it is the new card now), rather than show the old one's state.
+  number.set("card", null);
   await number.save();
   const now = new Date();
   await EsimNumberRequest.updateOne(
     { _id: request._id },
     {
       $set: { state: "completed", completedAt: now, resolution: { by: mongoose.isValidObjectId(adminId) ? new mongoose.Types.ObjectId(adminId) : null, at: now, note: input.note?.trim() || null } },
-      $push: { history: { at: now, event: "completed", detail: "new activation code saved" } },
+      $push: { history: { at: now, event: "completed", detail: `moved to ICCID ${next.iccid} (was ${previous}); new activation code saved` } },
     },
   );
-  return { ok: true, before: { request: requestId, ...before }, after: { request: requestId, lpa: masked(lpa) } };
+  await refreshNumberCard(String(number._id), { force: true }).catch(() => false);
+  await noticeQrAnswered(requestId);
+  return { ok: true, before: { request: requestId, ...before }, after: { request: requestId, iccid: next.iccid, lpa: masked(next.lpa), pinsGiven: [next.pin1, next.puk1, next.pin2, next.puk2].filter(Boolean).length } };
+}
+
+/** The ICCID TopConnect has the number on now (null when its answer names none). */
+async function topConnectIccid(numberId: string, msisdn: string): Promise<{ ok: true; iccid: string | null } | { ok: false; message: string }> {
+  const provider = await findProvider("topconnect");
+  if (!provider || provider.status !== "active") return { ok: false, message: "TopConnect is not set up, so the new ICCID cannot be checked" };
+  try {
+    const client = topConnectClient(credentialsOf(provider));
+    const { card } = await withProviderLog(
+      { provider: provider._id as mongoose.Types.ObjectId, providerCode: "topconnect", operation: "numbers.card", request: { msisdn, number: numberId } },
+      () => client.cardStatus({ msisdn }),
+      (result) => ({ iccid: result.card.iccid }),
+    );
+    return { ok: true, iccid: card.iccid?.trim() || null };
+  } catch (error) {
+    return { ok: false, message: `Could not check the number at TopConnect (${error instanceof Error ? error.message : String(error)}); try again` };
+  }
 }
 
 /** Declined: the fee goes back on the card (or the request just closes when nothing was taken). */
@@ -321,6 +369,7 @@ export async function rejectQrRequest(adminId: string, requestId: string, note: 
     },
   );
   if (taken) await processNumberRequests({ customer: String(request.customer), budgetMs: 15_000 });
+  await noticeQrAnswered(requestId);
   return { ok: true, before: { request: requestId, state: "pending" }, after: { request: requestId, state: taken ? "refunding" : "rejected" } };
 }
 

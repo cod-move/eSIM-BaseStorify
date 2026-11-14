@@ -1627,11 +1627,11 @@
       "qrEnabled": "允許客戶申請新二維碼",
       "qrFee": "新二維碼手續費",
       "qrRequests": "新二維碼申請",
-      "qrRequestsHint": "先在 TopConnect 申請新的 eSIM 配置文件，再把完整激活碼（LPA:1$…）粘貼到這裏，會替換號碼原來的激活碼。拒絕申請會把手續費退回號碼。",
+      "qrRequestsHint": "先在 TopConnect 申請新的 eSIM 配置文件，並在 TopConnect 把號碼轉到新卡上，再把新卡的整行內容粘貼到這裏：ICCID LPA PIN1 PUK1 PIN2 PUK2，用空格分開。號碼會轉到這個 ICCID，並換上新的激活碼和 PIN/PUK。拒絕申請會把手續費退回號碼。",
       "qrRequestsNone": "沒有待處理的申請。",
       "qrAnswer": "處理",
       "qrNote": "給客戶的說明（拒絕時必填）",
-      "qrSave": "保存新激活碼",
+      "qrSave": "把號碼轉到新卡",
       "qrDecline": "拒絕並退款",
       "payAirwallexHint": "在 Airwallex 後臺（開發者 → Webhooks）把上面的回調地址添加爲通知地址，訂閱 payment_intent.succeeded 和 payment_intent.cancelled，再把它的密鑰填入 webhookSecret。clientId 和 apiKey 在 開發者 → API 密鑰 中獲取。env 填 prod，沙盒測試填 demo。methods 可不填，例如 card,applepay,googlepay,alipaycn,wechatpay。",
       "impersonate": {
@@ -1710,7 +1710,13 @@
       "couponScopeCustom": "自訂（保持不變）",
       "couponScopeChosen": "已選 {count} 個",
       "couponScopeLoading": "載入中…",
-      "couponScopeFailed": "適用範圍選項載入失敗（沒有 eSIM 權限？）。優惠券保持原來的適用範圍。"
+      "couponScopeFailed": "適用範圍選項載入失敗（沒有 eSIM 權限？）。優惠券保持原來的適用範圍。",
+      "qrConfirmTitle": "把 +{number} 轉到 ICCID {iccid}？",
+      "qrConfirmText": "號碼會換上新的 ICCID、激活碼和 PIN/PUK，客戶會看到新的二維碼。TopConnect 轉好號碼後，舊 eSIM 就不能用了。",
+      "qrCardFields": "請粘貼一行：ICCID LPA PIN1 PUK1 PIN2 PUK2，用空格分開",
+      "qrCardIccid": "第一項必須是新的 ICCID（18–22 位數字）",
+      "qrCardLpa": "第二項必須是完整激活碼：LPA:1$地址$激活碼",
+      "qrCardPin": "PIN 和 PUK 必須是 4–10 位數字"
     },
     "sidebar": {
       "esim": "eSIM",
