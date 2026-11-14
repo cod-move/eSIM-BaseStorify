@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" width="1000" height="1000">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0EA5E9"/>
+      <stop offset="1" stop-color="#4F46E5"/>
+    </linearGradient>
+    <linearGradient id="chip" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FDE68A"/>
+      <stop offset="1" stop-color="#F59E0B"/>
+    </linearGradient>
+  </defs>
+  <rect width="1000" height="1000" rx="0" fill="url(#bg)"/>
+  <circle cx="820" cy="170" r="260" fill="#fff" opacity=".07"/>
+  <circle cx="140" cy="880" r="220" fill="#fff" opacity=".06"/>
+
+  <!-- SIM card -->
+  <g transform="translate(330 200)">
+    <path d="M40 0h220l80 80v340a40 40 0 0 1-40 40H40a40 40 0 0 1-40-40V40A40 40 0 0 1 40 0z" fill="#fff"/>
+    <rect x="70" y="140" width="200" height="170" rx="22" fill="url(#chip)"/>
+    <path d="M70 197h200M70 253h200M137 140v170M203 140v170" stroke="#B45309" stroke-width="6" opacity=".55"/>
+    <text x="170" y="400" text-anchor="middle" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="44" font-weight="800" fill="#4F46E5">eSIM</text>
+  </g>
+
+  <!-- top-up badge: data refill arrows -->
+  <g transform="translate(640 560)">
+    <circle r="105" fill="#10B981" stroke="#fff" stroke-width="12"/>
+    <path d="M-48 10a50 50 0 0 1 86-38" fill="none" stroke="#fff" stroke-width="16" stroke-linecap="round"/>
+    <path d="M28 -58l14 34-36 6z" fill="#fff"/>
+    <path d="M48 -10a50 50 0 0 1-86 38" fill="none" stroke="#fff" stroke-width="16" stroke-linecap="round"/>
+    <path d="M-28 58l-14-34 36-6z" fill="#fff"/>
+  </g>
+
+  <text x="500" y="790" text-anchor="middle" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="76" font-weight="800" fill="#fff">eSIM Top-up</text>
+  <text x="500" y="860" text-anchor="middle" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="36" font-weight="500" fill="#E0F2FE">Add data to your existing eSIM</text>
+</svg>

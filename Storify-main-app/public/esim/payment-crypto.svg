@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#F59E0B"/>
+      <stop offset="1" stop-color="#EA580C"/>
+    </linearGradient>
+  </defs>
+  <rect width="128" height="128" rx="28" fill="url(#g)"/>
+  <!-- back coin -->
+  <circle cx="84" cy="44" r="22" fill="#FDE68A" stroke="#fff" stroke-width="4"/>
+  <text x="84" y="53" text-anchor="middle" font-family="Arial,sans-serif" font-size="26" font-weight="800" fill="#B45309">₮</text>
+  <!-- front coin -->
+  <circle cx="56" cy="72" r="34" fill="#fff"/>
+  <circle cx="56" cy="72" r="27" fill="none" stroke="#EA580C" stroke-width="3" opacity=".4"/>
+  <text x="56" y="88" text-anchor="middle" font-family="Arial,sans-serif" font-size="46" font-weight="800" fill="#EA580C">₿</text>
+</svg>
