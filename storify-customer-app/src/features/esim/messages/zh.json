@@ -35,6 +35,7 @@
     "scanHint": "也可以在另一块屏幕上显示此二维码，在 设置 › 蜂窝网络 › 添加 eSIM 中扫描。",
     "smdp": "SM-DP+ 地址",
     "activationCode": "激活码",
+    "lpaCode": "完整 LPA 代码",
     "apn": "APN",
     "copy": "复制",
     "copied": "已复制",

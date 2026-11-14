@@ -35,6 +35,7 @@
     "scanHint": "Or scan this code from another screen: Settings › Mobile service › Add eSIM.",
     "smdp": "SM-DP+ address",
     "activationCode": "Activation code",
+    "lpaCode": "Full LPA code",
     "apn": "APN",
     "copy": "Copy",
     "copied": "Copied",

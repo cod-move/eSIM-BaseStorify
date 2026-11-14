@@ -15,6 +15,7 @@ import { useErrorMessage } from '@/i18n/use-error-message';
 
 import { CancelEsim } from './cancel-esim';
 import { EsimStatus } from './esim-status';
+import { installCodes } from './install-codes';
 import { UsageBar } from './usage-bar';
 import { useRefreshEsim } from './use-esims';
 
@@ -137,6 +138,7 @@ function InstallCard({ install, prominent }: { install: EsimInstall; prominent: 
       : Platform.OS === 'android'
         ? install.androidLink
         : undefined;
+  const codes = installCodes(install);
   const copy = (value: string) => {
     setStringAsync(value)
       .then(() => setCopied(value))
@@ -180,10 +182,13 @@ function InstallCard({ install, prominent }: { install: EsimInstall; prominent: 
         ) : null}
         <CodeRow
           label={t('activationCode')}
-          value={install.matchingId ?? install.activationCode}
-          copied={copied === (install.matchingId ?? install.activationCode)}
+          value={codes.activationCode}
+          copied={copied === codes.activationCode}
           onCopy={copy}
         />
+        {codes.lpa ? (
+          <CodeRow label={t('lpaCode')} value={codes.lpa} copied={copied === codes.lpa} onCopy={copy} />
+        ) : null}
         {install.apn ? (
           <CodeRow
             label={t('apn')}
@@ -213,7 +218,7 @@ function CodeRow({
     <View className="gap-1">
       <Text variant="caption">{label}</Text>
       <View className="flex-row items-center gap-2">
-        <Text className="flex-1" selectable numberOfLines={2}>
+        <Text className="flex-1" selectable>
           {value}
         </Text>
         <Button

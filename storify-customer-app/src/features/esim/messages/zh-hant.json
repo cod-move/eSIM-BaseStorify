@@ -35,6 +35,7 @@
     "scanHint": "也可以在另一塊屏幕上顯示此二維碼，在 設置 › 蜂窩網絡 › 添加 eSIM 中掃描。",
     "smdp": "SM-DP+ 地址",
     "activationCode": "激活碼",
+    "lpaCode": "完整 LPA 代碼",
     "apn": "APN",
     "copy": "複製",
     "copied": "已複製",
