@@ -104,7 +104,12 @@ async function openPage(url: string, returnUrl: string): Promise<string | null> 
     onHeard?.();
   });
   try {
-    const session = await openAuthSessionAsync(url, returnUrl);
+    // Android: the page opens in the app's own task. In a task of its own
+    // (the default) closing it with Back or × goes through a see-through
+    // in-between screen that starts the app again, and the app came back
+    // blank; from recents it was fine. In the app's task Back and × simply
+    // land on the checkout again.
+    const session = await openAuthSessionAsync(url, returnUrl, { createTask: false });
     if (session.type === 'success') return session.url;
     if (heard === null) {
       await new Promise<void>((resolve) => {
