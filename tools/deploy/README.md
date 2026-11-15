@@ -197,11 +197,17 @@ curl -s -o /dev/null -w "%{http_code}\n" http://127.0.0.1:3000/api/settings/publ
 ```
 
 - **用面板「计划任务」配置的**：逐个编辑任务脚本，把里面的 `<现网目录>` 改成 `/www/wwwroot/codsim/current`，其他（地址 `http://127.0.0.1:3000`、任务路径、超时）不变。
-- **用 crontab 配置的**：重新生成一份：
+- **用 crontab 配置的**（`crontab -l` 里直接能看到 `run-cron.sh`）：把现有 crontab 里的旧目录整体替换掉，其他行原样保留：
   ```bash
-  CRON_SKIP=esim-fulfillment bash /www/wwwroot/codsim/current/tools/cron/server-crontab.sh /www/wwwroot/codsim/current/Storify-main-app > /tmp/storify.cron
+  crontab -l > /root/crontab.bak                                    # 备份
+  sed 's#<现网目录>#/www/wwwroot/codsim/current#g' /root/crontab.bak > /tmp/storify.cron
+  diff /root/crontab.bak /tmp/storify.cron                          # 核对：只有目录变了
+  crontab /tmp/storify.cron                                         # 安装
+  crontab -l | grep -c codsim/current                               # 应该等于原来的任务行数
   ```
-  `esim-fulfillment` 那几行（每 10 秒一次）也改用 `/www/wwwroot/codsim/current/...` 的路径，然后用 `crontab /tmp/storify.cron` 安装。
+  改错了可以用 `crontab /root/crontab.bak` 恢复。
+
+  > `tools/cron/server-crontab.sh` 只是把新的任务表**打印**出来（重定向到文件时终端没有输出），不会自动安装；而且它不含 `esim-fulfillment` 那几行，直接安装会丢掉这几行。只在 `vercel.json` 里的定时任务有增减时才需要用它重新生成，再手动合并。
 
 改完看一下日志里定时任务的记录是否正常：
 

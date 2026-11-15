@@ -37,13 +37,15 @@ describe("topupEligibility", () => {
     assert.equal(reason(topupEligibility(input({ lifecycle: "cancelled" }), now)), "cancelled");
   });
 
-  it("before_expiry: only while the package lives", () => {
+  it("before_expiry: until the package expires, used up or not", () => {
     assert.equal(reason(topupEligibility(input({ topupDeadline: earlier }), now)), "expired");
     assert.equal(reason(topupEligibility(input({ topupDeadline: null, expiresAt: earlier }), now)), "expired");
     assert.equal(reason(topupEligibility(input({ lifecycle: "expired" }), now)), "expired");
-    assert.equal(reason(topupEligibility(input({ lifecycle: "depleted" }), now)), "used_up");
+    assert.equal(reason(topupEligibility(input({ lifecycle: "depleted" }), now)), "ok");
+    assert.equal(reason(topupEligibility(input({ lifecycle: "depleted" }, { window: null }), now)), "ok");
+    assert.equal(reason(topupEligibility(input({ lifecycle: "depleted", topupDeadline: earlier }), now)), "expired");
     // No window stated is treated as the strict one.
-    assert.equal(reason(topupEligibility(input({ lifecycle: "depleted" }, { window: null }), now)), "used_up");
+    assert.equal(reason(topupEligibility(input({ lifecycle: "expired" }, { window: null }), now)), "expired");
   });
 
   it("while_profile_exists: any time until the profile goes", () => {

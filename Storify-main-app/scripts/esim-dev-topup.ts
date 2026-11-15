@@ -194,9 +194,9 @@ async function run() {
   const expired = await offersLib.topupOffers(String(alice), String(addon._id));
   assert.ok(expired?.eligibility.ok, "while_profile_exists: an expired package can still take an add-on");
   const depleted = await offersLib.topupOffers(String(alice), String(usedUp._id));
-  assert.deepEqual(depleted?.eligibility, { ok: false, reason: "used_up" });
+  assert.ok(depleted?.eligibility.ok, "before_expiry: data used up but not expired can be topped up");
   assert.equal(await offersLib.topupOffers(String(bob), String(stacked._id)), null, "someone else's eSIM is not found");
-  console.log(`✓ offers: two top-ups priced ${offers!.offers.map((offer) => offer.priceMinor).join(" / ")} cents; used-up refused; another account sees nothing`);
+  console.log(`✓ offers: two top-ups priced ${offers!.offers.map((offer) => offer.priceMinor).join(" / ")} cents; used-up allowed; another account sees nothing`);
 
   // 2. A quote and the cart line. The top-up product is made by the catalogue publish.
   const { ensureTopupProduct } = await import("@/lib/esim/topup/product");

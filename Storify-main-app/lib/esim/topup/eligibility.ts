@@ -4,9 +4,10 @@ import type { FulfillmentStatus, LifecycleStatus, TopupRule } from "@/lib/esim/p
  * Whether an eSIM can be topped up now (TOP-01). Pure.
  *
  * - The plan must take top-ups and its supplier must sell them.
- * - before_expiry (or no window stated): only while the current package
- *   lives — not expired, not used up, not cancelled; after that the eSIM is
- *   void and a new one has to be bought.
+ * - before_expiry (or no window stated): only until the package expires or
+ *   is cancelled; after that the eSIM is void and a new one has to be bought.
+ *   A package whose data is used up but has not expired can still be topped
+ *   up: that is when shoppers need it.
  * - while_profile_exists: any time until the supplier reclaims the profile.
  */
 
@@ -15,7 +16,7 @@ export type TopupRefusal =
   | "not_issued"
   | "cancelled"
   | "expired"
-  | "used_up"
+  | "used_up" // no longer given (data used up can be topped up); kept for older apps
   | "profile_expired";
 
 export interface EligibilityInput {
@@ -52,6 +53,5 @@ export function topupEligibility(input: EligibilityInput, now: Date = new Date()
   }
   const deadline = input.topupDeadline ?? input.expiresAt;
   if (input.lifecycle === "expired" || (deadline && deadline <= now)) return refuse("expired");
-  if (input.lifecycle === "depleted") return refuse("used_up");
   return { ok: true };
 }
