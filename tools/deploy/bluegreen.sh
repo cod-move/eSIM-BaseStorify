@@ -61,6 +61,13 @@ other_of() { [ "$1" = blue ] && echo green || echo blue; }
 live() { cat "$ROOT/live" 2>/dev/null || echo none; }
 app_dir() { echo "$ROOT/$1/$APP_SUBDIR"; }
 
+# Copies into <dst> the files of <src> it does not have yet; never overwrites.
+# (Not cp -n: from coreutils 9.2 it fails when a file is already there.)
+copy_missing() {
+  mkdir -p "$2"
+  (cd "$1" && tar cf - .) | (cd "$2" && tar xf - --skip-old-files)
+}
+
 link_shared() {
   local dir; dir="$(app_dir "$1")"
   mkdir -p "$ROOT/shared/logs" "$ROOT/shared/uploads" "$dir/public"
@@ -69,7 +76,7 @@ link_shared() {
   if [ -e "$dir/logs" ] && [ ! -L "$dir/logs" ]; then rm -rf "$dir/logs"; fi
   ln -sfn "$ROOT/shared/logs" "$dir/logs"
   if [ -e "$dir/public/uploads" ] && [ ! -L "$dir/public/uploads" ]; then
-    cp -an "$dir/public/uploads/." "$ROOT/shared/uploads/" && rm -rf "$dir/public/uploads"
+    copy_missing "$dir/public/uploads" "$ROOT/shared/uploads" && rm -rf "$dir/public/uploads"
   fi
   ln -sfn "$ROOT/shared/uploads" "$dir/public/uploads"
 }
@@ -143,7 +150,7 @@ cmd_deploy() {
   # they are named by their content, so the old ones are kept beside the new.
   if [ "$current" != none ]; then
     old_static="$(app_dir "$current")/.next/static"
-    [ -d "$old_static" ] && cp -an "$old_static/." "$dir/.next/static/"
+    if [ -d "$old_static" ]; then copy_missing "$old_static" "$dir/.next/static"; fi
   fi
 
   start_copy "$target"
