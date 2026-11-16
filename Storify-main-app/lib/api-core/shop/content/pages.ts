@@ -5,6 +5,7 @@ import type { NonFaqContentPageKey } from "@/lib/site-config/content-pages-confi
 import { getLandingPage } from "@/lib/storefront/pages/get-landing-page";
 import { getStorefrontSettings } from "@/lib/storefront/storefront-settings";
 import { appHtml } from "./html";
+import { localizeContentPage } from "@/lib/esim/content-pages/translations"; // [esim-patch] P74
 
 /** The pages the website shows at an address of their own, with `ContentPageView`. */
 const OWN_ADDRESS_PAGES: readonly NonFaqContentPageKey[] = ["privacy", "terms", "cookies", "accessibility"];
@@ -35,14 +36,16 @@ export const contentPageRoute = defineRoute({
   cache: { kind: "static", revalidate: 60 },
   reasons: { values: CONTENT_PAGE_REASONS },
   output: ContentPage,
-  handler: async ({ params }) => {
+  handler: async ({ params, locale }) => {
     const handle = params.handle;
     const { contentPages } = await getStorefrontSettings();
 
     if (isOwnAddressPage(handle)) {
       const page = contentPages[handle];
       if (!page.visible) throw notFound();
-      return { handle, title: page.title, html: appHtml(page.content) };
+      // [esim-patch] P74 the app's language version, else the default
+      const { title, content } = localizeContentPage(page, locale);
+      return { handle, title, html: appHtml(content) };
     }
 
     if (await getLandingPage(handle)) {

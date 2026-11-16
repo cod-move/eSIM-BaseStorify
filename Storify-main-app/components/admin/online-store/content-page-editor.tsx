@@ -18,6 +18,12 @@ import {
   type NonFaqContentPageKey,
 } from "@/lib/site-config/content-pages-config";
 import { isRecord } from "@/lib/utils";
+// [esim-patch] P74
+import { ContentPageLanguagePicker } from "@/components/esim/admin/content-page-language-picker";
+import {
+  normalizeContentPageTranslations,
+  type ContentPageTranslations,
+} from "@/lib/esim/content-pages/translations";
 
 type SettingsResponse = {
   success?: boolean;
@@ -46,6 +52,24 @@ export function ContentPageEditor({
   const [initialVisible, setInitialVisible] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  // [esim-patch] P74 other languages' versions; "" edits the default version
+  const [editLang, setEditLang] = useState("");
+  const [translations, setTranslations] = useState<ContentPageTranslations>({});
+  const [initialTranslations, setInitialTranslations] = useState("{}");
+  const applyTranslations = (value: unknown) => {
+    const next = normalizeContentPageTranslations(value);
+    setTranslations(next);
+    setInitialTranslations(JSON.stringify(next));
+  };
+  const shownTitle = editLang ? (translations[editLang]?.title ?? "") : title;
+  const shownContent = editLang ? (translations[editLang]?.content ?? "") : content;
+  const editField = (field: "title" | "content", value: string) => {
+    if (!editLang) return field === "title" ? setTitle(value) : setContent(value);
+    setTranslations((prev) => ({
+      ...prev,
+      [editLang]: { title: prev[editLang]?.title ?? "", content: prev[editLang]?.content ?? "", [field]: value },
+    }));
+  };
 
   useEffect(() => {
     const load = async () => {
@@ -71,6 +95,7 @@ export function ContentPageEditor({
         setInitialTitle(normalized[pageKey].title);
         setInitialContent(normalized[pageKey].content);
         setInitialVisible(normalized[pageKey].visible);
+        applyTranslations(normalized[pageKey].translations); // [esim-patch] P74
       } catch {
         toast.error(t("toast.loadFailed", { title: pageTitle }));
       } finally {
@@ -85,8 +110,9 @@ export function ContentPageEditor({
     () =>
       title !== initialTitle ||
       content !== initialContent ||
-      visible !== initialVisible,
-    [title, initialTitle, content, initialContent, visible, initialVisible],
+      visible !== initialVisible ||
+      JSON.stringify(translations) !== initialTranslations, // [esim-patch] P74
+    [title, initialTitle, content, initialContent, visible, initialVisible, translations, initialTranslations],
   );
 
   const save = async () => {
@@ -102,6 +128,7 @@ export function ContentPageEditor({
               title,
               content,
               visible,
+              translations, // [esim-patch] P74
             },
           },
         }),
@@ -121,6 +148,7 @@ export function ContentPageEditor({
       setInitialTitle(normalized[pageKey].title);
       setInitialContent(normalized[pageKey].content);
       setInitialVisible(normalized[pageKey].visible);
+      applyTranslations(normalized[pageKey].translations); // [esim-patch] P74
       toast.success(t("toast.saved", { title: pageTitle }));
     } catch {
       toast.error(t("toast.saveFailedFor", { title: pageTitle }));
@@ -131,7 +159,7 @@ export function ContentPageEditor({
 
   const openPreview = () => {
     window.open(
-      `/${locale}${pageMeta.publicPath}`,
+      `/${editLang || locale}${pageMeta.publicPath}`, // [esim-patch] P74 preview the language being edited
       "_blank",
       "noopener,noreferrer",
     );
@@ -184,13 +212,19 @@ export function ContentPageEditor({
 
       <Card className="rounded-sm border border-border bg-card p-4 shadow-[0_3px_14px_rgba(15,23,42,0.06)] md:p-6">
         <div className="space-y-4">
+          {/* [esim-patch] P74 */}
+          <ContentPageLanguagePicker
+            value={editLang}
+            onChange={setEditLang}
+            translations={translations}
+          />
           <div className="space-y-2">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
               {t("fields.pageTitle")}
             </p>
             <Input
-              value={title}
-              onChange={(event) => setTitle(event.target.value)}
+              value={shownTitle /* [esim-patch] P74 */}
+              onChange={(event) => editField("title", event.target.value)}
               placeholder={pageTitle}
             />
           </div>
@@ -200,8 +234,9 @@ export function ContentPageEditor({
               {t("fields.pageContent")}
             </p>
             <RichTextEditor
-              value={content}
-              onChange={setContent}
+              key={editLang || "default" /* [esim-patch] P74 */}
+              value={shownContent}
+              onChange={(value: string) => editField("content", value)}
               placeholder={t("placeholders.content", { title: pageTitle })}
               className="min-h-[360px]"
             />

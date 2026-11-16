@@ -1,5 +1,10 @@
 import { isRecord } from "@/lib/utils";
 import { foldForSlug } from "@/lib/strings";
+// [esim-patch] P74
+import {
+  normalizeContentPageTranslations,
+  type ContentPageTranslations,
+} from "@/lib/esim/content-pages/translations";
 export const CONTENT_PAGE_KEYS = [
   "terms",
   "privacy",
@@ -112,6 +117,8 @@ interface ContentPageData {
   title: string;
   content: string;
   visible: boolean;
+  /** [esim-patch] P74 other languages' versions, by locale */
+  translations?: ContentPageTranslations;
 }
 
 export interface FaqItem {
@@ -1395,6 +1402,7 @@ export function normalizeContentPagesSettings(value: unknown): ContentPagesSetti
         typeof terms.visible === "boolean"
           ? terms.visible
           : defaults.terms.visible,
+      translations: normalizeContentPageTranslations(terms.translations), // [esim-patch] P74
     },
     privacy: {
       title: normalizeString(privacy.title, defaults.privacy.title),
@@ -1403,6 +1411,7 @@ export function normalizeContentPagesSettings(value: unknown): ContentPagesSetti
         typeof privacy.visible === "boolean"
           ? privacy.visible
           : defaults.privacy.visible,
+      translations: normalizeContentPageTranslations(privacy.translations), // [esim-patch] P74
     },
     returns: {
       title: normalizeString(returns.title, defaults.returns.title),
@@ -1505,6 +1514,7 @@ export function normalizeContentPagesSettings(value: unknown): ContentPagesSetti
         typeof cookies.visible === "boolean"
           ? cookies.visible
           : defaults.cookies.visible,
+      translations: normalizeContentPageTranslations(cookies.translations), // [esim-patch] P74
     },
     accessibility: {
       title: normalizeString(accessibility.title, defaults.accessibility.title),
@@ -1516,6 +1526,7 @@ export function normalizeContentPagesSettings(value: unknown): ContentPagesSetti
         typeof accessibility.visible === "boolean"
           ? accessibility.visible
           : defaults.accessibility.visible,
+      translations: normalizeContentPageTranslations(accessibility.translations), // [esim-patch] P74
     },
     contact: {
       title: normalizeString(contact.title, defaults.contact.title),

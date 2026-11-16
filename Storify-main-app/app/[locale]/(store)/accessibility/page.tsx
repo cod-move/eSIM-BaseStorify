@@ -3,6 +3,7 @@ import { setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { ContentPageView } from "@/components/store/content-page-view";
 import { getStorefrontSettings } from "@/lib/storefront/storefront-settings";
+import { localizeContentPage } from "@/lib/esim/content-pages/translations"; // [esim-patch] P74
 
 interface PageProps {
   params: Promise<{ locale: string }>;
@@ -22,8 +23,7 @@ export default async function AccessibilityPage({ params }: PageProps) {
     <ContentPageView
       locale={locale}
       storeDefault={storeDefault}
-      title={contentPages.accessibility.title}
-      content={contentPages.accessibility.content}
+      {...localizeContentPage(contentPages.accessibility, locale) /* [esim-patch] P74 */}
     />
   );
 }
