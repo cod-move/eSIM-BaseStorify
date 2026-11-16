@@ -21,7 +21,10 @@ import path from "path";
 import { Readable } from "stream";
 import { NextRequest } from "next/server";
 
-const BASE_DIR = path.join(process.cwd(), "public", "uploads");
+// [esim-patch] P75 turbopackIgnore: the build must not trace the files in
+// public/uploads (a symlink to shared storage on the server; a file in it that
+// is itself a symlink out of the project fails the whole build).
+const BASE_DIR = path.join(/*turbopackIgnore: true*/ process.cwd(), "public", "uploads");
 
 const MIME_TYPES: Record<string, string> = {
   // Images
@@ -50,6 +53,8 @@ const MIME_TYPES: Record<string, string> = {
   gltf: "model/gltf+json",
   // Documents
   pdf: "application/pdf",
+  // [esim-patch] P75 the shopper app's APK (/esim/app)
+  apk: "application/vnd.android.package-archive",
 };
 
 function contentTypeFor(filePath: string): string {
@@ -93,7 +98,7 @@ async function resolveFile(
     return null;
   }
 
-  const filePath = path.join(process.cwd(), "public", "uploads", ...segments);
+  const filePath = path.join(/*turbopackIgnore: true*/ process.cwd(), "public", "uploads", ...segments); // [esim-patch] P75
   const relativePath = path.relative(BASE_DIR, filePath);
   if (relativePath.startsWith("..") || path.isAbsolute(relativePath)) return null;
 
