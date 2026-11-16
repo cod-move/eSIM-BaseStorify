@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Makes the CodSIM Business app's icons from the shopper app's CodSIM fish:
- * the fish on a dark tile with a blue briefcase badge, so the two apps tell
+ * the fish on a golden-yellow tile with a blue briefcase badge, so the two apps tell
  * apart at a glance on a phone.
  *
  *   node tools/brand/business-icons.js
@@ -20,8 +20,8 @@ const FISH = path.join(ROOT, "storify-customer-app/assets/images/android-icon-fo
 const OUT = path.join(ROOT, "Storify-business-app/assets/images");
 
 /** The tile behind the fish; also the adaptive icon's background colour in app.json. */
-const TILE_TOP = "#33333D";
-const TILE_BOTTOM = "#16161B";
+const TILE_TOP = "#FFD24D";
+const TILE_BOTTOM = "#FFB31A";
 
 function tile(size) {
   return Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}">
@@ -108,7 +108,7 @@ async function mark(size, scale, { silhouette = false } = {}) {
 async function main() {
   const write = (name, input) => sharp(input).png().toFile(path.join(OUT, name)).then(() => console.log("wrote", name));
 
-  // The full icon (iOS, Android before adaptive icons, the web): the dark tile under the mark.
+  // The full icon (iOS, Android before adaptive icons, the web): the yellow tile under the mark.
   const icon = await sharp(tile(1024)).composite([{ input: await mark(1024, 0.74) }]).png().toBuffer();
   await write("icon.png", icon);
   await write("android-icon.png", icon);
@@ -118,7 +118,7 @@ async function main() {
   await write("android-icon-foreground.png", await mark(1024, 0.56));
   await write("android-icon-monochrome.png", await mark(1024, 0.56, { silhouette: true }));
 
-  // Launch screen (on app.json's dark splash colour) and the notification icon (white on transparent).
+  // Launch screen (on app.json's splash colour) and the notification icon (white on transparent).
   await write("splash-icon.png", await mark(1024, 0.92));
   await write("notification-icon.png", await sharp(await mark(1024, 0.92, { silhouette: true })).resize(96, 96).png().toBuffer());
 }
