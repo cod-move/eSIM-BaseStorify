@@ -970,6 +970,10 @@
         "esim-numbers-entry": {
           "name": "eSIM：電話番号",
           "description": "番号ページへのシンプルな入口。販売中の番号をいくつかと最低価格を表示"
+        },
+        "esim-app-download": {
+          "name": "eSIM：アプリのダウンロード",
+          "description": "Android APK のダウンロード、ストアへのリンク、インストール手順"
         }
       },
       "blocks": {
@@ -988,7 +992,14 @@
         "icon": "アイコン",
         "text": "テキスト",
         "platform": "端末",
-        "sampleCount": "表示する番号数"
+        "sampleCount": "表示する番号数",
+        "eyebrow": "小見出し",
+        "apkUrl": "APK のリンク",
+        "apkVersion": "APK のバージョン",
+        "showQr": "QR コードを表示",
+        "googlePlayUrl": "Google Play のリンク",
+        "appStoreUrl": "App Store のリンク",
+        "showSteps": "インストール手順を表示"
       },
       "options": {
         "local": "国",
@@ -1014,6 +1025,9 @@
         },
         "esim-plan-selector": {
           "destination": "/esim/ の後に続く渡航先のアドレス（例：japan、europe-35-areas、global）。"
+        },
+        "esim-app-download": {
+          "apkUrl": "リンクを空欄にすると、サイトの既定のダウンロードリンクを使います。"
         }
       }
     },

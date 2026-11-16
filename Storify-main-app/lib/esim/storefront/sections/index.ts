@@ -3,6 +3,7 @@ import { esimDestinationTabs, esimHero, esimPlanSelector, esimPopular } from "./
 import { esimDeviceCheck, esimInstallGuide, esimSteps } from "./guides";
 import { esimProductDetails } from "./product";
 import { esimNumbersEntry } from "./numbers";
+import { esimAppDownload } from "./app-download";
 
 /**
  * The eSIM blocks, added to Storify's section registry by patch P1
@@ -20,4 +21,5 @@ export const ESIM_SECTIONS: SectionDefinition[] = [
   esimInstallGuide,
   esimDeviceCheck,
   esimProductDetails,
+  esimAppDownload,
 ];

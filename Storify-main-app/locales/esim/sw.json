@@ -970,6 +970,10 @@
         "esim-numbers-entry": {
           "name": "eSIM: namba za simu",
           "description": "Mlango mwembamba wa kwenda ukurasa wa namba, wenye namba chache zinazouzwa na bei ya kuanzia"
+        },
+        "esim-app-download": {
+          "name": "eSIM: Pakua programu",
+          "description": "Pakua APK ya Android, viungo vya maduka na hatua za kusakinisha"
         }
       },
       "blocks": {
@@ -988,7 +992,14 @@
         "icon": "Aikoni",
         "text": "Maandishi",
         "platform": "Simu",
-        "sampleCount": "Namba zinazoonyeshwa"
+        "sampleCount": "Namba zinazoonyeshwa",
+        "eyebrow": "Kichwa kidogo",
+        "apkUrl": "Kiungo cha APK",
+        "apkVersion": "Toleo la APK",
+        "showQr": "Onyesha msimbo wa QR",
+        "googlePlayUrl": "Kiungo cha Google Play",
+        "appStoreUrl": "Kiungo cha App Store",
+        "showSteps": "Onyesha hatua za kusakinisha"
       },
       "options": {
         "local": "Nchi",
@@ -1014,6 +1025,9 @@
         },
         "esim-plan-selector": {
           "destination": "Anwani ya eneo baada ya /esim/, k.m. japan, europe-35-areas au global."
+        },
+        "esim-app-download": {
+          "apkUrl": "Acha viungo vikiwa tupu ili kutumia viungo chaguo-msingi vya kupakua vya tovuti."
         }
       }
     },

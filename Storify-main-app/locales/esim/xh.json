@@ -970,6 +970,10 @@
         "esim-numbers-entry": {
           "name": "eSIM: iinombolo zefowuni",
           "description": "Indlela encinci yokungena kwiphepha leenombolo, eneenombolo ezimbalwa ezithengiswayo nexabiso lokuqala"
+        },
+        "esim-app-download": {
+          "name": "eSIM: Ukukhuphela i-app",
+          "description": "Ukukhuphela i-APK ye-Android, amakhonkco eevenkile kunye namanyathelo okufaka"
         }
       },
       "blocks": {
@@ -988,7 +992,14 @@
         "icon": "Umfanekiso",
         "text": "Umbhalo",
         "platform": "Ifowuni",
-        "sampleCount": "Iinombolo eziboniswayo"
+        "sampleCount": "Iinombolo eziboniswayo",
+        "eyebrow": "Isihloko esincinci",
+        "apkUrl": "Ikhonkco le-APK",
+        "apkVersion": "Inguqulelo ye-APK",
+        "showQr": "Bonisa ikhowudi ye-QR",
+        "googlePlayUrl": "Ikhonkco le-Google Play",
+        "appStoreUrl": "Ikhonkco le-App Store",
+        "showSteps": "Bonisa amanyathelo okufaka"
       },
       "options": {
         "local": "Amazwe",
@@ -1014,6 +1025,9 @@
         },
         "esim-plan-selector": {
           "destination": "Idilesi yendawo emva kwe-/esim/, umz. japan, europe-35-areas okanye global."
+        },
+        "esim-app-download": {
+          "apkUrl": "Shiya amakhonkco engenanto ukuze usebenzise amakhonkco okukhuphela amiselweyo esiza."
         }
       }
     },

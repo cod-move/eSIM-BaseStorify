@@ -970,6 +970,10 @@
         "esim-numbers-entry": {
           "name": "eSIM: أرقام الهواتف",
           "description": "مدخل بسيط إلى صفحة الأرقام، مع بعض الأرقام المعروضة وسعر البداية"
+        },
+        "esim-app-download": {
+          "name": "eSIM: تنزيل التطبيق",
+          "description": "تنزيل ملف APK لنظام Android وروابط المتاجر وخطوات التثبيت"
         }
       },
       "blocks": {
@@ -988,7 +992,14 @@
         "icon": "الأيقونة",
         "text": "النص",
         "platform": "الهاتف",
-        "sampleCount": "الأرقام المعروضة"
+        "sampleCount": "الأرقام المعروضة",
+        "eyebrow": "عنوان صغير",
+        "apkUrl": "رابط APK",
+        "apkVersion": "إصدار APK",
+        "showQr": "إظهار رمز QR",
+        "googlePlayUrl": "رابط Google Play",
+        "appStoreUrl": "رابط App Store",
+        "showSteps": "إظهار خطوات التثبيت"
       },
       "options": {
         "local": "الدول",
@@ -1014,6 +1025,9 @@
         },
         "esim-plan-selector": {
           "destination": "عنوان الوجهة بعد ‎/esim/‎، مثل japan أو europe-35-areas أو global."
+        },
+        "esim-app-download": {
+          "apkUrl": "اترك الروابط فارغة لاستخدام روابط التنزيل الافتراضية للموقع."
         }
       }
     },

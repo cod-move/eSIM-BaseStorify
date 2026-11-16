@@ -970,6 +970,10 @@
         "esim-numbers-entry": {
           "name": "eSIM: àwọn nọ́mbà fóònù",
           "description": "Ọ̀nà àbáwọlé tẹ́ẹ́rẹ́ sí ojú-ìwé nọ́mbà, pẹ̀lú àwọn nọ́mbà díẹ̀ tí à ń tà àti iye owó ìbẹ̀rẹ̀"
+        },
+        "esim-app-download": {
+          "name": "eSIM: Ìgbàsílẹ̀ ohun elo",
+          "description": "Ìgbàsílẹ̀ APK Android, àwọn ìsopọ̀ ilé ìtajà àti àwọn ìgbésẹ̀ ìfisórí"
         }
       },
       "blocks": {
@@ -988,7 +992,14 @@
         "icon": "Àmì",
         "text": "Ọ̀rọ̀",
         "platform": "Fóònù",
-        "sampleCount": "Àwọn nọ́mbà tí a fi hàn"
+        "sampleCount": "Àwọn nọ́mbà tí a fi hàn",
+        "eyebrow": "Àkọlé kékeré",
+        "apkUrl": "Ìsopọ̀ APK",
+        "apkVersion": "Ẹ̀dà APK",
+        "showQr": "Fi kóòdù QR hàn",
+        "googlePlayUrl": "Ìsopọ̀ Google Play",
+        "appStoreUrl": "Ìsopọ̀ App Store",
+        "showSteps": "Fi àwọn ìgbésẹ̀ ìfisórí hàn"
       },
       "options": {
         "local": "Àwọn orílẹ̀-èdè",
@@ -1014,6 +1025,9 @@
         },
         "esim-plan-selector": {
           "destination": "Àdírẹ́sì ibi lẹ́yìn /esim/, àpẹẹrẹ japan, europe-35-areas tàbí global."
+        },
+        "esim-app-download": {
+          "apkUrl": "Fi àwọn ìsopọ̀ sílẹ̀ ní òfo láti lo àwọn ìsopọ̀ ìgbàsílẹ̀ àkọ́kọ́ ti ojú-òpó náà."
         }
       }
     },

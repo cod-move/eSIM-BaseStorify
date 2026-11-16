@@ -970,6 +970,10 @@
         "esim-numbers-entry": {
           "name": "eSIM: ফোন নম্বর",
           "description": "নম্বর পেজে যাওয়ার একটি সরল প্রবেশপথ, কিছু বিক্রিত নম্বর ও শুরুর দামসহ"
+        },
+        "esim-app-download": {
+          "name": "eSIM: অ্যাপ ডাউনলোড",
+          "description": "Android APK ডাউনলোড, স্টোর লিংক ও ইনস্টলের ধাপ"
         }
       },
       "blocks": {
@@ -988,7 +992,14 @@
         "icon": "আইকন",
         "text": "লেখা",
         "platform": "ফোন",
-        "sampleCount": "দেখানো নম্বর"
+        "sampleCount": "দেখানো নম্বর",
+        "eyebrow": "ছোট শিরোনাম",
+        "apkUrl": "APK লিংক",
+        "apkVersion": "APK সংস্করণ",
+        "showQr": "QR কোড দেখান",
+        "googlePlayUrl": "Google Play লিংক",
+        "appStoreUrl": "App Store লিংক",
+        "showSteps": "ইনস্টলের ধাপ দেখান"
       },
       "options": {
         "local": "দেশ",
@@ -1014,6 +1025,9 @@
         },
         "esim-plan-selector": {
           "destination": "/esim/-এর পরে গন্তব্যের ঠিকানা, যেমন japan, europe-35-areas বা global।"
+        },
+        "esim-app-download": {
+          "apkUrl": "সাইটের ডিফল্ট ডাউনলোড লিংক ব্যবহার করতে লিংকগুলো খালি রাখুন।"
         }
       }
     },

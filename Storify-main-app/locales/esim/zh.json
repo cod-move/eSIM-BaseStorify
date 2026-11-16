@@ -981,6 +981,10 @@
         "esim-numbers-entry": {
           "name": "eSIM：手机号码入口",
           "description": "通往选号页的窄条入口，显示几个在售号码和起售价"
+        },
+        "esim-app-download": {
+          "name": "eSIM：App 下载",
+          "description": "Android APK 下载、应用商店链接和安装步骤"
         }
       },
       "blocks": {
@@ -999,7 +1003,14 @@
         "icon": "图标",
         "text": "说明文字",
         "platform": "手机系统",
-        "sampleCount": "展示号码数量"
+        "sampleCount": "展示号码数量",
+        "eyebrow": "小标题",
+        "apkUrl": "APK 链接",
+        "apkVersion": "APK 版本",
+        "showQr": "显示二维码",
+        "googlePlayUrl": "Google Play 链接",
+        "appStoreUrl": "App Store 链接",
+        "showSteps": "显示安装步骤"
       },
       "options": {
         "local": "国家/地区",
@@ -1025,6 +1036,9 @@
         },
         "esim-plan-selector": {
           "destination": "目的地页面地址中 /esim/ 后面的部分，例如 japan、europe-35-areas 或 global。"
+        },
+        "esim-app-download": {
+          "apkUrl": "链接留空时使用网站默认的下载链接。"
         }
       }
     },

@@ -970,6 +970,10 @@
         "esim-numbers-entry": {
           "name": "eSIM: telefon numaraları",
           "description": "Numaralar sayfasına sade bir giriş; satıştaki birkaç numara ve başlangıç fiyatıyla"
+        },
+        "esim-app-download": {
+          "name": "eSIM: Uygulama indirme",
+          "description": "Android APK indirme, mağaza bağlantıları ve kurulum adımları"
         }
       },
       "blocks": {
@@ -988,7 +992,14 @@
         "icon": "Simge",
         "text": "Metin",
         "platform": "Telefon",
-        "sampleCount": "Gösterilen numaralar"
+        "sampleCount": "Gösterilen numaralar",
+        "eyebrow": "Küçük başlık",
+        "apkUrl": "APK bağlantısı",
+        "apkVersion": "APK sürümü",
+        "showQr": "QR kodunu göster",
+        "googlePlayUrl": "Google Play bağlantısı",
+        "appStoreUrl": "App Store bağlantısı",
+        "showSteps": "Kurulum adımlarını göster"
       },
       "options": {
         "local": "Ülkeler",
@@ -1014,6 +1025,9 @@
         },
         "esim-plan-selector": {
           "destination": "Destinasyonun /esim/ sonrasındaki adresi, ör. japan, europe-35-areas veya global."
+        },
+        "esim-app-download": {
+          "apkUrl": "Sitenin varsayılan indirme bağlantılarını kullanmak için bağlantıları boş bırakın."
         }
       }
     },

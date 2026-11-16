@@ -970,6 +970,10 @@
         "esim-numbers-entry": {
           "name": "eSIM: números de teléfono",
           "description": "Un acceso discreto a la página de números, con algunos números a la venta y el precio inicial"
+        },
+        "esim-app-download": {
+          "name": "eSIM: Descarga de la app",
+          "description": "Descarga del APK de Android, enlaces de tiendas y pasos de instalación"
         }
       },
       "blocks": {
@@ -988,7 +992,14 @@
         "icon": "Icono",
         "text": "Texto",
         "platform": "Teléfono",
-        "sampleCount": "Números mostrados"
+        "sampleCount": "Números mostrados",
+        "eyebrow": "Encabezado pequeño",
+        "apkUrl": "Enlace del APK",
+        "apkVersion": "Versión del APK",
+        "showQr": "Mostrar código QR",
+        "googlePlayUrl": "Enlace de Google Play",
+        "appStoreUrl": "Enlace de App Store",
+        "showSteps": "Mostrar pasos de instalación"
       },
       "options": {
         "local": "Países",
@@ -1014,6 +1025,9 @@
         },
         "esim-plan-selector": {
           "destination": "La dirección del destino tras /esim/, p. ej. japan, europe-35-areas o global."
+        },
+        "esim-app-download": {
+          "apkUrl": "Deja los enlaces vacíos para usar los enlaces de descarga predeterminados del sitio."
         }
       }
     },

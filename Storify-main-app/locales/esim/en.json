@@ -981,6 +981,10 @@
         "esim-numbers-entry": {
           "name": "eSIM: phone numbers",
           "description": "A slim entry to the numbers page, with a few numbers on sale and the starting price"
+        },
+        "esim-app-download": {
+          "name": "eSIM: App download",
+          "description": "Download the Android APK, store links and install steps"
         }
       },
       "blocks": {
@@ -999,7 +1003,14 @@
         "icon": "Icon",
         "text": "Text",
         "platform": "Phone",
-        "sampleCount": "Numbers shown"
+        "sampleCount": "Numbers shown",
+        "eyebrow": "Small heading",
+        "apkUrl": "APK link",
+        "apkVersion": "APK version",
+        "showQr": "Show QR code",
+        "googlePlayUrl": "Google Play link",
+        "appStoreUrl": "App Store link",
+        "showSteps": "Show install steps"
       },
       "options": {
         "local": "Countries",
@@ -1025,6 +1036,9 @@
         },
         "esim-plan-selector": {
           "destination": "The destination's address after /esim/, e.g. japan, europe-35-areas or global."
+        },
+        "esim-app-download": {
+          "apkUrl": "Leave the links empty to use the site's default download links."
         }
       }
     },

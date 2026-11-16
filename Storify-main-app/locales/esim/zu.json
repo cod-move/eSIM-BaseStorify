@@ -970,6 +970,10 @@
         "esim-numbers-entry": {
           "name": "eSIM: izinombolo zefoni",
           "description": "Indlela yokungena encane ekhasini lezinombolo, nezinombolo ezimbalwa ezidayiswayo nentengo yokuqala"
+        },
+        "esim-app-download": {
+          "name": "eSIM: Ukulanda uhlelo lokusebenza",
+          "description": "Ukulanda i-APK ye-Android, izixhumanisi zezitolo nezinyathelo zokufaka"
         }
       },
       "blocks": {
@@ -988,7 +992,14 @@
         "icon": "Isithonjana",
         "text": "Umbhalo",
         "platform": "Ifoni",
-        "sampleCount": "Izinombolo ezibonisiwe"
+        "sampleCount": "Izinombolo ezibonisiwe",
+        "eyebrow": "Isihloko esincane",
+        "apkUrl": "Isixhumanisi se-APK",
+        "apkVersion": "Inguqulo ye-APK",
+        "showQr": "Bonisa ikhodi ye-QR",
+        "googlePlayUrl": "Isixhumanisi se-Google Play",
+        "appStoreUrl": "Isixhumanisi se-App Store",
+        "showSteps": "Bonisa izinyathelo zokufaka"
       },
       "options": {
         "local": "Amazwe",
@@ -1014,6 +1025,9 @@
         },
         "esim-plan-selector": {
           "destination": "Ikheli lendawo ngemuva kuka-/esim/, isb. japan, europe-35-areas noma global."
+        },
+        "esim-app-download": {
+          "apkUrl": "Shiya izixhumanisi zingenalutho ukuze usebenzise izixhumanisi zokulanda ezizenzakalelayo zesayithi."
         }
       }
     },

@@ -981,6 +981,10 @@
         "esim-numbers-entry": {
           "name": "eSIM：手機號碼入口",
           "description": "通往選號頁的窄條入口，顯示幾個在售號碼和起售價"
+        },
+        "esim-app-download": {
+          "name": "eSIM：App 下載",
+          "description": "Android APK 下載、應用程式商店連結和安裝步驟"
         }
       },
       "blocks": {
@@ -999,7 +1003,14 @@
         "icon": "圖標",
         "text": "說明文字",
         "platform": "手機系統",
-        "sampleCount": "展示號碼數量"
+        "sampleCount": "展示號碼數量",
+        "eyebrow": "小標題",
+        "apkUrl": "APK 連結",
+        "apkVersion": "APK 版本",
+        "showQr": "顯示 QR Code",
+        "googlePlayUrl": "Google Play 連結",
+        "appStoreUrl": "App Store 連結",
+        "showSteps": "顯示安裝步驟"
       },
       "options": {
         "local": "國家/地區",
@@ -1025,6 +1036,9 @@
         },
         "esim-plan-selector": {
           "destination": "目的地頁面地址中 /esim/ 後面的部分，例如 japan、europe-35-areas 或 global。"
+        },
+        "esim-app-download": {
+          "apkUrl": "連結留空時使用網站預設的下載連結。"
         }
       }
     },

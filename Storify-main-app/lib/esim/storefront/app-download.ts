@@ -3,8 +3,9 @@ import "server-only";
 import QRCode from "qrcode";
 
 /**
- * Where the shopper app can be downloaded, for the /esim/app page. Set at
- * deploy time beside the build that produced the APK:
+ * Where the shopper app can be downloaded. The deploy-time defaults, used by
+ * the /esim/app page and by an "eSIM: App download" section whose own link
+ * fields are left empty:
  *
  * - `ESIM_APP_ANDROID_APK_URL`: the APK, absolute or a path on this site
  *   (e.g. `/downloads/app.apk` for a file in `public/downloads/`).
@@ -24,6 +25,7 @@ export interface AppDownload {
 }
 
 const read = (name: string) => process.env[name]?.trim() || null;
+const pick = (value: unknown) => (typeof value === "string" && value.trim() ? value.trim() : null);
 
 function absolute(url: string): string {
   if (/^https?:\/\//i.test(url)) return url;
@@ -31,15 +33,25 @@ function absolute(url: string): string {
   return `${base}${url.startsWith("/") ? "" : "/"}${url}`;
 }
 
-export async function getAppDownload(): Promise<AppDownload> {
-  const apkUrl = read("ESIM_APP_ANDROID_APK_URL");
+/** A QR code for the APK's address, or null when there is no APK. */
+export async function apkQrCode(apkUrl: string | null): Promise<string | null> {
+  if (!apkUrl) return null;
+  return QRCode.toDataURL(absolute(apkUrl), { width: 320, margin: 1, errorCorrectionLevel: "M" });
+}
+
+/**
+ * The download links: each one given here (a section's own field) wins,
+ * otherwise the deploy-time default.
+ */
+export async function getAppDownload(
+  overrides: Partial<Record<"apkUrl" | "apkVersion" | "googlePlayUrl" | "appStoreUrl", unknown>> = {},
+): Promise<AppDownload> {
+  const apkUrl = pick(overrides.apkUrl) ?? read("ESIM_APP_ANDROID_APK_URL");
   return {
     apkUrl,
-    apkVersion: read("ESIM_APP_ANDROID_VERSION"),
-    googlePlayUrl: read("ESIM_APP_GOOGLE_PLAY_URL"),
-    appStoreUrl: read("ESIM_APP_APP_STORE_URL"),
-    apkQr: apkUrl
-      ? await QRCode.toDataURL(absolute(apkUrl), { width: 320, margin: 1, errorCorrectionLevel: "M" })
-      : null,
+    apkVersion: pick(overrides.apkVersion) ?? read("ESIM_APP_ANDROID_VERSION"),
+    googlePlayUrl: pick(overrides.googlePlayUrl) ?? read("ESIM_APP_GOOGLE_PLAY_URL"),
+    appStoreUrl: pick(overrides.appStoreUrl) ?? read("ESIM_APP_APP_STORE_URL"),
+    apkQr: await apkQrCode(apkUrl),
   };
 }
