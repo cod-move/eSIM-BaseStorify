@@ -906,6 +906,22 @@
       "done": "Ihre E-Mail-Adresse ist bestätigt und Ihr Konto ist bereit. Fahren Sie fort und melden Sie sich an, falls Sie dazu aufgefordert werden.",
       "requestAnother": "Neuen Link anfordern",
       "continue": "Weiter"
+    },
+    "app": {
+      "eyebrow": "App herunterladen",
+      "title": "Überall verbunden bleiben",
+      "subtitle": "eSIMs kaufen, Daten aufladen und deine Nummern unterwegs verwalten.",
+      "apk": "Für Android herunterladen (APK)",
+      "version": "Version {version}",
+      "scan": "Mit dem Handy scannen zum Herunterladen",
+      "soon": "Demnächst",
+      "storesTitle": "App-Stores",
+      "googlePlay": "Google Play",
+      "appStore": "App Store",
+      "stepsTitle": "APK installieren",
+      "step1": "Lade die APK auf dein Android-Handy herunter.",
+      "step2": "Öffne sie. Erlaube bei Nachfrage Installationen aus dieser Quelle (Browser oder Dateimanager).",
+      "step3": "Tippe auf Installieren, öffne dann die App und melde dich an."
     }
   },
   "admin": {

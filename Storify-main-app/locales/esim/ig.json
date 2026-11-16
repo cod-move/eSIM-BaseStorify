@@ -906,6 +906,22 @@
       "done": "Your email address is verified and your account is ready. Continue, and sign in if you are asked to.",
       "requestAnother": "Request another link",
       "continue": "Continue"
+    },
+    "app": {
+      "eyebrow": "Nweta ngwa ahụ",
+      "title": "Nọrọ na njikọ ebe ọ bụla ị gara",
+      "subtitle": "Zụta eSIM, tinye data ma jikwaa nọmba gị ebe ọ bụla.",
+      "apk": "Budata maka Android (APK)",
+      "version": "Ụdị {version}",
+      "scan": "Jiri ekwentị gị nyochaa ka ịbudata",
+      "soon": "Ọ na-abịa n'oge na-adịghị anya",
+      "storesTitle": "Ụlọ ahịa ngwa",
+      "googlePlay": "Google Play",
+      "appStore": "App Store",
+      "stepsTitle": "Ịwụnye APK",
+      "step1": "Budata APK na ekwentị Android gị.",
+      "step2": "Mepee ya. Ọ bụrụ na a jụọ, kwe ka a wụnye site na isi iyi a (ihe nchọgharị gị ma ọ bụ njikwa faịlụ).",
+      "step3": "Pịa Wụnye, wee mepee ngwa ahụ ma banye."
     }
   },
   "admin": {

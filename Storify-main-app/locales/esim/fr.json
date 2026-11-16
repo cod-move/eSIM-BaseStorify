@@ -906,6 +906,22 @@
       "done": "Votre adresse e-mail est vérifiée et votre compte est prêt. Continuez, et connectez-vous si on vous le demande.",
       "requestAnother": "Demander un autre lien",
       "continue": "Continuer"
+    },
+    "app": {
+      "eyebrow": "Téléchargez l'app",
+      "title": "Restez connecté où que vous alliez",
+      "subtitle": "Achetez des eSIM, rechargez vos données et gérez vos numéros où que vous soyez.",
+      "apk": "Télécharger pour Android (APK)",
+      "version": "Version {version}",
+      "scan": "Scannez avec votre téléphone pour télécharger",
+      "soon": "Bientôt disponible",
+      "storesTitle": "Boutiques d'applications",
+      "googlePlay": "Google Play",
+      "appStore": "App Store",
+      "stepsTitle": "Installer l'APK",
+      "step1": "Téléchargez l'APK sur votre téléphone Android.",
+      "step2": "Ouvrez-le. Si demandé, autorisez les installations depuis cette source (navigateur ou gestionnaire de fichiers).",
+      "step3": "Appuyez sur Installer, puis ouvrez l'app et connectez-vous."
     }
   },
   "admin": {

@@ -906,6 +906,22 @@
       "done": "Tu correo está verificado y tu cuenta está lista. Continúa e inicia sesión si se te pide.",
       "requestAnother": "Solicitar otro enlace",
       "continue": "Continuar"
+    },
+    "app": {
+      "eyebrow": "Descarga la app",
+      "title": "Mantente conectado vayas donde vayas",
+      "subtitle": "Compra eSIM, recarga datos y gestiona tus números desde cualquier lugar.",
+      "apk": "Descargar para Android (APK)",
+      "version": "Versión {version}",
+      "scan": "Escanea con tu teléfono para descargar",
+      "soon": "Próximamente",
+      "storesTitle": "Tiendas de apps",
+      "googlePlay": "Google Play",
+      "appStore": "App Store",
+      "stepsTitle": "Instalar el APK",
+      "step1": "Descarga el APK en tu teléfono Android.",
+      "step2": "Ábrelo. Si se te pide, permite instalaciones desde esta fuente (tu navegador o gestor de archivos).",
+      "step3": "Toca Instalar, luego abre la app e inicia sesión."
     }
   },
   "admin": {

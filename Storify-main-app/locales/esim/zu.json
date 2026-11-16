@@ -906,6 +906,22 @@
       "done": "Your email address is verified and your account is ready. Continue, and sign in if you are asked to.",
       "requestAnother": "Request another link",
       "continue": "Continue"
+    },
+    "app": {
+      "eyebrow": "Thola uhlelo lokusebenza",
+      "title": "Hlala uxhumekile noma yikuphi lapho uya khona",
+      "subtitle": "Thenga ama-eSIM, faka idatha futhi uphathe izinombolo zakho noma kuphi.",
+      "apk": "Landa ye-Android (APK)",
+      "version": "Inguqulo {version}",
+      "scan": "Skena ngefoni yakho ukuze ulande",
+      "soon": "Kuyeza maduze",
+      "storesTitle": "Izitolo zezinhlelo zokusebenza",
+      "googlePlay": "Google Play",
+      "appStore": "App Store",
+      "stepsTitle": "Ukufaka i-APK",
+      "step1": "Landa i-APK efonini yakho ye-Android.",
+      "step2": "Yivule. Uma ubuzwa, vumela ukufakwa kusuka kulo mthombo (isiphequluli sakho noma umphathi wamafayela).",
+      "step3": "Thepha u-Faka, bese uvula uhlelo lokusebenza bese ungena ngemvume."
     }
   },
   "admin": {

@@ -917,6 +917,22 @@
       "returning": "正在返回…",
       "notRestored": "返回後台失敗（{reason}），請重新登入。",
       "signInAgain": "重新登入"
+    },
+    "app": {
+      "eyebrow": "下載 App",
+      "title": "隨時隨地保持連線",
+      "subtitle": "隨時購買 eSIM、儲值流量、管理你的號碼。",
+      "apk": "下載 Android 版（APK）",
+      "version": "版本 {version}",
+      "scan": "用手機掃碼下載",
+      "soon": "即將推出",
+      "storesTitle": "應用程式商店",
+      "googlePlay": "Google Play",
+      "appStore": "App Store",
+      "stepsTitle": "安裝 APK",
+      "step1": "在 Android 手機上下載 APK。",
+      "step2": "開啟檔案。如有提示，允許從此來源（瀏覽器或檔案管理員）安裝應用程式。",
+      "step3": "點選「安裝」，然後開啟 App 並登入。"
     }
   },
   "admin": {

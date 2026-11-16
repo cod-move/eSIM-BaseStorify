@@ -906,6 +906,22 @@
       "done": "Your email address is verified and your account is ready. Continue, and sign in if you are asked to.",
       "requestAnother": "Request another link",
       "continue": "Continue"
+    },
+    "app": {
+      "eyebrow": "Pata programu",
+      "title": "Endelea kuunganishwa popote uendapo",
+      "subtitle": "Nunua eSIM, ongeza data na dhibiti namba zako popote ulipo.",
+      "apk": "Pakua kwa Android (APK)",
+      "version": "Toleo {version}",
+      "scan": "Changanua kwa simu yako ili kupakua",
+      "soon": "Inakuja hivi karibuni",
+      "storesTitle": "Maduka ya programu",
+      "googlePlay": "Google Play",
+      "appStore": "App Store",
+      "stepsTitle": "Kusakinisha APK",
+      "step1": "Pakua APK kwenye simu yako ya Android.",
+      "step2": "Ifungue. Ukiulizwa, ruhusu usakinishaji kutoka chanzo hiki (kivinjari au kidhibiti faili).",
+      "step3": "Gusa Sakinisha, kisha fungua programu na uingie."
     }
   },
   "admin": {

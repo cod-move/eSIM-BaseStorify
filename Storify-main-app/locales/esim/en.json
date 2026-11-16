@@ -917,6 +917,22 @@
       "returning": "Returning…",
       "notRestored": "Could not return to the admin ({reason}). Please sign in again.",
       "signInAgain": "Sign in again"
+    },
+    "app": {
+      "eyebrow": "Get the app",
+      "title": "Stay connected wherever you go",
+      "subtitle": "Buy eSIMs, top up data and manage your numbers on the go.",
+      "apk": "Download for Android (APK)",
+      "version": "Version {version}",
+      "scan": "Scan with your phone to download",
+      "soon": "Coming soon",
+      "storesTitle": "App stores",
+      "googlePlay": "Google Play",
+      "appStore": "App Store",
+      "stepsTitle": "Installing the APK",
+      "step1": "Download the APK on your Android phone.",
+      "step2": "Open it. If asked, allow installs from this source (your browser or file manager).",
+      "step3": "Tap Install, then open the app and sign in."
     }
   },
   "admin": {

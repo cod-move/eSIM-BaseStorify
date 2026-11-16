@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 600" width="1600" height="600">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0EA5E9"/>
+      <stop offset="1" stop-color="#4F46E5"/>
+    </linearGradient>
+    <linearGradient id="screen" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#EEF2FF"/>
+      <stop offset="1" stop-color="#E0F2FE"/>
+    </linearGradient>
+    <linearGradient id="chip" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FDE68A"/>
+      <stop offset="1" stop-color="#F59E0B"/>
+    </linearGradient>
+    <clipPath id="clip"><rect width="1600" height="600"/></clipPath>
+  </defs>
+  <g clip-path="url(#clip)">
+  <rect width="1600" height="600" fill="url(#bg)"/>
+  <circle cx="1350" cy="80" r="320" fill="#fff" opacity=".07"/>
+  <circle cx="1000" cy="640" r="220" fill="#fff" opacity=".06"/>
+  <!-- dotted globe lines -->
+  <g fill="none" stroke="#fff" stroke-opacity=".12" stroke-width="2">
+    <circle cx="1250" cy="300" r="250"/>
+    <ellipse cx="1250" cy="300" rx="110" ry="250"/>
+    <path d="M1000 300h500M1030 180h440M1030 420h440"/>
+  </g>
+
+  <!-- text -->
+  <text x="110" y="200" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="30" font-weight="600" fill="#BAE6FD" letter-spacing="3">GET THE APP</text>
+  <text x="110" y="280" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="68" font-weight="800" fill="#fff">Stay connected</text>
+  <text x="110" y="356" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="68" font-weight="800" fill="#fff">in 190+ countries</text>
+  <text x="110" y="412" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="28" font-weight="500" fill="#E0F2FE">Buy eSIMs, top up data and manage your numbers on the go.</text>
+
+  <!-- store buttons (generic, not official badges) -->
+  <g transform="translate(110 450)">
+    <rect width="230" height="70" rx="16" fill="#0F172A"/>
+    <rect x="26" y="15" width="26" height="40" rx="6" fill="none" stroke="#fff" stroke-width="4"/>
+    <circle cx="39" cy="48" r="2.5" fill="#fff"/>
+    <text x="70" y="31" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="15" fill="#CBD5E1">Download for</text>
+    <text x="70" y="56" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="25" font-weight="700" fill="#fff">iPhone</text>
+  </g>
+  <g transform="translate(360 450)">
+    <rect width="230" height="70" rx="16" fill="#0F172A"/>
+    <path d="M28 18l26 17-26 17z" fill="none" stroke="#fff" stroke-width="4" stroke-linejoin="round"/>
+    <text x="70" y="31" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="15" fill="#CBD5E1">Download for</text>
+    <text x="70" y="56" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="25" font-weight="700" fill="#fff">Android</text>
+  </g>
+
+  <!-- phone -->
+  <g transform="translate(1110 70) rotate(6)">
+    <rect width="270" height="540" rx="44" fill="#0F172A"/>
+    <rect x="14" y="14" width="242" height="512" rx="32" fill="url(#screen)"/>
+    <rect x="100" y="26" width="70" height="14" rx="7" fill="#0F172A"/>
+    <text x="38" y="92" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="20" font-weight="800" fill="#1E293B">My eSIMs</text>
+    <!-- card 1 -->
+    <rect x="34" y="112" width="202" height="130" rx="18" fill="url(#bg)"/>
+    <rect x="52" y="130" width="40" height="32" rx="6" fill="url(#chip)"/>
+    <text x="52" y="194" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="16" font-weight="700" fill="#fff">Japan · 10 GB</text>
+    <rect x="52" y="210" width="166" height="10" rx="5" fill="#fff" opacity=".3"/>
+    <rect x="52" y="210" width="112" height="10" rx="5" fill="#fff"/>
+    <!-- card 2 -->
+    <rect x="34" y="258" width="202" height="76" rx="16" fill="#fff"/>
+    <circle cx="66" cy="296" r="16" fill="#10B981"/>
+    <path d="M58 296l6 6 11-12" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="92" y="292" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="15" font-weight="700" fill="#1E293B">Europe 30 days</text>
+    <text x="92" y="314" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13" fill="#64748B">Active</text>
+    <!-- card 3 -->
+    <rect x="34" y="348" width="202" height="76" rx="16" fill="#fff"/>
+    <circle cx="66" cy="386" r="16" fill="#F97316"/>
+    <path d="M66 377v18M57 386h18" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+    <text x="92" y="382" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="15" font-weight="700" fill="#1E293B">+1 ••• ••••</text>
+    <text x="92" y="404" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13" fill="#64748B">Top up credit</text>
+    <!-- button -->
+    <rect x="34" y="448" width="202" height="48" rx="24" fill="#4F46E5"/>
+    <text x="135" y="479" text-anchor="middle" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="17" font-weight="700" fill="#fff">Buy an eSIM</text>
+  </g>
+  </g>
+</svg>

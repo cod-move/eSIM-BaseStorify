@@ -906,6 +906,22 @@
       "done": "Your email address is verified and your account is ready. Continue, and sign in if you are asked to.",
       "requestAnother": "Request another link",
       "continue": "Continue"
+    },
+    "app": {
+      "eyebrow": "Sami manhajar",
+      "title": "Ka kasance a haɗe duk inda ka je",
+      "subtitle": "Saya eSIM, ƙara data kuma sarrafa lambobinka a ko'ina.",
+      "apk": "Sauke don Android (APK)",
+      "version": "Sigar {version}",
+      "scan": "Duba da wayarka don saukewa",
+      "soon": "Yana zuwa nan ba da jimawa ba",
+      "storesTitle": "Shagunan manhaja",
+      "googlePlay": "Google Play",
+      "appStore": "App Store",
+      "stepsTitle": "Shigar da APK",
+      "step1": "Sauke APK a wayarka ta Android.",
+      "step2": "Buɗe shi. Idan an tambaya, ba da izinin shigarwa daga wannan tushe (burauzarka ko mai sarrafa fayil).",
+      "step3": "Danna Shigar, sannan buɗe manhajar ka shiga."
     }
   },
   "admin": {

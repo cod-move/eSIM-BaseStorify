@@ -917,6 +917,22 @@
       "returning": "正在返回…",
       "notRestored": "返回后台失败（{reason}），请重新登录。",
       "signInAgain": "重新登录"
+    },
+    "app": {
+      "eyebrow": "下载 App",
+      "title": "随时随地保持连接",
+      "subtitle": "随时购买 eSIM、充值流量、管理你的号码。",
+      "apk": "下载 Android 版（APK）",
+      "version": "版本 {version}",
+      "scan": "用手机扫码下载",
+      "soon": "即将上线",
+      "storesTitle": "应用商店",
+      "googlePlay": "Google Play",
+      "appStore": "App Store",
+      "stepsTitle": "安装 APK",
+      "step1": "在 Android 手机上下载 APK。",
+      "step2": "打开文件。如有提示，允许从此来源（浏览器或文件管理器）安装应用。",
+      "step3": "点击「安装」，然后打开 App 并登录。"
     }
   },
   "admin": {

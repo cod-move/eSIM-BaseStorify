@@ -906,6 +906,22 @@
       "done": "Your email address is verified and your account is ready. Continue, and sign in if you are asked to.",
       "requestAnother": "Request another link",
       "continue": "Continue"
+    },
+    "app": {
+      "eyebrow": "احصل على التطبيق",
+      "title": "ابقَ متصلاً أينما ذهبت",
+      "subtitle": "اشترِ شرائح eSIM واشحن البيانات وأدِر أرقامك أثناء التنقل.",
+      "apk": "تنزيل لنظام Android ‏(APK)",
+      "version": "الإصدار {version}",
+      "scan": "امسح الرمز بهاتفك للتنزيل",
+      "soon": "قريبًا",
+      "storesTitle": "متاجر التطبيقات",
+      "googlePlay": "Google Play",
+      "appStore": "App Store",
+      "stepsTitle": "تثبيت ملف APK",
+      "step1": "نزّل ملف APK على هاتف Android.",
+      "step2": "افتحه. إذا طُلب منك، اسمح بالتثبيت من هذا المصدر (المتصفح أو مدير الملفات).",
+      "step3": "اضغط تثبيت، ثم افتح التطبيق وسجّل الدخول."
     }
   },
   "admin": {

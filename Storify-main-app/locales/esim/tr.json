@@ -906,6 +906,22 @@
       "done": "Your email address is verified and your account is ready. Continue, and sign in if you are asked to.",
       "requestAnother": "Request another link",
       "continue": "Continue"
+    },
+    "app": {
+      "eyebrow": "Uygulamayı edinin",
+      "title": "Nereye giderseniz gidin bağlı kalın",
+      "subtitle": "eSIM satın alın, veri yükleyin ve numaralarınızı her yerden yönetin.",
+      "apk": "Android için indir (APK)",
+      "version": "Sürüm {version}",
+      "scan": "İndirmek için telefonunuzla tarayın",
+      "soon": "Çok yakında",
+      "storesTitle": "Uygulama mağazaları",
+      "googlePlay": "Google Play",
+      "appStore": "App Store",
+      "stepsTitle": "APK'yı yükleme",
+      "step1": "APK'yı Android telefonunuza indirin.",
+      "step2": "Açın. Sorulursa bu kaynaktan (tarayıcınız veya dosya yöneticiniz) yüklemeye izin verin.",
+      "step3": "Yükle'ye dokunun, ardından uygulamayı açıp giriş yapın."
     }
   },
   "admin": {

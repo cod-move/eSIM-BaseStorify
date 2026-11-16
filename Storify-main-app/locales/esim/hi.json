@@ -906,6 +906,22 @@
       "done": "Your email address is verified and your account is ready. Continue, and sign in if you are asked to.",
       "requestAnother": "Request another link",
       "continue": "Continue"
+    },
+    "app": {
+      "eyebrow": "ऐप पाएँ",
+      "title": "जहाँ भी जाएँ, जुड़े रहें",
+      "subtitle": "चलते-फिरते eSIM खरीदें, डेटा टॉप अप करें और अपने नंबर प्रबंधित करें।",
+      "apk": "Android के लिए डाउनलोड करें (APK)",
+      "version": "संस्करण {version}",
+      "scan": "डाउनलोड करने के लिए फ़ोन से स्कैन करें",
+      "soon": "जल्द आ रहा है",
+      "storesTitle": "ऐप स्टोर",
+      "googlePlay": "Google Play",
+      "appStore": "App Store",
+      "stepsTitle": "APK इंस्टॉल करना",
+      "step1": "अपने Android फ़ोन पर APK डाउनलोड करें।",
+      "step2": "इसे खोलें। पूछे जाने पर इस स्रोत (ब्राउज़र या फ़ाइल मैनेजर) से इंस्टॉल की अनुमति दें।",
+      "step3": "इंस्टॉल पर टैप करें, फिर ऐप खोलें और साइन इन करें।"
     }
   },
   "admin": {

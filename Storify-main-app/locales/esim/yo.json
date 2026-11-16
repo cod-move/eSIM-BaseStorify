@@ -906,6 +906,22 @@
       "done": "Your email address is verified and your account is ready. Continue, and sign in if you are asked to.",
       "requestAnother": "Request another link",
       "continue": "Continue"
+    },
+    "app": {
+      "eyebrow": "Gba ohun elo naa",
+      "title": "Wà ní ìsopọ̀ níbikíbi tí o bá lọ",
+      "subtitle": "Ra eSIM, fi data kún, kí o sì ṣàkóso àwọn nọ́mbà rẹ níbikíbi.",
+      "apk": "Ṣe ìgbàsílẹ̀ fún Android (APK)",
+      "version": "Ẹ̀dà {version}",
+      "scan": "Ṣe àyẹ̀wò pẹ̀lú foonu rẹ láti gbà á sílẹ̀",
+      "soon": "Ó ń bọ̀ láìpẹ́",
+      "storesTitle": "Àwọn ilé ìtajà ohun elo",
+      "googlePlay": "Google Play",
+      "appStore": "App Store",
+      "stepsTitle": "Fífi APK sórí ẹ̀rọ",
+      "step1": "Ṣe ìgbàsílẹ̀ APK sórí foonu Android rẹ.",
+      "step2": "Ṣí i. Tí wọ́n bá béèrè, gba ìfisórí láti orísun yìí láàyè (aṣàwákiri rẹ tàbí olùṣàkóso fáìlì).",
+      "step3": "Tẹ Fi sórí ẹ̀rọ, lẹ́yìn náà ṣí ohun elo náà kí o sì wọlé."
     }
   },
   "admin": {

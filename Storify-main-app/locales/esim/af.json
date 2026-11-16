@@ -906,6 +906,22 @@
       "done": "Your email address is verified and your account is ready. Continue, and sign in if you are asked to.",
       "requestAnother": "Request another link",
       "continue": "Continue"
+    },
+    "app": {
+      "eyebrow": "Kry die app",
+      "title": "Bly gekoppel waar jy ook al gaan",
+      "subtitle": "Koop eSIM's, laai data op en bestuur jou nommers onderweg.",
+      "apk": "Laai af vir Android (APK)",
+      "version": "Weergawe {version}",
+      "scan": "Skandeer met jou foon om af te laai",
+      "soon": "Kom binnekort",
+      "storesTitle": "Toepassingswinkels",
+      "googlePlay": "Google Play",
+      "appStore": "App Store",
+      "stepsTitle": "Installeer die APK",
+      "step1": "Laai die APK op jou Android-foon af.",
+      "step2": "Maak dit oop. As dit gevra word, laat installasies van hierdie bron toe (jou blaaier of lêerbestuurder).",
+      "step3": "Tik op Installeer, maak dan die app oop en meld aan."
     }
   },
   "admin": {
