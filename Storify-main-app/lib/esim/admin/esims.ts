@@ -100,9 +100,13 @@ async function query(filters: AdminEsimFilters) {
 export interface AdminEsimRow {
   id: string;
   iccid: string | null;
+  /** The supplier's own id of the card, shown where the ICCID is masked (Stellar). */
+  simId: string | null;
   orderNumber: string;
   orderId: string;
   customer: string | null;
+  /** The shopper's account (a User id); null for a guest purchase. */
+  userId: string | null;
   /** The admin customer page's id (a CustomerProfile), when the shopper has one. */
   customerId: string | null;
   plan: string;
@@ -143,9 +147,11 @@ export async function listAdminEsims(filters: AdminEsimFilters, options: { page?
     return {
       id: String(profile._id),
       iccid: profile.iccid,
+      simId: profile.simId ?? null,
       orderNumber: profile.orderNumber,
       orderId: String(profile.order),
       customer: (profile.customer && emailById.get(String(profile.customer))) || profile.email,
+      userId: profile.customer ? String(profile.customer) : null,
       customerId: pageOf(profile),
       plan: planTitle(plan?.name ?? profile.legacyPlan?.name ?? "eSIM", profile.durationDays),
       providerCode: profile.providerCode,

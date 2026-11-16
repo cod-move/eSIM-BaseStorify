@@ -121,6 +121,8 @@ function Screens() {
             <Stack.Screen name="more/account/password" />
             <Stack.Screen name="more/account/two-step" />
             <Stack.Screen name="more/notifications" />
+            {/* [esim-patch] P77 the eSIM area (src/app/esim); each endpoint checks the eSIM permissions itself. */}
+            <Stack.Screen name="esim" />
             <Stack.Screen name="web" />
             <Stack.Screen
               name="viewer"

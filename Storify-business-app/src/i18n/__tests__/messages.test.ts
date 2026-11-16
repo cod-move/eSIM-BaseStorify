@@ -117,7 +117,8 @@ describe('getMessages', () => {
   });
 
   it('falls back to English for a language the app does not bundle', () => {
-    expect(getMessages('pt-BR')).toBe(en);
+    // [esim-patch] P77 English is en.json with the eSIM area's words added, one object for every language without a file.
+    expect(getMessages('pt-BR')).toBe(getMessages('en'));
   });
 
   it('formats plurals in the language of the message', () => {

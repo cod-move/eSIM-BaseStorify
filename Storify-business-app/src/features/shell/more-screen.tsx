@@ -22,6 +22,7 @@ import { useCan, useWorkspace } from '@/features/workspace/use-workspace';
 import { useMe } from '@/features/workspace/use-me';
 import { VendorNotice } from '@/features/workspace/vendor-notice';
 import { useWorkspaceLabel } from '@/features/workspace/workspace-label';
+import { EsimMoreRows } from '@/features/esim/more-rows'; // [esim-patch] P77
 import { WorkspaceSheet } from '@/features/workspace/workspace-sheet';
 import { appInfo } from '@/lib/device';
 import { usePullToRefresh } from '@/lib/use-pull-to-refresh';
@@ -134,6 +135,8 @@ export function MoreScreen() {
       <TwoStepNudge />
 
       <AccountTools tools={tools} />
+      {/* [esim-patch] P77 the eSIM area, for administrators with the eSIM permissions */}
+      <EsimMoreRows />
 
       <RowGroup title={t('settings')}>
         {person ? (

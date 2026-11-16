@@ -19,6 +19,7 @@ import { useCan } from '@/features/workspace/use-workspace';
 import { useShortDate } from '@/i18n/use-list-time';
 import { usePullToRefresh } from '@/lib/use-pull-to-refresh';
 
+import { CustomerEsims } from '@/features/esim/customer-esims'; // [esim-patch] P77
 import { CustomerNotes } from './customer-notes';
 import { useCustomer, useRefreshCustomer } from './use-customers';
 
@@ -100,6 +101,8 @@ export function CustomerProfileScreen({ id }: { id: string }) {
 
       {canOrders ? <RecentOrders id={id} /> : null}
       {canInbox ? <RecentConversations id={id} /> : null}
+      {/* [esim-patch] P77 their eSIMs, numbers and Send email */}
+      <CustomerEsims id={id} email={customer.email} />
       <CustomerNotes id={id} />
     </Screen>
   );

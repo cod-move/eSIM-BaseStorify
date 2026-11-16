@@ -1,5 +1,6 @@
 import { languageOf, type BundledLocale } from './locales';
 import en from './messages/en.json';
+import { esimEnglish, esimMessagesOf } from '@/features/esim/messages'; // [esim-patch] P77 the eSIM area's words
 import { loadPluralRules } from './polyfills';
 
 /**
@@ -12,7 +13,9 @@ import { loadPluralRules } from './polyfills';
  *
  * Messages use ICU syntax, the same as the store's web app.
  */
-export type Messages = typeof en;
+export type Messages = typeof en & { esim: typeof esimEnglish }; // [esim-patch] P77
+// [esim-patch] P77 English with the eSIM area's words under `esim`: the base every language overlays.
+const english = { ...en, esim: esimEnglish } as Messages;
 
 // Gives `useTranslations` the list of keys, so a misspelt key is a type error.
 declare module 'use-intl' {
@@ -57,7 +60,10 @@ export function getMessages(locale: string): Messages {
 
   loadPluralRules(language);
   const file = (FILES as Record<string, (() => PartialMessages) | undefined>)[language];
-  const messages = file ? (overlay(en, file()) as Messages) : en;
+  // [esim-patch] P77 the language's own eSIM words go over English with its file.
+  const esim = esimMessagesOf(language) as PartialMessages | undefined;
+  const own = file || esim ? { ...(file ? file() : {}), ...(esim ? { esim } : {}) } : null;
+  const messages = own ? (overlay(english, own) as Messages) : english;
   merged.set(language, messages);
   return messages;
 }
