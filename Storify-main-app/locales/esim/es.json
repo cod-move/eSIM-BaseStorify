@@ -642,7 +642,9 @@
         "kycApproved": "Identidad verificada",
         "kycRejected": "La verificación de identidad no se aprobó",
         "walletAdded": "Dinero añadido a tu saldo",
-        "referralAdded": "Recompensa por recomendación añadida"
+        "referralAdded": "Recompensa por recomendación añadida",
+        "qrReady": "Tu nuevo código QR está listo",
+        "qrDeclined": "Tu solicitud de un nuevo código QR fue rechazada"
       },
       "kind": {
         "esim": "eSIM",
@@ -680,7 +682,13 @@
         "kycApproved": "Tu identidad está verificada. Ya puedes comprar las eSIM que lo requieren.",
         "kycRejected": "No pudimos verificar tu identidad: {reason}. Puedes volver a enviar tus datos.",
         "walletAdded": "Se añadieron {amount} a tu saldo. Úsalo al pagar.",
-        "referralAdded": "Se añadieron {amount} a tu saldo por un pedido de alguien a quien invitaste."
+        "referralAdded": "Se añadieron {amount} a tu saldo por un pedido de alguien a quien invitaste.",
+        "qrReady": "{number}: abre el número para instalar la nueva eSIM. La anterior deja de funcionar.",
+        "qrDeclined": "{number}: la solicitud fue rechazada",
+        "qrFeeBack": "La tarifa de {fee} se devuelve al número.",
+        "numberCredit": "{amount} de saldo",
+        "dataPackage": "Paquete de datos",
+        "qrDeclinedFee": "{number}: la solicitud fue rechazada. La tarifa de {fee} se devuelve al número."
       },
       "drawer": {
         "subtitle": "Notificaciones recientes y ajustes de notificaciones del navegador",

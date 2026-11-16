@@ -7,6 +7,7 @@ import { withLocalePrefix } from "@/lib/notifications/notification-link";
 import { Notification } from "@/models";
 import { MobileApiError } from "./errors";
 import { afterTimeCursor, encodeTimeCursor } from "./shop/time-cursor";
+import { noticesIn as esimNoticesIn } from "@/lib/esim/notices/server"; // [esim-patch] P75
 
 /**
  * A person's notifications as one of the store's apps shows them: theirs, not
@@ -69,7 +70,8 @@ export async function readNotificationPage(input: {
   const page = rows.slice(0, limit);
 
   return {
-    items: page.map((row) => ({
+    // [esim-patch] P75 each notice's title and message in the app's language.
+    items: await esimNoticesIn(locale, page.map((row) => ({
       id: String(row._id),
       type: String(row.type ?? ""),
       title: String(row.title ?? ""),
@@ -77,7 +79,7 @@ export async function readNotificationPage(input: {
       ...(row.link?.trim() ? { link: withLocalePrefix(row.link, locale) } : {}),
       read: row.isRead === true,
       createdAt: new Date(row.createdAt ?? 0).toISOString(),
-    })),
+    }))),
     nextCursor: rows.length > limit ? encodeTimeCursor(page[page.length - 1]) : null,
     unreadCount,
   };

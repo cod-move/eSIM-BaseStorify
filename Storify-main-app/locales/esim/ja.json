@@ -642,7 +642,9 @@
         "kycApproved": "本人確認が完了しました",
         "kycRejected": "本人確認が承認されませんでした",
         "walletAdded": "残高に入金しました",
-        "referralAdded": "紹介報酬が追加されました"
+        "referralAdded": "紹介報酬が追加されました",
+        "qrReady": "新しいQRコードの準備ができました",
+        "qrDeclined": "新しいQRコードのリクエストは承認されませんでした"
       },
       "kind": {
         "esim": "eSIM",
@@ -680,7 +682,13 @@
         "kycApproved": "本人確認が完了しました。本人確認が必要なeSIMを購入できます。",
         "kycRejected": "本人確認ができませんでした：{reason}。情報を再送信できます。",
         "walletAdded": "{amount}を残高に入金しました。お支払い時に使えます。",
-        "referralAdded": "ご紹介した方の注文により、{amount}が残高に追加されました。"
+        "referralAdded": "ご紹介した方の注文により、{amount}が残高に追加されました。",
+        "qrReady": "{number}：番号を開いて新しいeSIMをインストールしてください。古いeSIMは使えなくなります。",
+        "qrDeclined": "{number}：リクエストは承認されませんでした。",
+        "qrFeeBack": "手数料{fee}は番号に戻されます。",
+        "numberCredit": "クレジット{amount}",
+        "dataPackage": "データパッケージ",
+        "qrDeclinedFee": "{number}：リクエストは承認されませんでした。手数料{fee}は番号に戻されます。"
       },
       "drawer": {
         "subtitle": "最近のお知らせとブラウザ通知の設定",

@@ -642,7 +642,9 @@
         "kycApproved": "Identiteit geverifieer",
         "kycRejected": "Identiteitskontrole nie geslaag nie",
         "walletAdded": "Geld by jou saldo gevoeg",
-        "referralAdded": "Verwysingsbeloning bygevoeg"
+        "referralAdded": "Verwysingsbeloning bygevoeg",
+        "qrReady": "Jou nuwe QR-kode is gereed",
+        "qrDeclined": "Jou versoek vir ’n nuwe QR-kode is afgekeur"
       },
       "kind": {
         "esim": "eSIM",
@@ -680,7 +682,13 @@
         "kycApproved": "Jou identiteit is geverifieer. Jy kan nou eSIM's koop wat dit vereis.",
         "kycRejected": "Ons kon nie jou identiteit verifieer nie: {reason}. Jy kan jou besonderhede weer stuur.",
         "walletAdded": "{amount} is by jou saldo gevoeg. Gebruik dit by betaal.",
-        "referralAdded": "{amount} is by jou saldo gevoeg vir 'n bestelling deur iemand wat jy genooi het."
+        "referralAdded": "{amount} is by jou saldo gevoeg vir 'n bestelling deur iemand wat jy genooi het.",
+        "qrReady": "{number}: maak die nommer oop om die nuwe eSIM te installeer. Die ou een werk nie meer nie.",
+        "qrDeclined": "{number}: die versoek is afgekeur",
+        "qrFeeBack": "Die fooi van {fee} gaan terug op die nommer.",
+        "numberCredit": "{amount} krediet",
+        "dataPackage": "Datapakket",
+        "qrDeclinedFee": "{number}: die versoek is afgekeur. Die fooi van {fee} gaan terug op die nommer."
       },
       "drawer": {
         "subtitle": "Onlangse kennisgewings en blaaierkennisgewing-instellings",

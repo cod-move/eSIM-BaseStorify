@@ -642,7 +642,9 @@
         "kycApproved": "Identität verifiziert",
         "kycRejected": "Identitätsprüfung nicht bestanden",
         "walletAdded": "Geld deinem Guthaben gutgeschrieben",
-        "referralAdded": "Empfehlungsprämie gutgeschrieben"
+        "referralAdded": "Empfehlungsprämie gutgeschrieben",
+        "qrReady": "Dein neuer QR-Code ist bereit",
+        "qrDeclined": "Deine Anfrage für einen neuen QR-Code wurde abgelehnt"
       },
       "kind": {
         "esim": "eSIM",
@@ -680,7 +682,13 @@
         "kycApproved": "Deine Identität ist verifiziert. Du kannst jetzt eSIMs kaufen, die das verlangen.",
         "kycRejected": "Wir konnten deine Identität nicht verifizieren: {reason}. Du kannst deine Angaben erneut senden.",
         "walletAdded": "{amount} wurden deinem Guthaben gutgeschrieben. Nutze es an der Kasse.",
-        "referralAdded": "{amount} wurden deinem Guthaben für eine Bestellung einer von dir eingeladenen Person gutgeschrieben."
+        "referralAdded": "{amount} wurden deinem Guthaben für eine Bestellung einer von dir eingeladenen Person gutgeschrieben.",
+        "qrReady": "{number}: Öffne die Nummer, um die neue eSIM zu installieren. Die alte funktioniert nicht mehr.",
+        "qrDeclined": "{number}: Die Anfrage wurde abgelehnt",
+        "qrFeeBack": "Die Gebühr von {fee} wird der Nummer wieder gutgeschrieben.",
+        "numberCredit": "{amount} Guthaben",
+        "dataPackage": "Datenpaket",
+        "qrDeclinedFee": "{number}: Die Anfrage wurde abgelehnt. Die Gebühr von {fee} wird der Nummer wieder gutgeschrieben."
       },
       "drawer": {
         "subtitle": "Neueste Benachrichtigungen und Browser-Push-Einstellungen",

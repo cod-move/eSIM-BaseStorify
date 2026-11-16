@@ -642,7 +642,9 @@
         "kycApproved": "Utambulisho umethibitishwa",
         "kycRejected": "Uthibitishaji wa utambulisho haukufaulu",
         "walletAdded": "Pesa zimeongezwa kwenye salio lako",
-        "referralAdded": "Zawadi ya rufaa imeongezwa"
+        "referralAdded": "Zawadi ya rufaa imeongezwa",
+        "qrReady": "Msimbo wako mpya wa QR uko tayari",
+        "qrDeclined": "Ombi lako la msimbo mpya wa QR limekataliwa"
       },
       "kind": {
         "esim": "eSIM",
@@ -680,7 +682,13 @@
         "kycApproved": "Utambulisho wako umethibitishwa. Sasa unaweza kununua eSIM zinazohitaji hivyo.",
         "kycRejected": "Hatukuweza kuthibitisha utambulisho wako: {reason}. Unaweza kutuma taarifa zako tena.",
         "walletAdded": "{amount} zimeongezwa kwenye salio lako. Zitumie wakati wa kulipa.",
-        "referralAdded": "{amount} zimeongezwa kwenye salio lako kwa agizo la mtu uliyemwalika."
+        "referralAdded": "{amount} zimeongezwa kwenye salio lako kwa agizo la mtu uliyemwalika.",
+        "qrReady": "{number}: fungua nambari ili usakinishe eSIM mpya. Ya zamani itaacha kufanya kazi.",
+        "qrDeclined": "{number}: ombi limekataliwa",
+        "qrFeeBack": "Ada ya {fee} inarudishwa kwenye nambari.",
+        "numberCredit": "Salio la {amount}",
+        "dataPackage": "Kifurushi cha data",
+        "qrDeclinedFee": "{number}: ombi limekataliwa. Ada ya {fee} inarudishwa kwenye nambari."
       },
       "drawer": {
         "subtitle": "Arifa za hivi karibuni na mipangilio ya arifa za kivinjari",

@@ -71,6 +71,8 @@ const TITLES: Rule[] = [
   fixed(/^Your numbers are ready$/, "title.numbersReady"),
   fixed(/^Added to your number$/, "title.numberAdded"),
   fixed(/^Your top-up is on your eSIM$/, "title.topupDone"),
+  fixed(/^Your new QR code is ready$/, "title.qrReady"),
+  fixed(/^Your new QR code request was declined$/, "title.qrDeclined"),
   {
     re: /^Order (\S+): (?:your eSIM|(your eSIMs)|(\d+) of your (\d+) eSIMs) will follow shortly$/,
     render: (m, t) =>
@@ -104,6 +106,18 @@ function joined(first: string | null, second: string | null | undefined) {
   return /[。！？]$/.test(first) ? `${first}${second}` : `${first} ${second}`;
 }
 
+/** Each "+msisdn: what" of a number's top-up: "… credit" and the unnamed package translated, a package's own name kept. */
+function numberOps(text: string, t: Tr): string | null {
+  const parts = text.split(/, (?=\+\d+: )/).map((part) => {
+    const m = part.match(/^(\+\d+): ([\s\S]+)$/);
+    if (!m) return part;
+    const credit = m[2].match(/^(\S+) credit$/);
+    const what = credit ? t("message.numberCredit", { amount: credit[1] }) : m[2] === "Data package" ? t("message.dataPackage") : m[2];
+    return what === null ? null : `${m[1]}: ${what}`;
+  });
+  return parts.includes(null) ? null : parts.join(", ");
+}
+
 function messageRules(locale: string): Rule[] {
   return [
     { re: /^Your order #(\S+) has been placed and confirmed\.$/, render: (m, t) => t("message.orderConfirmed", { order: m[1] }) },
@@ -125,6 +139,22 @@ function messageRules(locale: string): Rule[] {
     },
     { re: /^Order (\S+): open it to install before you travel\.$/, render: (m, t) => t("message.esimReady", { order: m[1] }) },
     { re: /^Order (\S+): (.+)\. Open it to install\.$/, render: (m, t) => t("message.numberReady", { order: m[1], numbers: m[2] }) },
+    // A new QR code for a number (lib/esim/numbers/request-notices.ts): "+44 7700900123: …".
+    {
+      re: /^(\+\d+ \d+): open the number to install the new eSIM\. The old one stops working\.$/,
+      render: (m, t) => t("message.qrReady", { number: m[1] }),
+    },
+    {
+      re: /^(\+\d+ \d+): the request was declined(?:\. The (.+?) fee goes back on the number\.)?$/,
+      render: (m, t) => (m[2] ? t("message.qrDeclinedFee", { number: m[1], fee: m[2] }) : t("message.qrDeclined", { number: m[1] })),
+    },
+    {
+      // Declined with the person's note: the note stays as they wrote it.
+      re: /^(\+\d+ \d+): ([\s\S]+)\. The (.+?) fee goes back on the number\.$/,
+      render: (m, t) => joined(`${m[1]}: ${m[2]}.`, t("message.qrFeeBack", { fee: m[3] })),
+    },
+    // Credit or a data package put on a number (lib/esim/fulfillment/delivery.ts): "+447700900123: $5 credit, +…: EU 5GB".
+    { re: /^\+\d+: [\s\S]+$/, render: (m, t) => numberOps(m[0], t) },
     {
       re: /^We are completing the rest of your order\. We will email the eSIM as soon as it is issued, or refund it\.$/,
       render: (_m, t) => t("message.delayed"),

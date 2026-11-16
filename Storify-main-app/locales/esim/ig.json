@@ -642,7 +642,9 @@
         "kycApproved": "Ekwenyela njirimara",
         "kycRejected": "Nkwenye njirimara agafeghị",
         "walletAdded": "Etinyela ego na nguzozi gị",
-        "referralAdded": "Etinyela ụgwọ ọrụ ntụaka"
+        "referralAdded": "Etinyela ụgwọ ọrụ ntụaka",
+        "qrReady": "Koodu QR ọhụrụ gị adịla njikere",
+        "qrDeclined": "A jụrụ arịrịọ gị maka koodu QR ọhụrụ"
       },
       "kind": {
         "esim": "eSIM",
@@ -680,7 +682,13 @@
         "kycApproved": "Ekwenyela njirimara gị. Ị nwere ike ịzụta eSIM ndị chọrọ ya ugbu a.",
         "kycRejected": "Anyị enweghị ike ikwenye njirimara gị: {reason}. Ị nwere ike iziga nkọwa gị ọzọ.",
         "walletAdded": "Etinyela {amount} na nguzozi gị. Jiri ya mgbe ị na-akwụ ụgwọ.",
-        "referralAdded": "Etinyela {amount} na nguzozi gị maka ọda onye ị kpọrọ."
+        "referralAdded": "Etinyela {amount} na nguzozi gị maka ọda onye ị kpọrọ.",
+        "qrReady": "{number}: mepee nọmba ahụ iji tinye eSIM ọhụrụ. Nke ochie agaghị arụ ọrụ ọzọ.",
+        "qrDeclined": "{number}: a jụrụ arịrịọ ahụ",
+        "qrFeeBack": "A ga-eweghachi ụgwọ {fee} na nọmba ahụ.",
+        "numberCredit": "Kredit {amount}",
+        "dataPackage": "Ngwugwu data",
+        "qrDeclinedFee": "{number}: a jụrụ arịrịọ ahụ. A ga-eweghachi ụgwọ {fee} na nọmba ahụ."
       },
       "drawer": {
         "subtitle": "Ọkwa ọhụrụ na ntọala ọkwa ihe nchọgharị",

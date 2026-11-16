@@ -8,6 +8,7 @@ import { getStoreFacts } from "@/lib/storefront/store-facts";
 import { getStorefrontSettings } from "@/lib/storefront/storefront-settings";
 import { catalogContext } from "../catalog/product-card";
 import { HOME_BLOCK_MAPPERS } from "./blocks";
+import { localizeTemplateCopy as esimLocalizeTemplateCopy } from "@/lib/esim/storefront/template-copy"; // [esim-patch] P75
 
 /**
  * GET /home: the web's home page as blocks, one per section it draws, in its
@@ -42,7 +43,8 @@ export const homeRoute = defineRoute({
       currency: resolveCurrency(facts.currencyCode),
       copy,
     };
-    const sections = drawnSections(page.sections, {
+    // [esim-patch] P75 the eSIM template's own text (the FAQ and its title) in the app's language, as on the website (P35).
+    const sections = drawnSections(await esimLocalizeTemplateCopy(page.sections, locale), {
       isMultiVendorEnabled: storefront.isMultiVendorEnabled,
       themeId: storefront.theme.id,
     });

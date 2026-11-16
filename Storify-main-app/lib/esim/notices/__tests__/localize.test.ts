@@ -40,6 +40,8 @@ const TITLES = [
   "Your numbers are ready",
   "Added to your number",
   "Your top-up is on your eSIM",
+  "Your new QR code is ready",
+  "Your new QR code request was declined",
   "Order ES-1001: your eSIM will follow shortly",
   "Order ES-1001: your eSIMs will follow shortly",
   "Order ES-1001: 2 of your 3 eSIMs will follow shortly",
@@ -70,6 +72,12 @@ const MESSAGES = [
   "We could not deliver your verification email yet. Please use resend shortly.",
   "Order ES-1001: open it to install before you travel.",
   "Order ES-1001: +44 7700 900123. Open it to install.",
+  "+44 7700900123: open the number to install the new eSIM. The old one stops working.",
+  "+44 7700900123: the request was declined",
+  "+44 7700900123: the request was declined. The $2 fee goes back on the number.",
+  "+44 7700900123: the photo is unclear. The $2 fee goes back on the number.",
+  "+447700900123: $5 credit",
+  "+447700900123: $5 credit, +447700900124: Data package",
   "We are completing the rest of your order. We will email the eSIM as soon as it is issued, or refund it.",
   "We could not issue your eSIM; 4.50 USD is back in your balance.",
   "We could not complete 1 of your 2 top-ups; 4.50 USD is back in your balance.",
@@ -116,6 +124,18 @@ describe("localizeNotice", () => {
     for (const message of MESSAGES.filter((text) => !/UTC|^We could not (issue|complete)/.test(text))) {
       assert.equal(localizeNotice({ title: "", message }, t, "en").message, message);
     }
+  });
+
+  it("keeps a number package's own name and the person's note", () => {
+    const t = translator("zh");
+    assert.equal(
+      localizeNotice({ title: "", message: "+447700900123: $5 credit, +447700900124: EU 5GB" }, t, "zh").message,
+      "+447700900123: $5 话费, +447700900124: EU 5GB",
+    );
+    assert.equal(
+      localizeNotice({ title: "", message: "+44 7700900123: the photo is unclear. The $2 fee goes back on the number." }, t, "zh").message,
+      "+44 7700900123: the photo is unclear. $2 手续费已退回到该号码。",
+    );
   });
 
   it("leaves text it does not know as stored", () => {

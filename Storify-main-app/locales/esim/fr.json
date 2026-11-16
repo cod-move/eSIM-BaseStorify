@@ -642,7 +642,9 @@
         "kycApproved": "Identité vérifiée",
         "kycRejected": "Vérification d'identité refusée",
         "walletAdded": "Argent ajouté à votre solde",
-        "referralAdded": "Récompense de parrainage ajoutée"
+        "referralAdded": "Récompense de parrainage ajoutée",
+        "qrReady": "Votre nouveau code QR est prêt",
+        "qrDeclined": "Votre demande de nouveau code QR a été refusée"
       },
       "kind": {
         "esim": "eSIM",
@@ -680,7 +682,13 @@
         "kycApproved": "Votre identité est vérifiée. Vous pouvez maintenant acheter les eSIM qui l'exigent.",
         "kycRejected": "Nous n'avons pas pu vérifier votre identité : {reason}. Vous pouvez renvoyer vos informations.",
         "walletAdded": "{amount} ont été ajoutés à votre solde. Utilisez-les au paiement.",
-        "referralAdded": "{amount} ont été ajoutés à votre solde pour une commande d'une personne que vous avez invitée."
+        "referralAdded": "{amount} ont été ajoutés à votre solde pour une commande d'une personne que vous avez invitée.",
+        "qrReady": "{number} : ouvrez le numéro pour installer la nouvelle eSIM. L’ancienne cesse de fonctionner.",
+        "qrDeclined": "{number} : la demande a été refusée",
+        "qrFeeBack": "Les frais de {fee} sont recrédités sur le numéro.",
+        "numberCredit": "{amount} de crédit",
+        "dataPackage": "Forfait de données",
+        "qrDeclinedFee": "{number} : la demande a été refusée. Les frais de {fee} sont recrédités sur le numéro."
       },
       "drawer": {
         "subtitle": "Notifications récentes et réglages des notifications du navigateur",

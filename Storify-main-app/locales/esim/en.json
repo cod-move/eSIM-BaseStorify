@@ -646,7 +646,9 @@
         "kycApproved": "Identity verified",
         "kycRejected": "Identity check not passed",
         "walletAdded": "Money added to your balance",
-        "referralAdded": "Referral reward added"
+        "referralAdded": "Referral reward added",
+        "qrReady": "Your new QR code is ready",
+        "qrDeclined": "Your new QR code request was declined"
       },
       "kind": {
         "esim": "eSIM",
@@ -684,7 +686,13 @@
         "kycApproved": "Your identity is verified. You can now buy eSIMs that need it.",
         "kycRejected": "We could not verify your identity: {reason}. You can send your details again.",
         "walletAdded": "{amount} was added to your balance. Use it at checkout.",
-        "referralAdded": "{amount} was added to your balance for an order by someone you invited."
+        "referralAdded": "{amount} was added to your balance for an order by someone you invited.",
+        "qrReady": "{number}: open the number to install the new eSIM. The old one stops working.",
+        "qrDeclined": "{number}: the request was declined",
+        "qrFeeBack": "The {fee} fee goes back on the number.",
+        "numberCredit": "{amount} credit",
+        "dataPackage": "Data package",
+        "qrDeclinedFee": "{number}: the request was declined. The {fee} fee goes back on the number."
       },
       "drawer": {
         "subtitle": "Recent notifications and browser push settings",

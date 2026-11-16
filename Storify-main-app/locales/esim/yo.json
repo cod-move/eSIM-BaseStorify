@@ -642,7 +642,9 @@
         "kycApproved": "A ti jẹ́rìísí ìdánimọ̀",
         "kycRejected": "Ìjẹ́rìísí ìdánimọ̀ kò yege",
         "walletAdded": "A ti fi owó kún ìyókù owó rẹ",
-        "referralAdded": "A ti fi ẹ̀bùn ìtọ́kasí kún un"
+        "referralAdded": "A ti fi ẹ̀bùn ìtọ́kasí kún un",
+        "qrReady": "Kóòdù QR tuntun rẹ ti ṣetán",
+        "qrDeclined": "A kọ ìbéèrè rẹ fún kóòdù QR tuntun"
       },
       "kind": {
         "esim": "eSIM",
@@ -680,7 +682,13 @@
         "kycApproved": "A ti jẹ́rìísí ìdánimọ̀ rẹ. O lè ra àwọn eSIM tó nílò rẹ̀ báyìí.",
         "kycRejected": "A kò lè jẹ́rìísí ìdánimọ̀ rẹ: {reason}. O lè fi àlàyé rẹ ránṣẹ́ lẹ́ẹ̀kansí.",
         "walletAdded": "A ti fi {amount} kún ìyókù owó rẹ. Lò ó nígbà ìsanwó.",
-        "referralAdded": "A ti fi {amount} kún ìyókù owó rẹ fún àṣẹ ẹni tí o pè."
+        "referralAdded": "A ti fi {amount} kún ìyókù owó rẹ fún àṣẹ ẹni tí o pè.",
+        "qrReady": "{number}: ṣí nọ́mbà náà láti fi eSIM tuntun sí i. Èyí àtijọ́ kò ní ṣiṣẹ́ mọ́.",
+        "qrDeclined": "{number}: a kọ ìbéèrè náà",
+        "qrFeeBack": "A ó dá owó {fee} padà sí nọ́mbà náà.",
+        "numberCredit": "Owó {amount}",
+        "dataPackage": "Àpò dátà",
+        "qrDeclinedFee": "{number}: a kọ ìbéèrè náà. A ó dá owó {fee} padà sí nọ́mbà náà."
       },
       "drawer": {
         "subtitle": "Àwọn ìfitónilétí tuntun àti ètò ìfitónilétí aṣàwákiri",

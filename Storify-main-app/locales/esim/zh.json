@@ -646,7 +646,9 @@
         "kycApproved": "身份已验证",
         "kycRejected": "身份验证未通过",
         "walletAdded": "已充值到余额",
-        "referralAdded": "推荐奖励已到账"
+        "referralAdded": "推荐奖励已到账",
+        "qrReady": "新的二维码已就绪",
+        "qrDeclined": "新二维码申请未通过"
       },
       "kind": {
         "esim": "eSIM",
@@ -684,7 +686,13 @@
         "kycApproved": "你的身份已验证，现在可以购买需要实名的 eSIM。",
         "kycRejected": "未能验证你的身份：{reason}。你可以重新提交资料。",
         "walletAdded": "{amount} 已充值到你的余额，结账时可用。",
-        "referralAdded": "你邀请的好友下单，{amount} 奖励已加到你的余额。"
+        "referralAdded": "你邀请的好友下单，{amount} 奖励已加到你的余额。",
+        "qrReady": "{number}：打开号码页面安装新的 eSIM，旧的 eSIM 将停止使用。",
+        "qrDeclined": "{number}：申请未通过。",
+        "qrFeeBack": "{fee} 手续费已退回到该号码。",
+        "numberCredit": "{amount} 话费",
+        "dataPackage": "流量包",
+        "qrDeclinedFee": "{number}：申请未通过。{fee} 手续费已退回到该号码。"
       },
       "drawer": {
         "subtitle": "最近的通知和浏览器推送设置",

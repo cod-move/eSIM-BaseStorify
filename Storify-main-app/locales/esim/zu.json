@@ -642,7 +642,9 @@
         "kycApproved": "Umazisi uqinisekisiwe",
         "kycRejected": "Ukuqinisekiswa komazisi akuphumelelanga",
         "walletAdded": "Imali yengezwe ebhalansini yakho",
-        "referralAdded": "Umklomelo wokudlulisela wengeziwe"
+        "referralAdded": "Umklomelo wokudlulisela wengeziwe",
+        "qrReady": "Ikhodi yakho entsha ye-QR isilungile",
+        "qrDeclined": "Isicelo sakho sekhodi entsha ye-QR senqatshiwe"
       },
       "kind": {
         "esim": "eSIM",
@@ -680,7 +682,13 @@
         "kycApproved": "Umazisi wakho uqinisekisiwe. Manje ungathenga ama-eSIM akudingayo.",
         "kycRejected": "Asikwazanga ukuqinisekisa umazisi wakho: {reason}. Ungathumela imininingwane yakho futhi.",
         "walletAdded": "U-{amount} wengezwe ebhalansini yakho. Musebenzise lapho ukhokha.",
-        "referralAdded": "U-{amount} wengezwe ebhalansini yakho nge-oda lomuntu omumemile."
+        "referralAdded": "U-{amount} wengezwe ebhalansini yakho nge-oda lomuntu omumemile.",
+        "qrReady": "{number}: vula inombolo ukuze ufake i-eSIM entsha. Endala izoyeka ukusebenza.",
+        "qrDeclined": "{number}: isicelo senqatshiwe",
+        "qrFeeBack": "Imali engu-{fee} ibuyiselwa kunombolo.",
+        "numberCredit": "Ikhredithi engu-{amount}",
+        "dataPackage": "Iphakheji yedatha",
+        "qrDeclinedFee": "{number}: isicelo senqatshiwe. Imali engu-{fee} ibuyiselwa kunombolo."
       },
       "drawer": {
         "subtitle": "Izaziso zakamuva nezilungiselelo zezaziso zesiphequluli",

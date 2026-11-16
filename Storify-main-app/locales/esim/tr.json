@@ -642,7 +642,9 @@
         "kycApproved": "Kimlik doğrulandı",
         "kycRejected": "Kimlik doğrulaması geçilemedi",
         "walletAdded": "Bakiyenize para eklendi",
-        "referralAdded": "Davet ödülü eklendi"
+        "referralAdded": "Davet ödülü eklendi",
+        "qrReady": "Yeni QR kodunuz hazır",
+        "qrDeclined": "Yeni QR kodu talebiniz reddedildi"
       },
       "kind": {
         "esim": "eSIM",
@@ -680,7 +682,13 @@
         "kycApproved": "Kimliğiniz doğrulandı. Artık bunu gerektiren eSIM'leri satın alabilirsiniz.",
         "kycRejected": "Kimliğinizi doğrulayamadık: {reason}. Bilgilerinizi yeniden gönderebilirsiniz.",
         "walletAdded": "Bakiyenize {amount} eklendi. Ödeme sırasında kullanın.",
-        "referralAdded": "Davet ettiğiniz birinin siparişi için bakiyenize {amount} eklendi."
+        "referralAdded": "Davet ettiğiniz birinin siparişi için bakiyenize {amount} eklendi.",
+        "qrReady": "{number}: yeni eSIM'i yüklemek için numarayı açın. Eskisi artık çalışmaz.",
+        "qrDeclined": "{number}: talep reddedildi",
+        "qrFeeBack": "{fee} ücret numaraya iade edilir.",
+        "numberCredit": "{amount} bakiye",
+        "dataPackage": "Veri paketi",
+        "qrDeclinedFee": "{number}: talep reddedildi. {fee} ücret numaraya iade edilir."
       },
       "drawer": {
         "subtitle": "Son bildirimler ve tarayıcı bildirimi ayarları",

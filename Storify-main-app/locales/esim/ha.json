@@ -642,7 +642,9 @@
         "kycApproved": "An tabbatar da shaida",
         "kycRejected": "Tabbatar da shaida bai wuce ba",
         "walletAdded": "An ƙara kuɗi a ma'auninka",
-        "referralAdded": "An ƙara ladan gayyata"
+        "referralAdded": "An ƙara ladan gayyata",
+        "qrReady": "Sabon lambar QR ɗinka ya shirya",
+        "qrDeclined": "An ƙi buƙatarka ta sabon lambar QR"
       },
       "kind": {
         "esim": "eSIM",
@@ -680,7 +682,13 @@
         "kycApproved": "An tabbatar da shaidarka. Yanzu za ka iya sayan eSIM da ke buƙatar hakan.",
         "kycRejected": "Ba mu iya tabbatar da shaidarka ba: {reason}. Za ka iya sake aika bayananka.",
         "walletAdded": "An ƙara {amount} a ma'auninka. Yi amfani da shi a wurin biya.",
-        "referralAdded": "An ƙara {amount} a ma'auninka saboda odar wanda ka gayyata."
+        "referralAdded": "An ƙara {amount} a ma'auninka saboda odar wanda ka gayyata.",
+        "qrReady": "{number}: buɗe lambar don shigar da sabuwar eSIM. Tsohuwar za ta daina aiki.",
+        "qrDeclined": "{number}: an ƙi buƙatar",
+        "qrFeeBack": "Za a mayar da kuɗin {fee} a lambar.",
+        "numberCredit": "Kuɗi {amount}",
+        "dataPackage": "Fakitin data",
+        "qrDeclinedFee": "{number}: an ƙi buƙatar. Za a mayar da kuɗin {fee} a lambar."
       },
       "drawer": {
         "subtitle": "Sabbin sanarwa da saitunan sanarwar mai bincike",

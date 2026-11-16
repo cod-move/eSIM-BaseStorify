@@ -642,7 +642,9 @@
         "kycApproved": "Identiteit geverifieerd",
         "kycRejected": "Identiteitscontrole niet geslaagd",
         "walletAdded": "Geld toegevoegd aan je saldo",
-        "referralAdded": "Verwijzingsbeloning toegevoegd"
+        "referralAdded": "Verwijzingsbeloning toegevoegd",
+        "qrReady": "Je nieuwe QR-code is klaar",
+        "qrDeclined": "Je aanvraag voor een nieuwe QR-code is afgewezen"
       },
       "kind": {
         "esim": "eSIM",
@@ -680,7 +682,13 @@
         "kycApproved": "Je identiteit is geverifieerd. Je kunt nu eSIM's kopen die dat vereisen.",
         "kycRejected": "We konden je identiteit niet verifiëren: {reason}. Je kunt je gegevens opnieuw sturen.",
         "walletAdded": "{amount} is aan je saldo toegevoegd. Gebruik het bij het afrekenen.",
-        "referralAdded": "{amount} is aan je saldo toegevoegd voor een bestelling van iemand die je hebt uitgenodigd."
+        "referralAdded": "{amount} is aan je saldo toegevoegd voor een bestelling van iemand die je hebt uitgenodigd.",
+        "qrReady": "{number}: open het nummer om de nieuwe eSIM te installeren. De oude werkt niet meer.",
+        "qrDeclined": "{number}: de aanvraag is afgewezen",
+        "qrFeeBack": "De kosten van {fee} worden teruggezet op het nummer.",
+        "numberCredit": "{amount} beltegoed",
+        "dataPackage": "Databundel",
+        "qrDeclinedFee": "{number}: de aanvraag is afgewezen. De kosten van {fee} worden teruggezet op het nummer."
       },
       "drawer": {
         "subtitle": "Recente meldingen en instellingen voor browsermeldingen",

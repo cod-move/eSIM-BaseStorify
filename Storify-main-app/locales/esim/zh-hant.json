@@ -646,7 +646,9 @@
         "kycApproved": "身份已驗證",
         "kycRejected": "身份驗證未通過",
         "walletAdded": "已充值到餘額",
-        "referralAdded": "推薦獎勵已到賬"
+        "referralAdded": "推薦獎勵已到賬",
+        "qrReady": "新的二維碼已就緒",
+        "qrDeclined": "新二維碼申請未通過"
       },
       "kind": {
         "esim": "eSIM",
@@ -684,7 +686,13 @@
         "kycApproved": "你的身份已驗證，現在可以購買需要實名的 eSIM。",
         "kycRejected": "未能驗證你的身份：{reason}。你可以重新提交資料。",
         "walletAdded": "{amount} 已充值到你的餘額，結賬時可用。",
-        "referralAdded": "你邀請的好友下單，{amount} 獎勵已加到你的餘額。"
+        "referralAdded": "你邀請的好友下單，{amount} 獎勵已加到你的餘額。",
+        "qrReady": "{number}：打開號碼頁面安裝新的 eSIM，舊的 eSIM 將停止使用。",
+        "qrDeclined": "{number}：申請未通過。",
+        "qrFeeBack": "{fee} 手續費已退回到該號碼。",
+        "numberCredit": "{amount} 話費",
+        "dataPackage": "流量包",
+        "qrDeclinedFee": "{number}：申請未通過。{fee} 手續費已退回到該號碼。"
       },
       "drawer": {
         "subtitle": "最近的通知和瀏覽器推送設置",
