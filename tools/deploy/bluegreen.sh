@@ -53,6 +53,9 @@ if [ -z "$NGINX" ]; then
   [ -z "$NGINX" ] && [ -x /www/server/nginx/sbin/nginx ] && NGINX=/www/server/nginx/sbin/nginx
 fi
 
+# How to call this script again, for the hints it prints (it runs from a temporary copy).
+SELF="bash $ROOT/current/tools/deploy/bluegreen.sh"
+
 log() { printf '[%s] %s\n' "$(date '+%F %T')" "$*"; }
 die() { log "ERROR: $*"; exit 1; }
 
@@ -96,7 +99,8 @@ point_nginx() {
 
 healthy() {
   local port="$1" waited=0
-  until curl -fsS -o /dev/null --max-time 10 "http://127.0.0.1:$port$HEALTH_PATH"; do
+  # Quietly: the new copy refuses connections for its first seconds.
+  until curl -fs -o /dev/null --max-time 10 "http://127.0.0.1:$port$HEALTH_PATH"; do
     waited=$((waited + 3))
     [ "$waited" -ge "$HEALTH_TIMEOUT" ] && return 1
     sleep 3
@@ -120,7 +124,7 @@ cmd_init() {
   for copy in blue green; do
     [ -d "$ROOT/$copy/.git" ] || git clone --branch "$BRANCH" "$REPO" "$ROOT/$copy"
   done
-  log "Now put the store's .env at $ROOT/shared/.env, set up nginx (README), then run: $0 deploy"
+  log "Now put the store's .env at $ROOT/shared/.env, set up nginx (README), then run: bash $ROOT/blue/tools/deploy/bluegreen.sh deploy"
 }
 
 preflight() {
@@ -165,7 +169,7 @@ cmd_deploy() {
     log "keeping $current up ${DRAIN}s for requests and jobs it is running"
     sleep "$DRAIN"
     pm2 stop "$PM2_PREFIX-$current" >/dev/null && pm2 save >/dev/null
-    log "stopped $current (kept for rollback: $0 rollback)"
+    log "stopped $current (kept for rollback: $SELF rollback)"
   fi
 }
 

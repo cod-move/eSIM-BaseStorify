@@ -1,20 +1,20 @@
 {
   "expo": {
-    "name": "Storify Business",
+    "name": "CodSIM Business",
     "slug": "storify-business",
     "version": "1.0.0",
-    "scheme": "storifybiz",
+    "scheme": "codsimbiz",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "bundleIdentifier": "com.storify.business",
+      "bundleIdentifier": "cc.codsim.business",
       "config": {
         "usesNonExemptEncryption": false
       }
     },
     "android": {
-      "package": "com.storify.business",
+      "package": "cc.codsim.business",
       "icon": "./assets/images/android-icon.png",
       "blockedPermissions": ["android.permission.SYSTEM_ALERT_WINDOW"],
       "adaptiveIcon": {
