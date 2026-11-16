@@ -137,10 +137,15 @@ export function Button({
       )}
       {...props}>
       {leading ? (
-        <View className={cn('absolute start-4', loading && 'opacity-0')}>{leading}</View>
+        // [esim-patch] P72 kept as a view of its own (collapsable), as the content below.
+        <View collapsable={false} className={cn('absolute start-4', loading && 'opacity-0')}>
+          {leading}
+        </View>
       ) : null}
       {/* While busy the content is kept but not shown, so the pill does not change size. */}
+      {/* [esim-patch] P72 never flattened away (collapsable): see UPSTREAM-PATCHES.md. */}
       <View
+        collapsable={false}
         className={cn(
           'shrink flex-row items-center gap-2',
           trailing && 'flex-1',
