@@ -70,6 +70,11 @@ export interface IEsimProfile extends mongoose.Document {
   activationDeadline: Date | null;
   remark: string | null;
   /**
+   * When the shopper deleted it from their own list. Only hides it from them
+   * (website and app); the eSIM itself is not cancelled and admins still see it.
+   */
+  customerHiddenAt: Date | null;
+  /**
    * Called off after it was issued (USR-07/08): by the shopper, an admin, or a
    * refund of the order. `state` pending while the supplier is asked;
    * `refundMinor` what went back to the shopper, `feeMinor` what was kept.
@@ -227,6 +232,7 @@ const EsimProfileSchema = new Schema<IEsimProfile>(
     profileExpiresAt: date,
     activationDeadline: date,
     remark: { type: String, default: null, maxlength: 100 },
+    customerHiddenAt: date,
     cancellation: {
       type: new Schema(
         {

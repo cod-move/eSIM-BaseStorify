@@ -324,6 +324,13 @@
       "failed": "Le eSIM ayisenakurhoxiswa.",
       "done": "Irhoxisiwe. Imali yakho ebuyiselwayo isendleleni."
     },
+    "remove": {
+      "button": "Cima i-eSIM",
+      "confirmTitle": "Cima le eSIM kuluhlu lwakho?",
+      "confirmBody": "Ayizukuphinda ibonakale kwi-eSIM Zam. Oku akuyirhoxisi kwaye akukho nto ibuyiswayo: ukuba ikwifowuni iya kuqhubeka isebenza de kuphele isicwangciso sayo. Awunakukurhoxisa oku ngokwakho.",
+      "done": "I-eSIM icinyiwe kuluhlu lwakho",
+      "failed": "Ayikwazanga ukucima i-eSIM. Nceda uzame kwakhona."
+    },
     "compare": {
       "title": "Thelekisa iiphakheji",
       "days": "Iintsuku",

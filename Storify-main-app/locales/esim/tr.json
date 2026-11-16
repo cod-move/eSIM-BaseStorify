@@ -324,6 +324,13 @@
       "failed": "Bu eSIM artık iptal edilemez.",
       "done": "İptal edildi. İadeniz yolda."
     },
+    "remove": {
+      "button": "eSIM'i sil",
+      "confirmTitle": "Bu eSIM listenizden silinsin mi?",
+      "confirmBody": "Artık eSIM'lerim bölümünde görünmez. eSIM iptal edilmez ve ücret iadesi yapılmaz: bir telefonda yüklüyse paketi bitene kadar çalışmaya devam eder. Bunu kendiniz geri alamazsınız.",
+      "done": "eSIM listenizden silindi",
+      "failed": "eSIM silinemedi. Lütfen tekrar deneyin."
+    },
     "compare": {
       "title": "Paketleri karşılaştır",
       "days": "Gün",

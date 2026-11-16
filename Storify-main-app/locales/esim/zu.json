@@ -324,6 +324,13 @@
       "failed": "Le eSIM ayisakwazi ukukhanselwa.",
       "done": "Ikhanseliwe. Imali yakho ebuyiselwayo isendleleni."
     },
+    "remove": {
+      "button": "Susa i-eSIM",
+      "confirmTitle": "Susa le eSIM ohlwini lwakho?",
+      "confirmBody": "Ngeke isavela ku-eSIM Zami. Lokhu akuyikhanseli futhi akukho okubuyiswayo: uma isocingweni izoqhubeka isebenza kuze kuphele uhlelo lwayo. Ngeke ukwazi ukukuhlehlisa wena.",
+      "done": "I-eSIM isusiwe ohlwini lwakho",
+      "failed": "Ayikwazanga ukususa i-eSIM. Sicela uzame futhi."
+    },
     "compare": {
       "title": "Qhathanisa amaphakheji",
       "days": "Izinsuku",

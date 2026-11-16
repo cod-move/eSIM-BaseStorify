@@ -324,6 +324,13 @@
       "failed": "Ba za a iya soke wannan eSIM kuma ba.",
       "done": "An soke. Kuɗinka suna kan hanya."
     },
+    "remove": {
+      "button": "Share eSIM",
+      "confirmTitle": "Share wannan eSIM daga jerinka?",
+      "confirmBody": "Ba za ta sake bayyana a cikin eSIM nawa ba. Wannan ba ya soke ta kuma ba a mayar da kuɗi ba: idan tana kan waya za ta ci gaba da aiki har sai tsarinta ya ƙare. Ba za ka iya mayar da wannan da kanka ba.",
+      "done": "An share eSIM daga jerinka",
+      "failed": "Ba a iya share eSIM ba. Da fatan za a sake gwadawa."
+    },
     "compare": {
       "title": "Kwatanta fakiti",
       "days": "Kwanaki",

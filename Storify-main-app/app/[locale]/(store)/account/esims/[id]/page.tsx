@@ -12,7 +12,7 @@ import { getCustomerEsimFresh } from "@/lib/esim/account/esims";
 import { formatBytes, remainingPercent } from "@/lib/esim/account/display";
 import { installLinks } from "@/lib/esim/fulfillment/install-links";
 import { EsimStatusBadge, UsageBar } from "@/components/esim/esim-status-badge";
-import { CancelEsimButton, CopyValue, RefreshUsageButton, RemarkEditor } from "@/components/esim/esim-actions";
+import { CancelEsimButton, CopyValue, DeleteEsimButton, RefreshUsageButton, RemarkEditor } from "@/components/esim/esim-actions";
 import { shopperCancelOffer } from "@/lib/esim/cancel/service";
 import { esimTopupStatus } from "@/lib/esim/topup/offers";
 import { REFUSAL_TEXT } from "@/lib/esim/topup/eligibility";
@@ -223,6 +223,10 @@ export default async function AccountEsimPage({ params }: PageProps) {
           {vpn ? row(tr("esim.account.vpn", "VPN included"), [vpn.accountNumber, vpn.expiresAt ? date.format(vpn.expiresAt) : null].filter(Boolean).join(" · ") || "✓") : null}
         </CardContent>
       </Card>
+
+      <div className="flex justify-end">
+        <DeleteEsimButton esimId={esim.id} />
+      </div>
     </div>
   );
 }

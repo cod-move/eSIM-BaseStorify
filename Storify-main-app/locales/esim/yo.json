@@ -324,6 +324,13 @@
       "failed": "A kò lè fagilé eSIM yìí mọ́.",
       "done": "A ti fagilé e. Owó rẹ ń bọ̀."
     },
+    "remove": {
+      "button": "Pa eSIM rẹ́",
+      "confirmTitle": "Ṣé kí a pa eSIM yìí rẹ́ kúrò nínú àtòjọ rẹ?",
+      "confirmBody": "Kò ní hàn mọ́ nínú àwọn eSIM mi. Èyí kò fagilé e, a kò sì dá owó kankan padà: tí ó bá wà lórí fóònù, yóò máa ṣiṣẹ́ títí ètò rẹ̀ yóò fi parí. O kò lè dá èyí padà fúnra rẹ.",
+      "done": "A ti pa eSIM rẹ́ kúrò nínú àtòjọ rẹ",
+      "failed": "A kò lè pa eSIM rẹ́. Jọ̀wọ́ gbìyànjú lẹ́ẹ̀kan sí i."
+    },
     "compare": {
       "title": "Fi pákẹ́ẹ̀jì wéra",
       "days": "Ọjọ́",

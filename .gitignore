@@ -3,6 +3,6 @@
 __MACOSX/
 ._*
 
-# Built app packages (not kept in git)
+# [esim-patch] P78 Built app packages (not kept in git)
 *.apk
 *.aab

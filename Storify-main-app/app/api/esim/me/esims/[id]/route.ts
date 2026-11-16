@@ -3,7 +3,7 @@ import { successResponse } from "@/lib/api/response";
 import { withApi } from "@/lib/api/handler";
 import { NotFoundError } from "@/lib/api/errors";
 import { validateBody } from "@/lib/api/validate";
-import { getCustomerEsim, updateRemark } from "@/lib/esim/account/esims";
+import { getCustomerEsim, hideCustomerEsim, updateRemark } from "@/lib/esim/account/esims";
 
 const RemarkSchema = z.object({ remark: z.string().max(100) });
 
@@ -24,5 +24,14 @@ export const PATCH = withApi<{ id: string }>(
     const { remark } = await validateBody(request, RemarkSchema);
     if (!(await updateRemark(session.user.id, params.id, remark))) throw new NotFoundError("eSIM not found");
     return successResponse({ remark: remark.trim() || null });
+  },
+);
+
+/** The shopper deletes the eSIM from their list; it is only hidden from them, not cancelled. */
+export const DELETE = withApi<{ id: string }>(
+  { auth: "user", rateLimit: { action: "esim:remark", preset: "moderate" }, demo: "allow" },
+  async ({ params, session }) => {
+    if (!(await hideCustomerEsim(session.user.id, params.id))) throw new NotFoundError("eSIM not found");
+    return successResponse({ deleted: true });
   },
 );

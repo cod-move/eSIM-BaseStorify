@@ -2,6 +2,7 @@
 import {
   EsimDestinationDetail,
   EsimDestinationList,
+  EsimDeleted,
   EsimDetail,
   EsimDevices,
   EsimKyc,
@@ -180,6 +181,14 @@ export function cancelEsim(locale: string, id: string) {
       body: {},
     },
     EsimDetail
+  );
+}
+
+/** Deletes the eSIM from the shopper's list; it is only hidden from them, not cancelled. */
+export function deleteEsim(locale: string, id: string) {
+  return api.data(
+    { locale, path: `/me/esims/${encodeURIComponent(id)}`, method: 'DELETE', auth: 'user' },
+    EsimDeleted
   );
 }
 

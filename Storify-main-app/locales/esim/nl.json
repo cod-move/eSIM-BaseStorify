@@ -324,6 +324,13 @@
       "failed": "Deze eSIM kan niet meer worden geannuleerd.",
       "done": "Geannuleerd. Je terugbetaling is onderweg."
     },
+    "remove": {
+      "button": "eSIM verwijderen",
+      "confirmTitle": "Deze eSIM uit je lijst verwijderen?",
+      "confirmBody": "Hij staat dan niet meer bij Mijn eSIM's. Hij wordt niet opgezegd en er wordt niets terugbetaald: staat hij op een telefoon, dan blijft hij werken tot zijn bundel afloopt. Je kunt dit zelf niet ongedaan maken.",
+      "done": "eSIM uit je lijst verwijderd",
+      "failed": "Kon de eSIM niet verwijderen. Probeer het opnieuw."
+    },
     "compare": {
       "title": "Bundels vergelijken",
       "days": "Dagen",

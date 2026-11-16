@@ -328,6 +328,13 @@
       "failed": "This eSIM can no longer be cancelled.",
       "done": "Cancelled. Your refund is on its way."
     },
+    "remove": {
+      "button": "Delete eSIM",
+      "confirmTitle": "Delete this eSIM from your list?",
+      "confirmBody": "It will no longer appear in My eSIMs. This does not cancel it and nothing is refunded: if it is on a phone it keeps working until its plan ends. You cannot undo this yourself.",
+      "done": "eSIM deleted from your list",
+      "failed": "Could not delete the eSIM. Please try again."
+    },
     "compare": {
       "title": "Compare plans",
       "days": "Days",

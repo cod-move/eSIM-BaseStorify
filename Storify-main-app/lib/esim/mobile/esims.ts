@@ -1,11 +1,11 @@
-import { EsimCancelInput, EsimDetail, EsimList, EsimRefreshInput } from "@/contracts/mobile/shop/v1/esim";
+import { EsimCancelInput, EsimDeleted, EsimDetail, EsimList, EsimRefreshInput } from "@/contracts/mobile/shop/v1/esim";
 import { toMoney } from "@/lib/api-core/shop/money";
 import { CancelError, cancelByShopper, shopperCancelOffer } from "@/lib/esim/cancel/service";
 import { getStoreCurrency } from "@/lib/intl/server-currency";
 import { MobileApiError } from "@/lib/api-core/errors";
 import { defineRoute, type RouteEntry } from "@/lib/api-core/registry";
 import { connectDB } from "@/lib/db";
-import { getCustomerEsim, listCustomerEsims, refreshCustomerEsim } from "@/lib/esim/account/esims";
+import { getCustomerEsim, hideCustomerEsim, listCustomerEsims, refreshCustomerEsim } from "@/lib/esim/account/esims";
 import { esimReferralCodeRoute, esimReferralsRoute, esimWalletRoute } from "./account";
 import { esimDestinationRoute, esimDestinationsRoute } from "./destinations";
 import { esimDevicesRoute } from "./devices";
@@ -127,6 +127,27 @@ export const cancelMyEsimRoute = defineRoute({
   },
 });
 
+/**
+ * DELETE /me/esims/{id}: the shopper deletes the eSIM from their list. It is
+ * only hidden from them (website and app); nothing is cancelled or refunded.
+ * One already deleted answers 404, so the app drops it either way.
+ */
+export const deleteMyEsimRoute = defineRoute({
+  id: "me.esims.delete",
+  method: "DELETE",
+  path: "/me/esims/{id}",
+  auth: "user",
+  cache: { kind: "private" },
+  output: EsimDeleted,
+  rateLimit: { bucket: "esim:delete", preset: "moderate" },
+  demo: "allow",
+  handler: async ({ session, params }) => {
+    await connectDB();
+    if (!(await hideCustomerEsim(session.user.id, params.id))) throw esimNotFound();
+    return { id: params.id, deleted: true as const };
+  },
+});
+
 /** The phone numbers (NUM-03~09): the numbers page and the shopper's own numbers. */
 const ESIM_NUMBER_ROUTES: readonly RouteEntry[] = [
   esimNumberShopRoute,
@@ -156,4 +177,4 @@ const ESIM_NUMBER_ROUTES: readonly RouteEntry[] = [
 ];
 
 /** The eSIM module's shopper endpoints, for the API's route list (patch P22). */
-export const esimShopRoutes: readonly RouteEntry[] = [myEsimsRoute, myEsimRoute, refreshMyEsimRoute, esimDestinationsRoute, esimDestinationRoute, esimPlanDetailsRoute, esimTopupsRoute, esimTopupQuoteRoute, esimDevicesRoute, esimWalletRoute, esimReferralsRoute, esimReferralCodeRoute, esimKycRoute, esimKycFileRoute, esimKycSubmitRoute, cancelMyEsimRoute, ...ESIM_NUMBER_ROUTES];
+export const esimShopRoutes: readonly RouteEntry[] = [myEsimsRoute, myEsimRoute, refreshMyEsimRoute, esimDestinationsRoute, esimDestinationRoute, esimPlanDetailsRoute, esimTopupsRoute, esimTopupQuoteRoute, esimDevicesRoute, esimWalletRoute, esimReferralsRoute, esimReferralCodeRoute, esimKycRoute, esimKycFileRoute, esimKycSubmitRoute, cancelMyEsimRoute, deleteMyEsimRoute, ...ESIM_NUMBER_ROUTES];

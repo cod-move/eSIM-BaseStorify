@@ -328,6 +328,13 @@
       "failed": "這張 eSIM 已無法取消。",
       "done": "已取消，退款處理中。"
     },
+    "remove": {
+      "button": "刪除 eSIM",
+      "confirmTitle": "從列表中刪除這張 eSIM？",
+      "confirmBody": "刪除後它不會再出現在「我的 eSIM」裡。這不會取消 eSIM，也不會退款：已裝在手機上的照常可用，直到方案結束。刪除後無法自行恢復。",
+      "done": "已從列表中刪除",
+      "failed": "刪除失敗，請重試。"
+    },
     "compare": {
       "title": "套餐對比",
       "days": "天數",

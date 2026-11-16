@@ -324,6 +324,13 @@
       "failed": "Enweghịzi ike ịkagbu eSIM a.",
       "done": "Akagburu ya. Ego gị na-abịa."
     },
+    "remove": {
+      "button": "Hichapụ eSIM",
+      "confirmTitle": "Hichapụ eSIM a na ndepụta gị?",
+      "confirmBody": "Ọ gaghị apụta ọzọ na eSIM m. Nke a anaghị akagbu ya, a naghịkwa enyeghachi ego ọ bụla: ọ bụrụ na ọ dị na ekwentị, ọ ga-arụ ọrụ ruo mgbe atụmatụ ya gwụrụ. Ị gaghị enwe ike ịgbanwe nke a n'onwe gị.",
+      "done": "Ehichapụla eSIM na ndepụta gị",
+      "failed": "Enweghị ike ihichapụ eSIM. Biko nwaa ọzọ."
+    },
     "compare": {
       "title": "Tụnyere ngwugwu",
       "days": "Ụbọchị",

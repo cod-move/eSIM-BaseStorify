@@ -324,6 +324,13 @@
       "failed": "Diese eSIM kann nicht mehr storniert werden.",
       "done": "Storniert. Deine Erstattung ist unterwegs."
     },
+    "remove": {
+      "button": "eSIM löschen",
+      "confirmTitle": "Diese eSIM aus deiner Liste löschen?",
+      "confirmBody": "Sie erscheint nicht mehr unter „Meine eSIMs“. Sie wird dadurch nicht gekündigt und nichts wird erstattet: Ist sie auf einem Telefon installiert, funktioniert sie bis zum Ende des Tarifs weiter. Du kannst das nicht selbst rückgängig machen.",
+      "done": "eSIM aus deiner Liste gelöscht",
+      "failed": "Die eSIM konnte nicht gelöscht werden. Bitte versuche es erneut."
+    },
     "compare": {
       "title": "Tarife vergleichen",
       "days": "Tage",

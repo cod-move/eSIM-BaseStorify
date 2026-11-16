@@ -142,6 +142,10 @@ export type EsimCancelInput = z.infer<typeof EsimCancelInput>;
 export const EsimRefreshInput = z.object({}).strict();
 export type EsimRefreshInput = z.infer<typeof EsimRefreshInput>;
 
+/** DELETE /me/esims/{id}: the eSIM is gone from the shopper's list (only hidden; not cancelled). */
+export const EsimDeleted = z.object({ id: z.string(), deleted: z.literal(true) });
+export type EsimDeleted = z.infer<typeof EsimDeleted>;
+
 /*
  * Destinations and their plans (the website's /esim pages, APP-02).
  *

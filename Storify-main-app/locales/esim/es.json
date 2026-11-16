@@ -324,6 +324,13 @@
       "failed": "Esta eSIM ya no se puede cancelar.",
       "done": "Cancelada. Tu reembolso está en camino."
     },
+    "remove": {
+      "button": "Eliminar eSIM",
+      "confirmTitle": "¿Eliminar esta eSIM de tu lista?",
+      "confirmBody": "Ya no aparecerá en Mis eSIM. No se cancela ni se reembolsa nada: si está en un teléfono, sigue funcionando hasta que termine su plan. No podrás deshacerlo por tu cuenta.",
+      "done": "eSIM eliminada de tu lista",
+      "failed": "No se pudo eliminar la eSIM. Inténtalo de nuevo."
+    },
     "compare": {
       "title": "Comparar planes",
       "days": "Días",

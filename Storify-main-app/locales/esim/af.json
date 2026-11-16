@@ -324,6 +324,13 @@
       "failed": "Hierdie eSIM kan nie meer gekanselleer word nie.",
       "done": "Gekanselleer. Jou terugbetaling is op pad."
     },
+    "remove": {
+      "button": "Vee eSIM uit",
+      "confirmTitle": "Vee hierdie eSIM uit jou lys uit?",
+      "confirmBody": "Dit sal nie meer onder My eSIM's verskyn nie. Dit kanselleer dit nie en niks word terugbetaal nie: as dit op 'n foon is, werk dit voort totdat sy plan verstryk. Jy kan dit nie self ongedaan maak nie.",
+      "done": "eSIM uit jou lys uitgevee",
+      "failed": "Kon nie die eSIM uitvee nie. Probeer asseblief weer."
+    },
     "compare": {
       "title": "Vergelyk planne",
       "days": "Dae",

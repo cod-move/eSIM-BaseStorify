@@ -324,6 +324,13 @@
       "failed": "Cette eSIM ne peut plus être annulée.",
       "done": "Annulée. Votre remboursement est en route."
     },
+    "remove": {
+      "button": "Supprimer l'eSIM",
+      "confirmTitle": "Supprimer cette eSIM de votre liste ?",
+      "confirmBody": "Elle n'apparaîtra plus dans Mes eSIM. Elle n'est pas annulée et rien n'est remboursé : si elle est installée sur un téléphone, elle fonctionne jusqu'à la fin de son forfait. Vous ne pourrez pas annuler cette action vous-même.",
+      "done": "eSIM supprimée de votre liste",
+      "failed": "Impossible de supprimer l'eSIM. Veuillez réessayer."
+    },
     "compare": {
       "title": "Comparer les forfaits",
       "days": "Jours",

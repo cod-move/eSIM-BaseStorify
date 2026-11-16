@@ -27,6 +27,8 @@ else
       marks="$(grep -c "\[esim-patch\]" "$file" 2>/dev/null || true)"
       unmarkable=0
       case "$file" in *.json|*/pnpm-lock.yaml|*.png|*.jpg|*.jpeg|*.webp|*.gif|*.ico) unmarkable=1 ;; esac
+      # 从仓库删掉的官方文件（本地可能还留着副本）也只要求登记。
+      git ls-files --error-unmatch -- "$file" >/dev/null 2>&1 || unmarkable=1
       if [ "$unmarkable" -eq 1 ]; then
         # JSON、生成的锁文件和图片不能写注释，只要求登记（改动内容写在 UPSTREAM-PATCHES.md 里）。
         echo "  已登记  $file（JSON/锁文件/图片，无法加标记）"

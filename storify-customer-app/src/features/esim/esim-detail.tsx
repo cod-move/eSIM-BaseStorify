@@ -14,6 +14,7 @@ import type { EsimDetail, EsimInstall } from '@/contracts/mobile/shop/v1/esim';
 import { useErrorMessage } from '@/i18n/use-error-message';
 
 import { CancelEsim } from './cancel-esim';
+import { DeleteEsim } from './delete-esim';
 import { EsimStatus } from './esim-status';
 import { installCodes } from './install-codes';
 import { UsageBar } from './usage-bar';
@@ -107,6 +108,8 @@ export function EsimDetailView({ esim }: { esim: EsimDetail }) {
         {!esim.iccid && esim.simId ? <Fact label={t('simId')} value={esim.simId} /> : null}
         <Fact label={t('order')} value={esim.orderNumber} />
       </View>
+
+      <DeleteEsim id={esim.id} />
     </ScrollView>
   );
 }
@@ -187,7 +190,12 @@ function InstallCard({ install, prominent }: { install: EsimInstall; prominent: 
           onCopy={copy}
         />
         {codes.lpa ? (
-          <CodeRow label={t('lpaCode')} value={codes.lpa} copied={copied === codes.lpa} onCopy={copy} />
+          <CodeRow
+            label={t('lpaCode')}
+            value={codes.lpa}
+            copied={copied === codes.lpa}
+            onCopy={copy}
+          />
         ) : null}
         {install.apn ? (
           <CodeRow

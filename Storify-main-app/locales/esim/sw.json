@@ -324,6 +324,13 @@
       "failed": "eSIM hii haiwezi tena kughairiwa.",
       "done": "Imeghairiwa. Pesa zako zinarejeshwa."
     },
+    "remove": {
+      "button": "Futa eSIM",
+      "confirmTitle": "Futa eSIM hii kwenye orodha yako?",
+      "confirmBody": "Haitaonekana tena kwenye eSIM Zangu. Hii haighairi eSIM na hakuna kinachorejeshwa: ikiwa iko kwenye simu itaendelea kufanya kazi hadi kifurushi chake kiishe. Huwezi kutendua hili mwenyewe.",
+      "done": "eSIM imefutwa kwenye orodha yako",
+      "failed": "Imeshindwa kufuta eSIM. Tafadhali jaribu tena."
+    },
     "compare": {
       "title": "Linganisha vifurushi",
       "days": "Siku",

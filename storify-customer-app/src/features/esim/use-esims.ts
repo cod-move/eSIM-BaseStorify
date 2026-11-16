@@ -2,12 +2,14 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import {
   cancelEsim,
+  deleteEsim,
   getEsim,
   getEsims,
   getEsimTopups,
   quoteEsimTopup,
   refreshEsim,
 } from '@/api/endpoints/esims';
+import { isApiError } from '@/api/errors';
 import { STALE } from '@/api/query-client';
 import { queryKeys } from '@/api/query-keys';
 import { useSetCartLine } from '@/features/cart/use-cart';
@@ -92,6 +94,29 @@ export function useCancelEsim(id: string) {
     mutationFn: () => cancelEsim(locale, id),
     onSuccess: (detail) => {
       client.setQueryData(queryKeys.esim(locale, id), detail);
+      void client.invalidateQueries({ queryKey: queryKeys.esimList(locale) });
+    },
+  });
+}
+
+/**
+ * Deletes the eSIM from the shopper's list (only hidden from them). One the
+ * store no longer finds counts as deleted; either way it leaves the list.
+ */
+export function useDeleteEsim(id: string) {
+  const locale = useLocale();
+  const client = useQueryClient();
+
+  return useMutation({
+    mutationFn: async () => {
+      try {
+        await deleteEsim(locale, id);
+      } catch (error) {
+        if (!(isApiError(error) && error.status === 404)) throw error;
+      }
+    },
+    onSuccess: () => {
+      client.removeQueries({ queryKey: queryKeys.esim(locale, id) });
       void client.invalidateQueries({ queryKey: queryKeys.esimList(locale) });
     },
   });

@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
-import { Check, Copy, Pencil, RefreshCw } from "lucide-react";
+import { Check, Copy, Pencil, RefreshCw, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/toast-notification";
@@ -172,6 +172,49 @@ export function CancelEsimButton({ esimId, refund, fee, toBalance }: { esimId: s
   return (
     <Button variant="outline" size="sm" onClick={cancel} disabled={busy}>
       {t("esim.cancel.button", "Cancel and refund")}
+    </Button>
+  );
+}
+
+/**
+ * Deletes the eSIM from the shopper's list, after asking. Only hidden from
+ * them: nothing is cancelled or refunded, and an installed eSIM keeps working.
+ */
+export function DeleteEsimButton({ esimId }: { esimId: string }) {
+  const t = useFallbackTranslator(useTranslations());
+  const router = useRouter();
+  const { confirm } = useConfirmation();
+  const [busy, setBusy] = useState(false);
+
+  async function remove() {
+    const ok = await confirm({
+      title: t("esim.remove.confirmTitle", "Delete this eSIM from your list?"),
+      description: t(
+        "esim.remove.confirmBody",
+        "It will no longer appear in My eSIMs. This does not cancel it and nothing is refunded: if it is on a phone it keeps working until its plan ends. You cannot undo this yourself.",
+      ),
+      variant: "destructive",
+    });
+    if (!ok) return;
+    setBusy(true);
+    try {
+      const response = await fetch(`/api/esim/me/esims/${esimId}`, { method: "DELETE" });
+      if (!response.ok && response.status !== 404) {
+        toast.error(await readError(response, t("esim.remove.failed", "Could not delete the eSIM. Please try again.")));
+        return;
+      }
+      toast.success(t("esim.remove.done", "eSIM deleted from your list"));
+      router.replace("/account/esims");
+      router.refresh();
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={remove} disabled={busy}>
+      <Trash2 className="me-2 h-4 w-4" />
+      {t("esim.remove.button", "Delete eSIM")}
     </Button>
   );
 }

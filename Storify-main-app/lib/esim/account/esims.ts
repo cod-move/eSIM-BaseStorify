@@ -19,7 +19,8 @@ import { fillMissingIccid } from "@/lib/esim/account/iccid-backfill";
  *
  * Ownership: the account the order was placed with, or — for an order placed
  * as a guest — the same email address once the account has verified it.
- * Anything else answers "not found", never "forbidden".
+ * Anything else answers "not found", never "forbidden". An eSIM the shopper
+ * deleted from their list (`customerHiddenAt`) is gone for them as well.
  */
 
 const REFRESH_EVERY_MS = 60_000;
@@ -61,7 +62,7 @@ async function ownerFilter(userId: string) {
   } | null>();
   const owners: Record<string, unknown>[] = [{ customer: new mongoose.Types.ObjectId(userId) }];
   if (user?.email && user.emailVerified) owners.push({ customer: null, email: user.email.toLowerCase() });
-  return { $or: owners };
+  return { $or: owners, customerHiddenAt: null };
 }
 
 function view(profile: IEsimProfile, plan: IEsimPlan | undefined): EsimView {
@@ -151,6 +152,21 @@ export async function updateRemark(userId: string, esimId: string, remark: strin
   profile.remark = remark.trim().slice(0, 100) || null;
   await profile.save();
   return true;
+}
+
+/**
+ * The shopper deletes the eSIM from their own list (website and app). It is
+ * only hidden from them: nothing is cancelled or refunded, an installed eSIM
+ * keeps working on the phone, and admins still see it. False when it is not
+ * theirs or already deleted.
+ */
+export async function hideCustomerEsim(userId: string, esimId: string): Promise<boolean> {
+  if (!mongoose.isValidObjectId(esimId)) return false;
+  const result = await EsimProfile.updateOne(
+    { _id: esimId, ...(await ownerFilter(userId)) },
+    { $set: { customerHiddenAt: new Date() } },
+  );
+  return result.modifiedCount > 0;
 }
 
 function toDate(value: string | null | undefined) {
