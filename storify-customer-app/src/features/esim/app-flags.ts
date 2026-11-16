@@ -8,5 +8,5 @@
  * the account; turn this on again before a store review that asks for it.
  */
 export const APP_FEATURES = {
-  accountDeletion: false,
+  accountDeletion: true,
 } as const;

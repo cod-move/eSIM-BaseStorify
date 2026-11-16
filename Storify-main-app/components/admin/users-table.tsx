@@ -266,6 +266,10 @@ export function AdminUsersTable({
     if (status === USER_ACCOUNT_STATUS.INACTIVE) {
       return <Badge variant="outline">Inactive</Badge>;
     }
+    // [esim-patch] P73
+    if (status === USER_ACCOUNT_STATUS.DELETED) {
+      return <Badge variant="destructive">Deleted</Badge>;
+    }
     return <Badge variant="default">Active</Badge>;
   };
 

@@ -181,6 +181,7 @@ const ACCOUNT_STYLES = {
   inactive:
     "bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-300",
   banned: "bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-300",
+  deleted: SLATE_BADGE, // [esim-patch] P73
   guest: SLATE_BADGE,
 };
 
@@ -539,6 +540,7 @@ export function CustomersDataTable({
             active: tr("Active", "সক্রিয়"),
             inactive: tr("Inactive", "নিষ্ক্রিয়"),
             banned: tr("Banned", "নিষিদ্ধ"),
+            deleted: tr("Deleted", "মুছে ফেলা হয়েছে"), // [esim-patch] P73
             guest: tr("Guest", "অতিথি"),
           };
           return (

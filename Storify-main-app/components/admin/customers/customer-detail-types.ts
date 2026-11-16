@@ -6,7 +6,7 @@ import type {
   MarketingOptInLevel,
 } from "@/config/app.config";
 
-export type CustomerStatus = "active" | "inactive" | "banned";
+export type CustomerStatus = "active" | "inactive" | "banned" | "deleted"; // [esim-patch] P73
 export type LoyaltyTier = "bronze" | "silver" | "gold" | "platinum";
 
 export interface CustomerEmailNotifications {

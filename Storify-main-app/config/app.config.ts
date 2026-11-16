@@ -69,6 +69,8 @@ export const USER_ACCOUNT_STATUS = {
   ACTIVE: "active",
   INACTIVE: "inactive",
   BANNED: "banned",
+  // [esim-patch] P73 a shopper who deleted their account from the app
+  DELETED: "deleted",
 } as const;
 
 export type UserAccountStatus =

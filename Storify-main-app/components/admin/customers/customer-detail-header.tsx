@@ -40,6 +40,8 @@ const STATUS_META: Record<
   active: { label: "Active", variant: "default", dot: "bg-emerald-500" },
   inactive: { label: "Inactive", variant: "outline", dot: "bg-muted-foreground" },
   banned: { label: "Banned", variant: "destructive", dot: "bg-destructive" },
+  // [esim-patch] P73
+  deleted: { label: "Deleted", variant: "outline", dot: "bg-destructive" },
 };
 
 const TIER_META: Record<LoyaltyTier, { label: string; className: string }> = {

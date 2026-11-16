@@ -1,4 +1,5 @@
 import { ObjectId } from "mongodb";
+import { USER_ACCOUNT_STATUS } from "@/config/app.config"; // [esim-patch] P73
 import { isCustomerAccount } from "@/lib/access/customer-account";
 import { getAuthContext } from "@/lib/auth/auth";
 import { auditAccountSelfDeleted } from "@/lib/auth/auth-audit";
@@ -86,9 +87,15 @@ export async function deleteOwnAccount(
 ): Promise<void> {
   const ctx = await getAuthContext();
   const user = await ctx.internalAdapter.findUserById(userId);
-  await ctx.internalAdapter.deleteUser(userId);
+  // [esim-patch] P73 the account is marked deleted, not removed: its balance,
+  // eSIMs and numbers stay for the store, the admin sees it as Deleted, and
+  // a non-active status cannot sign in (lib/auth/auth.ts).
+  await connectDB();
+  await mongoose.connection.db!.collection("user").updateOne(
+    { _id: new ObjectId(userId) },
+    { $set: { status: USER_ACCOUNT_STATUS.DELETED, esimDeletedAt: new Date(), updatedAt: new Date() } },
+  );
   await ctx.internalAdapter.deleteUserSessions(userId);
-  await cleanUpDeletedAccount(userId);
   // The website's delete is logged by Better Auth's own `afterDelete` hook
   // (lib/auth/auth.ts); this path does not go through it.
   if (user) await auditAccountSelfDeleted(user, auditContext ?? {});
