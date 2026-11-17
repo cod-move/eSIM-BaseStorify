@@ -15,6 +15,8 @@ export function esimUnitOutcome(input: {
   if (input.state === "fulfilled") {
     return input.cancelled || input.profileStatus === "refunded" ? "cancelled" : "issued";
   }
+  // Held after a supplier failure: a person will retry it, so to the shopper it is still being prepared.
+  if (input.state === "failed" && input.refundState === "hold") return "preparing";
   if (input.state === "failed") return input.refundState === "done" ? "refunded" : "refund_pending";
   // review, queued, purchasing, provider_pending: still being bought.
   return "preparing";
@@ -22,6 +24,8 @@ export function esimUnitOutcome(input: {
 
 export function topupUnitOutcome(input: { state: string; refundState?: string | null }): UnitOutcome {
   if (input.state === "completed") return "issued";
+  // Held after a supplier failure: a person will retry it, so to the shopper it is still being prepared.
+  if (input.state === "failed" && input.refundState === "hold") return "preparing";
   if (input.state === "failed") return input.refundState === "done" ? "refunded" : "refund_pending";
   return "preparing";
 }

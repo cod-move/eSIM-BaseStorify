@@ -38,7 +38,7 @@ function viewQuery(view: QueueView): Record<string, unknown> {
   };
   // A failed job still needs a person while its refund is missing or waits for one.
   const failed = { state: "failed" };
-  const failedOpen = { state: "failed", $or: [{ refund: null }, { "refund.state": { $in: ["pending", "manual"] } }] };
+  const failedOpen = { state: "failed", $or: [{ refund: null }, { "refund.state": { $in: ["pending", "manual", "hold"] } }] };
   const review = { state: "review" };
   const balance = { state: "queued", balanceHold: { $ne: null } };
   if (view === "review") return review;

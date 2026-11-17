@@ -106,3 +106,13 @@ export function decide(job: JobView, outcome: Outcome, now: Date = new Date()): 
 export function idempotencyKey(jobId: string, planId: string, round = 0): string {
   return `esim-${jobId}-${planId.slice(-8)}${round ? `-h${round}` : ""}`;
 }
+
+/**
+ * What a job that failed on the supplier side carries instead of a refund:
+ * the order waits for a person to retry it (or switch supplier, or bind one
+ * bought by hand) or to give up on it, which refunds it as usual.
+ */
+export const HOLD_REFUND = (at: Date) => ({ state: "hold" as const, amount: 0, at, note: "Supplier failed: retry, or give up and refund" });
+
+/** A refund state a person may still act on: nothing has been paid back. */
+export const refundStillOpen = (refund: { state: string } | null | undefined) => !refund || refund.state === "manual" || refund.state === "hold";

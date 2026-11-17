@@ -404,6 +404,24 @@ export async function settleOrderDelivery(orderId: string) {
     await EsimTopup.updateMany({ _id: { $in: unannounced.map((topup) => topup._id) } }, { $set: { notifiedAt: new Date() } });
   }
 
+  // Failed on the supplier side: nothing is refunded or settled until a person
+  // retries it or gives up on it (eSIM → Queue / Top-ups); the order stays open.
+  const onHold = [...failed, ...failedTopups].filter((job) => job.refund?.state === "hold");
+  if (onHold.length) {
+    const ids = createHash("sha1").update(onHold.map((job) => String(job._id)).sort().join(",")).digest("hex").slice(0, 12);
+    await notifyAdminsPaymentAnomaly({
+      title: "eSIM supplier failed: retry or refund",
+      message: `Order ${order.orderNumber}: ${onHold.length} eSIM(s) / top-up(s) could not be issued — ${onHold
+        .map((job) => job.lastError?.message)
+        .filter(Boolean)
+        .join("; ")
+        .slice(0, 300)}. Nothing was refunded: try again (or another supplier) once it is fixed, or give up to refund the shopper.`,
+      dedupeKey: `esim-held:${orderId}:${ids}`,
+      link: failedTopups.some((job) => job.refund?.state === "hold") ? "/admin/esim/topups" : "/admin/esim/queue",
+    }).catch(console.error);
+    return "waiting";
+  }
+
   const allFailed = [...failed, ...failedTopups, ...failedNumbers, ...failedOps];
   if (allFailed.some((job) => !job.refund)) {
     const refund = await refundFailedEsims(orderId);

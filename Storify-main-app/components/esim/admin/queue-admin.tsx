@@ -100,6 +100,7 @@ export function EsimQueueAdmin({ view, queue, canManage, search: initialSearch }
   const refundLabel = (row: QueueRow) => {
     if (!row.refund) return row.state === "failed" ? t("admin.esim.notRefunded", "Not refunded yet") : null;
     if (row.refund.state === "done") return t("admin.esim.refundDone", "Refunded {amount}", { amount: row.refund.amount.toFixed(2) });
+    if (row.refund.state === "hold") return t("admin.esim.refundHold", "Waiting for you: retry or give up and refund");
     if (row.refund.state === "manual") return t("admin.esim.refundManual", "Refund {amount} by hand", { amount: row.refund.amount.toFixed(2) });
     return t("admin.esim.refundPending", "Refund in progress");
   };
@@ -270,7 +271,7 @@ export function EsimQueueAdmin({ view, queue, canManage, search: initialSearch }
                     <Button size="sm" variant="outline" disabled={busy !== null} onClick={() => { setCandidate(row.candidateIndex); setIccid(""); setDialogue({ row, kind: "bind" }); }}>
                       <Link2 className="mr-2 h-4 w-4" /> {t("admin.esim.bind", "Bind an eSIM bought by hand")}
                     </Button>
-                    {row.state !== "failed" ? (
+                    {row.state !== "failed" || row.refund?.state === "hold" ? (
                       <Button
                         size="sm"
                         variant="outline"
@@ -285,7 +286,7 @@ export function EsimQueueAdmin({ view, queue, canManage, search: initialSearch }
                         <XCircle className="mr-2 h-4 w-4" /> {t("admin.esim.giveUp", "Give up and refund")}
                       </Button>
                     ) : null}
-                    {row.state === "failed" && row.refund?.state !== "done" ? (
+                    {row.state === "failed" && row.refund?.state !== "done" && row.refund?.state !== "hold" ? (
                       <Button size="sm" variant="outline" disabled={busy !== null} onClick={() => { setNote(""); setDialogue({ row, kind: "refunded" }); }}>
                         <Undo2 className="mr-2 h-4 w-4" /> {t("admin.esim.markRefunded", "Mark refunded by hand")}
                       </Button>

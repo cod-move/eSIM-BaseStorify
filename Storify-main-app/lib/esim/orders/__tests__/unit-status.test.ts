@@ -29,3 +29,11 @@ describe("topupUnitOutcome", () => {
     assert.equal(topupUnitOutcome({ state: "failed", refundState: "done" }), "refunded");
   });
 });
+
+describe("held after a supplier failure", () => {
+  it("is still being prepared to the shopper until a person retries or refunds it", () => {
+    assert.equal(esimUnitOutcome({ state: "failed", refundState: "hold" }), "preparing");
+    assert.equal(topupUnitOutcome({ state: "failed", refundState: "hold" }), "preparing");
+    assert.equal(esimUnitOutcome({ state: "failed", refundState: null }), "refund_pending");
+  });
+});

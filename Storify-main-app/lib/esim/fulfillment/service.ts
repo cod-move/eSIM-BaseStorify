@@ -12,7 +12,7 @@ import { EsimProfile } from "@/models/esim-profile.model";
 import { EsimProvider } from "@/models/esim-provider.model";
 import { adapterFor } from "@/lib/esim/provider-service";
 import { withProviderLog } from "@/lib/esim/provider-log";
-import { decide, idempotencyKey, type Outcome } from "@/lib/esim/fulfillment/policy";
+import { decide, idempotencyKey, type Outcome, HOLD_REFUND, refundStillOpen } from "@/lib/esim/fulfillment/policy";
 import { ProviderError, type ProviderEsim, type PurchaseResult } from "@/lib/esim/providers/types";
 import { lineActivationDate, lineDays } from "@/lib/esim/cart/line-attributes";
 import { supportsScheduledActivation } from "@/lib/esim/providers/registry";
@@ -460,7 +460,8 @@ async function processOne(job: IEsimFulfillment, owner: string): Promise<IEsimFu
     case "fail":
       await EsimFulfillment.updateOne(
         { _id: job._id },
-        { $set: { state: "failed", lease: null, lastError: error ?? { code: "failed", message: decision.reason, at: now } }, $push: event("failed", decision.reason) },
+        // A supplier-side failure waits for a person (retry, or give up and refund) instead of refunding at once.
+        { $set: { state: "failed", lease: null, lastError: error ?? { code: "failed", message: decision.reason, at: now }, refund: HOLD_REFUND(now) }, $push: event("failed", decision.reason) },
       );
       return "failed";
   }
@@ -513,7 +514,7 @@ async function adminJob(jobId: string) {
   if (!job) throw new JobActionError("Unknown job");
   if (job.state === "fulfilled") throw new JobActionError("This eSIM was already issued");
   if (job.state === "review") throw new JobActionError("This order is held for review: approve or reject it first");
-  if (job.refund && job.refund.state !== "manual") {
+  if (!refundStillOpen(job.refund)) {
     throw new JobActionError("This eSIM was already refunded; place a new order instead");
   }
   return job;
@@ -561,8 +562,17 @@ export async function adminRetryJob(jobId: string, options: { candidateIndex?: n
  */
 export async function adminFailJob(jobId: string, actor?: string) {
   const job = await adminJob(jobId);
-  if (job.state === "failed") return { orderId: String(job.order) };
   const now = new Date();
+  if (job.state === "failed") {
+    // Held after a supplier failure: giving up releases it to the refund.
+    if (job.refund?.state === "hold") {
+      await EsimFulfillment.updateOne(
+        { _id: job._id, "refund.state": "hold" },
+        { $set: { refund: null }, $push: { history: { at: now, event: "admin_fail", detail: actor } } },
+      );
+    }
+    return { orderId: String(job.order) };
+  }
   await EsimFulfillment.updateOne(
     { _id: job._id },
     {

@@ -53,7 +53,7 @@ export interface IEsimTopup extends mongoose.Document {
   /** The shopper was emailed the outcome. */
   notifiedAt: Date | null;
   refund: {
-    state: "pending" | "done" | "manual";
+    state: "pending" | "done" | "manual" | "hold";
     amount: number;
     at: Date;
     note?: string;
@@ -107,7 +107,7 @@ const EsimTopupSchema = new Schema<IEsimTopup>(
     refund: {
       type: new Schema(
         {
-          state: { type: String, enum: ["pending", "done", "manual"], required: true },
+          state: { type: String, enum: ["pending", "done", "manual", "hold"], required: true },
           amount: { type: Number, required: true, min: 0 },
           at: { type: Date, required: true },
           note: { type: String, maxlength: 500 },

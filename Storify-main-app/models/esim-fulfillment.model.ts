@@ -63,9 +63,11 @@ export interface IEsimFulfillment extends mongoose.Document {
    * What became of the shopper's money for a failed job (ORD-09).
    * pending: claimed by a refund in progress; done: credited; manual: a
    * person has to refund it (a guest order, or the credit could not be given).
+   * hold: the supplier side failed; nothing is refunded until a person retries
+   * it or gives up on it (then it is refunded as usual).
    */
   refund: {
-    state: "pending" | "done" | "manual";
+    state: "pending" | "done" | "manual" | "hold";
     amount: number;
     at: Date;
     note?: string;
@@ -130,7 +132,7 @@ const EsimFulfillmentSchema = new Schema<IEsimFulfillment>(
     refund: {
       type: new Schema(
         {
-          state: { type: String, enum: ["pending", "done", "manual"], required: true },
+          state: { type: String, enum: ["pending", "done", "manual", "hold"], required: true },
           amount: { type: Number, required: true, min: 0 },
           at: { type: Date, required: true },
           note: { type: String, maxlength: 500 },

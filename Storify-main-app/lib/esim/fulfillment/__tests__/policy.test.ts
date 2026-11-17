@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { BALANCE_HOLD_MAX_MS, BALANCE_HOLD_RETRY_MS, MAX_UNCERTAIN_RETRIES, backoffMs, decide, idempotencyKey, type JobView } from "../policy";
+import { BALANCE_HOLD_MAX_MS, HOLD_REFUND, refundStillOpen, BALANCE_HOLD_RETRY_MS, MAX_UNCERTAIN_RETRIES, backoffMs, decide, idempotencyKey, type JobView } from "../policy";
 
 const now = new Date("2026-10-25T12:00:00Z");
 const job: JobView = { candidateIndex: 0, candidateCount: 2, candidateAttempts: 0, pendingSince: null };
@@ -85,5 +85,18 @@ describe("fulfilment policy", () => {
     assert.equal(decide(job, refused, now).action, "failover");
     const dayAgo = new Date(now.getTime() - BALANCE_HOLD_MAX_MS);
     assert.equal(decide({ ...job, candidateIndex: 1, balanceHoldSince: dayAgo }, refused, now).action, "fail");
+  });
+});
+
+describe("hold after a supplier failure", () => {
+  it("leaves the job open to a person and refunds nothing", () => {
+    const hold = HOLD_REFUND(new Date("2026-11-17T00:00:00Z"));
+    assert.equal(hold.state, "hold");
+    assert.equal(hold.amount, 0);
+    assert.equal(refundStillOpen(hold), true);
+    assert.equal(refundStillOpen(null), true);
+    assert.equal(refundStillOpen({ state: "manual" }), true);
+    assert.equal(refundStillOpen({ state: "done" }), false);
+    assert.equal(refundStillOpen({ state: "pending" }), false);
   });
 });

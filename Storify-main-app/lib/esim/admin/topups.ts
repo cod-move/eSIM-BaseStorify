@@ -26,7 +26,7 @@ function viewQuery(view: TopupView): Record<string, unknown> {
       { nextAttemptAt: { $lt: new Date(now - OVERDUE_MS) } },
     ],
   };
-  const failedOpen = { state: "failed", $or: [{ refund: null }, { "refund.state": { $in: ["pending", "manual"] } }] };
+  const failedOpen = { state: "failed", $or: [{ refund: null }, { "refund.state": { $in: ["pending", "manual", "hold"] } }] };
   switch (view) {
     case "failed":
       return { state: "failed" };

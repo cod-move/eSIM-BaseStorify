@@ -31,6 +31,8 @@ export const TOPUP_STATUS_TEXT: Record<TopupDisplay, string> = {
 
 export function topupDisplay(topup: Pick<IEsimTopup, "state" | "refund">): TopupDisplay {
   if (topup.state === "completed") return "completed";
+  // Held after a supplier failure: a person will retry it.
+  if (topup.state === "failed" && topup.refund?.state === "hold") return "processing";
   if (topup.state === "failed") return topup.refund?.state === "done" ? "refunded" : "failed";
   return topup.state === "queued" ? "paid" : "processing";
 }

@@ -11,7 +11,7 @@ import { EsimTopup, type IEsimTopup } from "@/models/esim-topup.model";
 import { EsimTopupQuote } from "@/models/esim-topup-quote.model";
 import { adapterFor } from "@/lib/esim/provider-service";
 import { withProviderLog } from "@/lib/esim/provider-log";
-import { decide, type Outcome } from "@/lib/esim/fulfillment/policy";
+import { HOLD_REFUND, decide, refundStillOpen, type Outcome } from "@/lib/esim/fulfillment/policy";
 import { refreshEsimProfile } from "@/lib/esim/account/esims";
 import { ProviderError, type TopupResult } from "@/lib/esim/providers/types";
 import type { EsimLineAttributes } from "@/lib/esim/cart/line-attributes";
@@ -278,7 +278,8 @@ async function processOne(job: IEsimTopup, owner: string): Promise<IEsimTopup["s
       const reason = decision.reason;
       await EsimTopup.updateOne(
         { _id: job._id },
-        { $set: { state: "failed", lease: null, lastError: error ?? { code: "failed", message: reason, at: now } }, $push: event("failed", reason) },
+        // A supplier-side failure waits for a person (retry, or give up and refund) instead of refunding at once.
+        { $set: { state: "failed", lease: null, lastError: error ?? { code: "failed", message: reason, at: now }, refund: HOLD_REFUND(now) }, $push: event("failed", reason) },
       );
       return "failed";
     }
@@ -335,7 +336,7 @@ async function adminTopup(topupId: string) {
  */
 export async function adminRetryTopup(topupId: string, actor?: string) {
   const job = await adminTopup(topupId);
-  if (job.refund && job.refund.state !== "manual") throw new TopupActionError("This top-up was already refunded; the shopper can buy it again");
+  if (!refundStillOpen(job.refund)) throw new TopupActionError("This top-up was already refunded; the shopper can buy it again");
   if (job.lastError?.code === "invalid") throw new TopupActionError(`This top-up cannot be made: ${job.lastError.message}`);
   const now = new Date();
   await EsimTopup.updateOne(
@@ -352,8 +353,17 @@ export async function adminRetryTopup(topupId: string, actor?: string) {
 /** Stops trying; the order's settlement refunds it. */
 export async function adminFailTopup(topupId: string, actor?: string) {
   const job = await adminTopup(topupId);
-  if (job.state === "failed") return { orderId: String(job.order) };
   const now = new Date();
+  if (job.state === "failed") {
+    // Held after a supplier failure: giving up releases it to the refund.
+    if (job.refund?.state === "hold") {
+      await EsimTopup.updateOne(
+        { _id: job._id, "refund.state": "hold" },
+        { $set: { refund: null }, $push: { history: { at: now, event: "admin_fail", detail: actor } } },
+      );
+    }
+    return { orderId: String(job.order) };
+  }
   await EsimTopup.updateOne(
     { _id: job._id },
     {
