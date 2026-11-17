@@ -4,7 +4,7 @@ import { mongoose } from "@/lib/db";
 import { User } from "@/models";
 import { EsimReferral, EsimReferralCommission } from "@/models/esim-referral.model";
 import { appBaseUrl } from "@/lib/app-url";
-import { ensureReferralCode, getReferralSettings } from "@/lib/esim/referral/service";
+import { ensureReferralCode, getReferrerSettings } from "@/lib/esim/referral/service";
 import type { CommissionStatus } from "@/models/esim-referral.model";
 
 /**
@@ -31,7 +31,8 @@ export interface ReferralCentre {
 }
 
 export async function referralCentre(userId: string): Promise<ReferralCentre> {
-  const settings = await getReferralSettings();
+  // The shopper's own rules (REF-07) where an admin set them, so the centre shows what they really earn.
+  const settings = await getReferrerSettings(userId);
   const code = await ensureReferralCode(userId);
   const referrer = new mongoose.Types.ObjectId(userId);
   const [referrals, commissions] = await Promise.all([
