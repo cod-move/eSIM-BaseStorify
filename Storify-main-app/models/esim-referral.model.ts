@@ -56,6 +56,41 @@ const EsimReferralSchema = new Schema<IEsimReferral>(
   { timestamps: true },
 );
 
+/**
+ * A referrer's own rules (REF-07), set by an admin; null fields follow the
+ * store-wide referral settings. One per referrer.
+ */
+export interface IEsimReferralOverride extends mongoose.Document {
+  user: mongoose.Types.ObjectId;
+  enabled: boolean | null;
+  commissionType: "percent" | "fixed" | null;
+  /** Percent, or cents for a fixed commission. */
+  commissionValue: number | null;
+  validityDays: number | null;
+  orderLimit: number | null;
+  /** Percent of qualifying orders that earn nothing (扣量). */
+  deductPercent: number | null;
+  note: string | null;
+  updatedBy: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const EsimReferralOverrideSchema = new Schema<IEsimReferralOverride>(
+  {
+    user: { type: Schema.Types.ObjectId, ref: "User", required: true, unique: true },
+    enabled: { type: Boolean, default: null },
+    commissionType: { type: String, enum: ["percent", "fixed", null], default: null },
+    commissionValue: { type: Number, default: null, min: 0 },
+    validityDays: { type: Number, default: null, min: 0 },
+    orderLimit: { type: Number, default: null, min: 0 },
+    deductPercent: { type: Number, default: null, min: 0, max: 100 },
+    note: { type: String, default: null, maxlength: 300 },
+    updatedBy: { type: String, default: null },
+  },
+  { timestamps: true },
+);
+
 export type CommissionStatus = "pending" | "credited" | "cancelled";
 
 export interface IEsimReferralCommission extends mongoose.Document {
@@ -67,6 +102,8 @@ export interface IEsimReferralCommission extends mongoose.Document {
   /** What the order paid that earns commission, in currency units, when it was earned. */
   base: number;
   amount: number;
+  /** The rate it was earned at (REF-07), so a later refund recomputes it alike; null on older rewards. */
+  rule?: { commissionType: "percent" | "fixed"; commissionValue: number } | null;
   currency: string;
   status: CommissionStatus;
   /** Paid out from then, unless refunded first. */
@@ -88,6 +125,10 @@ const EsimReferralCommissionSchema = new Schema<IEsimReferralCommission>(
     orderNumber: { type: String, required: true },
     base: { type: Number, required: true, min: 0 },
     amount: { type: Number, required: true, min: 0 },
+    rule: {
+      type: new Schema({ commissionType: { type: String, enum: ["percent", "fixed"] }, commissionValue: Number }, { _id: false }),
+      default: null,
+    },
     currency: { type: String, default: "USD" },
     status: { type: String, enum: ["pending", "credited", "cancelled"], default: "pending" },
     payableAt: { type: Date, required: true },
@@ -108,6 +149,8 @@ EsimReferralCommissionSchema.index({ referral: 1, status: 1 });
 if (models.EsimReferralCode) delete models.EsimReferralCode;
 if (models.EsimReferral) delete models.EsimReferral;
 if (models.EsimReferralCommission) delete models.EsimReferralCommission;
+if (models.EsimReferralOverride) delete models.EsimReferralOverride;
+export const EsimReferralOverride = model<IEsimReferralOverride>("EsimReferralOverride", EsimReferralOverrideSchema);
 export const EsimReferralCode = model<IEsimReferralCode>("EsimReferralCode", EsimReferralCodeSchema);
 export const EsimReferral = model<IEsimReferral>("EsimReferral", EsimReferralSchema);
 export const EsimReferralCommission = model<IEsimReferralCommission>("EsimReferralCommission", EsimReferralCommissionSchema);

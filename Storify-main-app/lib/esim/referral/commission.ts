@@ -10,8 +10,8 @@ import { createNotification, notifyAdminsPaymentAnomaly } from "@/lib/notificati
 import { sendEmail } from "@/lib/email/email";
 import { escapeHtml } from "@/lib/email/escape-html";
 import { appBaseUrl } from "@/lib/app-url";
-import { commissionAllowed, commissionBase, commissionFor } from "@/lib/esim/referral/rules";
-import { getReferralSettings } from "@/lib/esim/referral/service";
+import { commissionAllowed, commissionBase, commissionFor, isDeducted } from "@/lib/esim/referral/rules";
+import { getReferralSettings, getReferrerSettings } from "@/lib/esim/referral/service";
 
 /**
  * Referral commission (REF-02/03/04).
@@ -52,9 +52,11 @@ export async function earnReferralCommission(orderId: unknown): Promise<IEsimRef
   if (!order || order.guestEmail || !mongoose.isValidObjectId(order.customerId) || order.status === ORDER_STATUS.CANCELLED) return null;
   const referral = await EsimReferral.findOne({ referee: new mongoose.Types.ObjectId(String(order.customerId)) }).lean();
   if (!referral) return null;
-  const settings = await getReferralSettings();
+  const settings = await getReferrerSettings(referral.referrer);
   const earnedSoFar = await EsimReferralCommission.countDocuments({ referral: referral._id, status: { $ne: "cancelled" } });
   if (!commissionAllowed({ validUntil: referral.validUntil, orderDate: order.createdAt, earnedSoFar }, settings).ok) return null;
+  // 扣量: a set share of qualifying orders earns nothing; stable per order, so retries agree.
+  if (isDeducted(String(order._id), settings.deductPercent)) return null;
   const base = commissionBase(order);
   const amount = commissionFor(base, settings);
   if (!(amount > 0)) return null;
@@ -67,6 +69,7 @@ export async function earnReferralCommission(orderId: unknown): Promise<IEsimRef
       orderNumber: order.orderNumber,
       base,
       amount,
+      rule: { commissionType: settings.commissionType, commissionValue: settings.commissionValue },
       currency: String(order.currency || "USD").toUpperCase(),
       payableAt: new Date(Date.now() + settings.holdDays * 86_400_000),
     });
@@ -118,13 +121,15 @@ export interface PayoutResult {
 export async function runReferralPayouts(options: { now?: Date; limit?: number } = {}): Promise<PayoutResult> {
   const now = options.now ?? new Date();
   const result: PayoutResult = { paid: 0, cancelled: 0, clawbacks: 0 };
-  const settings = await getReferralSettings();
+  const store = await getReferralSettings();
+  // Recomputed at the rate the reward was earned at (REF-07); older rewards at the store's.
+  const rateOf = (commission: { rule?: IEsimReferralCommission["rule"] }) => commission.rule ?? store;
 
   const due = await EsimReferralCommission.find({ status: "pending", payableAt: { $lte: now } }).sort({ payableAt: 1 }).limit(options.limit ?? 200);
   for (const commission of due) {
     const order = await Order.findById(commission.order).select(ORDER_FIELDS).lean<OrderView | null>();
     const amount = order && order.status !== ORDER_STATUS.CANCELLED
-      ? Math.min(commission.amount, commissionFor(commissionBase(order), settings))
+      ? Math.min(commission.amount, commissionFor(commissionBase(order), rateOf(commission)))
       : 0;
     if (!(amount > 0)) {
       const moved = await EsimReferralCommission.updateOne({ _id: commission._id, status: "pending" }, { $set: { status: "cancelled", note: "The order was refunded or cancelled before the reward was paid" } });
@@ -150,7 +155,7 @@ export async function runReferralPayouts(options: { now?: Date; limit?: number }
 
   // Paid, then refunded: what the order now earns is less than what was paid.
   const credited = await EsimReferralCommission.find({ status: "credited", clawback: null, creditedAt: { $gte: new Date(now.getTime() - 180 * 86_400_000) } })
-    .select({ order: 1, amount: 1, orderNumber: 1, referrer: 1, currency: 1 })
+    .select({ order: 1, amount: 1, orderNumber: 1, referrer: 1, currency: 1, rule: 1 })
     .limit(500)
     .lean();
   if (credited.length) {
@@ -159,7 +164,7 @@ export async function runReferralPayouts(options: { now?: Date; limit?: number }
     for (const commission of credited) {
       const order = byId.get(String(commission.order));
       if (!order) continue;
-      const owed = Math.round((commission.amount - commissionFor(commissionBase(order), settings)) * 100) / 100;
+      const owed = Math.round((commission.amount - commissionFor(commissionBase(order), rateOf(commission))) * 100) / 100;
       if (!(owed > 0)) continue;
       const marked = await EsimReferralCommission.updateOne({ _id: commission._id, clawback: null }, { $set: { clawback: { amount: owed, at: now, settled: false } } });
       if (!marked.modifiedCount) continue;

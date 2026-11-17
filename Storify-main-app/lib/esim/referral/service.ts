@@ -4,9 +4,10 @@ import { mongoose } from "@/lib/db";
 import { CustomerProfile } from "@/models";
 import { Coupon, CouponStatus, CouponType } from "@/models/coupon.model";
 import { getEsimSettings } from "@/models/esim-pricing.model";
-import { EsimReferral, EsimReferralCode } from "@/models/esim-referral.model";
+import { EsimReferral, EsimReferralCode, EsimReferralOverride } from "@/models/esim-referral.model";
 import {
   DEFAULT_REFERRAL_SETTINGS,
+  effectiveReferralRule,
   ReferralCodeError,
   generateCode,
   normalizeCode,
@@ -34,6 +35,7 @@ export async function getReferralSettings(): Promise<ReferralSettings> {
     commissionValue: stored?.commissionValue ?? defaults.commissionValue,
     validityDays: stored?.validityDays ?? defaults.validityDays,
     orderLimit: stored?.orderLimit ?? defaults.orderLimit,
+    deductPercent: stored?.deductPercent ?? defaults.deductPercent,
     holdDays: stored?.holdDays ?? defaults.holdDays,
     coupon: {
       enabled: stored?.coupon?.enabled ?? defaults.coupon.enabled,
@@ -43,6 +45,14 @@ export async function getReferralSettings(): Promise<ReferralSettings> {
       minOrderMinor: stored?.coupon?.minOrderMinor ?? defaults.coupon.minOrderMinor,
     },
   };
+}
+
+/** The settings a referrer earns by: the store's, with their own rules (REF-07) on top. */
+export async function getReferrerSettings(referrerId: unknown, base?: ReferralSettings): Promise<ReferralSettings> {
+  const settings = base ?? (await getReferralSettings());
+  if (!mongoose.isValidObjectId(referrerId)) return settings;
+  const override = await EsimReferralOverride.findOne({ user: referrerId }).lean();
+  return effectiveReferralRule(settings, override);
 }
 
 const isDuplicate = (error: unknown) => (error as { code?: number })?.code === 11000;
@@ -139,10 +149,11 @@ async function welcomeCoupon(userId: string, settings: ReferralSettings): Promis
  */
 export async function recordSignupReferral(userId: string, code: string | null): Promise<{ referrer: string; couponCode: string | null } | null> {
   if (!code || !mongoose.isValidObjectId(userId)) return null;
-  const settings = await getReferralSettings();
-  if (!settings.enabled) return null;
   const owner = await EsimReferralCode.findOne({ code }).lean();
   if (!owner || String(owner.user) === userId) return null;
+  // The referrer's own rules decide whether this sign-up counts and for how long (REF-07).
+  const settings = await getReferrerSettings(owner.user);
+  if (!settings.enabled) return null;
   if (await EsimReferral.exists({ referee: userId })) return null;
   const now = new Date();
   let referral;

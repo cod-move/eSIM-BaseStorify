@@ -1,10 +1,13 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import {
+  DEFAULT_REFERRAL_SETTINGS,
   ReferralCodeError,
   commissionAllowed,
   commissionBase,
   commissionFor,
+  effectiveReferralRule,
+  isDeducted,
   generateCode,
   normalizeCode,
   referralValidUntil,
@@ -64,5 +67,47 @@ describe("commissionAllowed", () => {
   it("validity runs from sign-up", () => {
     assert.equal(referralValidUntil(now, 0), null);
     assert.equal(referralValidUntil(now, 30)?.toISOString(), "2026-11-26T12:00:00.000Z");
+  });
+});
+
+describe("a referrer's own rules (REF-07)", () => {
+  const store = { ...DEFAULT_REFERRAL_SETTINGS, enabled: true, commissionType: "percent" as const, commissionValue: 10, validityDays: 365, orderLimit: 0 };
+  const none = { enabled: null, commissionType: null, commissionValue: null, validityDays: null, orderLimit: null, deductPercent: null };
+
+  it("follows the store without rules of their own, or where a field is left empty", () => {
+    assert.deepEqual(effectiveReferralRule(store, null), store);
+    assert.deepEqual(effectiveReferralRule(store, none), store);
+  });
+
+  it("uses their own rate, limits and on/off over the store's", () => {
+    const rule = effectiveReferralRule(store, { ...none, commissionValue: 25, orderLimit: 1, validityDays: 0 });
+    assert.equal(commissionFor(40, rule), 10);
+    assert.equal(rule.orderLimit, 1);
+    assert.equal(referralValidUntil(new Date("2026-01-01"), rule.validityDays), null);
+    assert.deepEqual(commissionAllowed({ validUntil: null, orderDate: new Date(), earnedSoFar: 1 }, rule), { ok: false, reason: "limit" });
+    assert.equal(effectiveReferralRule(store, { ...none, enabled: false }).enabled, false);
+    assert.equal(effectiveReferralRule({ ...store, enabled: false }, { ...none, enabled: true }).enabled, true);
+  });
+
+  it("a fixed reward of their own is in cents; a type changed without a value earns nothing", () => {
+    const fixed = effectiveReferralRule(store, { ...none, commissionType: "fixed", commissionValue: 300 });
+    assert.equal(commissionFor(40, fixed), 3);
+    assert.equal(commissionFor(40, effectiveReferralRule(store, { ...none, commissionType: "fixed" })), 0);
+    assert.equal(commissionFor(40, effectiveReferralRule(store, { ...none, commissionType: "percent" })), 4);
+  });
+});
+
+describe("deduction (扣量)", () => {
+  const ids = Array.from({ length: 2000 }, (_, index) => `65a0${index.toString(16).padStart(20, "0")}`);
+  it("skips none at 0, all at 100, about the set share in between, the same way every time", () => {
+    assert.equal(ids.filter((id) => isDeducted(id, 0)).length, 0);
+    assert.equal(ids.filter((id) => isDeducted(id, 100)).length, ids.length);
+    const share = ids.filter((id) => isDeducted(id, 30)).length / ids.length;
+    assert.ok(share > 0.25 && share < 0.35, `share ${share}`);
+    assert.deepEqual(ids.map((id) => isDeducted(id, 30)), ids.map((id) => isDeducted(id, 30)));
+  });
+  it("a referrer's own share overrides the store's", () => {
+    const rule = effectiveReferralRule({ ...DEFAULT_REFERRAL_SETTINGS, deductPercent: 10 }, { enabled: null, commissionType: null, commissionValue: null, validityDays: null, orderLimit: null, deductPercent: 0 });
+    assert.equal(rule.deductPercent, 0);
   });
 });

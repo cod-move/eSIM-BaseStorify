@@ -131,6 +131,7 @@ export function EsimReferralsAdmin({ settings, list, view, search: initialSearch
             {number(t("admin.esim.referralHold", "Holding period"), value.holdDays, (next) => setValue({ ...value, holdDays: Math.round(next) }), t("admin.esim.days", "days"))}
             {number(t("admin.esim.referralValidity", "Earns for"), value.validityDays, (next) => setValue({ ...value, validityDays: Math.round(next) }), t("admin.esim.referralDaysAfter", "days after joining (0 = always)"))}
             {number(t("admin.esim.referralLimit", "Orders that earn"), value.orderLimit, (next) => setValue({ ...value, orderLimit: Math.round(next) }), t("admin.esim.referralLimitHint", "first orders (0 = all)"))}
+            {number(t("admin.esim.referralDeduct", "Deduction (扣量)"), value.deductPercent, (next) => setValue({ ...value, deductPercent: Math.min(100, Math.round(next)) }), t("admin.esim.referralDeductHint", "% of qualifying orders earn nothing"))}
           </div>
           <div className="space-y-3 rounded-lg border p-4">
             <div className="flex items-center justify-between gap-4">

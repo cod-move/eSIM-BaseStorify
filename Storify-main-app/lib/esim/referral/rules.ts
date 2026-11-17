@@ -19,6 +19,8 @@ export interface ReferralSettings {
   validityDays: number;
   /** Orders per referee that earn commission; 0 = all. */
   orderLimit: number;
+  /** Percent of qualifying orders that earn nothing (扣量); 0 = none. */
+  deductPercent: number;
   /** Days between an order's delivery and paying its commission. */
   holdDays: number;
   coupon: {
@@ -37,9 +39,42 @@ export const DEFAULT_REFERRAL_SETTINGS: ReferralSettings = {
   commissionValue: 10,
   validityDays: 365,
   orderLimit: 0,
+  deductPercent: 0,
   holdDays: 14,
   coupon: { enabled: false, type: "percentage", value: 10, days: 30, minOrderMinor: 0 },
 };
+
+/**
+ * A referrer's own rules (REF-07), set by an admin: each field left null
+ * follows the store-wide setting. Like the old system's per-user
+ * commission type / value / validity / count.
+ */
+export interface ReferralOverride {
+  enabled: boolean | null;
+  commissionType: ReferralSettings["commissionType"] | null;
+  /** Percent, or cents for a fixed commission. */
+  commissionValue: number | null;
+  validityDays: number | null;
+  orderLimit: number | null;
+  deductPercent: number | null;
+}
+
+/** The settings a referrer earns by: their own where set, the store's otherwise. */
+export function effectiveReferralRule(settings: ReferralSettings, override?: Partial<ReferralOverride> | null): ReferralSettings {
+  if (!override) return settings;
+  const commissionType = override.commissionType ?? settings.commissionType;
+  // A type changed without its own value has no value: the store's is in the other type's unit.
+  const commissionValue = override.commissionValue ?? (commissionType === settings.commissionType ? settings.commissionValue : 0);
+  return {
+    ...settings,
+    enabled: override.enabled ?? settings.enabled,
+    commissionType,
+    commissionValue,
+    validityDays: override.validityDays ?? settings.validityDays,
+    orderLimit: override.orderLimit ?? settings.orderLimit,
+    deductPercent: override.deductPercent ?? settings.deductPercent,
+  };
+}
 
 const CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 const RESERVED = new Set(["ADMIN", "STORE", "ESIM", "SUPPORT", "TEST", "NULL", "UNDEFINED"]);
@@ -90,4 +125,17 @@ export function commissionAllowed(
 /** When a referral made now stops earning: validity days on, or never. */
 export function referralValidUntil(signedUpAt: Date, validityDays: number): Date | null {
   return validityDays > 0 ? new Date(signedUpAt.getTime() + validityDays * 86_400_000) : null;
+}
+
+/**
+ * Whether an order falls in the deducted share (扣量): a stable 0–99 bucket
+ * from the order id, so the same order always gets the same answer and a
+ * retry never flips it.
+ */
+export function isDeducted(orderId: string, deductPercent: number): boolean {
+  if (!(deductPercent > 0)) return false;
+  if (deductPercent >= 100) return true;
+  let hash = 2166136261;
+  for (let index = 0; index < orderId.length; index += 1) hash = Math.imul(hash ^ orderId.charCodeAt(index), 16777619) >>> 0;
+  return hash % 100 < deductPercent;
 }

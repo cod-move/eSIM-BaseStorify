@@ -4,7 +4,7 @@ import * as z from "zod";
 import { connectDB, mongoose } from "@/lib/db";
 import { User } from "@/models";
 import { getEsimSettings } from "@/models/esim-pricing.model";
-import { EsimReferral, EsimReferralCommission } from "@/models/esim-referral.model";
+import { EsimReferral, EsimReferralCommission, EsimReferralOverride } from "@/models/esim-referral.model";
 import { getReferralSettings } from "@/lib/esim/referral/service";
 
 /**
@@ -19,6 +19,7 @@ export const ReferralSettingsSchema = z.object({
   commissionValue: z.number().min(0).max(100_000),
   validityDays: z.number().int().min(0).max(3650),
   orderLimit: z.number().int().min(0).max(1000),
+  deductPercent: z.number().int().min(0).max(100).default(0),
   holdDays: z.number().int().min(0).max(365),
   coupon: z.object({
     enabled: z.boolean(),
@@ -127,4 +128,85 @@ export async function commissionAction(id: string, action: "cancel" | "settle", 
     await EsimReferralCommission.updateOne({ _id: id }, { $set: { "clawback.settled": true, note: note.slice(0, 300) || "Dealt with by hand" } });
   }
   return { id };
+}
+
+/* ---------- Per-referrer rules (REF-07) ---------- */
+
+export const ReferralOverrideSchema = z.object({
+  email: z.string().trim().toLowerCase().email(),
+  enabled: z.boolean().nullable(),
+  commissionType: z.enum(["percent", "fixed"]).nullable(),
+  /** Percent, or cents for a fixed commission. */
+  commissionValue: z.number().min(0).max(100_000).nullable(),
+  validityDays: z.number().int().min(0).max(3650).nullable(),
+  orderLimit: z.number().int().min(0).max(1000).nullable(),
+  deductPercent: z.number().int().min(0).max(100).nullable().default(null),
+  note: z.string().trim().max(300).nullable().default(null),
+}).refine((value) => value.commissionValue === null || value.commissionType !== "percent" || value.commissionValue <= 100, { message: "A percent commission is at most 100", path: ["commissionValue"] })
+  .refine((value) => value.commissionValue === null || value.commissionType !== null, { message: "Choose the reward type for a value of its own", path: ["commissionType"] });
+
+export type ReferralOverrideInput = z.infer<typeof ReferralOverrideSchema>;
+
+export interface ReferralOverrideRow {
+  userId: string;
+  email: string | null;
+  enabled: boolean | null;
+  commissionType: "percent" | "fixed" | null;
+  commissionValue: number | null;
+  validityDays: number | null;
+  orderLimit: number | null;
+  deductPercent: number | null;
+  note: string | null;
+  referrals: number;
+  updatedAt: string;
+}
+
+export async function listReferralOverrides(): Promise<ReferralOverrideRow[]> {
+  await connectDB();
+  const rows = await EsimReferralOverride.find({}).sort({ updatedAt: -1 }).limit(500).lean();
+  const ids = rows.map((row) => row.user);
+  const [users, counts] = await Promise.all([
+    User.find({ _id: { $in: ids } }).select({ email: 1 }).lean<Array<{ _id: mongoose.Types.ObjectId; email?: string }>>(),
+    EsimReferral.aggregate<{ _id: mongoose.Types.ObjectId; n: number }>([{ $match: { referrer: { $in: ids } } }, { $group: { _id: "$referrer", n: { $sum: 1 } } }]),
+  ]);
+  const email = new Map(users.map((user) => [String(user._id), user.email ?? null]));
+  const count = new Map(counts.map((entry) => [String(entry._id), entry.n]));
+  return rows.map((row) => ({
+    userId: String(row.user),
+    email: email.get(String(row.user)) ?? null,
+    enabled: row.enabled ?? null,
+    commissionType: row.commissionType ?? null,
+    commissionValue: row.commissionValue ?? null,
+    validityDays: row.validityDays ?? null,
+    orderLimit: row.orderLimit ?? null,
+    deductPercent: row.deductPercent ?? null,
+    note: row.note ?? null,
+    referrals: count.get(String(row.user)) ?? 0,
+    updatedAt: new Date(row.updatedAt).toISOString(),
+  }));
+}
+
+export class ReferralOverrideError extends Error {}
+
+const overrideFields = (row: { enabled?: unknown; commissionType?: unknown; commissionValue?: unknown; validityDays?: unknown; orderLimit?: unknown; deductPercent?: unknown; note?: unknown } | null) =>
+  row ? { enabled: row.enabled ?? null, commissionType: row.commissionType ?? null, commissionValue: row.commissionValue ?? null, validityDays: row.validityDays ?? null, orderLimit: row.orderLimit ?? null, deductPercent: row.deductPercent ?? null, note: row.note ?? null } : null;
+
+/** Sets a referrer's own rules, found by email; returns what was there before for the audit log. */
+export async function saveReferralOverride(input: ReferralOverrideInput, updatedBy: string | null) {
+  await connectDB();
+  const user = await User.findOne({ email: input.email }).select({ _id: 1, role: 1 }).lean<{ _id: mongoose.Types.ObjectId; role?: string } | null>();
+  if (!user) throw new ReferralOverrideError("No account with that email");
+  const before = await EsimReferralOverride.findOne({ user: user._id }).lean();
+  const { email: _email, ...fields } = input;
+  await EsimReferralOverride.updateOne({ user: user._id }, { $set: { ...fields, updatedBy } }, { upsert: true, runValidators: true });
+  return { userId: String(user._id), before: overrideFields(before), after: fields };
+}
+
+/** Puts a referrer back on the store-wide rules. */
+export async function removeReferralOverride(userId: string) {
+  if (!mongoose.isValidObjectId(userId)) throw new ReferralOverrideError("Unknown account");
+  await connectDB();
+  const before = await EsimReferralOverride.findOneAndDelete({ user: userId }).lean();
+  if (!before) throw new ReferralOverrideError("This account has no rules of its own");
+  return { before: overrideFields(before) };
 }

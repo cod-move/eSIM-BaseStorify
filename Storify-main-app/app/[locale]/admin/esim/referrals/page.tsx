@@ -1,9 +1,10 @@
 import { setRequestLocale } from "next-intl/server";
 import { connectDB } from "@/lib/db";
-import { listReferralCommissions, type CommissionView } from "@/lib/esim/admin/referrals";
+import { listReferralCommissions, listReferralOverrides, type CommissionView } from "@/lib/esim/admin/referrals";
 import { getReferralSettings } from "@/lib/esim/referral/service";
 import { esimPageAccess } from "@/lib/esim/admin/page-access";
 import { EsimReferralsAdmin } from "@/components/esim/admin/referrals-admin";
+import { EsimReferralOverridesAdmin } from "@/components/esim/admin/referral-overrides-admin";
 
 interface PageProps {
   params: Promise<{ locale: string }>;
@@ -21,9 +22,15 @@ export default async function AdminEsimReferralsPage({ params, searchParams }: P
   const search = await searchParams;
   const view = VIEWS.includes(one(search.view) as CommissionView) ? (one(search.view) as CommissionView) : "attention";
   await connectDB();
-  const [settings, list] = await Promise.all([
+  const [settings, list, overrides] = await Promise.all([
     getReferralSettings(),
     listReferralCommissions(view, { page: Number(one(search.page)) || 1, search: one(search.search) }),
+    listReferralOverrides(),
   ]);
-  return <EsimReferralsAdmin settings={settings} list={list} view={view} search={one(search.search) ?? ""} canManage={canManage} />;
+  return (
+    <div className="space-y-6">
+      <EsimReferralsAdmin settings={settings} list={list} view={view} search={one(search.search) ?? ""} canManage={canManage} />
+      <EsimReferralOverridesAdmin settings={settings} rows={overrides} canManage={canManage} />
+    </div>
+  );
 }

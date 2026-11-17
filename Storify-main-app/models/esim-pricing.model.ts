@@ -79,6 +79,8 @@ export interface IEsimSettings extends mongoose.Document {
     commissionValue: number;
     validityDays: number;
     orderLimit: number;
+    /** Percent of qualifying orders that earn nothing (扣量), picked by order id. */
+    deductPercent?: number;
     holdDays: number;
     coupon: { enabled: boolean; type: "percentage" | "fixed"; value: number; days: number; minOrderMinor: number };
   };
@@ -168,6 +170,7 @@ const EsimSettingsSchema = new Schema<IEsimSettings>(
       commissionValue: { type: Number, default: 10, min: 0 },
       validityDays: { type: Number, default: 365, min: 0 },
       orderLimit: { type: Number, default: 0, min: 0 },
+      deductPercent: { type: Number, default: 0, min: 0, max: 100 },
       holdDays: { type: Number, default: 14, min: 0, max: 365 },
       coupon: {
         enabled: { type: Boolean, default: false },
