@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { ChevronLeft, Gift, Send } from "lucide-react";
+import { ChevronLeft, Gift, Send, Users } from "lucide-react";
 import Link from "@/components/language/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,6 +15,7 @@ import { formatMb } from "@/lib/esim/telegram/format";
 type Data = {
   enabled: boolean;
   botUsername: string | null;
+  groupLink: string | null;
   link: { username: string | null; firstName: string | null; linkedAt: string } | null;
   account: { balanceMb: number; earnedMb: number; spentMb: number; checkins: number; lastCheckinDay: string | null };
   history: Array<{ id: string; kind: "checkin" | "redeem" | "refund" | "adjust"; mb: number; status: string; itemName: string | null; orderNumber: string | null; note: string | null; createdAt: string }>;
@@ -173,6 +174,14 @@ export function TelegramRewards({ data }: { data: Data }) {
                   })}
                 </p>
                 <p className="text-muted-foreground">{t("esim.rewards.howToCheckin", "Send /checkin or 签到 in the group once a day.")}</p>
+                {data.groupLink ? (
+                  <Button asChild size="sm" className="me-2">
+                    <a href={data.groupLink} target="_blank" rel="noreferrer">
+                      <Users className="me-2 h-4 w-4" />
+                      {t("esim.rewards.joinGroup", "Open the group to check in")}
+                    </a>
+                  </Button>
+                ) : null}
                 <Button variant="outline" size="sm" onClick={unlink} disabled={busy !== null}>
                   {t("esim.rewards.unlink", "Unlink")}
                 </Button>

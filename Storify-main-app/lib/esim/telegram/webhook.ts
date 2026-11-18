@@ -95,7 +95,7 @@ export async function handleTelegramUpdate(update: unknown): Promise<void> {
       if (!isPrivate) return;
       if (command.arg) {
         const email = await consumeLinkToken(command.arg, sender);
-        return reply(email ? say.linked(email) : say.linkExpired);
+        return reply(email ? say.linked(email, settings.groupLink ?? null) : say.linkExpired);
       }
       return reply(say.help(bot, site));
     }
@@ -113,7 +113,7 @@ export async function handleTelegramUpdate(update: unknown): Promise<void> {
     case "code": {
       if (!isPrivate) return;
       const result = await verifyEmailCode(sender, command.arg);
-      if (result.ok) return reply(say.linked(result.email));
+      if (result.ok) return reply(say.linked(result.email, settings.groupLink ?? null));
       return reply(result.reason === "wrong" ? say.codeWrong : say.codeExpired);
     }
 

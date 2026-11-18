@@ -956,7 +956,8 @@
       "noItems": "Nog niets om in te wisselen.",
       "history": "Geschiedenis",
       "noHistory": "Nog geen check-ins.",
-      "teaser": "Check elke dag in op Telegram voor gratis data"
+      "teaser": "Check elke dag in op Telegram voor gratis data",
+      "joinGroup": "Open de groep om in te checken"
     }
   },
   "admin": {
@@ -1746,7 +1747,9 @@
       "when": "When",
       "telegramKind": "What",
       "pending": "pending",
-      "telegramNoActivity": "No check-ins yet."
+      "telegramNoActivity": "No check-ins yet.",
+      "telegramGroupLink": "Group link (shown to shoppers)",
+      "telegramGroupLinkHelp": "The bot sends it right after a shopper links their account, and the rewards page shows it."
     },
     "sidebar": {
       "esim": "eSIM",

@@ -17,7 +17,8 @@ type Words = {
   notLinked: (name: string, bot: string) => string;
   disabled: string;
   groupOnly: string;
-  linked: (email: string) => string;
+  /** After linking: go to the group and send 签到; `groupLink` when the admin set one. */
+  linked: (email: string, groupLink: string | null) => string;
   linkExpired: string;
   bindUsage: string;
   bindPrivate: string;
@@ -45,7 +46,8 @@ const zh: Words = {
   notLinked: (name, bot) => `${name} 还没有绑定账号。请私聊 @${bot} 发 /start 按提示绑定。`,
   disabled: "签到活动暂未开放。",
   groupOnly: "签到要在活动群里发哦。",
-  linked: (email) => `绑定成功：${email}。现在可以在群里签到了。`,
+  linked: (email, groupLink) =>
+    `绑定成功：${email}\n\n现在去群里回复「签到」或 /checkin，每天一次，随机领取流量。` + (groupLink ? `\n\n👉 进群签到：${groupLink}` : ""),
   linkExpired: "这个绑定链接已失效，请回到网站重新点「绑定 Telegram」。",
   bindUsage: "请发：/bind 你的注册邮箱\n例如：/bind name@example.com",
   bindPrivate: "为保护隐私，请私聊我绑定，不要在群里发邮箱。",
@@ -73,7 +75,8 @@ const en: Words = {
   notLinked: (name, bot) => `${name}, your account is not linked yet. Message @${bot} and send /start to link it.`,
   disabled: "Check-in rewards are not open at the moment.",
   groupOnly: "Please check in in the rewards group.",
-  linked: (email) => `Linked to ${email}. You can check in in the group now.`,
+  linked: (email, groupLink) =>
+    `Linked to ${email}.\n\nNow reply /checkin (or 签到) in the group once a day for free data.` + (groupLink ? `\n\n👉 Join the group to check in: ${groupLink}` : ""),
   linkExpired: "This link has expired. Go back to the website and tap \"Link Telegram\" again.",
   bindUsage: "Send: /bind your@email\nFor example: /bind name@example.com",
   bindPrivate: "To keep your email private, message me directly to link your account.",

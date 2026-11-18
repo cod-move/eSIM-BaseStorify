@@ -967,7 +967,8 @@
       "noItems": "暂时没有可兑换的 eSIM，敬请期待。",
       "history": "记录",
       "noHistory": "还没有签到记录。",
-      "teaser": "每天在 Telegram 签到领免费流量"
+      "teaser": "每天在 Telegram 签到领免费流量",
+      "joinGroup": "进群签到"
     }
   },
   "admin": {
@@ -1842,7 +1843,9 @@
       "when": "时间",
       "telegramKind": "类型",
       "pending": "处理中",
-      "telegramNoActivity": "还没有签到记录。"
+      "telegramNoActivity": "还没有签到记录。",
+      "telegramGroupLink": "群链接（展示给用户）",
+      "telegramGroupLinkHelp": "用户绑定账号后机器人会立即发送这个链接，签到奖励页也会显示。"
     },
     "sidebar": {
       "esim": "eSIM",

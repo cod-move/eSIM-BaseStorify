@@ -967,7 +967,8 @@
       "noItems": "Nothing to exchange yet. Check back soon.",
       "history": "History",
       "noHistory": "No check-ins yet.",
-      "teaser": "Check in on Telegram every day for free data"
+      "teaser": "Check in on Telegram every day for free data",
+      "joinGroup": "Open the group to check in"
     }
   },
   "admin": {
@@ -1842,7 +1843,9 @@
       "when": "When",
       "telegramKind": "What",
       "pending": "pending",
-      "telegramNoActivity": "No check-ins yet."
+      "telegramNoActivity": "No check-ins yet.",
+      "telegramGroupLink": "Group link (shown to shoppers)",
+      "telegramGroupLinkHelp": "The bot sends it right after a shopper links their account, and the rewards page shows it."
     },
     "sidebar": {
       "esim": "eSIM",

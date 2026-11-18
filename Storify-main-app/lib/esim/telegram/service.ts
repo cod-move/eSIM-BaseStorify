@@ -51,6 +51,12 @@ export const TelegramSettingsSchema = z
   .object({
     enabled: z.boolean(),
     groupIds: z.array(z.string().trim().regex(/^-?\d{1,20}$/, "A group ID is a number such as -1001234567890")).max(20),
+    /** The group's invite link; empty for none. */
+    groupLink: z
+      .string()
+      .trim()
+      .max(300)
+      .refine((value) => !value || /^https:\/\/(t\.me|telegram\.me)\/\S+$/i.test(value), "A Telegram link starts with https://t.me/"),
     minMb: z.number().int().min(1).max(100_000),
     maxMb: z.number().int().min(1).max(100_000),
     dailyCapMb: z.number().int().min(0).max(100_000_000),
@@ -83,6 +89,7 @@ export interface TelegramSettingsView {
   enabled: boolean;
   botUsername: string | null;
   groupIds: string[];
+  groupLink: string | null;
   minMb: number;
   maxMb: number;
   dailyCapMb: number;
@@ -96,6 +103,7 @@ export async function telegramSettingsView(): Promise<TelegramSettingsView> {
     enabled: settings.enabled,
     botUsername: settings.botUsername,
     groupIds: [...settings.groupIds],
+    groupLink: settings.groupLink ?? null,
     minMb: settings.minMb,
     maxMb: settings.maxMb,
     dailyCapMb: settings.dailyCapMb,
@@ -151,6 +159,7 @@ export async function saveTelegramSettings(input: TelegramSettingsInput) {
       $set: {
         enabled: input.enabled,
         groupIds: [...new Set(input.groupIds.map((id) => id.trim()))],
+        groupLink: input.groupLink.trim() || null,
         minMb: input.minMb,
         maxMb: input.maxMb,
         dailyCapMb: input.dailyCapMb,
@@ -394,6 +403,7 @@ export async function rewardsPage(userId: string) {
   return {
     enabled: settings.enabled,
     botUsername: settings.botUsername,
+    groupLink: settings.groupLink ?? null,
     link: linkRow ? { username: linkRow.username, firstName: linkRow.firstName, linkedAt: linkRow.createdAt.toISOString() } : null,
     account,
     history,

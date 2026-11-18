@@ -20,6 +20,8 @@ export interface IEsimTelegramSettings extends mongoose.Document {
   botUsername: string | null;
   /** Chat ids of the groups where a check-in counts (e.g. "-1001234567890"). */
   groupIds: string[];
+  /** The group's invite link (https://t.me/…), shown to a shopper once linked and on the rewards page. */
+  groupLink: string | null;
   minMb: number;
   maxMb: number;
   /** Most MB handed out by check-ins in one day, across everyone; 0 = no limit. */
@@ -44,6 +46,7 @@ const EsimTelegramSettingsSchema = new Schema<IEsimTelegramSettings>(
     enabled: { type: Boolean, default: false },
     botUsername: { type: String, default: null, maxlength: 64 },
     groupIds: { type: [{ type: String, maxlength: 32 }], default: [] },
+    groupLink: { type: String, default: null, maxlength: 300 },
     minMb: { type: Number, default: 10, min: 1, max: 100_000 },
     maxMb: { type: Number, default: 100, min: 1, max: 100_000 },
     dailyCapMb: { type: Number, default: 0, min: 0, max: 100_000_000 },

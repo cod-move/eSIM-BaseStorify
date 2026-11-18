@@ -956,7 +956,8 @@
       "noItems": "Henüz değiştirilecek bir şey yok.",
       "history": "Geçmiş",
       "noHistory": "Henüz giriş yok.",
-      "teaser": "Her gün Telegram'da giriş yapın, ücretsiz veri kazanın"
+      "teaser": "Her gün Telegram'da giriş yapın, ücretsiz veri kazanın",
+      "joinGroup": "Giriş için grubu aç"
     }
   },
   "admin": {
@@ -1746,7 +1747,9 @@
       "when": "When",
       "telegramKind": "What",
       "pending": "pending",
-      "telegramNoActivity": "No check-ins yet."
+      "telegramNoActivity": "No check-ins yet.",
+      "telegramGroupLink": "Group link (shown to shoppers)",
+      "telegramGroupLinkHelp": "The bot sends it right after a shopper links their account, and the rewards page shows it."
     },
     "sidebar": {
       "esim": "eSIM",

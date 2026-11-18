@@ -42,6 +42,7 @@ type BotStatus = {
 type Draft = {
   enabled: boolean;
   groupIds: string;
+  groupLink: string;
   minMb: number;
   maxMb: number;
   dailyCapMb: number;
@@ -52,6 +53,7 @@ type Draft = {
 const draftOf = (settings: TelegramSettingsView): Draft => ({
   enabled: settings.enabled,
   groupIds: settings.groupIds.join("\n"),
+  groupLink: settings.groupLink ?? "",
   minMb: settings.minMb,
   maxMb: settings.maxMb,
   dailyCapMb: settings.dailyCapMb,
@@ -244,6 +246,11 @@ export function EsimTelegramAdmin({ settings, variants, stats, entries, canManag
             <div className="space-y-1.5">
               <Label>{t("admin.esim.telegramGroups", "Group IDs (one per line)")}</Label>
               <Textarea rows={3} value={draft.groupIds} onChange={(event) => set("groupIds", event.target.value)} placeholder="-1001234567890" disabled={!canManage} />
+              <Label className="block pt-2">{t("admin.esim.telegramGroupLink", "Group link (shown to shoppers)")}</Label>
+              <Input value={draft.groupLink} onChange={(event) => set("groupLink", event.target.value)} placeholder="https://t.me/your_group" disabled={!canManage} />
+              <p className="text-xs text-muted-foreground">
+                {t("admin.esim.telegramGroupLinkHelp", "The bot sends it right after a shopper links their account, and the rewards page shows it.")}
+              </p>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">

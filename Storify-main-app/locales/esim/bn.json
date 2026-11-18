@@ -956,7 +956,8 @@
       "noItems": "এখনও বদলানোর মতো কিছু নেই।",
       "history": "ইতিহাস",
       "noHistory": "এখনও কোনো চেক-ইন নেই।",
-      "teaser": "প্রতিদিন Telegram-এ চেক-ইন করে বিনামূল্যে ডেটা পান"
+      "teaser": "প্রতিদিন Telegram-এ চেক-ইন করে বিনামূল্যে ডেটা পান",
+      "joinGroup": "চেক-ইন করতে গ্রুপ খুলুন"
     }
   },
   "admin": {
@@ -1746,7 +1747,9 @@
       "when": "When",
       "telegramKind": "What",
       "pending": "pending",
-      "telegramNoActivity": "No check-ins yet."
+      "telegramNoActivity": "No check-ins yet.",
+      "telegramGroupLink": "Group link (shown to shoppers)",
+      "telegramGroupLinkHelp": "The bot sends it right after a shopper links their account, and the rewards page shows it."
     },
     "sidebar": {
       "esim": "eSIM",

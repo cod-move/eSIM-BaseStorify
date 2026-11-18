@@ -956,7 +956,8 @@
       "noItems": "अभी बदलने के लिए कुछ नहीं है।",
       "history": "इतिहास",
       "noHistory": "अभी कोई चेक-इन नहीं।",
-      "teaser": "रोज़ Telegram पर चेक-इन करें, मुफ़्त डेटा पाएँ"
+      "teaser": "रोज़ Telegram पर चेक-इन करें, मुफ़्त डेटा पाएँ",
+      "joinGroup": "चेक-इन के लिए ग्रुप खोलें"
     }
   },
   "admin": {
@@ -1746,7 +1747,9 @@
       "when": "When",
       "telegramKind": "What",
       "pending": "pending",
-      "telegramNoActivity": "No check-ins yet."
+      "telegramNoActivity": "No check-ins yet.",
+      "telegramGroupLink": "Group link (shown to shoppers)",
+      "telegramGroupLinkHelp": "The bot sends it right after a shopper links their account, and the rewards page shows it."
     },
     "sidebar": {
       "esim": "eSIM",

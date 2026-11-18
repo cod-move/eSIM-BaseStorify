@@ -956,7 +956,8 @@
       "noItems": "Aún no hay nada para canjear.",
       "history": "Historial",
       "noHistory": "Aún no hay check-ins.",
-      "teaser": "Haz check-in en Telegram cada día y gana datos gratis"
+      "teaser": "Haz check-in en Telegram cada día y gana datos gratis",
+      "joinGroup": "Abrir el grupo para hacer check-in"
     }
   },
   "admin": {
@@ -1746,7 +1747,9 @@
       "when": "When",
       "telegramKind": "What",
       "pending": "pending",
-      "telegramNoActivity": "No check-ins yet."
+      "telegramNoActivity": "No check-ins yet.",
+      "telegramGroupLink": "Group link (shown to shoppers)",
+      "telegramGroupLinkHelp": "The bot sends it right after a shopper links their account, and the rewards page shows it."
     },
     "sidebar": {
       "esim": "eSIM",
