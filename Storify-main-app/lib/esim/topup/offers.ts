@@ -130,7 +130,20 @@ async function supplierTopups({ profile, provider }: Owned, fresh = false): Prom
       refs: { esimId: key, orderId: String(profile.order) },
     },
     () => adapterFor(provider).listTopupPlans(ref),
-    (value) => value.map((plan) => ({ id: plan.topupPlanId, megabytes: plan.megabytes, days: plan.validityDays, cost: plan.cost })),
+    // A supplier may list thousands (RoamWifi: every area): the log keeps the count per area and a sample.
+    (value) => ({
+      total: value.length,
+      perArea: Object.fromEntries(
+        Object.entries(
+          value.reduce<Record<string, number>>((counts, plan) => {
+            const key = plan.area ? `${plan.area.key ?? "-"} ${plan.area.name}` : "-";
+            counts[key] = (counts[key] ?? 0) + 1;
+            return counts;
+          }, {}),
+        ).slice(0, 300),
+      ),
+      sample: value.slice(0, 10).map((plan) => ({ id: plan.topupPlanId, megabytes: plan.megabytes, days: plan.validityDays, cost: plan.cost })),
+    }),
   );
   listCache.set(key, { at: Date.now(), plans });
   if (listCache.size > 500) listCache.delete(listCache.keys().next().value!);
