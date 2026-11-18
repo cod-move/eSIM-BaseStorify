@@ -108,9 +108,11 @@ export function getEsimPlanDetails(
 }
 
 /** The top-ups this eSIM can take now, priced. */
-export function getEsimTopups(locale: string, id: string, signal: AbortSignal) {
+/** The eSIM's top-ups: renewals of its own plan and the other areas; with `area`, that area's. */
+export function getEsimTopups(locale: string, id: string, signal: AbortSignal, area?: string) {
+  const query = area ? `?area=${encodeURIComponent(area)}` : '';
   return api.data(
-    { locale, path: `/me/esims/${encodeURIComponent(id)}/topups`, auth: 'user', signal },
+    { locale, path: `/me/esims/${encodeURIComponent(id)}/topups${query}`, auth: 'user', signal },
     EsimTopups
   );
 }

@@ -66,6 +66,18 @@ export function useEsimTopups(id: string) {
   });
 }
 
+/** One other area's top-ups, fetched when the shopper picks the area. */
+export function useEsimTopupArea(id: string, area: string | null) {
+  const locale = useLocale();
+
+  return useQuery({
+    queryKey: queryKeys.esimTopupArea(locale, id, area ?? ''),
+    queryFn: ({ signal }) => getEsimTopups(locale, id, signal, area ?? undefined),
+    enabled: Boolean(area),
+    staleTime: STALE.private,
+  });
+}
+
 /** Fixes a top-up and puts it in the cart, as the line the store answered with. */
 export function useBuyEsimTopup(id: string) {
   const locale = useLocale();

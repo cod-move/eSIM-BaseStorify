@@ -69,7 +69,7 @@
     "topupUnavailable": "The network could not be reached. Try again in a moment.",
     "tryAgain": "Try again",
     "topupStackNote": "The data and days are added to your current plan.",
-    "topupAddonNote": "This is a separate package beside your current plan, with its own data and days.",
+    "topupAddonNote": "The top-up is a plan of its own: its data and days count separately from your current plan.",
     "topupRefusal": {
       "not_supported": "This plan cannot be topped up.",
       "not_issued": "This eSIM has not been issued yet.",
@@ -457,6 +457,15 @@
     "previous": "Previous",
     "next": "Next",
     "uploadInterrupted": "The photo could not be sent ({detail}). Please try again, or choose another photo.",
-    "openSettings": "Open settings"
+    "openSettings": "Open settings",
+    "topupAutoActivate": "It starts by itself when the eSIM connects in its area. With several plans for the same area, the one ending soonest is used first.",
+    "topupTabOwn": "Renew this plan",
+    "topupTabOther": "Buy for another region",
+    "topupNoneHere": "No renewal for this plan. Try another region.",
+    "topupAreaSearch": "Search a country or region",
+    "topupAreaCount": "{count, plural, one {# plan} other {# plans}}",
+    "topupFrom": "from {price}",
+    "topupAreaMore": "{count} more: search to find them.",
+    "topupAllAreas": "All regions"
   }
 }

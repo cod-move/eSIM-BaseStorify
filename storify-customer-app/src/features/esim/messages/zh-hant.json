@@ -69,7 +69,7 @@
     "topupUnavailable": "暫時無法連接運營商，請稍後再試。",
     "tryAgain": "重試",
     "topupStackNote": "流量和天數會加到當前套餐上。",
-    "topupAddonNote": "這是與當前套餐並行的獨立流量包，有自己的流量和天數。",
+    "topupAddonNote": "儲值包是一個獨立方案：它的流量和天數與目前方案分開計算。",
     "topupRefusal": {
       "not_supported": "該套餐不支持充值。",
       "not_issued": "此 eSIM 尚未開通。",
@@ -457,6 +457,15 @@
     "previous": "上一頁",
     "next": "下一頁",
     "uploadInterrupted": "照片沒有傳送成功（{detail}）。請重試，或換一張照片。",
-    "openSettings": "去設定"
+    "openSettings": "去設定",
+    "topupAutoActivate": "方案會在所在地連網時自動啟用；同一地區有多個方案時，優先自動使用有效期最近的。",
+    "topupTabOwn": "原方案續費",
+    "topupTabOther": "購買其他地區方案",
+    "topupNoneHere": "原方案暫無續費，可以看看其他地區。",
+    "topupAreaSearch": "搜尋國家或地區",
+    "topupAreaCount": "{count} 個方案",
+    "topupFrom": "{price} 起",
+    "topupAreaMore": "還有 {count} 個，請搜尋查找。",
+    "topupAllAreas": "全部地區"
   }
 }
