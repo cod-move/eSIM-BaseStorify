@@ -613,7 +613,7 @@ export function externalId(key: string): string {
 /**
  * Where a RoamWifi plan's traffic breaks out, by RoamWifi's own rule: the Asia
  * SIM (dpid 21, APN mobile.three.com.hk) exits in Hong Kong, the Global SIM
- * (dpid 9, APN plus) in Poland. The package
+ * (dpid 9, APN plus) in the United Kingdom. The package
  * names its APN in `premark` ("APN: …"); without dpid or APN, a plan covering
  * only Asian countries is taken for the Asia SIM.
  */
@@ -621,8 +621,8 @@ export function breakoutOf(pkg: JsonObject, countryCodes: string[]): string[] {
   const dpid = int(pkg.dpId) ?? int(pkg.dpid);
   const apn = /APN:\s*([^\s<]+)/i.exec(str(pkg.premark))?.[1]?.toLowerCase() ?? null;
   if (dpid === 21 || apn === "mobile.three.com.hk") return ["HK"];
-  // The Global SIM (dpid 9, APN plus) exits in Europe, on Poland's Plus.
-  if (dpid === 9 || apn === "plus") return ["PL"];
+  // The Global SIM (dpid 9, APN plus) exits in the United Kingdom.
+  if (dpid === 9 || apn === "plus") return ["GB"];
   if (dpid !== null || apn !== null) return [];
   return countryCodes.length && countryCodes.every((code) => continentOf(code) === "asia") ? ["HK"] : [];
 }

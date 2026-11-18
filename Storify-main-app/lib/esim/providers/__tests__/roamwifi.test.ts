@@ -224,11 +224,11 @@ describe("RoamWifi day-pass", () => {
 });
 
 describe("RoamWifi breakout", () => {
-  it("puts the Asia SIM (dpid 21 or its APN) in Hong Kong, the Global SIM in Poland", () => {
+  it("puts the Asia SIM (dpid 21 or its APN) in Hong Kong, the Global SIM in the UK", () => {
     assert.deepEqual(breakoutOf({ dpId: 21 }, ["FR"]), ["HK"]);
     assert.deepEqual(breakoutOf({ premark: "Plan type: Data only<br>\nAPN: mobile.three.com.hk" }, ["FR"]), ["HK"]);
-    assert.deepEqual(breakoutOf({ dpId: 9 }, ["JP"]), ["PL"]);
-    assert.deepEqual(breakoutOf({ premark: "APN: plus<br>" }, ["JP"]), ["PL"]);
+    assert.deepEqual(breakoutOf({ dpId: 9 }, ["JP"]), ["GB"]);
+    assert.deepEqual(breakoutOf({ premark: "APN: plus<br>" }, ["JP"]), ["GB"]);
   });
   it("without dpid or APN, takes an all-Asian plan for the Asia SIM", () => {
     assert.deepEqual(breakoutOf({}, ["JP", "TH"]), ["HK"]);
