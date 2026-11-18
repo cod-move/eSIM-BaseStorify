@@ -208,11 +208,15 @@ export class RoamWifiAdapter implements EsimProviderAdapter {
         });
       }
     };
+    // Each way of asking may be refused; the refusals are kept, so an empty
+    // answer says why instead of passing for "no top-ups".
+    const refusals: string[] = [];
     const optional = async <T>(call: () => Promise<T>): Promise<T | null> => {
       try {
         return await call();
       } catch (error) {
         if (error instanceof ProviderError && error.code === "uncertain") throw error;
+        refusals.push(error instanceof Error ? error.message : String(error));
         return null;
       }
     };
@@ -232,6 +236,7 @@ export class RoamWifiAdapter implements EsimProviderAdapter {
       const packageData = await optional(() => this.callData("api_esim/getICCIDSkuSupportPackageInfo", { iccid, skuId }));
       if (packageData) add(obj(packageData), str(sku.displayEn) || str(sku.display));
     }
+    if (!plans.size && refusals.length) throw new ProviderError("rejected", refusals.join("; ").slice(0, 500));
     return [...plans.values()];
   }
 
