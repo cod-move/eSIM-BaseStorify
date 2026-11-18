@@ -313,16 +313,39 @@ export const EsimTopupOffer = z.object({
   data: z.string(),
   validityDays: z.number().int(),
   price: Money,
+  /** Where it works, for an eSIM that tops up other areas too. */
+  area: z.string().optional(),
+  /** Offers sharing it are one package for different day counts: show them as one, with a day choice. */
+  dayGroup: z.string().optional(),
 });
 export type EsimTopupOffer = z.infer<typeof EsimTopupOffer>;
 
-/** GET /me/esims/{id}/topups */
+/** An area an eSIM can buy a plan for besides renewing its own: `?area=<id>` lists its offers. */
+export const EsimTopupArea = z.object({
+  id: z.string(),
+  name: z.string(),
+  /** Distinct plans (a day-pass counts once). */
+  count: z.number().int(),
+  from: Money,
+});
+export type EsimTopupArea = z.infer<typeof EsimTopupArea>;
+
+/** GET /me/esims/{id}/topups?area= */
+export const EsimTopupsQuery = z.object({ area: z.string().max(120).optional() });
+export type EsimTopupsQuery = z.infer<typeof EsimTopupsQuery>;
+
+/**
+ * GET /me/esims/{id}/topups: `offers` renew the eSIM's own plan, and
+ * `otherAreas` are the areas it can buy a plan for instead (each listed with
+ * `?area=<id>`, whose answer has that area's offers and no areas).
+ */
 export const EsimTopups = z.object({
   /** Left out when the eSIM can be topped up; one of `ESIM_TOPUP_REFUSALS` otherwise. */
   refusal: z.string().optional(),
   /** stack: added to the current plan; addon: a separate package beside it. */
   mode: z.enum(["stack", "addon"]).optional(),
   offers: z.array(EsimTopupOffer),
+  otherAreas: z.array(EsimTopupArea).optional(),
   /** The supplier could not be asked just now: try again shortly. */
   unavailable: z.boolean(),
 });

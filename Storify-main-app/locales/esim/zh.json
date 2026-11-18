@@ -226,7 +226,12 @@
       "noneHere": "这里没有可充值的套餐，请看另一个标签。",
       "days": "天数",
       "dayCount": "{count} 天",
-      "autoActivate": "套餐会在所在地联网时自动激活；同一地区有多个套餐时，优先自动使用有效期最近的。"
+      "autoActivate": "套餐会在所在地联网时自动激活；同一地区有多个套餐时，优先自动使用有效期最近的。",
+      "areaSearch": "搜索国家或地区",
+      "areaCount": "{count} 个套餐",
+      "from": "{price} 起",
+      "areaMore": "还有 {count} 个，请搜索查找。",
+      "allAreas": "全部地区"
     },
     "wallet": {
       "title": "余额",

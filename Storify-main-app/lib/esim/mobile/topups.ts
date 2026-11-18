@@ -1,4 +1,4 @@
-import { EsimTopupQuote, EsimTopupQuoteRequest, EsimTopups } from "@/contracts/mobile/shop/v1/esim";
+import { EsimTopupQuote, EsimTopupQuoteRequest, EsimTopups, EsimTopupsQuery } from "@/contracts/mobile/shop/v1/esim";
 import { MobileApiError } from "@/lib/api-core/errors";
 import { defineRoute } from "@/lib/api-core/registry";
 import { toMoney } from "@/lib/api-core/shop/money";
@@ -23,11 +23,12 @@ export const esimTopupsRoute = defineRoute({
   path: "/me/esims/{id}/topups",
   auth: "user",
   cache: { kind: "private" },
+  input: EsimTopupsQuery,
   output: EsimTopups,
   rateLimit: { bucket: "esim:topup:list", preset: "moderate" },
-  handler: async ({ session, params }) => {
+  handler: async ({ session, params, input }) => {
     await connectDB();
-    const [offers, currency] = await Promise.all([topupOffers(session.user.id, params.id), getStoreCurrency()]);
+    const [offers, currency] = await Promise.all([topupOffers(session.user.id, params.id, { area: input.area ?? null }), getStoreCurrency()]);
     if (!offers) throw notFound();
     return {
       ...(offers.eligibility.ok ? {} : { refusal: offers.eligibility.reason }),
@@ -38,10 +39,12 @@ export const esimTopupsRoute = defineRoute({
         data: formatBytes(offer.megabytes * 1024 * 1024),
         validityDays: offer.validityDays,
         price: toMoney(offer.priceMinor / 100, currency),
-        // For an app that sorts them: where it works, whether that is the eSIM's own area.
         ...(offer.area ? { area: offer.area } : {}),
-        sameArea: offer.sameArea,
+        ...(offer.dayGroup ? { dayGroup: offer.dayGroup } : {}),
       })),
+      ...(offers.otherAreas.length
+        ? { otherAreas: offers.otherAreas.map((area) => ({ id: area.id, name: area.name, count: area.count, from: toMoney(area.fromPriceMinor / 100, currency) })) }
+        : {}),
       unavailable: Boolean(offers.error),
     };
   },

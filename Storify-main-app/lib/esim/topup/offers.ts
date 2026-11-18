@@ -42,12 +42,29 @@ export interface TopupOffer {
   sameArea: boolean;
   /** Offers sharing it are one package for different day counts. */
   dayGroup: string | null;
+  /** Its area's id in `otherAreas` (null when it renews the own plan). */
+  areaId: string | null;
+}
+
+/** An area with top-ups other than renewing the own plan: its offers are fetched when chosen. */
+export interface TopupArea {
+  id: string;
+  name: string;
+  /** Distinct packages (a day-pass counts once). */
+  count: number;
+  fromPriceMinor: number;
 }
 
 export interface TopupOffers {
   eligibility: Eligibility;
   mode: "stack" | "addon" | null;
+  /**
+   * Renewals of the own plan; or, when an area was asked for, that area's
+   * top-ups. Plans for other areas are not listed (RoamWifi has thousands):
+   * `otherAreas` names them, and each is asked for on its own.
+   */
   offers: TopupOffer[];
+  otherAreas: TopupArea[];
   /** The supplier could not be asked; the page says so and offers a retry. */
   error?: string;
 }
@@ -150,36 +167,61 @@ async function supplierTopups({ profile, provider }: Owned, fresh = false): Prom
   return plans;
 }
 
-export async function topupOffers(userId: string, esimId: string): Promise<TopupOffers | null> {
+export async function topupOffers(userId: string, esimId: string, options: { area?: string | null } = {}): Promise<TopupOffers | null> {
   const found = await owned(userId, esimId);
   if (!found) return null;
   const eligibility = eligibilityOf(found);
   const mode = found.plan.topup.mode === "none" ? null : found.plan.topup.mode;
-  if (!eligibility.ok) return { eligibility, mode, offers: [] };
+  if (!eligibility.ok) return { eligibility, mode, offers: [], otherAreas: [] };
   let plans: ProviderTopupPlan[];
   try {
     plans = await supplierTopups(found);
   } catch (error) {
     const message = error instanceof ProviderError || error instanceof TopupError ? error.message : "The supplier could not be reached";
-    return { eligibility, mode, offers: [], error: message };
+    return { eligibility, mode, offers: [], otherAreas: [], error: message };
   }
   const prices = await priceTopupCosts(plans.map((plan) => plan.cost), found.plan);
   const anyArea = found.plan.topup.coverage === "any_area";
   const planCountries = found.plan.coverage.countries.map((country) => country.code);
-  const offers = plans
-    .map((plan, index) => ({
-      topupPlanId: plan.topupPlanId,
-      name: plan.name,
-      megabytes: plan.megabytes,
-      validityDays: plan.validityDays,
-      priceMinor: prices[index],
-      area: anyArea ? (plan.area?.name ?? null) : null,
-      sameArea: !anyArea || renewsOwnPlan(plan.area, { sku: found.plan.sku, providerPlanId: found.plan.providerPlanId, countries: planCountries, destination: found.plan.destination }),
-      dayGroup: plan.dayGroup ?? null,
-    }))
+  const own = { sku: found.plan.sku, providerPlanId: found.plan.providerPlanId, countries: planCountries, destination: found.plan.destination };
+  const all = plans
+    .map((plan, index) => {
+      const sameArea = !anyArea || renewsOwnPlan(plan.area, own);
+      return {
+        topupPlanId: plan.topupPlanId,
+        name: plan.name,
+        megabytes: plan.megabytes,
+        validityDays: plan.validityDays,
+        priceMinor: prices[index],
+        area: anyArea ? (plan.area?.name ?? null) : null,
+        sameArea,
+        dayGroup: plan.dayGroup ?? null,
+        areaId: sameArea ? null : areaIdOf(plan.area),
+      };
+    })
     .filter((offer): offer is TopupOffer => offer.priceMinor !== null && offer.priceMinor > 0)
     .sort((a, b) => a.priceMinor - b.priceMinor || a.megabytes - b.megabytes);
-  return { eligibility, mode, offers };
+  if (options.area) return { eligibility, mode, offers: all.filter((offer) => offer.areaId === options.area), otherAreas: [] };
+  return { eligibility, mode, offers: all.filter((offer) => offer.sameArea), otherAreas: areasOf(all.filter((offer) => !offer.sameArea)) };
+}
+
+/** An area's id: the supplier's key for it, else its name. */
+function areaIdOf(area: ProviderTopupPlan["area"]): string {
+  return (area?.key || area?.name || "other").slice(0, 120);
+}
+
+/** The other areas, by name, with how many packages each has and from what price. */
+function areasOf(offers: TopupOffer[]): TopupArea[] {
+  const areas = new Map<string, TopupArea & { groups: Set<string> }>();
+  for (const offer of offers) {
+    const id = offer.areaId ?? "other";
+    const area = areas.get(id) ?? { id, name: offer.area || id, count: 0, fromPriceMinor: offer.priceMinor, groups: new Set<string>() };
+    area.groups.add(offer.dayGroup || offer.topupPlanId);
+    area.count = area.groups.size;
+    area.fromPriceMinor = Math.min(area.fromPriceMinor, offer.priceMinor);
+    areas.set(id, area);
+  }
+  return [...areas.values()].map(({ groups: _groups, ...area }) => area).sort((a, b) => a.name.localeCompare(b.name));
 }
 
 export interface CreatedQuote {

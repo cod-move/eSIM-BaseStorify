@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { Loader2, Search } from "lucide-react";
+import { ChevronLeft, Loader2, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/toast-notification";
@@ -58,17 +58,34 @@ function dataLabel(megabytes: number) {
  * cart sets its other lines aside first: a top-up is paid on its own
  * (lib/esim/wallet/park.ts), and they come back after.
  */
-export function EsimTopupPicker({ esimId, offers }: { esimId: string; offers: TopupPickerOffer[] }) {
+export interface TopupPickerArea {
+  id: string;
+  name: string;
+  count: number;
+  fromPriceMinor: number;
+}
+
+/** Areas listed at once on the "other regions" tab; search finds the rest. */
+const AREAS_SHOWN = 30;
+
+export function EsimTopupPicker({ esimId, offers, otherAreas = [] }: { esimId: string; offers: TopupPickerOffer[]; otherAreas?: TopupPickerArea[] }) {
   const t = useFallbackTranslator(useTranslations());
   const router = useRouter();
   const { addItem } = useCart();
   const { formatPrice } = useCurrency();
   // A plan that tops up any area: renewing this same plan first, plans for other areas on a tab of their own.
-  const hasOther = offers.some((offer) => offer.sameArea === false);
-  const hasOwn = offers.some((offer) => offer.sameArea !== false);
+  // Those come as a list of areas (a supplier may have thousands of top-ups); an area's are fetched when chosen.
+  const hasOther = otherAreas.length > 0;
+  const hasOwn = offers.length > 0;
   const [tab, setTab] = useState<"own" | "other">(hasOwn ? "own" : "other");
-  const onTab = hasOther ? offers.filter((offer) => (offer.sameArea === false) === (tab === "other")) : offers;
-  const [selected, setSelected] = useState<string | null>(onTab[0]?.topupPlanId ?? null);
+  const [area, setArea] = useState<TopupPickerArea | null>(null);
+  const [areaOffers, setAreaOffers] = useState<TopupPickerOffer[]>([]);
+  const [loadingArea, setLoadingArea] = useState(false);
+  const [areaQuery, setAreaQuery] = useState("");
+  const onTab = tab === "own" ? offers : area ? areaOffers : [];
+  const [selected, setSelected] = useState<string | null>(offers[0]?.topupPlanId ?? null);
+  const areaWords = areaQuery.toLowerCase().split(/\s+/).filter(Boolean);
+  const areasMatching = otherAreas.filter((entry) => areaWords.every((word) => entry.name.toLowerCase().includes(word)));
   const [busy, setBusy] = useState(false);
   // A supplier like BNESIM offers top-ups for other regions too: many of them, so in pages.
   const [page, setPage] = useState(0);
@@ -85,8 +102,30 @@ export function EsimTopupPicker({ esimId, offers }: { esimId: string; offers: To
   const pages = Math.max(1, Math.ceil(matching.length / PAGE_SIZE));
   const shown = matching.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
 
+  async function openArea(entry: TopupPickerArea) {
+    const failed = t("esim.topup.supplierDown", "We could not load the top-ups for this eSIM right now. Please try again in a few minutes.");
+    setArea(entry);
+    setAreaOffers([]);
+    setSelected(null);
+    setQuery("");
+    setPage(0);
+    setLoadingArea(true);
+    try {
+      const response = await fetch(`/api/esim/me/esims/${esimId}/topup?area=${encodeURIComponent(entry.id)}`);
+      const body = (await response.json().catch(() => ({}))) as { data?: { offers?: TopupPickerOffer[] } };
+      const list = body.data?.offers ?? [];
+      setAreaOffers(list);
+      setSelected(list[0]?.topupPlanId ?? null);
+      if (!response.ok) toast.error(failed);
+    } catch {
+      toast.error(failed);
+    } finally {
+      setLoadingArea(false);
+    }
+  }
+
   async function buy() {
-    const offer = offers.find((entry) => entry.topupPlanId === selected);
+    const offer = onTab.find((entry) => entry.topupPlanId === selected);
     if (!offer) return;
     setBusy(true);
     try {
@@ -133,8 +172,8 @@ export function EsimTopupPicker({ esimId, offers }: { esimId: string; offers: To
               onClick={() => {
                 setTab(key);
                 setPage(0);
-                const first = offers.find((offer) => (offer.sameArea === false) === (key === "other"));
-                setSelected(first?.topupPlanId ?? null);
+                setQuery("");
+                setSelected(key === "own" ? (offers[0]?.topupPlanId ?? null) : (areaOffers[0]?.topupPlanId ?? null));
               }}
               className={`rounded-md px-3 py-1.5 ${tab === key ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
             >
@@ -143,7 +182,51 @@ export function EsimTopupPicker({ esimId, offers }: { esimId: string; offers: To
           ))}
         </div>
       ) : null}
-      {hasOther && !onTab.length ? <p className="text-sm text-muted-foreground">{t("esim.topup.noneHere", "No top-ups here. Try the other tab.")}</p> : null}
+      {tab === "own" && hasOther && !hasOwn ? <p className="text-sm text-muted-foreground">{t("esim.topup.noneHere", "No top-ups here. Try the other tab.")}</p> : null}
+      {tab === "other" && !area ? (
+        <div className="space-y-3">
+          <div className="relative">
+            <Search className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              className="ps-9"
+              value={areaQuery}
+              onChange={(event) => setAreaQuery(event.target.value)}
+              placeholder={t("esim.topup.areaSearch", "Search a country or region")}
+              aria-label={t("esim.topup.areaSearch", "Search a country or region")}
+            />
+          </div>
+          {!areasMatching.length ? <p className="text-sm text-muted-foreground">{t("esim.topup.searchNone", "No top-up matches your search.")}</p> : null}
+          <div className="grid gap-2 sm:grid-cols-2">
+            {areasMatching.slice(0, AREAS_SHOWN).map((entry) => (
+              <button
+                key={entry.id}
+                type="button"
+                onClick={() => openArea(entry)}
+                className="flex items-center justify-between gap-3 rounded-lg border p-3 text-start text-sm transition-colors hover:bg-muted/50"
+              >
+                <span className="min-w-0">
+                  <span className="block truncate font-medium">{entry.name}</span>
+                  <span className="text-xs text-muted-foreground">{t("esim.topup.areaCount", "{count} plans", { count: entry.count })}</span>
+                </span>
+                <span className="shrink-0 text-muted-foreground">{t("esim.topup.from", "from {price}", { price: formatPrice(entry.fromPriceMinor / 100) })}</span>
+              </button>
+            ))}
+          </div>
+          {areasMatching.length > AREAS_SHOWN ? (
+            <p className="text-xs text-muted-foreground">{t("esim.topup.areaMore", "{count} more: search to find them.", { count: areasMatching.length - AREAS_SHOWN })}</p>
+          ) : null}
+        </div>
+      ) : null}
+      {tab === "other" && area ? (
+        <div className="flex items-center gap-2 text-sm">
+          <Button type="button" variant="ghost" size="sm" onClick={() => setArea(null)}>
+            <ChevronLeft className="me-1 h-4 w-4 rtl:rotate-180" />
+            {t("esim.topup.allAreas", "All regions")}
+          </Button>
+          <span className="font-medium">{area.name}</span>
+          {loadingArea ? <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" /> : null}
+        </div>
+      ) : null}
       {onTab.length > 4 ? (
         <div className="relative">
           <Search className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />

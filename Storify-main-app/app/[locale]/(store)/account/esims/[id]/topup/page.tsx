@@ -64,7 +64,7 @@ export default async function AccountEsimTopupPage({ params }: PageProps) {
             <p className="text-sm text-destructive">
               {tr("esim.topup.supplierDown", "We could not load the top-ups for this eSIM right now. Please try again in a few minutes.")}
             </p>
-          ) : result.offers.length === 0 ? (
+          ) : result.offers.length === 0 && result.otherAreas.length === 0 ? (
             <p className="text-sm">{tr("esim.topup.none", "There are no top-ups for this eSIM at the moment.")}</p>
           ) : (
             <>
@@ -79,7 +79,7 @@ export default async function AccountEsimTopupPage({ params }: PageProps) {
                   </p>
                 ) : null}
               </div>
-              <EsimTopupPicker esimId={esim.id} offers={result.offers} />
+              <EsimTopupPicker esimId={esim.id} offers={result.offers} otherAreas={result.otherAreas} />
             </>
           )}
         </CardContent>

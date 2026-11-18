@@ -222,7 +222,12 @@
       "noneHere": "No top-ups here. Try the other tab.",
       "days": "Days",
       "dayCount": "{count} days",
-      "autoActivate": "It starts by itself when the eSIM connects in its area. With several plans for the same area, the one ending soonest is used first."
+      "autoActivate": "It starts by itself when the eSIM connects in its area. With several plans for the same area, the one ending soonest is used first.",
+      "areaSearch": "Search a country or region",
+      "areaCount": "{count} plans",
+      "from": "from {price}",
+      "areaMore": "{count} more: search to find them.",
+      "allAreas": "All regions"
     },
     "wallet": {
       "title": "Saldo",

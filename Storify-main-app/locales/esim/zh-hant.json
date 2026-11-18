@@ -226,7 +226,12 @@
       "noneHere": "這裡沒有可儲值的方案，請看另一個標籤。",
       "days": "天數",
       "dayCount": "{count} 天",
-      "autoActivate": "方案會在所在地連網時自動啟用；同一地區有多個方案時，優先自動使用有效期最近的。"
+      "autoActivate": "方案會在所在地連網時自動啟用；同一地區有多個方案時，優先自動使用有效期最近的。",
+      "areaSearch": "搜尋國家或地區",
+      "areaCount": "{count} 個方案",
+      "from": "{price} 起",
+      "areaMore": "還有 {count} 個，請搜尋查找。",
+      "allAreas": "全部地區"
     },
     "wallet": {
       "title": "餘額",

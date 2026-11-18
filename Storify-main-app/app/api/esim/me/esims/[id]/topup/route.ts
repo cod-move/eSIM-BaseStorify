@@ -8,11 +8,16 @@ import { TopupError, createTopupQuote, topupOffers } from "@/lib/esim/topup/offe
 
 const QuoteSchema = z.object({ topupPlanId: z.string().min(1).max(200) });
 
-/** The top-ups the shopper's eSIM can take now, priced (TOP-01/02). */
+/**
+ * The top-ups the shopper's eSIM can take now, priced (TOP-01/02): renewals
+ * of its own plan and the other areas it can be topped up for; with
+ * `?area=<id>`, that area's top-ups.
+ */
 export const GET = withApi<{ id: string }>(
   { auth: "user", rateLimit: { action: "esim:topup:list", preset: "moderate" } },
-  async ({ params, session }) => {
-    const offers = await topupOffers(session.user.id, params.id);
+  async ({ request, params, session }) => {
+    const area = new URL(request.url).searchParams.get("area")?.slice(0, 120) || null;
+    const offers = await topupOffers(session.user.id, params.id, { area });
     if (!offers) throw new NotFoundError("eSIM not found");
     return successResponse(offers);
   },
