@@ -51,7 +51,7 @@ describe("plan filters", () => {
   it("narrows the other filters, not the one being chosen", () => {
     const options = planFilterOptions(variants, { kind: "daily" });
     assert.deepEqual(options.kind.map((option) => option.value), ["total", "daily", "unlimited"]);
-    assert.deepEqual(options.days.map((option) => option.value), ["1", "5"]);
+    assert.deepEqual(options.days.map((option) => option.value), ["1", "5", "flex"]);
     assert.deepEqual(options.breakout.map((option) => option.value), ["JP", "SG"]);
   });
 

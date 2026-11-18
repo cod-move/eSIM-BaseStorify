@@ -121,7 +121,7 @@ export function dataValue(plan: VariantPlan): string {
       return plan.highSpeedGbPerDay ? `Unlimited (${plan.highSpeedGbPerDay}GB/day high speed)` : "Unlimited";
     case "daily_throttled":
       // A day-pass known only by its daily high-speed GB (Stellar) is named by it.
-      return `${plan.dataLabel || (plan.highSpeedGbPerDay ? `${plan.highSpeedGbPerDay}GB` : "")}/day, then reduced speed`;
+      return `${plan.dataLabel || (plan.highSpeedGbPerDay ? `${plan.highSpeedGbPerDay}GB` : "")}/day`;
     case "daily_cutoff":
       return `${plan.dataLabel}/day`;
     case "lifetime":

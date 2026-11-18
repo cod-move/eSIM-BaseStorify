@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import { countryCodeFromName } from "./countries";
+import { continentOf } from "@/lib/esim/storefront/continents";
 import { requestJson, type FetchLike } from "./http";
 import {
   int,
@@ -681,7 +682,8 @@ export function mapSkuPlans(sku: JsonObject, packageData: JsonObject, currency: 
             network: strOrNull(network.type),
           }))
           .filter((network) => network.operator),
-        breakoutIp: [],
+        // RoamWifi's Asian plans all break out in Hong Kong; it does not say so.
+        breakoutIp: countries.length && countries.every((country) => continentOf(country.code) === "asia") ? ["HK"] : [],
       },
       data: {
         megabytes,

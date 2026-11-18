@@ -108,6 +108,9 @@ export async function syncProviderCatalog(provider: IEsimProvider): Promise<Sync
 
   const merges = await destinationMerges();
   const moved = new Map<string, string>();
+  // Destinations with a plan whose content changed (days on offer, data, …):
+  // their store products are rebuilt even when the cost did not move.
+  const touched = new Set<string>();
   let writes: AnyBulkWriteOperation<IEsimPlan>[] = [];
   let unchanged: string[] = [];
   const flush = async () => {
@@ -136,6 +139,7 @@ export async function syncProviderCatalog(provider: IEsimProvider): Promise<Sync
       if (known.get(plan.providerPlanId) === contentHash) {
         unchanged.push(plan.providerPlanId);
       } else {
+        touched.add(normalized.productSlug);
         writes.push({
           updateOne: {
             filter: { provider: provider._id, providerPlanId: plan.providerPlanId },
@@ -181,7 +185,7 @@ export async function syncProviderCatalog(provider: IEsimProvider): Promise<Sync
   // price, and the store's products follow.
   if (result.created + result.updated > 0) {
     try {
-      const applied = await applySyncedCosts(provider.code);
+      const applied = await applySyncedCosts(provider.code, [...touched]);
       result.repriced = applied.repriced;
       result.republished = applied.republished;
     } catch (error) {

@@ -22,12 +22,15 @@ export interface SyncedCostsResult {
  * and pictures (lib/esim/catalog/publish.ts). Plans priced by hand are left
  * alone, as by every re-pricing.
  */
-export async function applySyncedCosts(providerCode: string): Promise<SyncedCostsResult> {
+export async function applySyncedCosts(providerCode: string, changedSlugs: string[] = []): Promise<SyncedCostsResult> {
   const repriced = await repricePlans({ providerCode, onlyIfCostChanged: true });
-  if (!repriced.changedSlugs.length) return { repriced: repriced.changed, republished: [] };
+  // Re-priced destinations, plus those whose plans changed otherwise (days on
+  // offer, data, top-up rules) and need their variants rebuilt.
+  const slugs = [...new Set([...repriced.changedSlugs, ...changedSlugs])];
+  if (!slugs.length) return { repriced: repriced.changed, republished: [] };
 
   const linked: string[] = await EsimProductLink.distinct("productSlug", {
-    productSlug: { $in: repriced.changedSlugs },
+    productSlug: { $in: slugs },
   });
   if (!linked.length) return { repriced: repriced.changed, republished: [] };
 

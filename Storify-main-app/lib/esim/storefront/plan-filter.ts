@@ -33,7 +33,8 @@ const KIND_ORDER: Record<string, number> = { total: 0, daily: 1, unlimited: 2, l
 /** A plan's values for each filter: one for most, one per operator for "operator". */
 const valuesOf: Record<PlanFilterKey, (variant: StorefrontVariant) => string[]> = {
   coverage: (variant) => [variant.coverageScope ?? "local"],
-  kind: (variant) => [dataKindOf(variant)],
+  // A plan sold by the day (days of the buyer's choosing) also shows under "daily".
+  kind: (variant) => (variant.perDay && dataKindOf(variant) !== "daily" ? [dataKindOf(variant), "daily"] : [dataKindOf(variant)]),
   days: (variant) => [keyOf.days(variant)],
   data: (variant) => [keyOf.data(variant)],
   topup: (variant) => [keyOf.topup(variant)],
