@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { describe, it } from "node:test";
 import { countryCodeFromName } from "../countries";
-import { RoamWifiAdapter, breakoutOf, dayPassOrder, externalId, fairUseOf, mapEsimDetail, mapSkuPlans, sign } from "../roamwifi";
+import { RoamWifiAdapter, breakoutOf, dayPassOrder, dayPassTopups, packagesOf, parseDayPassTopupId, externalId, fairUseOf, mapEsimDetail, mapSkuPlans, sign } from "../roamwifi";
 import { fakeFetch } from "./helpers";
 
 describe("RoamWifi external ids", () => {
@@ -233,5 +233,20 @@ describe("RoamWifi breakout", () => {
   it("without dpid or APN, takes an all-Asian plan for the Asia SIM", () => {
     assert.deepEqual(breakoutOf({}, ["JP", "TH"]), ["HK"]);
     assert.deepEqual(breakoutOf({}, ["JP", "FR"]), []);
+  });
+});
+
+describe("RoamWifi day-pass renewals", () => {
+  const dayPassPkg = { flows: 1, unit: "GB", days: 1, price: 1.38, priceid: 15794, supportDaypass: 1, minDay: 1, maxDay: 10, flowType: 0, apiCode: "99902-0-?-1-G-D" };
+  it("reads the ICCID answers' esimPackageVoList", () => {
+    assert.equal(packagesOf({ esimPackageVoList: [dayPassPkg] }).length, 1);
+    assert.equal(packagesOf({ esimPackageDtoList: [dayPassPkg] }).length, 1);
+  });
+  it("offers the usual day counts within minDay–maxDay, priced per day, with what renewCard needs", () => {
+    const offers = dayPassTopups({ skuid: 191 }, dayPassPkg, "Asia", "USD");
+    assert.deepEqual(offers.map((offer) => offer.validityDays), [1, 3, 5, 7, 10]);
+    assert.equal(offers[2].cost.amountMinor, 690);
+    assert.deepEqual(parseDayPassTopupId(offers[2].topupPlanId), { skuId: "191", priceId: "15794", days: 5 });
+    assert.equal(parseDayPassTopupId("99902-0-3-1-G"), null);
   });
 });

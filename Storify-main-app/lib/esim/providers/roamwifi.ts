@@ -196,6 +196,13 @@ export class RoamWifiAdapter implements EsimProviderAdapter {
     const add = (packageData: JsonObject, fallbackDisplay = "") => {
       const display = str(packageData.displayEn) || str(packageData.display) || fallbackDisplay || "RoamWifi";
       for (const pkg of packagesOf(packageData)) {
+        if (pkg.flowType !== undefined && int(pkg.flowType) === 1) continue; // not renewable
+        // A day-pass renews for days of the buyer's choosing (doc §2.12): one
+        // offer per usual day count, priced per day.
+        if ((int(pkg.supportDaypass) ?? 0) > 0) {
+          for (const offer of dayPassTopups(packageData, pkg, display, this.currency)) if (!plans.has(offer.topupPlanId)) plans.set(offer.topupPlanId, offer);
+          continue;
+        }
         const apiCode = str(pkg.apiCode) || str(pkg.apicode) || str(pkg.apiCpde);
         if (!apiCode || plans.has(apiCode)) continue;
         plans.set(apiCode, {
@@ -265,6 +272,22 @@ export class RoamWifiAdapter implements EsimProviderAdapter {
 
   async topup(input: TopupInput): Promise<TopupResult> {
     if (!input.esim.iccid) throw new ProviderError("not_found", "RoamWifi renews by ICCID");
+    const dayPass = parseDayPassTopupId(input.topupPlanId);
+    if (dayPass) {
+      const renewed = obj(
+        await this.callData("api_esim/renewCard", {
+          iccid: input.esim.iccid,
+          skuId: dayPass.skuId,
+          priceId: dayPass.priceId,
+          daypassDays: String(dayPass.days),
+          otherOrderId: externalId(input.idempotencyKey),
+          otherItemId: externalId(input.idempotencyKey),
+          backInfo: "1",
+          pdfLanguage: "en-US",
+        }),
+      );
+      return { status: "completed", providerTopupId: str(renewed.orderNum) || input.idempotencyKey, raw: renewed };
+    }
     const result = obj(
       await this.callData("api_esim/renewCardByApiCode", {
         iccid: input.esim.iccid,
@@ -771,10 +794,43 @@ export function mapSkuPlans(sku: JsonObject, packageData: JsonObject, currency: 
 }
 
 /**
- * A package answer's package list. The doc writes it `esimPackageDtoList` in
- * examples and `esimpackageDtoList` in its field table, so either is read.
+ * A package answer's package list: `esimPackageDtoList` in the catalogue, but
+ * `esimPackageVoList` in the ICCID renewal answers (seen live); the doc writes
+ * `esimpackageDtoList` too. Any of them is read.
  */
 export function packagesOf(packageData: JsonObject): JsonObject[] {
-  const key = Object.keys(packageData).find((name) => /^esimpackagedtolist$/i.test(name));
+  const key = Object.keys(packageData).find((name) => /^esimpackage(dto|vo)list$/i.test(name));
   return key ? objArray(packageData[key]) : [];
+}
+
+/** The day counts a day-pass renewal is offered for, within its minDay–maxDay. */
+export const DAY_PASS_TOPUP_DAYS = [1, 3, 5, 7, 10, 15, 30] as const;
+
+/**
+ * A day-pass renewal's offers: one per usual day count the package allows,
+ * at its price per day (`price` covers `days`, usually one). The offer id
+ * carries what §2.12 needs: `daypass:<skuId>:<priceId>:<days>`.
+ */
+export function dayPassTopups(packageData: JsonObject, pkg: JsonObject, display: string, currency: string): ProviderTopupPlan[] {
+  const skuId = str(packageData.skuid) || str(packageData.skuId);
+  const priceId = str(pkg.priceid) || str(pkg.priceId);
+  if (!skuId || !priceId) return [];
+  const minDays = Math.max(1, int(pkg.minDay) ?? 1);
+  const maxDays = Math.max(minDays, int(pkg.maxDay) ?? minDays);
+  const perDayMinor = cents(pkg.price) / Math.max(1, int(pkg.days) ?? 1);
+  const megabytes = Math.round((bytes(pkg.flows, str(pkg.unit) || "GB") ?? 0) / BYTES.MB);
+  const counts = [...new Set([minDays, ...DAY_PASS_TOPUP_DAYS.filter((days) => days >= minDays && days <= maxDays)])];
+  return counts.map((days) => ({
+    topupPlanId: `daypass:${skuId}:${priceId}:${days}`,
+    name: `${planName(display, pkg)} × ${days} ${days === 1 ? "day" : "days"}`,
+    megabytes,
+    validityDays: days,
+    cost: { currency, amountMinor: Math.round(perDayMinor * days) },
+    raw: { ...pkg, daypassDays: days },
+  }));
+}
+
+export function parseDayPassTopupId(id: string): { skuId: string; priceId: string; days: number } | null {
+  const match = /^daypass:([^:]+):([^:]+):(\d+)$/.exec(id);
+  return match ? { skuId: match[1], priceId: match[2], days: Number(match[3]) } : null;
 }
