@@ -73,13 +73,15 @@ export function PlanBrowser({ productId, destinationName, variants, countryCodes
   const { formatPrice } = useCurrency();
   const { addItem } = useCart();
   const router = useRouter();
-  // A single country's total-data plans first, when there are such and others (else it is no choice).
+  // A single country's total-data plans first.
   const [filters, setFilters] = useState<PlanFilters>(() => {
     let start: PlanFilters = {};
     const kinds = new Set(variants.map((variant) => dataKindOf(variant)));
     if (kinds.has("total") && kinds.size > 1) start = chooseFilter(variants, start, "kind", "total");
     const scopes = new Set(variants.map((variant) => variant.coverageScope ?? "local"));
-    if (scopes.has("local") && scopes.size > 1) start = chooseFilter(variants, start, "coverage", "local");
+    // Coverage always starts on one choice: the country alone where it has plans, else the only kind there is.
+    const scope = scopes.has("local") ? "local" : scopes.size === 1 ? [...scopes][0] : undefined;
+    if (scope) start = chooseFilter(variants, start, "coverage", scope);
     return start;
   });
   const [page, setPage] = useState(1);
