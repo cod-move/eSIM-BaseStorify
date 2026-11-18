@@ -1,7 +1,7 @@
 import "server-only";
 
 import { mongoose } from "@/lib/db";
-import { User } from "@/models";
+import { Coupon, User } from "@/models";
 import { EsimReferral, EsimReferralCommission } from "@/models/esim-referral.model";
 import { appBaseUrl } from "@/lib/app-url";
 import { ensureReferralCode, getReferrerSettings } from "@/lib/esim/referral/service";
@@ -28,6 +28,29 @@ export interface ReferralCentre {
   invited: Array<{ id: string; who: string; joinedAt: Date; rewards: number }>;
   rewards: Array<{ id: string; orderNumber: string; amount: number; currency: string; status: CommissionStatus; payableAt: Date; creditedAt: Date | null; createdAt: Date }>;
   totals: { paid: number; pending: number };
+  /** The welcome coupon this shopper got for joining with a friend's link (REF-06); null if none. */
+  welcomeCoupon: { code: string; type: "percentage" | "fixed"; value: number; minOrder: number; endsAt: Date | null; active: boolean } | null;
+}
+
+async function welcomeCouponOf(userId: string): Promise<ReferralCentre["welcomeCoupon"]> {
+  const joined = await EsimReferral.findOne({ referee: new mongoose.Types.ObjectId(userId), couponCode: { $ne: null } })
+    .select({ couponCode: 1 })
+    .lean<{ couponCode: string | null }>();
+  if (!joined?.couponCode) return null;
+  const coupon = await Coupon.findOne({ code: joined.couponCode })
+    .select({ code: 1, type: 1, value: 1, minOrderAmount: 1, endDate: 1, usedCount: 1, usageLimit: 1, status: 1 })
+    .lean<{ code: string; type: string; value: number; minOrderAmount?: number; endDate?: Date; usedCount?: number; usageLimit?: number; status?: string }>();
+  if (!coupon) return null;
+  const used = Boolean(coupon.usageLimit && (coupon.usedCount ?? 0) >= coupon.usageLimit);
+  const expired = coupon.endDate ? new Date(coupon.endDate).getTime() < Date.now() : false;
+  return {
+    code: coupon.code,
+    type: coupon.type === "fixed" ? "fixed" : "percentage",
+    value: Number(coupon.value) || 0,
+    minOrder: Number(coupon.minOrderAmount) || 0,
+    endsAt: coupon.endDate ?? null,
+    active: !used && !expired && coupon.status === "active",
+  };
 }
 
 export async function referralCentre(userId: string): Promise<ReferralCentre> {
@@ -35,9 +58,10 @@ export async function referralCentre(userId: string): Promise<ReferralCentre> {
   const settings = await getReferrerSettings(userId);
   const code = await ensureReferralCode(userId);
   const referrer = new mongoose.Types.ObjectId(userId);
-  const [referrals, commissions] = await Promise.all([
+  const [referrals, commissions, welcomeCoupon] = await Promise.all([
     EsimReferral.find({ referrer }).sort({ createdAt: -1 }).limit(200).lean(),
     EsimReferralCommission.find({ referrer }).sort({ createdAt: -1 }).limit(200).lean(),
+    welcomeCouponOf(userId),
   ]);
   const users = await User.find({ _id: { $in: referrals.map((referral) => referral.referee) } })
     .select({ email: 1 })
@@ -79,5 +103,6 @@ export async function referralCentre(userId: string): Promise<ReferralCentre> {
       createdAt: commission.createdAt,
     })),
     totals: { paid: sum("credited"), pending: sum("pending") },
+    welcomeCoupon,
   };
 }

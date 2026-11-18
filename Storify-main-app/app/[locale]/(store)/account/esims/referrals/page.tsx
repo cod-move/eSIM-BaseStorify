@@ -60,6 +60,32 @@ export default async function AccountReferralsPage({ params }: PageProps) {
         )}
       </div>
 
+      {centre.welcomeCoupon ? (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">{tr("esim.referral.welcomeTitle", "Your welcome coupon")}</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-1 text-sm">
+            <div className="font-mono text-lg font-bold">{centre.welcomeCoupon.code}</div>
+            <div>
+              {tr("esim.referral.welcomeOff", "{discount} off", {
+                discount: centre.welcomeCoupon.type === "percentage" ? `${centre.welcomeCoupon.value}%` : money(centre.welcomeCoupon.value),
+              })}
+              {centre.welcomeCoupon.minOrder > 0
+                ? ` · ${tr("esim.referral.welcomeMin", "orders from {amount}", { amount: money(centre.welcomeCoupon.minOrder) })}`
+                : ""}
+            </div>
+            <div className="text-xs text-muted-foreground">
+              {centre.welcomeCoupon.active
+                ? centre.welcomeCoupon.endsAt
+                  ? tr("esim.referral.welcomeEnds", "Enter it at checkout before {date}.", { date: date.format(centre.welcomeCoupon.endsAt) })
+                  : tr("esim.referral.welcomeUse", "Enter it at checkout.")
+                : tr("esim.referral.welcomeDone", "Used or expired.")}
+            </div>
+          </CardContent>
+        </Card>
+      ) : null}
+
       <Card>
         <CardHeader>
           <CardTitle className="text-base">{tr("esim.referral.share", "Share your link")}</CardTitle>

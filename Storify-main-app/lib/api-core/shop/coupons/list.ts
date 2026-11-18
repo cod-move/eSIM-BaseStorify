@@ -151,9 +151,15 @@ function toShopperCoupon(
 }
 
 /** The listed codes a shopper may see now: switched on and not ended. */
-function listedCoupons() {
+function listedCoupons(userId?: string) {
   return Coupon.find({
-    listed: true,
+    // [esim-patch] P79 plus the codes made for this shopper alone (a referral welcome coupon), not yet used up.
+    $or: [
+      { listed: true },
+      ...(userId
+        ? [{ restrictedToUserId: userId, $expr: { $or: [{ $not: ["$usageLimit"] }, { $lt: ["$usedCount", "$usageLimit"] }] } }]
+        : []),
+    ],
     status: CouponStatus.ACTIVE,
     endDate: { $gte: new Date() },
   })
@@ -180,7 +186,7 @@ async function readCouponList(ctx: {
   await connectDB();
   const identity = appCartIdentity(ctx.session, ctx.client);
   const [coupons, view, currency, copy] = await Promise.all([
-    listedCoupons(),
+    listedCoupons(ctx.session?.user.id),
     identity ? getCartView(identity, { forApp: true }) : null,
     getStoreCurrency(),
     getCouponCopy(ctx.locale),
