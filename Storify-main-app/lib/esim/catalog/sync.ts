@@ -10,6 +10,7 @@ import { sellsEsimPlans } from "@/lib/esim/providers/registry";
 import type { ProviderPlan, TopupRule } from "@/lib/esim/providers/types";
 import { destinationKey } from "@/lib/esim/catalog/destination-key";
 import { destinationMerges, recordAutoAliases } from "@/lib/esim/catalog/merge";
+import { applySyncedCosts } from "@/lib/esim/catalog/after-sync";
 
 /**
  * Pulls a supplier's whole catalogue into `EsimPlan` (CAT-03).
@@ -21,7 +22,9 @@ import { destinationMerges, recordAutoAliases } from "@/lib/esim/catalog/merge";
  *   lists; a scan that failed half-way retires nothing, because "not seen"
  *   would then mean "not reached".
  * - Platform fields (status, retail price, product link, KYC) are written only
- *   on insert and never touched again by a sync.
+ *   on insert and never touched again by the sync's writes; a plan whose cost
+ *   moved is then re-priced and its store product updated
+ *   (lib/esim/catalog/after-sync.ts).
  * - A plan is filed under its destination as lib/esim/catalog/destination-key.ts
  *   says (its country, or where an admin merged it); the supplier's own slug
  *   is kept as `supplierProductSlug`.
@@ -37,6 +40,12 @@ export interface SyncResult {
   created: number;
   updated: number;
   retired: number;
+  /** Plans re-priced because their cost moved (lib/esim/catalog/after-sync.ts). */
+  repriced?: number;
+  /** Destinations whose store product took the new prices. */
+  republished?: string[];
+  /** Why re-pricing after the sync failed; the sync itself still counts. */
+  repriceError?: string;
   error?: string;
 }
 
@@ -166,6 +175,19 @@ export async function syncProviderCatalog(provider: IEsimProvider): Promise<Sync
     await flush().catch(() => undefined);
     result.status = "failed";
     result.error = error instanceof Error ? error.message.slice(0, 500) : String(error).slice(0, 500);
+  }
+
+  // Costs written by this run (even one that stopped half-way) get their new
+  // price, and the store's products follow.
+  if (result.created + result.updated > 0) {
+    try {
+      const applied = await applySyncedCosts(provider.code);
+      result.repriced = applied.repriced;
+      result.republished = applied.republished;
+    } catch (error) {
+      result.repriceError = error instanceof Error ? error.message.slice(0, 500) : String(error).slice(0, 500);
+      console.error("[esim] re-pricing after the catalogue sync failed:", error);
+    }
   }
 
   const finishedAt = new Date();

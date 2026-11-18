@@ -1,6 +1,8 @@
 import "server-only";
 
 import { revalidateTag, unstable_cache } from "next/cache";
+import { shopperDataType } from "@/lib/esim/catalog/data-kind";
+import { unlimitedMinKbps } from "@/lib/esim/catalog/data-kind-setting";
 import { afterResponse } from "@/lib/after-response";
 import { mongoose, connectDB } from "@/lib/db";
 import { PRODUCT_STATUS } from "@/config/app.config";
@@ -83,6 +85,7 @@ const networksOfPlan = (plan: Pick<IEsimPlan, "coverage" | "supplierNetworks">) 
   plan.coverage.networks.length ? plan.coverage.networks : (plan.supplierNetworks?.list ?? []);
 
 async function readCatalog(): Promise<DestinationDetail[]> {
+  const minKbps = await unlimitedMinKbps();
   await connectDB();
   const links = await EsimProductLink.find({}).lean();
   if (!links.length) return [];
@@ -150,7 +153,7 @@ async function readCatalog(): Promise<DestinationDetail[]> {
         variantId: String(variant.variantId),
         name: variant.name,
         priceMinor: variant.priceMinor,
-        dataType: plan.data.type,
+        dataType: shopperDataType(plan.data.type, plan.fairUse, minKbps),
         megabytes: plan.data.megabytes,
         dataValue: cut === -1 ? variant.name : variant.name.slice(0, cut),
         days: variant.perDay ? null : plan.validityDays,
@@ -369,10 +372,11 @@ export async function productEsimFacts(productId: string) {
   return unstable_cache(
     async () => {
       await connectDB();
+      const minKbps = await unlimitedMinKbps();
       const link = await EsimProductLink.findOne({ product: new mongoose.Types.ObjectId(productId) }).select({ variants: 1 }).lean();
       if (!link) return null;
       const plans = await EsimPlan.find({ _id: { $in: link.variants.map((variant) => variant.candidates[0]).filter(Boolean) } })
-        .select({ coverage: 1, data: 1, speed: 1, tethering: 1, activation: 1, topup: 1, bundles: 1, extras: 1, supplierNetworks: 1, providerCode: 1 })
+        .select({ coverage: 1, data: 1, fairUse: 1, speed: 1, tethering: 1, activation: 1, topup: 1, bundles: 1, extras: 1, supplierNetworks: 1, providerCode: 1 })
         .lean<IEsimPlan[]>();
       return summarizeFacts(
         plans.map((plan) => ({
@@ -380,7 +384,7 @@ export async function productEsimFacts(productId: string) {
           countries: plan.coverage.countries,
           networks: networksOfPlan(plan),
           breakoutIp: plan.coverage.breakoutIp ?? [],
-          dataType: plan.data.type,
+          dataType: shopperDataType(plan.data.type, plan.fairUse, minKbps),
           speed: plan.speed ?? [],
           tethering: plan.tethering ?? null,
           billingStarts: plan.activation?.billingStarts ?? null,

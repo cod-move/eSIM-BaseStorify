@@ -166,6 +166,9 @@ export interface ProviderEsim extends EsimRef {
 
 export interface PurchaseInput {
   providerPlanId: string;
+  /** The stored plan's `sku` and supplier record, for a supplier that orders by more than the plan id (RoamWifi day-passes). */
+  sku?: string | null;
+  raw?: JsonObject | null;
   /** Only for duration-configurable plans. */
   durationDays: number | null;
   /** Stable per order line + unit; a retry with the same key must not buy twice. */

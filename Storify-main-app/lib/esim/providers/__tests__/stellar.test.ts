@@ -68,7 +68,7 @@ describe("Stellar plan mapping", () => {
     assert.deepEqual(plan.cost, { currency: "EUR", amountMinor: 982, billingUnit: "plan" });
     assert.deepEqual(plan.bundles, [{ type: "vpn", validityDays: 37 }]);
     assert.equal(plan.topup.mode, "stack");
-    assert.equal(plan.topup.stackTarget, "data");
+    assert.equal(plan.topup.stackTarget, "data_and_days");
     assert.equal(plan.topup.window, "before_expiry");
     assert.equal(plan.topup.coverage, "same_area");
     assert.equal(plan.available, true);
@@ -76,7 +76,7 @@ describe("Stellar plan mapping", () => {
 
   it("maps a day-priced unlimited plan", () => {
     const plan = mapPlan(RUSSIA_DAILY);
-    assert.equal(plan.data.type, "unlimited");
+    assert.equal(plan.data.type, "daily_throttled"); // a day-pass: 2GB/day, then 1 Mbps (shown as unlimited)
     assert.deepEqual(plan.duration, { configurable: true, defaultDays: 1, minDays: 1, maxDays: 365 });
     assert.deepEqual(plan.fairUse, { highSpeedGbPerDay: 2, reducedSpeedMbps: 1 });
     assert.deepEqual(plan.cost, { currency: "EUR", amountMinor: 97, billingUnit: "day" });
@@ -102,7 +102,12 @@ describe("Stellar plan mapping", () => {
   });
 
   it("reads the top-up wording", () => {
+    // Fixed-data plans: the top-up's data, and the days extended too.
+    assert.equal(topupRule({ supported: true, type: "Data Reloadable for same area within validitity" }, true).stackTarget, "data_and_days");
+    // Unlimited plans: days only.
+    assert.equal(topupRule({ supported: true, type: "Reloadable for extending validitity" }, true).stackTarget, "days");
     assert.equal(topupRule({ supported: true, type: "Days Reloadable for extending validitity" }, true).stackTarget, "days");
+    assert.equal(topupRule({ supported: true, type: "Reloadable" }, true).stackTarget, "data");
     assert.equal(topupRule({ supported: true, type: "Non-reloadable" }, true).mode, "none");
     assert.equal(topupRule({}, false).supported, false);
   });

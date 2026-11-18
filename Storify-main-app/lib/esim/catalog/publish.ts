@@ -24,6 +24,8 @@ import { ensureCategory } from "@/lib/esim/catalog/category";
 import { ensureTopupProduct } from "@/lib/esim/topup/product";
 import { ensureWalletProduct } from "@/lib/esim/wallet/product";
 import { coverImages, coverPath } from "@/lib/esim/catalog/cover";
+import { shopperDataType } from "@/lib/esim/catalog/data-kind";
+import { unlimitedMinKbps } from "@/lib/esim/catalog/data-kind-setting";
 
 /** The destination pages' cache tag (lib/esim/storefront/catalog.ts). */
 const STOREFRONT_TAG = "esim-storefront";
@@ -58,6 +60,7 @@ export interface PublishResult {
 const toUnits = (minor: number) => Math.round(minor) / 100;
 
 async function eligiblePlans(productSlugs?: string[]): Promise<VariantPlan[]> {
+  const minKbps = await unlimitedMinKbps();
   const providers = await EsimProvider.find({ status: "active" }).select({ code: 1, priority: 1 }).lean();
   const priority = new Map(providers.map((provider) => [provider.code, provider.priority]));
   const plans = await EsimPlan.find({
@@ -82,7 +85,7 @@ async function eligiblePlans(productSlugs?: string[]): Promise<VariantPlan[]> {
     providerPriority: priority.get(plan.providerCode) ?? 100,
     productSlug: plan.productSlug,
     destination: plan.destination,
-    dataType: plan.data.type,
+    dataType: shopperDataType(plan.data.type, plan.fairUse, minKbps),
     megabytes: plan.data.megabytes,
     dataLabel: plan.data.label,
     validityDays: plan.validityDays,

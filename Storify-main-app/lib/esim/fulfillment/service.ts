@@ -13,11 +13,12 @@ import { EsimProvider } from "@/models/esim-provider.model";
 import { adapterFor } from "@/lib/esim/provider-service";
 import { withProviderLog } from "@/lib/esim/provider-log";
 import { decide, idempotencyKey, type Outcome, HOLD_REFUND, refundStillOpen } from "@/lib/esim/fulfillment/policy";
-import { ProviderError, type ProviderEsim, type PurchaseResult } from "@/lib/esim/providers/types";
+import { ProviderError, type JsonObject, type ProviderEsim, type PurchaseResult } from "@/lib/esim/providers/types";
 import { lineActivationDate, lineDays } from "@/lib/esim/cart/line-attributes";
 import { supportsScheduledActivation } from "@/lib/esim/providers/registry";
 import type { PerDayPricing } from "@/lib/esim/catalog/variants";
-import { alertSupplierProblem, looksLikeBalanceProblem } from "@/lib/esim/alerts";
+import { alertSupplierOvercharge, alertSupplierProblem, looksLikeBalanceProblem } from "@/lib/esim/alerts";
+import { isOvercharge } from "@/lib/esim/pricing/price";
 import { currentRates } from "@/lib/esim/pricing/fx-service";
 import { purchaseCostMinor, unitSaleMinor, usdMinorOf } from "@/lib/esim/reports/snapshot";
 import type { EsimSaleSnapshot } from "@/models/esim-profile.model";
@@ -191,6 +192,20 @@ async function saleSnapshot(
   // What the supplier says it charged, else its list price for what was bought.
   const costCurrency = (charged?.currency || plan.cost.currency).toUpperCase();
   const costMinor = charged ? charged.amountMinor : purchaseCostMinor(plan.cost, durationDays);
+  // A charge above the list cost means the plan is priced from a stale cost.
+  if (charged && costCurrency === plan.cost.currency.toUpperCase()) {
+    const listMinor = purchaseCostMinor(plan.cost, durationDays);
+    if (isOvercharge(listMinor, charged.amountMinor)) {
+      void alertSupplierOvercharge({
+        providerCode: plan.providerCode,
+        providerPlanId: plan.providerPlanId,
+        planName: plan.name,
+        currency: costCurrency,
+        listMinor,
+        chargedMinor: charged.amountMinor,
+      });
+    }
+  }
   const rate = (await currentRates([costCurrency])).get(costCurrency);
   const usdPerUnit = rate?.usdPerUnit ?? (costCurrency === plan.cost.currency.toUpperCase() ? plan.pricing?.usdPerUnit : null) ?? null;
   return {
@@ -300,7 +315,8 @@ async function recordEsim(job: IEsimFulfillment, plan: IEsimPlan, result: Purcha
 
 async function processOne(job: IEsimFulfillment, owner: string): Promise<IEsimFulfillment["state"]> {
   const planId = job.candidates[job.candidateIndex];
-  const plan = await EsimPlan.findById(planId);
+  // With the supplier record: a RoamWifi day-pass is ordered by its sku and price id.
+  const plan = await EsimPlan.findById(planId).select("+raw");
   const provider = plan ? await EsimProvider.findOne({ code: plan.providerCode }).select("+secretCredentials") : null;
   const now = new Date();
 
@@ -347,6 +363,8 @@ async function processOne(job: IEsimFulfillment, owner: string): Promise<IEsimFu
             ? adapter.queryPurchase(pendingOrder, { activationDate })
             : adapter.purchase({
                 providerPlanId: plan.providerPlanId,
+                sku: plan.sku ?? null,
+                raw: (plan.raw ?? null) as JsonObject | null,
                 durationDays,
                 activationDate,
                 // A fresh key each round of a balance hold: a refused order may have used up the last one.

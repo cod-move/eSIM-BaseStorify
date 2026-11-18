@@ -172,7 +172,7 @@ export class EsimAccessAdapter implements EsimProviderAdapter {
   async listTopupPlans(ref: EsimRef): Promise<ProviderTopupPlan[]> {
     if (!ref.iccid) throw new ProviderError("not_found", "eSIM Access lists top-ups by ICCID");
     return (await this.packages({ type: "TOPUP", iccid: ref.iccid })).map((row) => ({
-      topupPlanId: str(row.packageCode),
+      topupPlanId: topupPlanIdOf(row),
       name: str(row.name),
       megabytes: Math.round((int(row.volume) ?? 0) / BYTES_PER_MB),
       validityDays: validityDays(row),
@@ -185,7 +185,7 @@ export class EsimAccessAdapter implements EsimProviderAdapter {
     const result = await this.call("/esim/topup", {
       esimTranNo: input.esim.providerEsimId ?? "",
       iccid: input.esim.iccid ?? "",
-      packageCode: input.topupPlanId,
+      ...topupOrderOf(input.topupPlanId),
       transactionId: transactionId(input.idempotencyKey),
     });
     return {
@@ -363,6 +363,22 @@ function coverageOf(row: JsonObject, names: Map<string, string>) {
   };
 }
 
+/**
+ * A top-up offer's id. One that extends an unlimited plan by days
+ * (supportTopUpType 3) carries its days: `<packageCode>|<days>`, sent back as
+ * `periodNum`; any other is just its packageCode.
+ */
+export function topupPlanIdOf(row: JsonObject): string {
+  const code = str(row.packageCode);
+  return int(row.supportTopUpType) === 3 ? `${code}|${Math.max(1, validityDays(row))}` : code;
+}
+
+/** The top-up request's package fields for a top-up offer id (topupPlanIdOf). */
+export function topupOrderOf(topupPlanId: string): { packageCode: string; periodNum?: string } {
+  const [packageCode, days] = topupPlanId.split("|");
+  return days ? { packageCode, periodNum: days } : { packageCode };
+}
+
 export function mapPlan(row: JsonObject, names: Map<string, string>): ProviderPlan {
   const id = str(row.packageCode);
   const coverage = coverageOf(row, names);
@@ -409,7 +425,9 @@ export function mapPlan(row: JsonObject, names: Map<string, string>): ProviderPl
           supported: true,
           type: "eSIM Access reload",
           mode: "stack",
-          stackTarget: "data_and_days",
+          // supportTopUpType 2: the top-up's data and days are added (as
+          // Stellar's); 3: an unlimited plan's days are extended (periodNum).
+          stackTarget: int(row.supportTopUpType) === 3 ? "days" : "data_and_days",
           window: "before_expiry",
           coverage: "same_area",
           profileRetentionDays: null,

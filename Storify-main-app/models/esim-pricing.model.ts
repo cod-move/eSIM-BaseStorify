@@ -52,6 +52,8 @@ export interface IEsimSettings extends mongoose.Document {
   rounding: RoundingMode;
   /** Re-price automatically when a currency moves more than this since pricing. */
   repriceThresholdPercent: number;
+  /** A day-pass slowed to at least this many kbps is shown as unlimited (lib/esim/catalog/data-kind.ts). */
+  unlimitedMinSpeedKbps: number;
   /** The storefront category eSIM products are filed under. */
   categoryId: mongoose.Types.ObjectId | null;
   /** The hidden store product top-ups are sold as (lib/esim/topup/product.ts). */
@@ -131,6 +133,7 @@ const EsimSettingsSchema = new Schema<IEsimSettings>(
     minMarginPercent: { type: Number, default: 15, min: 0, max: 500 },
     rounding: { type: String, enum: ["none", "99", "49_99"], default: "99" },
     repriceThresholdPercent: { type: Number, default: 2, min: 0, max: 50 },
+    unlimitedMinSpeedKbps: { type: Number, default: 512, min: 0, max: 100000 },
     categoryId: { type: Schema.Types.ObjectId, ref: "Category", default: null },
     topupProductId: { type: Schema.Types.ObjectId, ref: "Product", default: null },
     walletProductId: { type: Schema.Types.ObjectId, ref: "Product", default: null },

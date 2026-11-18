@@ -162,6 +162,7 @@ Requires MongoDB as a replica set (Storify's product writes run in transactions)
 ## Environment
 
 - `ESIM_ENCRYPTION_KEY` — 32+ random characters for supplier credentials; falls back to `MESSAGING_ENCRYPTION_KEY`. Changing it means entering the credentials again.
+- `ESIM_TELEGRAM_BOT_TOKEN`, `ESIM_TELEGRAM_WEBHOOK_SECRET` — the Telegram check-in bot (see below): the token from @BotFather, and a random string (A–Z a–z 0–9 _ -, up to 256) Telegram sends back with every update. Its own bot: a bot has one webhook, so it cannot be the chat inbox's bot.
 
 ## Commands
 
@@ -180,6 +181,16 @@ pnpm exec tsx --env-file-if-exists=.env --require ./scripts/lib/finance-cli.cjs 
 pnpm exec tsx --env-file-if-exists=.env --require ./scripts/lib/finance-cli.cjs scripts/esim-catalog.ts plans activate --product japan-esim
 pnpm exec tsx --env-file-if-exists=.env --require ./scripts/lib/finance-cli.cjs scripts/esim-catalog.ts publish --product japan-esim
 ```
+
+## Telegram check-in rewards
+
+Shoppers link Telegram to their account, send `/checkin` (or 签到) once a day in the store's group for a random amount of data, and exchange the data saved for an eSIM (`lib/esim/telegram`, `models/esim-telegram.model.ts`).
+
+1. Make a bot with @BotFather; put its token and a random secret in `.env` (above) and restart the site.
+2. Admin → eSIM → Telegram check-in → "Connect the bot": points its webhook at `/api/esim/telegram/webhook` and sets its command menu.
+3. Add the bot to the group, send `/chatid` there, paste the ID into the settings; set the amounts, the day's cap, the time zone and the eSIMs the data buys, and switch it on.
+
+Linking: "Link Telegram" on `/account/esims/rewards` (a one-time start link, 15 minutes), or `/bind email` in the bot and the 6-digit code mailed to the account (10 minutes, 5 tries, 3 codes an hour; the bot answers the same whether or not the email has an account). One Telegram account per store account. A check-in counts once a day per Telegram account and per store account (ledger key `checkin:<telegram id>:<day>`). Exchanging takes the data off in a transaction with its ledger row (keyed by the page's request id), then makes a paid order at no charge (`paymentMethod: esim_reward`) issued like any other; an order that cannot be made gives the data back. An eSIM that fails later is refunded as money (nothing) by the usual settlement: give the data back by hand under "Adjust a shopper's balance". With the bot's privacy mode on, a plain "签到" in a group never reaches it; `/checkin` always does.
 
 ## Adding a payment gateway
 

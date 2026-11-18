@@ -1,5 +1,5 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { ChevronLeft, ChevronRight, Gift, Phone, Plus, Smartphone, Wallet } from "lucide-react";
+import { ChevronLeft, ChevronRight, Gift, Phone, Plus, Send, Smartphone, Wallet } from "lucide-react";
 import Link from "@/components/language/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -12,6 +12,7 @@ import { storeCreditSummary } from "@/lib/store-credit/store-credit";
 import { formatStorePrice } from "@/lib/esim/topup/format";
 import { listCustomerNumbers } from "@/lib/esim/numbers/account";
 import { formatAmount } from "@/lib/esim/numbers/line";
+import { getTelegramSettings } from "@/models/esim-telegram.model";
 
 interface PageProps {
   params: Promise<{ locale: string }>;
@@ -33,6 +34,8 @@ export default async function AccountEsimsPage({ params, searchParams }: PagePro
     ? await Promise.all([pageCustomerEsims(session.user.id, wantedPage), storeCreditSummary(session.user.id), listCustomerNumbers(session.user.id)])
     : [{ items: [], page: 1, totalPages: 1, total: 0 }, [], []];
   const esims = esimPage.items;
+  // The check-in rewards card shows once the rewards are open.
+  const rewardsOpen = (await getTelegramSettings()).enabled;
   const pageHref = (page: number) => (page > 1 ? `/account/esims?page=${page}` : "/account/esims");
   const balance = balances.find((entry) => entry.currency === "USD")?.balance ?? 0;
   const date = new Intl.DateTimeFormat(locale, { dateStyle: "medium" });
@@ -83,6 +86,19 @@ export default async function AccountEsimsPage({ params, searchParams }: PagePro
           </CardContent>
         </Card>
       </Link>
+      {rewardsOpen ? (
+        <Link href="/account/esims/rewards" className="block">
+          <Card className="gap-0 py-0 transition-colors hover:bg-muted/40">
+            <CardContent className="flex items-center justify-between gap-4 p-4 text-sm">
+              <span className="flex items-center gap-3">
+                <Send className="h-5 w-5 shrink-0 text-primary" aria-hidden />
+                <span>{tr("esim.rewards.teaser", "Check in on Telegram every day for free data")}</span>
+              </span>
+              <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground rtl:rotate-180" />
+            </CardContent>
+          </Card>
+        </Link>
+      ) : null}
       <Link href="/account/esims/verification" className="block text-sm text-muted-foreground hover:text-foreground">
         {tr("esim.kyc.link", "Identity verification")} →
       </Link>

@@ -125,16 +125,21 @@ export class RoamWifiAdapter implements EsimProviderAdapter {
   }
 
   async purchase(input: PurchaseInput): Promise<PurchaseResult> {
+    const common = {
+      count: "1",
+      otherOrderId: externalId(input.idempotencyKey),
+      otherItemId: externalId(input.idempotencyKey),
+      backInfo: "1",
+      isSendEmail: "0",
+      pdfLanguage: "en-US",
+    };
+    // A day-pass is ordered for its days through addEsimOrder (API doc 2.5:
+    // skuId + priceId + daypassDays); the by-code order (2.24) has no days.
+    const dayPass = input.durationDays !== null ? dayPassOrder(input) : null;
     const order = obj(
-      await this.callData("api_esim/addEsimOrderByApiCode", {
-        apiCode: input.providerPlanId,
-        count: "1",
-        otherOrderId: externalId(input.idempotencyKey),
-        otherItemId: externalId(input.idempotencyKey),
-        backInfo: "1",
-        isSendEmail: "0",
-        pdfLanguage: "en-US",
-      }),
+      dayPass
+        ? await this.callData("api_esim/addEsimOrder", { ...dayPass, ...common })
+        : await this.callData("api_esim/addEsimOrderByApiCode", { apiCode: input.providerPlanId, ...common }),
     );
     const orderNum = str(order.orderNum);
     if (!orderNum) throw new ProviderError("invalid_response", "RoamWifi order returned no order number");
@@ -604,6 +609,41 @@ export function externalId(key: string): string {
   return `rw${createHash("sha256").update(key).digest("hex").slice(0, 29)}`;
 }
 
+/**
+ * The fair-use policy RoamWifi writes into a package's `premark`, e.g.
+ * "Data Allowance at Full Speed: 300MB/Day (Network speed will be reduced to
+ * 128kbps when data consumption exceeds 300MB)". Null when it says neither.
+ */
+export function fairUseOf(premark: string | null): { highSpeedGbPerDay: number | null; reducedSpeedMbps: number | null } | null {
+  if (!premark) return null;
+  const text = premark.replace(/<[^>]+>/g, " ");
+  const allowance = text.match(/full\s*speed\s*:?\s*([\d.]+)\s*(KB|MB|GB|TB)\s*\/\s*day/i);
+  const reduced = text.match(/reduced\s+to\s+([\d.]+)\s*(kbps|mbps|gbps)/i);
+  const gb = allowance ? Number(allowance[1]) * ({ KB: 1 / 1000 ** 2, MB: 1 / 1000, GB: 1, TB: 1000 } as const)[allowance[2].toUpperCase() as "KB" | "MB" | "GB" | "TB"] : null;
+  const mbps = reduced ? Number(reduced[1]) * ({ kbps: 1 / 1000, mbps: 1, gbps: 1000 } as const)[reduced[2].toLowerCase() as "kbps" | "mbps" | "gbps"] : null;
+  const highSpeedGbPerDay = gb !== null && Number.isFinite(gb) ? Math.round(gb * 1000) / 1000 : null;
+  const reducedSpeedMbps = mbps !== null && Number.isFinite(mbps) ? Math.round(mbps * 1000) / 1000 : null;
+  return highSpeedGbPerDay === null && reducedSpeedMbps === null ? null : { highSpeedGbPerDay, reducedSpeedMbps };
+}
+
+/**
+ * The fields that order a day-pass for the days bought (API doc 2.5): its
+ * sku and price id, from the stored plan, and `daypassDays`.
+ */
+export function dayPassOrder(input: Pick<PurchaseInput, "providerPlanId" | "durationDays" | "sku" | "raw">): { skuId: string; priceId: string; daypassDays: string } {
+  const days = input.durationDays;
+  if (days === null || !Number.isInteger(days) || days < 1) {
+    throw new ProviderError("rejected", `RoamWifi day-pass needs a whole number of days, got ${days}`);
+  }
+  const raw = input.raw ?? {};
+  const skuId = input.sku || str(obj(raw.sku).skuid);
+  const priceId = str(obj(raw.package).priceid);
+  if (!skuId || !priceId) {
+    throw new ProviderError("rejected", `RoamWifi day-pass ${input.providerPlanId} has no sku or price id to order with`);
+  }
+  return { skuId, priceId, daypassDays: String(days) };
+}
+
 export function mapSkuPlans(sku: JsonObject, packageData: JsonObject, currency: string): ProviderPlan[] {
   const display = str(packageData.displayEn) || str(packageData.display) || str(sku.display) || "RoamWifi";
   const countries = countriesOf(packageData);
@@ -616,6 +656,11 @@ export function mapSkuPlans(sku: JsonObject, packageData: JsonObject, currency: 
     const days = int(pkg.days) ?? 0;
     const megabytes = Math.round((bytes(pkg.flows, str(pkg.unit) || "GB") ?? 0) / BYTES.MB);
     const daypass = (int(pkg.supportDaypass) ?? 0) > 0;
+    // A day-pass is sold for the days the buyer picks, minDay to maxDay, at
+    // its price per day; RoamWifi needs the days on every day-pass order.
+    const minDays = Math.max(1, int(pkg.minDay) ?? 1);
+    const maxDays = Math.max(minDays, int(pkg.maxDay) ?? minDays);
+    const configurable = daypass;
     const networks = objArray(pkg.networkDtoList);
     const reloadable = int(pkg.flowType) === 0;
     return [{
@@ -641,13 +686,15 @@ export function mapSkuPlans(sku: JsonObject, packageData: JsonObject, currency: 
       data: {
         megabytes,
         label: megabytesLabel(megabytes),
-        // RoamWifi says only that a day-pass resets daily, not what happens
-        // past the daily allowance; "throttled" is the common case.
+        // A day-pass resets daily; past the daily allowance it slows down
+        // (the speed is in `premark`, read into fairUse below).
         type: daypass ? "daily_throttled" : "total",
       },
-      fairUse: null,
+      fairUse: fairUseOf(strOrNull(pkg.premark)),
       validityDays: days,
-      duration: { configurable: false, defaultDays: days, minDays: days, maxDays: days },
+      duration: configurable
+        ? { configurable: true, defaultDays: Math.min(Math.max(days, minDays), maxDays), minDays, maxDays }
+        : { configurable: false, defaultDays: days, minDays: days, maxDays: days },
       speed: [...new Set(networks.map((network) => str(network.type).toUpperCase()).filter(Boolean))],
       tethering: null,
       activation: { billingStarts: null, preInstallDays: null },
@@ -658,14 +705,18 @@ export function mapSkuPlans(sku: JsonObject, packageData: JsonObject, currency: 
             mode: "addon",
             stackTarget: null,
             window: "while_profile_exists",
-            coverage: "same_area",
+            // A renewal may be a package for any area, not only the card's own.
+            coverage: "any_area",
             profileRetentionDays: null,
           }
         : {
             supported: false, type: null, mode: "none", stackTarget: null, window: null,
             coverage: null, profileRetentionDays: null,
           },
-      cost: { currency, amountMinor: cents(pkg.price), billingUnit: "plan" },
+      // A configurable day-pass lists the price of its `days` (one, usually): per day.
+      cost: configurable
+        ? { currency, amountMinor: Math.round(cents(pkg.price) / Math.max(1, days)), billingUnit: "day" }
+        : { currency, amountMinor: cents(pkg.price), billingUnit: "plan" },
       bundles: [],
       extras: { voiceMinutes: 0, smsCount: 0, refundable: false, phoneNumberIncluded: false },
       additionalInfo: strOrNull(pkg.premark)?.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim() ?? null,

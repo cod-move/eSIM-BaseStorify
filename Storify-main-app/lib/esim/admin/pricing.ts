@@ -42,6 +42,7 @@ export interface SettingsInput {
   minMarginPercent: number;
   rounding: RoundingMode;
   repriceThresholdPercent: number;
+  unlimitedMinSpeedKbps: number;
 }
 
 export async function getPricingConfig() {
@@ -62,6 +63,7 @@ export async function getPricingConfig() {
       minMarginPercent: settings.minMarginPercent,
       rounding: settings.rounding,
       repriceThresholdPercent: settings.repriceThresholdPercent,
+      unlimitedMinSpeedKbps: settings.unlimitedMinSpeedKbps,
     } satisfies SettingsInput,
     rules: rules.map(
       (rule): AdminRule => ({
@@ -161,7 +163,7 @@ export async function savePricing(change: PricingChange) {
   let after: Record<string, unknown> = {};
   if (change.settings) {
     const settings = await getEsimSettings();
-    before = { ...before, settings: { fxBufferPercent: settings.fxBufferPercent, defaultMarkupPercent: settings.defaultMarkupPercent, minMarginPercent: settings.minMarginPercent, rounding: settings.rounding, repriceThresholdPercent: settings.repriceThresholdPercent } };
+    before = { ...before, settings: { fxBufferPercent: settings.fxBufferPercent, defaultMarkupPercent: settings.defaultMarkupPercent, minMarginPercent: settings.minMarginPercent, rounding: settings.rounding, repriceThresholdPercent: settings.repriceThresholdPercent, unlimitedMinSpeedKbps: settings.unlimitedMinSpeedKbps } };
     settings.set(change.settings);
     await settings.save();
     after = { ...after, settings: change.settings };

@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { parseEcbDaily, usdPerUnit } from "../fx";
-import { matchRule, priceOf, roundUp, type PricingRule, type PricingSettings } from "../price";
+import { costChangedSincePriced, isOvercharge, matchRule, priceOf, roundUp, type PricingRule, type PricingSettings } from "../price";
 
 const ECB_SAMPLE = `<?xml version="1.0" encoding="UTF-8"?>
 <gesmes:Envelope xmlns:gesmes="http://www.gesmes.org/xml/2002-08-01" xmlns="http://www.ecb.int/vocabulary/2002-08-01/eurofxref">
@@ -106,5 +106,33 @@ describe("price", () => {
 
   it("refuses a missing exchange rate", () => {
     assert.throws(() => priceOf({ ...japan, usdPerUnit: 0 }, [], settings), /exchange rate/);
+  });
+});
+
+describe("cost change since pricing", () => {
+  const pricing = { costUsdMinor: 383, usdPerUnit: 1.176, costMinor: 310 };
+
+  it("compares with the cost the price was computed from", () => {
+    assert.equal(costChangedSincePriced({ cost: { amountMinor: 310 }, pricing }, 5), false);
+    assert.equal(costChangedSincePriced({ cost: { amountMinor: 356 }, pricing }, 5), true);
+  });
+
+  it("re-converts an older price that kept no cost, within a cent", () => {
+    const old = { costUsdMinor: 383, usdPerUnit: 1.176 };
+    assert.equal(costChangedSincePriced({ cost: { amountMinor: 310 }, pricing: old }, 5), false);
+    assert.equal(costChangedSincePriced({ cost: { amountMinor: 356 }, pricing: old }, 5), true);
+  });
+
+  it("treats a plan never priced as changed", () => {
+    assert.equal(costChangedSincePriced({ cost: { amountMinor: 310 }, pricing: null }, 5), true);
+  });
+});
+
+describe("overcharge", () => {
+  it("flags a charge more than the threshold above the list cost", () => {
+    assert.equal(isOvercharge(310, 356), true);
+    assert.equal(isOvercharge(310, 325), false);
+    assert.equal(isOvercharge(310, 310), false);
+    assert.equal(isOvercharge(0, 100), false);
   });
 });

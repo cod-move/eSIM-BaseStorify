@@ -83,6 +83,32 @@ export function roundUp(minor: number, mode: RoundingMode): number {
   return cents;
 }
 
+/**
+ * Whether the supplier's cost moved since the plan was priced. A price from
+ * before `pricing.costMinor` was kept is checked by converting the cost again
+ * at the rate it was priced at, give or take a cent of rounding.
+ */
+export function costChangedSincePriced(
+  plan: {
+    cost: { amountMinor: number };
+    pricing: { costUsdMinor: number; usdPerUnit: number; costMinor?: number } | null;
+  },
+  fxBufferPercent: number,
+): boolean {
+  if (!plan.pricing) return true;
+  if (typeof plan.pricing.costMinor === "number") return plan.pricing.costMinor !== plan.cost.amountMinor;
+  const costUsd = Math.round(plan.cost.amountMinor * plan.pricing.usdPerUnit * (1 + fxBufferPercent / 100));
+  return Math.abs(costUsd - plan.pricing.costUsdMinor) > 1;
+}
+
+/** A supplier charging this much above the plan's list cost raises an alert. */
+export const OVERCHARGE_ALERT_PERCENT = 5;
+
+/** Whether `chargedMinor` is more than OVERCHARGE_ALERT_PERCENT above `listMinor`. */
+export function isOvercharge(listMinor: number, chargedMinor: number): boolean {
+  return listMinor > 0 && chargedMinor > listMinor * (1 + OVERCHARGE_ALERT_PERCENT / 100);
+}
+
 export function priceOf(
   plan: PricedPlanInput,
   rules: PricingRule[],

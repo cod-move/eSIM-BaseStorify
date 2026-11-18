@@ -372,13 +372,33 @@ function money(value: JsonValue | undefined): number | null {
   return Math.round(amount * 100);
 }
 
+/**
+ * A day-priced or "Unlimited" plan with a daily high-speed allowance is a
+ * day-pass that slows down past it (`daily_throttled`); the store shows it as
+ * unlimited when the slowed speed is high enough (lib/esim/catalog/data-kind.ts).
+ * Without a daily allowance it is truly unlimited.
+ */
 function dataType(row: JsonObject, configurable: boolean): DataType {
   const type = str(obj(row.data).type).toLowerCase();
-  if (configurable || type.includes("unlimited")) return "unlimited";
-  return "total";
+  if (!configurable && !type.includes("unlimited")) return "total";
+  return num(obj(row.fair_use).high_speed_data_gb_per_day) !== null ? "daily_throttled" : "unlimited";
 }
 
 /** Stellar's topup.type wording → the platform's top-up rule. */
+/**
+ * What a Stellar top-up adds, by its `topup.type` wording:
+ * - "Data Reloadable for same area within validitity" (fixed-data plans):
+ *   its data, and the plan's days are extended too;
+ * - "Reloadable for extending validitity" / "Days Reloadable …" (unlimited
+ *   plans): days only;
+ * - any other wording: data.
+ */
+export function stellarStackTarget(text: string): "data" | "days" | "data_and_days" {
+  if (text.startsWith("data")) return "data_and_days";
+  if (text.includes("extending") || text.includes("days")) return "days";
+  return "data";
+}
+
 export function topupRule(topup: JsonObject, rechargeable: boolean | null): TopupRule {
   const type = strOrNull(topup.type);
   const text = (type ?? "").toLowerCase();
@@ -393,7 +413,7 @@ export function topupRule(topup: JsonObject, rechargeable: boolean | null): Topu
     supported: true,
     type,
     mode: "stack",
-    stackTarget: text.includes("days") ? "days" : "data",
+    stackTarget: stellarStackTarget(text),
     window: "before_expiry",
     coverage: text.includes("same area") ? "same_area" : null,
     profileRetentionDays: null,

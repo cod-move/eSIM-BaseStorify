@@ -6,7 +6,7 @@ import { EsimNumberPackage, type IEsimNumberPackage } from "@/models/esim-number
 import { EsimPricingRule, getEsimSettings } from "@/models/esim-pricing.model";
 import { EsimProvider } from "@/models/esim-provider.model";
 import { currentRates } from "@/lib/esim/pricing/fx-service";
-import { priceOf, type PricingRule, type PricingSettings } from "@/lib/esim/pricing/price";
+import { costChangedSincePriced, priceOf, type PricingRule, type PricingSettings } from "@/lib/esim/pricing/price";
 import { packagePricingInput } from "@/lib/esim/numbers/packages";
 
 /**
@@ -28,7 +28,10 @@ export interface RepriceResult {
   changed: number;
   /** Currencies with no stored rate; their plans keep their old price. */
   missingRates: string[];
+  /** Destinations (`productSlug`) with a plan whose retail price changed. */
+  changedSlugs: string[];
 }
+
 
 /** The settings and enabled rules prices are computed from — re-pricing and the admin preview alike. */
 export async function loadPricing(): Promise<{ settings: PricingSettings; rules: PricingRule[]; repriceThresholdPercent: number }> {
@@ -54,7 +57,14 @@ export async function loadPricing(): Promise<{ settings: PricingSettings; rules:
   };
 }
 
-export async function repricePlans(options: { onlyIfFxMoved?: boolean; providerCode?: string } = {}) {
+export async function repricePlans(
+  options: {
+    onlyIfFxMoved?: boolean;
+    /** Only plans whose supplier cost moved since they were priced (after a catalogue sync). */
+    onlyIfCostChanged?: boolean;
+    providerCode?: string;
+  } = {},
+) {
   const { settings, rules, repriceThresholdPercent } = await loadPricing();
 
   const filter = {
@@ -63,8 +73,9 @@ export async function repricePlans(options: { onlyIfFxMoved?: boolean; providerC
   };
   const rates = await currentRates(await EsimPlan.distinct("cost.currency", filter));
   const threshold = repriceThresholdPercent / 100;
-  const result: RepriceResult = { considered: 0, changed: 0, missingRates: [] };
+  const result: RepriceResult = { considered: 0, changed: 0, missingRates: [], changedSlugs: [] };
   const missing = new Set<string>();
+  const changedSlugs = new Set<string>();
   const pricedAt = new Date();
   let writes: AnyBulkWriteOperation<IEsimPlan>[] = [];
 
@@ -76,7 +87,7 @@ export async function repricePlans(options: { onlyIfFxMoved?: boolean; providerC
   };
 
   const cursor = EsimPlan.find(filter)
-    .select({ providerCode: 1, coverage: 1, cost: 1, retailPriceMinor: 1, pricing: 1 })
+    .select({ providerCode: 1, productSlug: 1, coverage: 1, cost: 1, retailPriceMinor: 1, pricing: 1 })
     .lean<IEsimPlan[]>()
     .cursor();
   for await (const plan of cursor) {
@@ -90,6 +101,7 @@ export async function repricePlans(options: { onlyIfFxMoved?: boolean; providerC
       const moved = Math.abs(rate.usdPerUnit - plan.pricing.usdPerUnit) / plan.pricing.usdPerUnit;
       if (moved <= threshold) continue;
     }
+    if (options.onlyIfCostChanged && !costChangedSincePriced(plan, settings.fxBufferPercent)) continue;
     const price = priceOf(
       {
         providerCode: plan.providerCode,
@@ -105,10 +117,12 @@ export async function repricePlans(options: { onlyIfFxMoved?: boolean; providerC
     if (
       plan.retailPriceMinor === price.retailMinor &&
       plan.pricing?.usdPerUnit === rate.usdPerUnit &&
+      plan.pricing?.costMinor === plan.cost.amountMinor &&
       String(plan.pricing?.ruleId ?? null) === String(ruleId)
     ) {
       continue;
     }
+    if (plan.retailPriceMinor !== price.retailMinor && plan.productSlug) changedSlugs.add(plan.productSlug);
     writes.push({
       updateOne: {
         filter: { _id: plan._id, retailPriceManual: { $ne: true } },
@@ -117,6 +131,7 @@ export async function repricePlans(options: { onlyIfFxMoved?: boolean; providerC
             retailPriceMinor: price.retailMinor,
             pricing: {
               costUsdMinor: price.costUsdMinor,
+              costMinor: plan.cost.amountMinor,
               usdPerUnit: rate.usdPerUnit,
               ruleId,
               markupPercent: price.markupPercent,
@@ -131,7 +146,10 @@ export async function repricePlans(options: { onlyIfFxMoved?: boolean; providerC
   }
   await flush();
   result.missingRates = [...missing];
-  if (!options.providerCode || options.providerCode === "topconnect") {
+  result.changedSlugs = [...changedSlugs];
+  // Number packages have no catalogue sync of their own here: a cost-change
+  // pass after an eSIM sync leaves them alone.
+  if (!options.onlyIfCostChanged && (!options.providerCode || options.providerCode === "topconnect")) {
     const packages = await repriceNumberPackages({ onlyIfFxMoved: options.onlyIfFxMoved }, { settings, rules, repriceThresholdPercent });
     result.considered += packages.considered;
     result.changed += packages.changed;
@@ -160,7 +178,7 @@ export async function repriceNumberPackages(
   const cardCurrency = (provider?.settlementCurrency ?? "EUR").toUpperCase();
   const rates = await currentRates([cardCurrency, ...rows.map((row) => row.cost.currency)]);
   const cardRate = rates.get(cardCurrency);
-  const result: RepriceResult = { considered: rows.length, changed: 0, missingRates: [] };
+  const result: RepriceResult = { considered: rows.length, changed: 0, missingRates: [], changedSlugs: [] };
   const missing = new Set<string>();
   const pricedAt = new Date();
   const writes: AnyBulkWriteOperation<IEsimNumberPackage>[] = [];

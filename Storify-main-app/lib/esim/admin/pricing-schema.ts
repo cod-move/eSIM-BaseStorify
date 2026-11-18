@@ -20,6 +20,7 @@ export const PricingChangeSchema = z.object({
       minMarginPercent: z.number().min(0).max(500),
       rounding: z.enum(["none", "99", "49_99"]),
       repriceThresholdPercent: z.number().min(0).max(100),
+      unlimitedMinSpeedKbps: z.number().int().min(0).max(100000),
     })
     .partial()
     .optional(),

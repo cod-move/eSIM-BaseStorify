@@ -16,6 +16,7 @@ export const ESIM_ADMIN_NAV = {
     { label: "admin.sidebar.esimReports", href: "/admin/esim/reports", icon: "BarChart3" },
     { label: "admin.sidebar.esimCampaigns", href: "/admin/esim/campaigns", icon: "Megaphone" },
     { label: "admin.sidebar.esimReferrals", href: "/admin/esim/referrals", icon: "Gift" },
+    { label: "admin.sidebar.esimTelegram", href: "/admin/esim/telegram", icon: "Gift" },
     { label: "admin.sidebar.esimKyc", href: "/admin/esim/kyc", icon: "UserCog" },
     { label: "admin.sidebar.esimDestinations", href: "/admin/esim/destinations", icon: "MapPin" },
     { label: "admin.sidebar.esimPlans", href: "/admin/esim/plans", icon: "ListTree" },

@@ -64,6 +64,8 @@ export interface IEsimPlan extends mongoose.Document {
   retailPriceManual: boolean;
   pricing: {
     costUsdMinor: number;
+    /** The supplier cost (its own currency) this price was computed from; absent on prices from before it was kept. */
+    costMinor?: number;
     usdPerUnit: number;
     ruleId: mongoose.Types.ObjectId | null;
     markupPercent: number;
@@ -181,6 +183,7 @@ const EsimPlanSchema = new Schema<IEsimPlan>(
       type: new Schema(
         {
           costUsdMinor: { type: Number, required: true },
+          costMinor: { type: Number },
           usdPerUnit: { type: Number, required: true },
           ruleId: { type: Schema.Types.ObjectId, ref: "EsimPricingRule", default: null },
           markupPercent: { type: Number, required: true },

@@ -171,6 +171,11 @@ export function EsimPricingAdmin({ config, fx, providers, canManage }: Props) {
             {settingsField("minMarginPercent", t("admin.esim.minMargin", "Minimum margin %"), t("admin.esim.minMarginHint", "Of the selling price; protects against a low markup."))}
             {settingsField("fxBufferPercent", t("admin.esim.fxBuffer", "Exchange-rate buffer %"), t("admin.esim.fxBufferHint", "Added to the converted cost against rate swings."))}
             {settingsField("repriceThresholdPercent", t("admin.esim.threshold", "Re-price when a rate moves more than %"))}
+            {settingsField(
+              "unlimitedMinSpeedKbps",
+              t("admin.esim.unlimitedMinSpeed", "Show day-passes as unlimited from (kbps)"),
+              t("admin.esim.unlimitedMinSpeedHint", "A plan slowed after its daily allowance to at least this speed is shown as unlimited. Products follow at their next publish."),
+            )}
             <div className="space-y-1.5">
               <Label htmlFor="setting-rounding">{t("admin.esim.rounding", "Rounding")}</Label>
               <NativeSelect

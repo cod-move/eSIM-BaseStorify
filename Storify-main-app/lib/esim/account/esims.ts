@@ -12,6 +12,8 @@ import { displayOf, planTitle, type Display } from "@/lib/esim/account/display";
 import { ProviderError, type ProviderEsim, type ProviderUsage } from "@/lib/esim/providers/types";
 import { shownBundles } from "@/lib/esim/providers/registry";
 import { fillMissingIccid } from "@/lib/esim/account/iccid-backfill";
+import { shopperDataType } from "@/lib/esim/catalog/data-kind";
+import { unlimitedMinKbps } from "@/lib/esim/catalog/data-kind-setting";
 
 /**
  * A shopper's own eSIMs (USR-01..06): listing, one eSIM, refreshing its usage
@@ -100,9 +102,13 @@ function view(profile: IEsimProfile, plan: IEsimPlan | undefined): EsimView {
 
 async function plansFor(profiles: IEsimProfile[]) {
   const plans = await EsimPlan.find({ _id: { $in: profiles.map((profile) => profile.plan) } })
-    .select({ name: 1, destination: 1, emoji: 1, data: 1, validityDays: 1, topup: 1 })
+    .select({ name: 1, destination: 1, emoji: 1, data: 1, fairUse: 1, validityDays: 1, topup: 1 })
     .lean<IEsimPlan[]>();
-  return new Map(plans.map((plan) => [String(plan._id), plan]));
+  // Shown as the store sells it: a day-pass that stays fast enough is unlimited.
+  const minKbps = await unlimitedMinKbps();
+  return new Map(
+    plans.map((plan) => [String(plan._id), { ...plan, data: { ...plan.data, type: shopperDataType(plan.data.type, plan.fairUse, minKbps) } } as IEsimPlan]),
+  );
 }
 
 export async function listCustomerEsims(userId: string): Promise<EsimView[]> {

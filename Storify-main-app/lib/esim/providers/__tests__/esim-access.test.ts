@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { EsimAccessAdapter, mapPlan, mapProfile } from "../esim-access";
+import { EsimAccessAdapter, mapPlan, mapProfile, topupOrderOf, topupPlanIdOf } from "../esim-access";
 import type { JsonObject } from "../types";
 import { fakeFetch } from "./helpers";
 
@@ -58,6 +58,18 @@ describe("eSIM Access plan mapping", () => {
     const slow = mapPlan({ ...JAPAN_3GB, dataType: 2, fupPolicy: "512 Kbps" }, names);
     assert.deepEqual(slow.fairUse, { highSpeedGbPerDay: 3, reducedSpeedMbps: 0.512 });
     assert.equal(mapPlan(JAPAN_3GB, names).fairUse, null);
+  });
+
+  it("reads supportTopUpType: 2 adds data and days, 3 extends days by periodNum", () => {
+    assert.equal(mapPlan({ ...JAPAN_3GB, supportTopUpType: 1 }, names).topup.supported, false);
+    assert.equal(mapPlan({ ...JAPAN_3GB, supportTopUpType: 2 }, names).topup.stackTarget, "data_and_days");
+    assert.equal(mapPlan({ ...JAPAN_3GB, supportTopUpType: 3 }, names).topup.stackTarget, "days");
+  });
+
+  it("sends a days top-up with periodNum", () => {
+    assert.equal(topupPlanIdOf({ packageCode: "TOPUP_JC172", supportTopUpType: 2 }), "TOPUP_JC172");
+    assert.deepEqual(topupOrderOf("TOPUP_JC172"), { packageCode: "TOPUP_JC172" });
+    assert.deepEqual(topupOrderOf("TOPUP_D1|5"), { packageCode: "TOPUP_D1", periodNum: "5" });
   });
 
   it("sells _Daily packages as fixed one-day plans", () => {

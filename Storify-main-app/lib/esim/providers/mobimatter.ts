@@ -417,9 +417,10 @@ export function mapProduct(product: JsonObject): ProviderPlan | null {
     speed: [...new Set(speeds)],
     tethering: null,
     activation: { billingStarts: billingStartsOf(details.ACTIVATION_POLICY), preInstallDays: preInstallDays(details) },
-    // Add-ons are bought into the same product family as a package of their own.
+    // Add-ons are bought into the same product family as a package of their
+    // own, at any time while the eSIM profile is still on the phone.
     topup: truthy(details.TOPUP)
-      ? { supported: true, type: "MobiMatter add-on", mode: "addon", stackTarget: null, window: "before_expiry", coverage: "same_area", profileRetentionDays: null }
+      ? { supported: true, type: "MobiMatter add-on", mode: "addon", stackTarget: null, window: "while_profile_exists", coverage: "same_area", profileRetentionDays: null }
       : { supported: false, type: null, mode: "none", stackTarget: null, window: null, coverage: null, profileRetentionDays: null },
     cost: { currency: currencyOf(product.currencyCode, "USD"), amountMinor: cents(product.wholesalePrice ?? product.retailPrice), billingUnit: "plan" },
     bundles: [],

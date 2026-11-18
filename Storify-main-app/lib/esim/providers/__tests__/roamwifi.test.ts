@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { describe, it } from "node:test";
 import { countryCodeFromName } from "../countries";
-import { RoamWifiAdapter, externalId, mapEsimDetail, mapSkuPlans, sign } from "../roamwifi";
+import { RoamWifiAdapter, dayPassOrder, externalId, fairUseOf, mapEsimDetail, mapSkuPlans, sign } from "../roamwifi";
 import { fakeFetch } from "./helpers";
 
 describe("RoamWifi external ids", () => {
@@ -171,5 +171,54 @@ describe("RoamWifi renewals and card detail (doc v2.13)", () => {
     assert.equal(detail([pkg(1, { flows: 5 }), pkg(0)]).totalBytes, 1024 ** 3, "a cancelled package adds no data");
     assert.equal(detail([pkg(0, { beginDate: null, endDate: null })], "Delete").lifecycleStatus, "not_installed");
     assert.equal(detail([pkg(0, { beginDate: null, endDate: null })], "ACTIVE").lifecycleStatus, "installed");
+  });
+});
+
+describe("RoamWifi fair use", () => {
+  it("reads the daily full-speed allowance and the reduced speed from premark", () => {
+    const premark =
+      "Data Allowance at Full Speed: 300MB/Day (Network speed will be reduced to 128kbps when data consumption exceeds 300MB).<br>\nPlan type: Data only<br>\nAPN: mobile.three.com.hk";
+    assert.deepEqual(fairUseOf(premark), { highSpeedGbPerDay: 0.3, reducedSpeedMbps: 0.128 });
+    assert.deepEqual(fairUseOf("Data Allowance at Full Speed: 2GB/Day. Speed reduced to 1Mbps after."), {
+      highSpeedGbPerDay: 2,
+      reducedSpeedMbps: 1,
+    });
+  });
+
+  it("is null when premark says neither", () => {
+    assert.equal(fairUseOf("Plan type: Data only"), null);
+    assert.equal(fairUseOf(null), null);
+  });
+});
+
+describe("RoamWifi day-pass", () => {
+  const sku = { skuid: 155, display: "China", countryCode: "156" };
+  const dayPass = {
+    flows: 300, days: 1, unit: "MB", price: 0.32, flowType: 0, showName: "300MB DayPass",
+    premark: "Data Allowance at Full Speed: 300MB/Day (Network speed will be reduced to 128kbps when data consumption exceeds 300MB).",
+    networkDtoList: [{ type: "5G", operator: "China Unicom", nameen: "China", countryCode: 156 }],
+    supportDaypass: 1, minDay: 1, maxDay: 30, apiCode: "156-0-?-300-M-D",
+  };
+
+  it("is sold for 1 to maxDay days, priced per day", () => {
+    const [plan] = mapSkuPlans(sku, { esimPackageDtoList: [dayPass] }, "USD");
+    assert.deepEqual(plan.duration, { configurable: true, defaultDays: 1, minDays: 1, maxDays: 30 });
+    assert.deepEqual(plan.cost, { currency: "USD", amountMinor: 32, billingUnit: "day" });
+    assert.equal(plan.data.type, "daily_throttled");
+    assert.deepEqual(plan.fairUse, { highSpeedGbPerDay: 0.3, reducedSpeedMbps: 0.128 });
+  });
+
+  it("stays a fixed plan when not a day-pass", () => {
+    const [plan] = mapSkuPlans(sku, { esimPackageDtoList: [{ ...dayPass, supportDaypass: 0, apiCode: "156-0-1-300-M-D" }] }, "USD");
+    assert.equal(plan.duration.configurable, false);
+    assert.equal(plan.cost.billingUnit, "plan");
+  });
+
+  it("orders a day-pass by sku, price id and days (API doc 2.5)", () => {
+    const raw = { sku, package: { ...dayPass, priceid: 15794 } };
+    assert.deepEqual(dayPassOrder({ providerPlanId: dayPass.apiCode, durationDays: 5, sku: "155", raw }), { skuId: "155", priceId: "15794", daypassDays: "5" });
+    assert.deepEqual(dayPassOrder({ providerPlanId: dayPass.apiCode, durationDays: 3, sku: null, raw }), { skuId: "155", priceId: "15794", daypassDays: "3" });
+    assert.throws(() => dayPassOrder({ providerPlanId: dayPass.apiCode, durationDays: 0, sku: "155", raw }));
+    assert.throws(() => dayPassOrder({ providerPlanId: dayPass.apiCode, durationDays: 5, sku: "155", raw: { package: {} } }));
   });
 });
