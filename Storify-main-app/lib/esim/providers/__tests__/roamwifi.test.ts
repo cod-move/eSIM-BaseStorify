@@ -250,3 +250,19 @@ describe("RoamWifi day-pass renewals", () => {
     assert.equal(parseDayPassTopupId("99902-0-3-1-G"), null);
   });
 });
+
+describe("RoamWifi renewal of the eSIM's own plan", () => {
+  const login = { "POST /api_order/login": () => ({ body: { Code: 1, data: { token: "tok" } } }) };
+  const pkg = (apiCode: string) => ({ apiCode, flows: 1, unit: "GB", days: 3, price: 2.66, flowType: 0 });
+  it("adds the own SKU's packages when the ICCID list leaves them out, keyed by SKU", async () => {
+    const { fetch } = fakeFetch({
+      ...login,
+      "POST /api_esim/getIccidSupportPackageInfo": () => ({ body: { code: "0", data: [{ skuid: 156, displayEn: "China", esimPackageVoList: [pkg("156-0-3-1-G")] }] } }),
+      "POST /api_esim/getESIMDetail": () => ({ body: { code: 1, status: "Success", data: { esimInfo: { iccid: "x" }, esimPackets: [{ skuId: 243, packageList: [] }] } } }),
+      "POST /api_esim/getICCIDSkuSupportPackageInfo": () => ({ body: { code: "0", data: { displayEn: "Asia 20", esimPackageVoList: [pkg("99902-0-3-1-G")] } } }),
+    });
+    const adapter = new RoamWifiAdapter({ phoneNumber: `+852${Date.now()}9`, password: "pw", fetch });
+    const plans = await adapter.listTopupPlans({ providerEsimId: "EP1", simId: null, iccid: "8948010000000000001" });
+    assert.deepEqual(plans.map((plan) => [plan.topupPlanId, plan.area?.key]), [["156-0-3-1-G", "156"], ["99902-0-3-1-G", "243"]]);
+  });
+});

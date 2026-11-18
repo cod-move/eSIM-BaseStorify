@@ -217,11 +217,12 @@
       "search": "Search, e.g. 5GB, 7 days, Europe",
       "searchLabel": "Search top-ups",
       "searchNone": "No top-up matches your search.",
-      "tabOwn": "This region",
-      "tabOther": "Other regions",
+      "tabOwn": "Renew this plan",
+      "tabOther": "Buy for another region",
       "noneHere": "No top-ups here. Try the other tab.",
       "days": "Days",
-      "dayCount": "{count} days"
+      "dayCount": "{count} days",
+      "autoActivate": "It starts by itself when the eSIM connects in its area. With several plans for the same area, the one ending soonest is used first."
     },
     "wallet": {
       "title": "Nguzozi",

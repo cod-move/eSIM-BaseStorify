@@ -1,19 +1,23 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { inOwnArea } from "@/lib/esim/topup/area";
+import { renewsOwnPlan } from "@/lib/esim/topup/area";
 
-describe("top-up area", () => {
-  const asia = ["CN", "HK", "TH", "SG"];
-  it("counts a top-up for countries within the plan's as its own area", () => {
-    assert.equal(inOwnArea({ name: "China", countryCodes: ["CN"] }, asia), true);
-    assert.equal(inOwnArea({ name: "Asia 4", countryCodes: ["HK", "TH"] }, asia), true);
+describe("renewing the own plan or buying another area's", () => {
+  const asia = { sku: "243", countries: ["CN", "HK", "TH", "SG"], destination: "Asia (19 countries)" };
+  it("goes by the supplier's id against the plan's sku where both are known", () => {
+    assert.equal(renewsOwnPlan({ name: "Asia 20", countryCodes: ["CN", "HK", "TH", "SG"], key: "243" }, asia), true);
+    assert.equal(renewsOwnPlan({ name: "China", countryCodes: ["CN"], key: "156" }, asia), false);
   });
-  it("puts one reaching outside the plan's countries under other areas", () => {
-    assert.equal(inOwnArea({ name: "Afghanistan", countryCodes: ["AF"] }, asia), false);
-    assert.equal(inOwnArea({ name: "China + Japan", countryCodes: ["CN", "JP"] }, asia), false);
+  it("else by exactly the same countries: a country within the plan is still another area", () => {
+    const noSku = { ...asia, sku: null };
+    assert.equal(renewsOwnPlan({ name: "Asia", countryCodes: ["SG", "TH", "HK", "CN"] }, noSku), true);
+    assert.equal(renewsOwnPlan({ name: "China", countryCodes: ["CN"] }, noSku), false);
   });
-  it("takes a top-up that does not say where it works as the own area", () => {
-    assert.equal(inOwnArea(null, asia), true);
-    assert.equal(inOwnArea({ name: "?", countryCodes: [] }, asia), true);
+  it("else by a region name equal to the plan's destination", () => {
+    assert.equal(renewsOwnPlan({ name: "Europe", countryCodes: [] }, { countries: ["FR"], destination: "Europe" }), true);
+    assert.equal(renewsOwnPlan({ name: "Asia", countryCodes: [] }, { countries: ["FR"], destination: "Europe" }), false);
+  });
+  it("counts a top-up that does not say where it works as a renewal", () => {
+    assert.equal(renewsOwnPlan(null, asia), true);
   });
 });

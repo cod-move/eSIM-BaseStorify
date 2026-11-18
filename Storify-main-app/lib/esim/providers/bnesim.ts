@@ -187,12 +187,17 @@ export class BnesimAdapter implements EsimProviderAdapter {
   async listTopupPlans(ref: EsimRef): Promise<ProviderTopupPlan[]> {
     const detail = simcardOf(await this.detail(iccidOf(ref), true));
     const licenseCli = str(detail.license_cli);
+    // A recharge may be for any area: each offer says where, from the
+    // product's coverage (its region names need BNESIM's area list).
+    const index = areaIndex(await this.areas().catch(() => []));
     const seen = new Set<string>();
     return objArray(detail.products).flatMap((product) => {
       const id = str(product.id);
       if (!id || seen.has(id)) return [];
       seen.add(id);
       return [{
+        // Its key is the product: the same product as the eSIM's plan renews that plan.
+        area: { ...topupArea(product, index), key: id },
         topupPlanId: licenseCli ? `${id}|${licenseCli}` : id,
         name: str(product.name) || id,
         megabytes: Math.round(num(product.volume) ?? 0),
@@ -454,7 +459,7 @@ interface AreaIndex {
   regions: Map<string, string>;
 }
 
-function areaIndex(areas: JsonObject[]): AreaIndex {
+export function areaIndex(areas: JsonObject[]): AreaIndex {
   const index: AreaIndex = { countryByName: new Map(), regions: new Map() };
   for (const area of areas) {
     const code = str(area.country_iso2);
@@ -534,4 +539,16 @@ export function mapProduct(product: JsonObject, index: AreaIndex, currency: stri
     providerUpdatedAt: null,
     raw: product,
   };
+}
+
+/** Where a recharge product works: its countries, named like its plan's destination. */
+export function topupArea(product: JsonObject, index: AreaIndex): { name: string; countryCodes: string[] } {
+  const coverage = coverageOf(product, index);
+  const regionText = `${str(product.region_names)} ${coverage.regions.join(" ")}`.toLowerCase();
+  const name = /global|world/.test(regionText)
+    ? "Global"
+    : coverage.countries.length === 1 && !coverage.regions.length
+      ? countryNameFromCode(coverage.countries[0])
+      : coverage.regions[0] || str(product.region_names) || "";
+  return { name, countryCodes: coverage.countries };
 }

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { BnesimAdapter, mapProduct, parseOrderId } from "../bnesim";
+import { BnesimAdapter, mapProduct, parseOrderId, areaIndex, topupArea } from "../bnesim";
 import { fakeFetch, type SentRequest } from "./helpers";
 
 const AREAS = {
@@ -285,5 +285,16 @@ describe("BNESIM errors", () => {
       () => bnesim.topup({ esim: { providerEsimId: null, simId: null, iccid: "1" }, topupPlanId: "X|CLI", idempotencyKey: "k" }),
       (error: Error & { code?: string }) => error.code === "rejected" && /Insufficient balance/.test(error.message),
     );
+  });
+});
+
+describe("BNESIM recharge area", () => {
+  const index = areaIndex([{ country_name: "China", country_iso2: "CN" }, { country_name: "France", country_iso2: "FR" }, { country_name: "Europe" }]);
+  it("names a one-country recharge by its country", () => {
+    assert.deepEqual(topupArea({ product_coverage: [{ country_iso2: "CN" }] }, index), { name: "China", countryCodes: ["CN"] });
+  });
+  it("names a region recharge by its region, with the countries it lists", () => {
+    assert.deepEqual(topupArea({ region_names: "Europe" }, index), { name: "Europe", countryCodes: [] });
+    assert.equal(topupArea({ region_names: "Global" }, index).name, "Global");
   });
 });

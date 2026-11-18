@@ -217,11 +217,12 @@
       "search": "検索（例：5GB、7日、ヨーロッパ）",
       "searchLabel": "チャージを検索",
       "searchNone": "検索に合うチャージはありません。",
-      "tabOwn": "This region",
-      "tabOther": "Other regions",
+      "tabOwn": "Renew this plan",
+      "tabOther": "Buy for another region",
       "noneHere": "No top-ups here. Try the other tab.",
       "days": "Days",
-      "dayCount": "{count} days"
+      "dayCount": "{count} days",
+      "autoActivate": "It starts by itself when the eSIM connects in its area. With several plans for the same area, the one ending soonest is used first."
     },
     "wallet": {
       "title": "残高",

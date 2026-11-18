@@ -196,7 +196,7 @@ export class RoamWifiAdapter implements EsimProviderAdapter {
     const add = (packageData: JsonObject, fallbackDisplay = "") => {
       const display = str(packageData.displayEn) || str(packageData.display) || fallbackDisplay || "RoamWifi";
       // A renewal may be for any area: each offer says which.
-      const area = { name: display, countryCodes: countriesOf(packageData).map((country) => country.code) };
+      const area = { name: display, countryCodes: countriesOf(packageData).map((country) => country.code), key: str(packageData.skuid) || str(packageData.skuId) || null };
       for (const pkg of packagesOf(packageData)) {
         if (pkg.flowType !== undefined && int(pkg.flowType) === 1) continue; // not renewable
         // A day-pass renews for days of the buyer's choosing (doc §2.12): one
@@ -241,7 +241,21 @@ export class RoamWifiAdapter implements EsimProviderAdapter {
     const directEntries = Array.isArray(direct) ? objArray(direct) : [obj(direct)];
     for (const entry of directEntries) add(entry);
     steps.push(`getIccidSupportPackageInfo: ${direct === null ? "no data" : `${packagesIn(directEntries)} packages, fields ${Object.keys(directEntries[0] ?? {}).join(",") || (Array.isArray(direct) ? "[]" : typeof direct)}`}`);
-    if (plans.size) return [...plans.values()];
+    if (plans.size) {
+      // That list may leave out the eSIM's own SKU (an Asia card got China's and
+      // others'): its renewals, "this plan again", are asked for by SKU (§2.19).
+      // Best effort: the list already has offers, so a failure here costs only the renewals.
+      try {
+        const own = await this.orderSkuId(ref);
+        if (own && ![...plans.values()].some((plan) => plan.area?.key === own)) {
+          const packageData = await this.callData("api_esim/getICCIDSkuSupportPackageInfo", { iccid, skuId: own });
+          if (packageData) add({ skuid: own, ...obj(packageData) });
+        }
+      } catch {
+        // keep what the ICCID list gave
+      }
+      return [...plans.values()];
+    }
 
     let skus = (await optional(() => this.callList("api_esim/getICCIDSupportSkuInfo", { iccid }))) ?? [];
     steps.push(`getICCIDSupportSkuInfo: ${skus.length} SKUs`);

@@ -63,7 +63,7 @@ export function EsimTopupPicker({ esimId, offers }: { esimId: string; offers: To
   const router = useRouter();
   const { addItem } = useCart();
   const { formatPrice } = useCurrency();
-  // A plan that tops up any area: its own area's top-ups first, the others on a tab of their own.
+  // A plan that tops up any area: renewing this same plan first, plans for other areas on a tab of their own.
   const hasOther = offers.some((offer) => offer.sameArea === false);
   const hasOwn = offers.some((offer) => offer.sameArea !== false);
   const [tab, setTab] = useState<"own" | "other">(hasOwn ? "own" : "other");
@@ -138,7 +138,7 @@ export function EsimTopupPicker({ esimId, offers }: { esimId: string; offers: To
               }}
               className={`rounded-md px-3 py-1.5 ${tab === key ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
             >
-              {key === "own" ? t("esim.topup.tabOwn", "This region") : t("esim.topup.tabOther", "Other regions")}
+              {key === "own" ? t("esim.topup.tabOwn", "Renew this plan") : t("esim.topup.tabOther", "Buy for another region")}
             </button>
           ))}
         </div>
@@ -176,7 +176,10 @@ export function EsimTopupPicker({ esimId, offers }: { esimId: string; offers: To
               className={`cursor-pointer rounded-lg border p-4 text-start transition-colors ${active ? "border-primary bg-primary/5 ring-1 ring-primary" : "hover:bg-muted/50"}`}
             >
               {/* The package's own name: where it works, for a supplier that tops up other regions. */}
-              <div className="line-clamp-2 text-sm font-medium">{card.name}</div>
+              <div className="line-clamp-2 text-sm font-medium">
+                {card.area && !card.name.toLowerCase().includes(card.area.toLowerCase()) ? `${card.area} · ` : ""}
+                {card.name}
+              </div>
               <div className="mt-1 flex items-baseline justify-between gap-3">
                 <span className="text-lg font-semibold">{offer.megabytes ? dataLabel(offer.megabytes) : null}</span>
                 <span className="font-semibold">{formatPrice(offer.priceMinor / 100)}</span>

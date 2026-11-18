@@ -199,7 +199,7 @@
       "buy": "Continue to checkout",
       "quoteFailed": "Could not start the top-up",
       "stack": "The top-up adds to your current plan: more data, and for some plans more days.",
-      "addon": "The top-up is a package of its own: its data and days start alongside your current plan.",
+      "addon": "The top-up is a plan of its own: its data and days count separately from your current plan.",
       "supplierDown": "We could not load the top-ups for this eSIM right now. Please try again in a few minutes.",
       "none": "There are no top-ups for this eSIM at the moment.",
       "note": "Nothing new to install: the top-up goes onto this eSIM. Pay with your balance or any payment method at checkout.",
@@ -221,11 +221,12 @@
       "search": "Search, e.g. 5GB, 7 days, Europe",
       "searchLabel": "Search top-ups",
       "searchNone": "No top-up matches your search.",
-      "tabOwn": "This region",
-      "tabOther": "Other regions",
+      "tabOwn": "Renew this plan",
+      "tabOther": "Buy for another region",
       "noneHere": "No top-ups here. Try the other tab.",
       "days": "Days",
-      "dayCount": "{count} days"
+      "dayCount": "{count} days",
+      "autoActivate": "It starts by itself when the eSIM connects in its area. With several plans for the same area, the one ending soonest is used first."
     },
     "wallet": {
       "title": "Balance",

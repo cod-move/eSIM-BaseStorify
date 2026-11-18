@@ -15,7 +15,7 @@ import { ProviderError, type Money, type ProviderTopupPlan } from "@/lib/esim/pr
 import { topupEligibility, type Eligibility } from "@/lib/esim/topup/eligibility";
 import { findTopupProduct, type TopupProductRef } from "@/lib/esim/topup/product";
 import { topupLineLabel } from "@/lib/esim/topup/label";
-import { inOwnArea } from "@/lib/esim/topup/area";
+import { renewsOwnPlan } from "@/lib/esim/topup/area";
 
 /**
  * What a shopper can top up an eSIM with (TOP-01/02), and the quote a chosen
@@ -38,7 +38,7 @@ export interface TopupOffer {
   priceMinor: number;
   /** Where it works, when the eSIM can be topped up for other areas too. */
   area: string | null;
-  /** For the eSIM's own area (always, unless it tops up any area). */
+  /** Renews the eSIM's own plan (always, unless it tops up any area); else a plan for another area. */
   sameArea: boolean;
   /** Offers sharing it are one package for different day counts. */
   dayGroup: string | null;
@@ -161,7 +161,7 @@ export async function topupOffers(userId: string, esimId: string): Promise<Topup
       validityDays: plan.validityDays,
       priceMinor: prices[index],
       area: anyArea ? (plan.area?.name ?? null) : null,
-      sameArea: !anyArea || inOwnArea(plan.area, planCountries),
+      sameArea: !anyArea || renewsOwnPlan(plan.area, { sku: found.plan.sku, providerPlanId: found.plan.providerPlanId, countries: planCountries, destination: found.plan.destination }),
       dayGroup: plan.dayGroup ?? null,
     }))
     .filter((offer): offer is TopupOffer => offer.priceMinor !== null && offer.priceMinor > 0)

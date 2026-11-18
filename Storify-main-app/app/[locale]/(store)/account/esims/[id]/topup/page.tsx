@@ -35,7 +35,7 @@ export default async function AccountEsimTopupPage({ params }: PageProps) {
   const left = esim.usage && esim.usage.totalBytes > 0 ? formatBytes(esim.usage.remainingBytes) : null;
   const howItAdds =
     result.mode === "addon"
-      ? tr("esim.topup.addon", "The top-up is a package of its own: its data and days start alongside your current plan.")
+      ? tr("esim.topup.addon", "The top-up is a plan of its own: its data and days count separately from your current plan.")
       : tr("esim.topup.stack", "The top-up adds to your current plan: more data, and for some plans more days.");
 
   return (
@@ -68,7 +68,17 @@ export default async function AccountEsimTopupPage({ params }: PageProps) {
             <p className="text-sm">{tr("esim.topup.none", "There are no top-ups for this eSIM at the moment.")}</p>
           ) : (
             <>
-              <p className="text-sm text-muted-foreground">{howItAdds}</p>
+              <div className="space-y-1 text-sm text-muted-foreground">
+                <p>{howItAdds}</p>
+                {result.mode === "addon" ? (
+                  <p>
+                    {tr(
+                      "esim.topup.autoActivate",
+                      "It starts by itself when the eSIM connects in its area. With several plans for the same area, the one ending soonest is used first.",
+                    )}
+                  </p>
+                ) : null}
+              </div>
               <EsimTopupPicker esimId={esim.id} offers={result.offers} />
             </>
           )}
