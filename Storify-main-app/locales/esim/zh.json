@@ -1845,7 +1845,21 @@
       "pending": "处理中",
       "telegramNoActivity": "还没有签到记录。",
       "telegramGroupLink": "群链接（展示给用户）",
-      "telegramGroupLinkHelp": "用户绑定账号后机器人会立即发送这个链接，签到奖励页也会显示。"
+      "telegramGroupLinkHelp": "用户绑定账号后机器人会立即发送这个链接，签到奖励页也会显示。",
+      "telegramUnlinkTitle": "解除这个 Telegram 绑定？",
+      "telegramUnlinkBody": "{email} 需要重新绑定后签到才会计入。已攒的流量保留。",
+      "telegramUnlinked": "已解除绑定",
+      "telegramLinkedList": "已绑定账号",
+      "telegramSearch": "邮箱、@用户名或 Telegram ID",
+      "search": "搜索",
+      "telegramLinkedVia": "绑定方式",
+      "telegramCheckins": "签到次数",
+      "telegramBalance": "持有流量",
+      "telegramViaWebsite": "网站",
+      "telegramViaEmail": "邮箱验证码",
+      "telegramUnlink": "解除绑定",
+      "telegramNoMatch": "没有匹配的绑定账号。",
+      "telegramNoLinks": "还没有人绑定 Telegram。"
     },
     "sidebar": {
       "esim": "eSIM",

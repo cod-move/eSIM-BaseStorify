@@ -1845,7 +1845,21 @@
       "pending": "pending",
       "telegramNoActivity": "No check-ins yet.",
       "telegramGroupLink": "Group link (shown to shoppers)",
-      "telegramGroupLinkHelp": "The bot sends it right after a shopper links their account, and the rewards page shows it."
+      "telegramGroupLinkHelp": "The bot sends it right after a shopper links their account, and the rewards page shows it.",
+      "telegramUnlinkTitle": "Unlink this Telegram account?",
+      "telegramUnlinkBody": "{email} will need to link again before check-ins count. The data saved stays.",
+      "telegramUnlinked": "Unlinked",
+      "telegramLinkedList": "Linked accounts",
+      "telegramSearch": "Email, @username or Telegram ID",
+      "search": "Search",
+      "telegramLinkedVia": "Linked",
+      "telegramCheckins": "Check-ins",
+      "telegramBalance": "Data held",
+      "telegramViaWebsite": "website",
+      "telegramViaEmail": "email code",
+      "telegramUnlink": "Unlink",
+      "telegramNoMatch": "No linked account matches.",
+      "telegramNoLinks": "No one has linked Telegram yet."
     },
     "sidebar": {
       "esim": "eSIM",

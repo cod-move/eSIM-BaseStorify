@@ -1845,7 +1845,21 @@
       "pending": "處理中",
       "telegramNoActivity": "還沒有簽到記錄。",
       "telegramGroupLink": "群組連結（顯示給用戶）",
-      "telegramGroupLinkHelp": "用戶綁定帳號後機器人會立即傳送這個連結，簽到獎勵頁也會顯示。"
+      "telegramGroupLinkHelp": "用戶綁定帳號後機器人會立即傳送這個連結，簽到獎勵頁也會顯示。",
+      "telegramUnlinkTitle": "解除這個 Telegram 綁定？",
+      "telegramUnlinkBody": "{email} 需要重新綁定後簽到才會計入。已攢的流量保留。",
+      "telegramUnlinked": "已解除綁定",
+      "telegramLinkedList": "已綁定帳號",
+      "telegramSearch": "電郵、@用戶名或 Telegram ID",
+      "search": "搜尋",
+      "telegramLinkedVia": "綁定方式",
+      "telegramCheckins": "簽到次數",
+      "telegramBalance": "持有流量",
+      "telegramViaWebsite": "網站",
+      "telegramViaEmail": "電郵驗證碼",
+      "telegramUnlink": "解除綁定",
+      "telegramNoMatch": "沒有符合的綁定帳號。",
+      "telegramNoLinks": "還沒有人綁定 Telegram。"
     },
     "sidebar": {
       "esim": "eSIM",

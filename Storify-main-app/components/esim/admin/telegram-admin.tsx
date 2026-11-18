@@ -17,13 +17,16 @@ import { useRouter } from "@/hooks/use-locale-navigation";
 import { useFallbackTranslator } from "@/hooks/use-fallback-translator";
 import { apiClient } from "@/lib/api/client";
 import { formatMb } from "@/lib/esim/telegram/format";
-import type { AdminRewardRow, TelegramSettingsView } from "@/lib/esim/telegram/service";
+import type { AdminLinkRow, AdminRewardRow, TelegramSettingsView } from "@/lib/esim/telegram/service";
+import { TelegramLinksAdmin, TelegramName } from "@/components/esim/admin/telegram-links-admin";
 
 interface Props {
   settings: TelegramSettingsView;
   variants: Array<{ productId: string; variantId: string; name: string; priceMinor: number }>;
   stats: { day: string; todayCheckins: number; todayMb: number; linkedAccounts: number; balanceMb: number; earnedMb: number; spentMb: number };
   entries: AdminRewardRow[];
+  links: { rows: AdminLinkRow[]; page: number; totalPages: number; total: number };
+  search: string;
   canManage: boolean;
 }
 
@@ -69,7 +72,7 @@ const errorText = (error: unknown) => (error instanceof Error ? error.message : 
  * cap, which eSIMs the saved data buys and for how much, a hand adjustment of
  * a shopper's balance, and the latest ledger rows.
  */
-export function EsimTelegramAdmin({ settings, variants, stats, entries, canManage }: Props) {
+export function EsimTelegramAdmin({ settings, variants, stats, entries, links, search, canManage }: Props) {
   const t = useFallbackTranslator(useTranslations());
   const router = useRouter();
   const [draft, setDraft] = useState<Draft>(() => draftOf(settings));
@@ -366,6 +369,8 @@ export function EsimTelegramAdmin({ settings, variants, stats, entries, canManag
         </Card>
       ) : null}
 
+      <TelegramLinksAdmin links={links} search={search} canManage={canManage} />
+
       <Card>
         <CardHeader>
           <CardTitle className="text-base">{t("admin.esim.telegramLedger", "Latest activity")}</CardTitle>
@@ -385,7 +390,14 @@ export function EsimTelegramAdmin({ settings, variants, stats, entries, canManag
                 entries.map((row) => (
                   <TableRow key={row.id}>
                     <TableCell className="whitespace-nowrap text-xs">{new Date(row.createdAt).toLocaleString()}</TableCell>
-                    <TableCell className="text-xs">{row.email ?? "—"}</TableCell>
+                    <TableCell className="text-xs">
+                      {row.email ?? "—"}
+                      {row.telegram ? (
+                        <div>
+                          <TelegramName who={row.telegram} />
+                        </div>
+                      ) : null}
+                    </TableCell>
                     <TableCell className="text-xs">
                       {kindLabel[row.kind]}
                       {row.itemName ? ` · ${row.itemName}` : ""}

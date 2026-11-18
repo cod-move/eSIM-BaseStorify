@@ -304,6 +304,13 @@ export async function checkIn(sender: TelegramSender, chatId: string, now = new 
   if (!linked) return { status: "not_linked" };
   const user = linked.user;
   const day = dayKey(now, settings.timezone);
+  // Keeps the admin's view current: a shopper may change their @username or name in Telegram.
+  if (linked.username !== sender.username || linked.firstName !== sender.firstName || linked.languageCode !== sender.languageCode) {
+    await EsimTelegramLink.updateOne(
+      { _id: linked._id },
+      { $set: { username: sender.username, firstName: sender.firstName, languageCode: sender.languageCode } },
+    ).catch(console.error);
+  }
   const rolled = rollMb(settings.minMb, settings.maxMb);
 
   // The rows the transaction updates exist first: an upsert inside it could clash with a concurrent insert.
@@ -440,21 +447,93 @@ export async function adjustRewardBalance(input: { email: string; mb: number; no
   return { ok: true as const, balanceMb: done };
 }
 
-export interface AdminRewardRow extends RewardEntryView {
-  email: string | null;
+/** A shopper's Telegram account as the admin sees it. */
+export interface TelegramIdentity {
+  telegramUserId: string;
+  username: string | null;
+  firstName: string | null;
 }
 
-/** The latest ledger rows, newest first, with each shopper's email; `kind` narrows them. */
+export interface AdminRewardRow extends RewardEntryView {
+  email: string | null;
+  /** The Telegram account linked now (not necessarily the one a past check-in came from). */
+  telegram: TelegramIdentity | null;
+}
+
+/** The latest ledger rows, newest first, with each shopper's email and Telegram account; `kind` narrows them. */
 export async function adminRewardEntries(options: { kind?: IEsimRewardEntry["kind"]; limit?: number } = {}): Promise<AdminRewardRow[]> {
   const rows = await EsimRewardEntry.find(options.kind ? { kind: options.kind } : {})
     .sort({ createdAt: -1 })
     .limit(options.limit ?? 50)
     .lean<IEsimRewardEntry[]>();
-  const users = await User.find({ _id: { $in: [...new Set(rows.map((row) => String(row.user)))] } })
-    .select({ email: 1 })
-    .lean<Array<{ _id: unknown; email?: string }>>();
+  const ids = [...new Set(rows.map((row) => String(row.user)))].map(oid);
+  const [users, links] = await Promise.all([
+    User.find({ _id: { $in: ids } }).select({ email: 1 }).lean<Array<{ _id: unknown; email?: string }>>(),
+    EsimTelegramLink.find({ user: { $in: ids } }).lean(),
+  ]);
   const emailOf = new Map(users.map((user) => [String(user._id), user.email ?? null]));
-  return rows.map((row) => ({ ...entryView(row), email: emailOf.get(String(row.user)) ?? null }));
+  const telegramOf = new Map(
+    links.map((entry) => [String(entry.user), { telegramUserId: entry.telegramUserId, username: entry.username, firstName: entry.firstName }]),
+  );
+  return rows.map((row) => ({ ...entryView(row), email: emailOf.get(String(row.user)) ?? null, telegram: telegramOf.get(String(row.user)) ?? null }));
+}
+
+export interface AdminLinkRow extends TelegramIdentity {
+  userId: string;
+  email: string | null;
+  via: "website" | "email";
+  linkedAt: string;
+  checkins: number;
+  balanceMb: number;
+  lastCheckinDay: string | null;
+}
+
+const LINKS_PER_PAGE = 30;
+const escapeRegex = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+/**
+ * The linked accounts, newest first, a page at a time. `search` matches the
+ * email, the @username (with or without @), the name or the Telegram ID.
+ */
+export async function adminTelegramLinks(options: { search?: string; page?: number } = {}) {
+  const term = options.search?.trim().replace(/^@/, "") ?? "";
+  const filter: Record<string, unknown> = {};
+  if (term) {
+    const pattern = new RegExp(escapeRegex(term), "i");
+    const byEmail = await User.find({ email: pattern }).select({ _id: 1 }).limit(200).lean<Array<{ _id: mongoose.Types.ObjectId }>>();
+    filter.$or = [{ username: pattern }, { firstName: pattern }, { telegramUserId: term }, { user: { $in: byEmail.map((user) => user._id) } }];
+  }
+  const total = await EsimTelegramLink.countDocuments(filter);
+  const totalPages = Math.max(1, Math.ceil(total / LINKS_PER_PAGE));
+  const page = Math.min(Math.max(1, Math.floor(options.page ?? 1) || 1), totalPages);
+  const links = await EsimTelegramLink.find(filter)
+    .sort({ createdAt: -1 })
+    .skip((page - 1) * LINKS_PER_PAGE)
+    .limit(LINKS_PER_PAGE)
+    .lean();
+  const ids = links.map((entry) => entry.user);
+  const [users, accounts] = await Promise.all([
+    User.find({ _id: { $in: ids } }).select({ email: 1 }).lean<Array<{ _id: unknown; email?: string }>>(),
+    EsimRewardAccount.find({ user: { $in: ids } }).lean(),
+  ]);
+  const emailOf = new Map(users.map((user) => [String(user._id), user.email ?? null]));
+  const accountOf = new Map(accounts.map((account) => [String(account.user), account]));
+  const rows: AdminLinkRow[] = links.map((entry) => {
+    const account = accountOf.get(String(entry.user));
+    return {
+      userId: String(entry.user),
+      email: emailOf.get(String(entry.user)) ?? null,
+      telegramUserId: entry.telegramUserId,
+      username: entry.username,
+      firstName: entry.firstName,
+      via: entry.via,
+      linkedAt: entry.createdAt.toISOString(),
+      checkins: account?.checkins ?? 0,
+      balanceMb: account?.balanceMb ?? 0,
+      lastCheckinDay: account?.lastCheckinDay ?? null,
+    };
+  });
+  return { rows, page, totalPages, total };
 }
 
 /** Today's and all-time totals for the admin page. */
