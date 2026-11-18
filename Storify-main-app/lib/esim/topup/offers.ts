@@ -15,6 +15,7 @@ import { ProviderError, type Money, type ProviderTopupPlan } from "@/lib/esim/pr
 import { topupEligibility, type Eligibility } from "@/lib/esim/topup/eligibility";
 import { findTopupProduct, type TopupProductRef } from "@/lib/esim/topup/product";
 import { topupLineLabel } from "@/lib/esim/topup/label";
+import { inOwnArea } from "@/lib/esim/topup/area";
 
 /**
  * What a shopper can top up an eSIM with (TOP-01/02), and the quote a chosen
@@ -35,6 +36,12 @@ export interface TopupOffer {
   megabytes: number;
   validityDays: number;
   priceMinor: number;
+  /** Where it works, when the eSIM can be topped up for other areas too. */
+  area: string | null;
+  /** For the eSIM's own area (always, unless it tops up any area). */
+  sameArea: boolean;
+  /** Offers sharing it are one package for different day counts. */
+  dayGroup: string | null;
 }
 
 export interface TopupOffers {
@@ -144,6 +151,8 @@ export async function topupOffers(userId: string, esimId: string): Promise<Topup
     return { eligibility, mode, offers: [], error: message };
   }
   const prices = await priceTopupCosts(plans.map((plan) => plan.cost), found.plan);
+  const anyArea = found.plan.topup.coverage === "any_area";
+  const planCountries = found.plan.coverage.countries.map((country) => country.code);
   const offers = plans
     .map((plan, index) => ({
       topupPlanId: plan.topupPlanId,
@@ -151,6 +160,9 @@ export async function topupOffers(userId: string, esimId: string): Promise<Topup
       megabytes: plan.megabytes,
       validityDays: plan.validityDays,
       priceMinor: prices[index],
+      area: anyArea ? (plan.area?.name ?? null) : null,
+      sameArea: !anyArea || inOwnArea(plan.area, planCountries),
+      dayGroup: plan.dayGroup ?? null,
     }))
     .filter((offer): offer is TopupOffer => offer.priceMinor !== null && offer.priceMinor > 0)
     .sort((a, b) => a.priceMinor - b.priceMinor || a.megabytes - b.megabytes);

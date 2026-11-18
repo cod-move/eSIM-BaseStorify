@@ -195,23 +195,28 @@ export class RoamWifiAdapter implements EsimProviderAdapter {
     const plans = new Map<string, ProviderTopupPlan>();
     const add = (packageData: JsonObject, fallbackDisplay = "") => {
       const display = str(packageData.displayEn) || str(packageData.display) || fallbackDisplay || "RoamWifi";
+      // A renewal may be for any area: each offer says which.
+      const area = { name: display, countryCodes: countriesOf(packageData).map((country) => country.code) };
       for (const pkg of packagesOf(packageData)) {
         if (pkg.flowType !== undefined && int(pkg.flowType) === 1) continue; // not renewable
         // A day-pass renews for days of the buyer's choosing (doc §2.12): one
         // offer per usual day count, priced per day.
         if ((int(pkg.supportDaypass) ?? 0) > 0) {
-          for (const offer of dayPassTopups(packageData, pkg, display, this.currency)) if (!plans.has(offer.topupPlanId)) plans.set(offer.topupPlanId, offer);
+          for (const offer of dayPassTopups(packageData, pkg, display, this.currency)) {
+            if (!plans.has(offer.topupPlanId)) plans.set(offer.topupPlanId, { ...offer, area });
+          }
           continue;
         }
         const apiCode = str(pkg.apiCode) || str(pkg.apicode) || str(pkg.apiCpde);
         if (!apiCode || plans.has(apiCode)) continue;
         plans.set(apiCode, {
           topupPlanId: apiCode,
-          name: planName(display, pkg),
+          name: renewalName(display, pkg),
           megabytes: Math.round((bytes(pkg.flows, str(pkg.unit) || "GB") ?? 0) / BYTES.MB),
           validityDays: int(pkg.days) ?? 0,
           cost: { currency: this.currency, amountMinor: cents(pkg.price) },
           raw: pkg,
+          area,
         });
       }
     };
@@ -822,7 +827,8 @@ export function dayPassTopups(packageData: JsonObject, pkg: JsonObject, display:
   const counts = [...new Set([minDays, ...DAY_PASS_TOPUP_DAYS.filter((days) => days >= minDays && days <= maxDays)])];
   return counts.map((days) => ({
     topupPlanId: `daypass:${skuId}:${priceId}:${days}`,
-    name: `${planName(display, pkg)} × ${days} ${days === 1 ? "day" : "days"}`,
+    name: `${renewalName(display, pkg)} × ${days} ${days === 1 ? "day" : "days"}`,
+    dayGroup: `daypass:${skuId}:${priceId}`,
     megabytes,
     validityDays: days,
     cost: { currency, amountMinor: Math.round(perDayMinor * days) },
@@ -833,4 +839,13 @@ export function dayPassTopups(packageData: JsonObject, pkg: JsonObject, display:
 export function parseDayPassTopupId(id: string): { skuId: string; priceId: string; days: number } | null {
   const match = /^daypass:([^:]+):([^:]+):(\d+)$/.exec(id);
   return match ? { skuId: match[1], priceId: match[2], days: Number(match[3]) } : null;
+}
+
+/**
+ * A renewal's name, always led by its area: a renewal may be for any area, and
+ * RoamWifi's own `showName` ("1GB/3Days") does not say which.
+ */
+export function renewalName(display: string, pkg: JsonObject): string {
+  const name = planName(display, pkg);
+  return name.toLowerCase().includes(display.toLowerCase()) ? name : `${display} · ${name}`;
 }

@@ -215,6 +215,10 @@ export interface ProviderTopupPlan {
   validityDays: number;
   cost: Money;
   raw: JsonObject;
+  /** Where the top-up works, for a supplier that tops up other areas too (name, ISO codes). */
+  area?: { name: string; countryCodes: string[] } | null;
+  /** Offers sharing it are one package sold for different day counts. */
+  dayGroup?: string | null;
 }
 
 export interface TopupInput {

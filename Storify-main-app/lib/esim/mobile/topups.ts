@@ -38,6 +38,9 @@ export const esimTopupsRoute = defineRoute({
         data: formatBytes(offer.megabytes * 1024 * 1024),
         validityDays: offer.validityDays,
         price: toMoney(offer.priceMinor / 100, currency),
+        // For an app that sorts them: where it works, whether that is the eSIM's own area.
+        ...(offer.area ? { area: offer.area } : {}),
+        sameArea: offer.sameArea,
       })),
       unavailable: Boolean(offers.error),
     };

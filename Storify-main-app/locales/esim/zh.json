@@ -220,7 +220,12 @@
       },
       "search": "搜索，例如 5GB、7天、欧洲",
       "searchLabel": "搜索充值套餐",
-      "searchNone": "没有符合搜索的充值套餐。"
+      "searchNone": "没有符合搜索的充值套餐。",
+      "tabOwn": "本地区",
+      "tabOther": "其他地区",
+      "noneHere": "这里没有可充值的套餐，请看另一个标签。",
+      "days": "天数",
+      "dayCount": "{count} 天"
     },
     "wallet": {
       "title": "余额",

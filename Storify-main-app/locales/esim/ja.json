@@ -216,7 +216,12 @@
       },
       "search": "検索（例：5GB、7日、ヨーロッパ）",
       "searchLabel": "チャージを検索",
-      "searchNone": "検索に合うチャージはありません。"
+      "searchNone": "検索に合うチャージはありません。",
+      "tabOwn": "This region",
+      "tabOther": "Other regions",
+      "noneHere": "No top-ups here. Try the other tab.",
+      "days": "Days",
+      "dayCount": "{count} days"
     },
     "wallet": {
       "title": "残高",

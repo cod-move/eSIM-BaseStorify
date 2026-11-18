@@ -216,7 +216,12 @@
       },
       "search": "Suchen, z. B. 5GB, 7 Tage, Europa",
       "searchLabel": "Aufladungen suchen",
-      "searchNone": "Keine Aufladung passt zur Suche."
+      "searchNone": "Keine Aufladung passt zur Suche.",
+      "tabOwn": "This region",
+      "tabOther": "Other regions",
+      "noneHere": "No top-ups here. Try the other tab.",
+      "days": "Days",
+      "dayCount": "{count} days"
     },
     "wallet": {
       "title": "Guthaben",

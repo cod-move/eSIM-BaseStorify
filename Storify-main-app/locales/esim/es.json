@@ -216,7 +216,12 @@
       },
       "search": "Buscar, p. ej. 5GB, 7 días, Europa",
       "searchLabel": "Buscar recargas",
-      "searchNone": "Ninguna recarga coincide."
+      "searchNone": "Ninguna recarga coincide.",
+      "tabOwn": "This region",
+      "tabOther": "Other regions",
+      "noneHere": "No top-ups here. Try the other tab.",
+      "days": "Days",
+      "dayCount": "{count} days"
     },
     "wallet": {
       "title": "Saldo",
