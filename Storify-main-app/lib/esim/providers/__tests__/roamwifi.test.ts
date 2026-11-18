@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { describe, it } from "node:test";
 import { countryCodeFromName } from "../countries";
-import { RoamWifiAdapter, dayPassOrder, externalId, fairUseOf, mapEsimDetail, mapSkuPlans, sign } from "../roamwifi";
+import { RoamWifiAdapter, breakoutOf, dayPassOrder, externalId, fairUseOf, mapEsimDetail, mapSkuPlans, sign } from "../roamwifi";
 import { fakeFetch } from "./helpers";
 
 describe("RoamWifi external ids", () => {
@@ -220,5 +220,18 @@ describe("RoamWifi day-pass", () => {
     assert.deepEqual(dayPassOrder({ providerPlanId: dayPass.apiCode, durationDays: 3, sku: null, raw }), { skuId: "155", priceId: "15794", daypassDays: "3" });
     assert.throws(() => dayPassOrder({ providerPlanId: dayPass.apiCode, durationDays: 0, sku: "155", raw }));
     assert.throws(() => dayPassOrder({ providerPlanId: dayPass.apiCode, durationDays: 5, sku: "155", raw: { package: {} } }));
+  });
+});
+
+describe("RoamWifi breakout", () => {
+  it("puts the Asia SIM (dpid 21 or its APN) in Hong Kong, the Global SIM in Poland", () => {
+    assert.deepEqual(breakoutOf({ dpId: 21 }, ["FR"]), ["HK"]);
+    assert.deepEqual(breakoutOf({ premark: "Plan type: Data only<br>\nAPN: mobile.three.com.hk" }, ["FR"]), ["HK"]);
+    assert.deepEqual(breakoutOf({ dpId: 9 }, ["JP"]), ["PL"]);
+    assert.deepEqual(breakoutOf({ premark: "APN: plus<br>" }, ["JP"]), ["PL"]);
+  });
+  it("without dpid or APN, takes an all-Asian plan for the Asia SIM", () => {
+    assert.deepEqual(breakoutOf({}, ["JP", "TH"]), ["HK"]);
+    assert.deepEqual(breakoutOf({}, ["JP", "FR"]), []);
   });
 });

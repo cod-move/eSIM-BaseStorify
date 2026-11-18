@@ -611,6 +611,23 @@ export function externalId(key: string): string {
 }
 
 /**
+ * Where a RoamWifi plan's traffic breaks out, by RoamWifi's own rule: the Asia
+ * SIM (dpid 21, APN mobile.three.com.hk) exits in Hong Kong, the Global SIM
+ * (dpid 9, APN plus) in Poland. The package
+ * names its APN in `premark` ("APN: …"); without dpid or APN, a plan covering
+ * only Asian countries is taken for the Asia SIM.
+ */
+export function breakoutOf(pkg: JsonObject, countryCodes: string[]): string[] {
+  const dpid = int(pkg.dpId) ?? int(pkg.dpid);
+  const apn = /APN:\s*([^\s<]+)/i.exec(str(pkg.premark))?.[1]?.toLowerCase() ?? null;
+  if (dpid === 21 || apn === "mobile.three.com.hk") return ["HK"];
+  // The Global SIM (dpid 9, APN plus) exits in Europe, on Poland's Plus.
+  if (dpid === 9 || apn === "plus") return ["PL"];
+  if (dpid !== null || apn !== null) return [];
+  return countryCodes.length && countryCodes.every((code) => continentOf(code) === "asia") ? ["HK"] : [];
+}
+
+/**
  * The fair-use policy RoamWifi writes into a package's `premark`, e.g.
  * "Data Allowance at Full Speed: 300MB/Day (Network speed will be reduced to
  * 128kbps when data consumption exceeds 300MB)". Null when it says neither.
@@ -682,8 +699,7 @@ export function mapSkuPlans(sku: JsonObject, packageData: JsonObject, currency: 
             network: strOrNull(network.type),
           }))
           .filter((network) => network.operator),
-        // RoamWifi's Asian plans all break out in Hong Kong; it does not say so.
-        breakoutIp: countries.length && countries.every((country) => continentOf(country.code) === "asia") ? ["HK"] : [],
+        breakoutIp: breakoutOf(pkg, countries.map((country) => country.code)),
       },
       data: {
         megabytes,
