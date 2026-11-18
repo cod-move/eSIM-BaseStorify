@@ -221,22 +221,33 @@ export class RoamWifiAdapter implements EsimProviderAdapter {
       }
     };
 
+    // What each call answered, for the log when none offers a package.
+    const steps: string[] = [];
+    const packagesIn = (entries: JsonObject[]) => entries.reduce((sum, entry) => sum + objArray(entry.esimPackageDtoList).length, 0);
+
     const direct = await optional(() => this.callData("api_esim/getIccidSupportPackageInfo", { iccid }));
-    for (const entry of Array.isArray(direct) ? objArray(direct) : [obj(direct)]) add(entry);
+    const directEntries = Array.isArray(direct) ? objArray(direct) : [obj(direct)];
+    for (const entry of directEntries) add(entry);
+    steps.push(`getIccidSupportPackageInfo: ${direct === null ? "no data" : `${packagesIn(directEntries)} packages`}`);
     if (plans.size) return [...plans.values()];
 
     let skus = (await optional(() => this.callList("api_esim/getICCIDSupportSkuInfo", { iccid }))) ?? [];
+    steps.push(`getICCIDSupportSkuInfo: ${skus.length} SKUs`);
     if (!skus.length) {
       const skuId = await optional(() => this.orderSkuId(ref));
+      steps.push(`order SKU: ${skuId ?? "none"}`);
       if (skuId) skus = [{ skuid: skuId }];
     }
     for (const sku of skus) {
       const skuId = str(sku.skuid) || str(sku.skuId);
       if (!skuId) continue;
       const packageData = await optional(() => this.callData("api_esim/getICCIDSkuSupportPackageInfo", { iccid, skuId }));
+      steps.push(`getICCIDSkuSupportPackageInfo(${skuId}): ${packageData === null ? "no data" : `${packagesIn([obj(packageData)])} packages`}`);
       if (packageData) add(obj(packageData), str(sku.displayEn) || str(sku.display));
     }
-    if (!plans.size && refusals.length) throw new ProviderError("rejected", refusals.join("; ").slice(0, 500));
+    if (!plans.size) {
+      throw new ProviderError("rejected", `RoamWifi offers no renewal for this eSIM (${[...steps, ...refusals].join("; ")})`.slice(0, 500));
+    }
     return [...plans.values()];
   }
 
