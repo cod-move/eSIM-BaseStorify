@@ -195,7 +195,7 @@ export class RoamWifiAdapter implements EsimProviderAdapter {
     const plans = new Map<string, ProviderTopupPlan>();
     const add = (packageData: JsonObject, fallbackDisplay = "") => {
       const display = str(packageData.displayEn) || str(packageData.display) || fallbackDisplay || "RoamWifi";
-      for (const pkg of objArray(packageData.esimPackageDtoList)) {
+      for (const pkg of packagesOf(packageData)) {
         const apiCode = str(pkg.apiCode) || str(pkg.apicode) || str(pkg.apiCpde);
         if (!apiCode || plans.has(apiCode)) continue;
         plans.set(apiCode, {
@@ -223,12 +223,12 @@ export class RoamWifiAdapter implements EsimProviderAdapter {
 
     // What each call answered, for the log when none offers a package.
     const steps: string[] = [];
-    const packagesIn = (entries: JsonObject[]) => entries.reduce((sum, entry) => sum + objArray(entry.esimPackageDtoList).length, 0);
+    const packagesIn = (entries: JsonObject[]) => entries.reduce((sum, entry) => sum + packagesOf(entry).length, 0);
 
     const direct = await optional(() => this.callData("api_esim/getIccidSupportPackageInfo", { iccid }));
     const directEntries = Array.isArray(direct) ? objArray(direct) : [obj(direct)];
     for (const entry of directEntries) add(entry);
-    steps.push(`getIccidSupportPackageInfo: ${direct === null ? "no data" : `${packagesIn(directEntries)} packages`}`);
+    steps.push(`getIccidSupportPackageInfo: ${direct === null ? "no data" : `${packagesIn(directEntries)} packages, fields ${Object.keys(directEntries[0] ?? {}).join(",") || (Array.isArray(direct) ? "[]" : typeof direct)}`}`);
     if (plans.size) return [...plans.values()];
 
     let skus = (await optional(() => this.callList("api_esim/getICCIDSupportSkuInfo", { iccid }))) ?? [];
@@ -505,7 +505,16 @@ export function mapEsimDetail(data: JsonObject, now = new Date()): ProviderUsage
   const remainingBytes = Math.max(totalBytes - usedBytes, 0);
   const onPhone = ["ENABLE", "ENABLED", "ACTIVE", "DISABLE", "DISABLED"].includes(str(info.dpStatus).toUpperCase());
   const lastEnd = packages.map(ends).filter((value): value is string => Boolean(value)).sort().at(-1) ?? null;
-  const expiresAt = date(info.expireDate) ?? lastEnd;
+  // `esimInfo.expireDate` is the profile's own deadline (install by); once a
+  // package runs, the plan ends with the running packages.
+  // A running package without an end date ends its `days` after it began.
+  const endOrByDays = (pkg: JsonObject) => {
+    const begin = begins(pkg);
+    const days = int(pkg.days);
+    return ends(pkg) ?? (begin && days ? new Date(new Date(begin).getTime() + days * 86_400_000).toISOString() : null);
+  };
+  const runningEnd = running.map(endOrByDays).filter((value): value is string => Boolean(value)).sort().at(-1) ?? null;
+  const expiresAt = runningEnd ?? (unstarted.length ? date(info.expireDate) : null) ?? lastEnd ?? date(info.expireDate);
   let lifecycleStatus: LifecycleStatus | null;
   if (running.length) lifecycleStatus = totalBytes > 0 && remainingBytes === 0 ? "depleted" : "in_use";
   else if (unstarted.length) lifecycleStatus = onPhone ? "installed" : "not_installed";
@@ -759,4 +768,13 @@ export function mapSkuPlans(sku: JsonObject, packageData: JsonObject, currency: 
       raw: { sku, package: pkg },
     }];
   });
+}
+
+/**
+ * A package answer's package list. The doc writes it `esimPackageDtoList` in
+ * examples and `esimpackageDtoList` in its field table, so either is read.
+ */
+export function packagesOf(packageData: JsonObject): JsonObject[] {
+  const key = Object.keys(packageData).find((name) => /^esimpackagedtolist$/i.test(name));
+  return key ? objArray(packageData[key]) : [];
 }

@@ -11,7 +11,7 @@ const sample = (packageList: JsonObject[], dpStatus = "Enable"): JsonObject => (
 const NOW = new Date("2025-12-20T00:00:00Z");
 
 describe("RoamWifi getESIMDetail", () => {
-  it("reads a running package's data and the card's expiry", () => {
+  it("reads a running package's data, and its end as the expiry (not the card's install deadline)", () => {
     const usage = mapEsimDetail(
       sample([{ id: 1, flows: 3, unit: "GB", days: 7, usedMb: 1024, beginDate: "2025-12-17 23:06", endDate: "2025-12-24 23:06", status: 0 }]),
       NOW,
@@ -20,6 +20,17 @@ describe("RoamWifi getESIMDetail", () => {
     assert.equal(usage.usedBytes, 1024 ** 3);
     assert.equal(usage.remainingBytes, 2 * 1024 ** 3);
     assert.equal(usage.lifecycleStatus, "in_use");
+    assert.equal(usage.expiresAt, "2025-12-24T15:06:00.000Z");
+  });
+
+  it("ends a running package with no end date its days after it began", () => {
+    const usage = mapEsimDetail(sample([{ flows: 1, unit: "GB", days: 1, usedMb: 9, beginDate: "2025-12-19 21:14", status: 0 }]), NOW);
+    assert.equal(usage.lifecycleStatus, "in_use");
+    assert.equal(usage.expiresAt, "2025-12-20T13:14:00.000Z");
+  });
+
+  it("keeps the install deadline while no package has started", () => {
+    const usage = mapEsimDetail(sample([{ flows: 1, unit: "GB", days: 1, status: 0 }]), NOW);
     assert.equal(usage.expiresAt, "2026-03-23T16:00:00.000Z");
   });
 
