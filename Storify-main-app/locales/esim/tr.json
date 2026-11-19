@@ -54,7 +54,9 @@
       "remark": "Ad",
       "addRemark": "Bir ad ekleyin, ör. \"Japonya gezisi\"",
       "remarkFailed": "Ad kaydedilemedi",
-      "buyNew": "Yeni eSIM satın al"
+      "buyNew": "Yeni eSIM satın al",
+      "coverageCount": "{count} ülke",
+      "coverageShow": "Tüm ülkeleri göster"
     },
     "browse": {
       "title": "eSIM destinasyonları",
@@ -288,7 +290,18 @@
         "pending": "Beklemede",
         "credited": "Bakiyenize eklendi",
         "cancelled": "İptal edildi (sipariş iade edildi)"
-      }
+      },
+      "landing": "Bağlantı açılır",
+      "landingHome": "Ana sayfa",
+      "landingDestinations": "eSIM destinasyonları",
+      "landingCountry": "Bir ülke",
+      "landingNumbers": "Numaralı eSIM'ler",
+      "welcomeTitle": "Hoş geldin kuponun",
+      "welcomeOff": "{discount} indirim",
+      "welcomeMin": "{amount} ve üzeri siparişler",
+      "welcomeEnds": "{date} tarihinden önce ödemede gir.",
+      "welcomeUse": "Ödemede gir.",
+      "welcomeDone": "Kullanıldı veya süresi doldu."
     },
     "kyc": {
       "title": "Kimlik doğrulama",

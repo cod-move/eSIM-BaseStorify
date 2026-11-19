@@ -54,7 +54,9 @@
       "remark": "नाम",
       "addRemark": "एक नाम जोड़ें, जैसे \"जापान यात्रा\"",
       "remarkFailed": "नाम सहेजा नहीं जा सका",
-      "buyNew": "नई eSIM खरीदें"
+      "buyNew": "नई eSIM खरीदें",
+      "coverageCount": "{count} देश",
+      "coverageShow": "सभी देश दिखाएँ"
     },
     "browse": {
       "title": "eSIM गंतव्य",
@@ -288,7 +290,18 @@
         "pending": "रोका गया",
         "credited": "आपके बैलेंस में जोड़ा गया",
         "cancelled": "रद्द (ऑर्डर रिफ़ंड हुआ)"
-      }
+      },
+      "landing": "लिंक खुलता है",
+      "landingHome": "होम पेज",
+      "landingDestinations": "eSIM गंतव्य",
+      "landingCountry": "कोई देश",
+      "landingNumbers": "नंबर वाले eSIM",
+      "welcomeTitle": "आपका स्वागत कूपन",
+      "welcomeOff": "{discount} की छूट",
+      "welcomeMin": "{amount} से ऊपर के ऑर्डर",
+      "welcomeEnds": "{date} से पहले चेकआउट पर डालें।",
+      "welcomeUse": "चेकआउट पर डालें।",
+      "welcomeDone": "इस्तेमाल हो चुका या समाप्त।"
     },
     "kyc": {
       "title": "पहचान सत्यापन",

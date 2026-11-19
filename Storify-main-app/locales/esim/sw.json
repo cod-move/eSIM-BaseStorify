@@ -54,7 +54,9 @@
       "remark": "Jina",
       "addRemark": "Ongeza jina, k.m. \"Safari ya Japani\"",
       "remarkFailed": "Haikuweza kuhifadhi jina",
-      "buyNew": "Nunua eSIM mpya"
+      "buyNew": "Nunua eSIM mpya",
+      "coverageCount": "Nchi {count}",
+      "coverageShow": "Onyesha nchi zote"
     },
     "browse": {
       "title": "Maeneo ya eSIM",
@@ -288,7 +290,18 @@
         "pending": "Imesimamishwa",
         "credited": "Imeongezwa kwenye salio lako",
         "cancelled": "Imeghairiwa (agizo limerejeshewa pesa)"
-      }
+      },
+      "landing": "Kiungo kinafungua",
+      "landingHome": "Ukurasa wa mwanzo",
+      "landingDestinations": "Maeneo ya eSIM",
+      "landingCountry": "Nchi moja",
+      "landingNumbers": "eSIM zenye namba",
+      "welcomeTitle": "Kuponi yako ya karibu",
+      "welcomeOff": "Punguzo la {discount}",
+      "welcomeMin": "maagizo kuanzia {amount}",
+      "welcomeEnds": "Iweke wakati wa kulipa kabla ya {date}.",
+      "welcomeUse": "Iweke wakati wa kulipa.",
+      "welcomeDone": "Imetumika au imeisha muda."
     },
     "kyc": {
       "title": "Uthibitishaji wa utambulisho",

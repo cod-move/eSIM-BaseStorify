@@ -54,7 +54,9 @@
       "remark": "Orúkọ",
       "addRemark": "Fi orúkọ kún un, àpẹẹrẹ \"Ìrìn-àjò Japan\"",
       "remarkFailed": "Kò ṣeé ṣe láti fi orúkọ pamọ́",
-      "buyNew": "Ra eSIM tuntun"
+      "buyNew": "Ra eSIM tuntun",
+      "coverageCount": "Orílẹ̀-èdè {count}",
+      "coverageShow": "Fi gbogbo orílẹ̀-èdè hàn"
     },
     "browse": {
       "title": "Àwọn ibi tí eSIM ń lọ",
@@ -288,7 +290,18 @@
         "pending": "Ó wà ní ìdádúró",
         "credited": "A ti fi kún ìyókù owó rẹ",
         "cancelled": "A ti fagilé e (a ti dá owó àṣẹ padà)"
-      }
+      },
+      "landing": "Ìjápọ̀ ṣí",
+      "landingHome": "Ojú-ìwé àkọ́kọ́",
+      "landingDestinations": "Àwọn ibi eSIM",
+      "landingCountry": "Orílẹ̀-èdè kan",
+      "landingNumbers": "eSIM pẹ̀lú nọ́mbà",
+      "welcomeTitle": "Kúpọ̀nù ìkíni rẹ",
+      "welcomeOff": "Ẹ̀dínwó {discount}",
+      "welcomeMin": "àṣẹ láti {amount}",
+      "welcomeEnds": "Tẹ̀ ẹ́ nígbà ìsanwó ṣáájú {date}.",
+      "welcomeUse": "Tẹ̀ ẹ́ nígbà ìsanwó.",
+      "welcomeDone": "A ti lò ó tàbí ó ti parí."
     },
     "kyc": {
       "title": "Ìjẹ́rìísí ìdánimọ̀",

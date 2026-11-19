@@ -54,7 +54,9 @@
       "remark": "Igama",
       "addRemark": "Engeza igama, isb. \"Uhambo lwaseJapan\"",
       "remarkFailed": "Ayikwazanga ukulondoloza igama",
-      "buyNew": "Thenga i-eSIM entsha"
+      "buyNew": "Thenga i-eSIM entsha",
+      "coverageCount": "Amazwe angu-{count}",
+      "coverageShow": "Bonisa wonke amazwe"
     },
     "browse": {
       "title": "Izindawo ze-eSIM",
@@ -288,7 +290,18 @@
         "pending": "Kumisiwe",
         "credited": "Kungezwe ebhalansini yakho",
         "cancelled": "Kukhanseliwe (i-oda libuyiselwe imali)"
-      }
+      },
+      "landing": "Isixhumanisi sivula",
+      "landingHome": "Ikhasi lasekhaya",
+      "landingDestinations": "Izindawo ze-eSIM",
+      "landingCountry": "Izwe elilodwa",
+      "landingNumbers": "Ama-eSIM anenombolo",
+      "welcomeTitle": "Ikhuphoni yakho yokwamukela",
+      "welcomeOff": "Isaphulelo se-{discount}",
+      "welcomeMin": "ama-oda kusukela ku-{amount}",
+      "welcomeEnds": "Yifake lapho ukhokha ngaphambi kuka-{date}.",
+      "welcomeUse": "Yifake lapho ukhokha.",
+      "welcomeDone": "Isisetshenzisiwe noma iphelelwe yisikhathi."
     },
     "kyc": {
       "title": "Ukuqinisekiswa komazisi",

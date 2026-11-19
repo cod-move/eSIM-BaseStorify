@@ -54,7 +54,9 @@
       "remark": "Name",
       "addRemark": "Namen hinzufügen, z. B. „Japanreise“",
       "remarkFailed": "Name konnte nicht gespeichert werden",
-      "buyNew": "Neue eSIM kaufen"
+      "buyNew": "Neue eSIM kaufen",
+      "coverageCount": "{count} Länder",
+      "coverageShow": "Alle Länder anzeigen"
     },
     "browse": {
       "title": "eSIM-Reiseziele",
@@ -288,7 +290,18 @@
         "pending": "Zurückgehalten",
         "credited": "Deinem Guthaben gutgeschrieben",
         "cancelled": "Storniert (Bestellung erstattet)"
-      }
+      },
+      "landing": "Link öffnet",
+      "landingHome": "Startseite",
+      "landingDestinations": "eSIM-Reiseziele",
+      "landingCountry": "Ein Land",
+      "landingNumbers": "eSIMs mit Nummer",
+      "welcomeTitle": "Ihr Willkommensgutschein",
+      "welcomeOff": "{discount} Rabatt",
+      "welcomeMin": "Bestellungen ab {amount}",
+      "welcomeEnds": "Geben Sie ihn vor dem {date} an der Kasse ein.",
+      "welcomeUse": "Geben Sie ihn an der Kasse ein.",
+      "welcomeDone": "Eingelöst oder abgelaufen."
     },
     "kyc": {
       "title": "Identitätsprüfung",

@@ -58,7 +58,9 @@
       "pages": "分页",
       "previous": "上一页",
       "next": "下一页",
-      "pageOf": "第 {page} / {pages} 页"
+      "pageOf": "第 {page} / {pages} 页",
+      "coverageCount": "{count} 个国家",
+      "coverageShow": "显示全部国家"
     },
     "browse": {
       "title": "eSIM 目的地",
@@ -292,7 +294,18 @@
         "pending": "待发放",
         "credited": "已存入余额",
         "cancelled": "已取消（订单退款）"
-      }
+      },
+      "landing": "链接打开",
+      "landingHome": "首页",
+      "landingDestinations": "eSIM 目的地",
+      "landingCountry": "某个国家",
+      "landingNumbers": "号码 eSIM",
+      "welcomeTitle": "你的欢迎优惠券",
+      "welcomeOff": "立减 {discount}",
+      "welcomeMin": "订单满 {amount} 可用",
+      "welcomeEnds": "请在 {date} 前结账时输入。",
+      "welcomeUse": "结账时输入即可使用。",
+      "welcomeDone": "已使用或已过期。"
     },
     "kyc": {
       "title": "身份认证",

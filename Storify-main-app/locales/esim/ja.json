@@ -54,7 +54,9 @@
       "remark": "名前",
       "addRemark": "名前を追加（例：「日本旅行」）",
       "remarkFailed": "名前を保存できませんでした",
-      "buyNew": "新しい eSIM を購入"
+      "buyNew": "新しい eSIM を購入",
+      "coverageCount": "{count} か国",
+      "coverageShow": "すべての国を表示"
     },
     "browse": {
       "title": "eSIMの渡航先",
@@ -288,7 +290,18 @@
         "pending": "保留中",
         "credited": "残高に追加済み",
         "cancelled": "キャンセル（注文は返金済み）"
-      }
+      },
+      "landing": "リンク先",
+      "landingHome": "ホーム",
+      "landingDestinations": "eSIM の渡航先",
+      "landingCountry": "国を選ぶ",
+      "landingNumbers": "番号付き eSIM",
+      "welcomeTitle": "ウェルカムクーポン",
+      "welcomeOff": "{discount} 割引",
+      "welcomeMin": "{amount} 以上のご注文",
+      "welcomeEnds": "{date} までにチェックアウトで入力してください。",
+      "welcomeUse": "チェックアウトで入力してください。",
+      "welcomeDone": "使用済みまたは期限切れです。"
     },
     "kyc": {
       "title": "本人確認",

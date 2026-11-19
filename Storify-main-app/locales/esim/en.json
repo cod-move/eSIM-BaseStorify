@@ -58,7 +58,9 @@
       "pages": "Pages",
       "previous": "Previous",
       "next": "Next",
-      "pageOf": "Page {page} of {pages}"
+      "pageOf": "Page {page} of {pages}",
+      "coverageCount": "{count} countries",
+      "coverageShow": "Show all countries"
     },
     "browse": {
       "title": "eSIM destinations",
@@ -292,7 +294,18 @@
         "pending": "On hold",
         "credited": "Added to your balance",
         "cancelled": "Cancelled (order refunded)"
-      }
+      },
+      "landing": "Link opens",
+      "landingHome": "Home page",
+      "landingDestinations": "eSIM destinations",
+      "landingCountry": "A country",
+      "landingNumbers": "Number eSIMs",
+      "welcomeTitle": "Your welcome coupon",
+      "welcomeOff": "{discount} off",
+      "welcomeMin": "orders from {amount}",
+      "welcomeEnds": "Enter it at checkout before {date}.",
+      "welcomeUse": "Enter it at checkout.",
+      "welcomeDone": "Used or expired."
     },
     "kyc": {
       "title": "Identity verification",

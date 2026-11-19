@@ -54,7 +54,9 @@
       "remark": "Aha",
       "addRemark": "Tinye aha, dịka \"Njem Japan\"",
       "remarkFailed": "Enweghị ike ịchekwa aha",
-      "buyNew": "Zụta eSIM ọhụrụ"
+      "buyNew": "Zụta eSIM ọhụrụ",
+      "coverageCount": "Mba {count}",
+      "coverageShow": "Gosi mba niile"
     },
     "browse": {
       "title": "Ebe eSIM",
@@ -288,7 +290,18 @@
         "pending": "Ejidere ya",
         "credited": "Etinyela na nguzozi gị",
         "cancelled": "Akagburu ya (eweghachiri ego ọda)"
-      }
+      },
+      "landing": "Njikọ na-emepe",
+      "landingHome": "Ibe mbụ",
+      "landingDestinations": "Ebe eSIM",
+      "landingCountry": "Otu mba",
+      "landingNumbers": "eSIM nwere nọmba",
+      "welcomeTitle": "Kupọn nnabata gị",
+      "welcomeOff": "Mbelata {discount}",
+      "welcomeMin": "ịtụ ahịa site na {amount}",
+      "welcomeEnds": "Tinye ya mgbe ị na-akwụ ụgwọ tupu {date}.",
+      "welcomeUse": "Tinye ya mgbe ị na-akwụ ụgwọ.",
+      "welcomeDone": "E jirila ya ma ọ bụ o gafeela."
     },
     "kyc": {
       "title": "Nkwenye njirimara",

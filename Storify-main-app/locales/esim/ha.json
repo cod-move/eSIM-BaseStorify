@@ -54,7 +54,9 @@
       "remark": "Suna",
       "addRemark": "Ƙara suna, misali \"Tafiyar Japan\"",
       "remarkFailed": "Ba a iya ajiye sunan ba",
-      "buyNew": "Sayi sabuwar eSIM"
+      "buyNew": "Sayi sabuwar eSIM",
+      "coverageCount": "Ƙasashe {count}",
+      "coverageShow": "Nuna duk ƙasashe"
     },
     "browse": {
       "title": "Wuraren eSIM",
@@ -288,7 +290,18 @@
         "pending": "A riƙe",
         "credited": "An ƙara a ma'auninka",
         "cancelled": "An soke (an mayar da kuɗin oda)"
-      }
+      },
+      "landing": "Hanyar haɗi tana buɗe",
+      "landingHome": "Shafin farko",
+      "landingDestinations": "Wuraren eSIM",
+      "landingCountry": "Wata ƙasa",
+      "landingNumbers": "eSIM masu lamba",
+      "welcomeTitle": "Takardar rangwamen maraba",
+      "welcomeOff": "Rangwamen {discount}",
+      "welcomeMin": "oda daga {amount}",
+      "welcomeEnds": "Shigar da ita lokacin biya kafin {date}.",
+      "welcomeUse": "Shigar da ita lokacin biya.",
+      "welcomeDone": "An yi amfani da ita ko ta ƙare."
     },
     "kyc": {
       "title": "Tabbatar da shaida",

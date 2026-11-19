@@ -54,7 +54,9 @@
       "remark": "Naam",
       "addRemark": "Voeg een naam toe, bijv. \"Reis naar Japan\"",
       "remarkFailed": "Kon de naam niet opslaan",
-      "buyNew": "Nieuwe eSIM kopen"
+      "buyNew": "Nieuwe eSIM kopen",
+      "coverageCount": "{count} landen",
+      "coverageShow": "Alle landen tonen"
     },
     "browse": {
       "title": "eSIM-bestemmingen",
@@ -288,7 +290,18 @@
         "pending": "In de wacht",
         "credited": "Toegevoegd aan je saldo",
         "cancelled": "Geannuleerd (bestelling terugbetaald)"
-      }
+      },
+      "landing": "Link opent",
+      "landingHome": "Startpagina",
+      "landingDestinations": "eSIM-bestemmingen",
+      "landingCountry": "Een land",
+      "landingNumbers": "eSIM's met nummer",
+      "welcomeTitle": "Je welkomstkortingscode",
+      "welcomeOff": "{discount} korting",
+      "welcomeMin": "bestellingen vanaf {amount}",
+      "welcomeEnds": "Voer hem vóór {date} in bij het afrekenen.",
+      "welcomeUse": "Voer hem in bij het afrekenen.",
+      "welcomeDone": "Gebruikt of verlopen."
     },
     "kyc": {
       "title": "Identiteitsverificatie",

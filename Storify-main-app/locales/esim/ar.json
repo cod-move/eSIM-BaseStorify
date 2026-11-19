@@ -54,7 +54,9 @@
       "remark": "الاسم",
       "addRemark": "أضف اسمًا، مثل \"رحلة اليابان\"",
       "remarkFailed": "تعذّر حفظ الاسم",
-      "buyNew": "شراء شريحة eSIM جديدة"
+      "buyNew": "شراء شريحة eSIM جديدة",
+      "coverageCount": "{count} دولة",
+      "coverageShow": "عرض كل الدول"
     },
     "browse": {
       "title": "وجهات eSIM",
@@ -288,7 +290,18 @@
         "pending": "معلّقة",
         "credited": "أُضيفت إلى رصيدك",
         "cancelled": "ملغاة (تم استرداد الطلب)"
-      }
+      },
+      "landing": "يفتح الرابط",
+      "landingHome": "الصفحة الرئيسية",
+      "landingDestinations": "وجهات eSIM",
+      "landingCountry": "دولة",
+      "landingNumbers": "شرائح eSIM برقم",
+      "welcomeTitle": "قسيمة الترحيب الخاصة بك",
+      "welcomeOff": "خصم {discount}",
+      "welcomeMin": "للطلبات من {amount}",
+      "welcomeEnds": "أدخلها عند الدفع قبل {date}.",
+      "welcomeUse": "أدخلها عند الدفع.",
+      "welcomeDone": "مستخدمة أو منتهية الصلاحية."
     },
     "kyc": {
       "title": "التحقق من الهوية",

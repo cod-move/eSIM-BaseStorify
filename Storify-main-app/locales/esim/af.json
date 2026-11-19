@@ -54,7 +54,9 @@
       "remark": "Naam",
       "addRemark": "Voeg 'n naam by, bv. \"Japan-reis\"",
       "remarkFailed": "Kon nie die naam stoor nie",
-      "buyNew": "Koop 'n nuwe eSIM"
+      "buyNew": "Koop 'n nuwe eSIM",
+      "coverageCount": "{count} lande",
+      "coverageShow": "Wys alle lande"
     },
     "browse": {
       "title": "eSIM-bestemmings",
@@ -288,7 +290,18 @@
         "pending": "Teruggehou",
         "credited": "By jou saldo gevoeg",
         "cancelled": "Gekanselleer (bestelling terugbetaal)"
-      }
+      },
+      "landing": "Skakel maak oop",
+      "landingHome": "Tuisblad",
+      "landingDestinations": "eSIM-bestemmings",
+      "landingCountry": "'n Land",
+      "landingNumbers": "eSIM's met nommer",
+      "welcomeTitle": "Jou welkomskoepon",
+      "welcomeOff": "{discount} afslag",
+      "welcomeMin": "bestellings vanaf {amount}",
+      "welcomeEnds": "Tik dit voor {date} by betaling in.",
+      "welcomeUse": "Tik dit by betaling in.",
+      "welcomeDone": "Gebruik of verval."
     },
     "kyc": {
       "title": "Identiteitsverifikasie",
