@@ -120,7 +120,7 @@ export const esimReferralCodeRoute = defineRoute({
     await connectDB();
     try {
       const code = await setReferralCode(session.user.id, input.code);
-      return { code, link: `${appBaseUrl()}/esim/invite/${code}` };
+      return { code, link: `${appBaseUrl()}/?ref=${code}` };
     } catch (error) {
       if (error instanceof ReferralCodeError) throw new MobileApiError(422, "VALIDATION_ERROR", error.message, { reason: referralCodeReason(error.message) });
       throw error;

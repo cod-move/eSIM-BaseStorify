@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { appBaseUrl } from "@/lib/app-url";
 import { connectDB } from "@/lib/db";
 import { REFERRAL_COOKIE, REFERRAL_COOKIE_DAYS, referralCodeExists } from "@/lib/esim/referral/service";
+import { safeReturnPath } from "@/lib/esim/referral/link";
 
 /**
  * An invite link (REF-01): /esim/invite/<code>. A known code is kept in a
@@ -13,7 +14,9 @@ import { REFERRAL_COOKIE, REFERRAL_COOKIE_DAYS, referralCodeExists } from "@/lib
  */
 export async function GET(request: NextRequest, { params }: { params: Promise<{ locale: string; code: string }> }) {
   const { locale, code } = await params;
-  const response = new NextResponse(null, { status: 307, headers: { Location: `/${encodeURIComponent(locale)}/esim` } });
+  // `?to=` is the page an invite link on any page was opened on (`?ref=`, see lib/esim/referral/link.ts).
+  const back = safeReturnPath(request.nextUrl.searchParams.get("to"), `/${encodeURIComponent(locale)}/esim`);
+  const response = new NextResponse(null, { status: 307, headers: { Location: back } });
   await connectDB();
   if (!(await referralCodeExists(code))) return response;
   response.cookies.set(REFERRAL_COOKIE, code.trim().toUpperCase(), {

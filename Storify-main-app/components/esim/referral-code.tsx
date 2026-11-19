@@ -9,10 +9,29 @@ import { toast } from "@/components/ui/toast-notification";
 import { useRouter } from "@/hooks/use-locale-navigation";
 import { useFallbackTranslator } from "@/hooks/use-fallback-translator";
 
-/** The shopper's invite link, to copy, and their code, to change (REF-01/05). */
-export function ReferralCode({ code, link }: { code: string; link: string }) {
+type Landing = "home" | "destinations" | "country" | "numbers";
+
+/**
+ * The shopper's invite link, to copy, and their code, to change (REF-01/05).
+ * The link may open any page (`?ref=`, patch P80): the shopper picks the home
+ * page (the default), the destinations, one country, or the number eSIMs.
+ */
+export function ReferralCode({
+  code,
+  base,
+  countries,
+}: {
+  code: string;
+  base: string;
+  countries: Array<{ name: string; path: string }>;
+}) {
   const t = useFallbackTranslator(useTranslations());
   const router = useRouter();
+  const [landing, setLanding] = useState<Landing>("home");
+  const [country, setCountry] = useState(countries[0]?.path ?? "");
+  const path =
+    landing === "destinations" ? "/esim" : landing === "numbers" ? "/esim/numbers" : landing === "country" && country ? country : "/";
+  const link = `${base.replace(/\/+$/, "")}${path}?ref=${encodeURIComponent(code)}`;
   const [copied, setCopied] = useState(false);
   const [editing, setEditing] = useState(false);
   const [value, setValue] = useState(code);
@@ -40,6 +59,36 @@ export function ReferralCode({ code, link }: { code: string; link: string }) {
 
   return (
     <div className="space-y-3">
+      <div className="flex flex-wrap items-center gap-2 text-sm">
+        <label htmlFor="referral-landing" className="text-muted-foreground">
+          {t("esim.referral.landing", "Link opens")}
+        </label>
+        <select
+          id="referral-landing"
+          value={landing}
+          onChange={(event) => setLanding(event.target.value as Landing)}
+          className="h-9 rounded-md border bg-background px-2"
+        >
+          <option value="home">{t("esim.referral.landingHome", "Home page")}</option>
+          <option value="destinations">{t("esim.referral.landingDestinations", "eSIM destinations")}</option>
+          {countries.length ? <option value="country">{t("esim.referral.landingCountry", "A country")}</option> : null}
+          <option value="numbers">{t("esim.referral.landingNumbers", "Number eSIMs")}</option>
+        </select>
+        {landing === "country" ? (
+          <select
+            value={country}
+            onChange={(event) => setCountry(event.target.value)}
+            aria-label={t("esim.referral.landingCountry", "A country")}
+            className="h-9 max-w-[14rem] rounded-md border bg-background px-2"
+          >
+            {countries.map((entry) => (
+              <option key={entry.path} value={entry.path}>
+                {entry.name}
+              </option>
+            ))}
+          </select>
+        ) : null}
+      </div>
       <div className="flex items-center gap-2">
         <Input readOnly value={link} className="font-mono text-sm" aria-label={t("esim.referral.link", "Your invite link")} />
         <Button

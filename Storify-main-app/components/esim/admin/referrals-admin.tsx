@@ -107,7 +107,7 @@ export function EsimReferralsAdmin({ settings, list, view, search: initialSearch
       <div>
         <h1 className="text-2xl font-bold tracking-tight">{t("admin.sidebar.esimReferrals", "Referrals")}</h1>
         <p className="text-sm text-muted-foreground">
-          {t("admin.esim.referralsHint", "Shoppers share /esim/invite/<code>. A friend who opens an account through it earns them a reward on each order delivered, added to their balance after the holding period — booked as a promotion. {count} shoppers have joined through a referral.", { count: list.counts.referrals })}
+          {t("admin.esim.referralsHint", "Shoppers share the home page with ?ref=<code> (any page works, as does /esim/invite/<code>). A friend who opens an account through it earns them a reward on each order delivered, added to their balance after the holding period — booked as a promotion. {count} shoppers have joined through a referral.", { count: list.counts.referrals })}
         </p>
       </div>
 

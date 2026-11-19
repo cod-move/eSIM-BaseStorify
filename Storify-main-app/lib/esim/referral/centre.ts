@@ -78,7 +78,7 @@ export async function referralCentre(userId: string): Promise<ReferralCentre> {
   return {
     enabled: settings.enabled,
     code,
-    link: `${appBaseUrl()}/esim/invite/${code}`,
+    link: `${appBaseUrl()}/?ref=${code}`,
     offer: {
       commissionType: settings.commissionType,
       commissionValue: settings.commissionValue,

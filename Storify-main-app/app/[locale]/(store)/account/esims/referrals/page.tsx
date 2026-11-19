@@ -8,6 +8,9 @@ import { getAccountSession } from "@/lib/customers/account-data";
 import { referralCentre } from "@/lib/esim/referral/centre";
 import { formatStorePrice } from "@/lib/esim/topup/format";
 import { ReferralCode } from "@/components/esim/referral-code";
+import { appBaseUrl } from "@/lib/app-url";
+import { destinationPath, listDestinations } from "@/lib/esim/storefront/catalog";
+import { localizeDestinations } from "@/lib/esim/storefront/destination-names";
 
 interface PageProps {
   params: Promise<{ locale: string }>;
@@ -25,7 +28,11 @@ export default async function AccountReferralsPage({ params }: PageProps) {
   const session = await getAccountSession();
   if (!session) notFound();
   await connectDB();
-  const centre = await referralCentre(session.user.id);
+  const [centre, destinations] = await Promise.all([referralCentre(session.user.id), listDestinations()]);
+  // The countries a shopper may send a friend to (the invite link's "A country").
+  const countries = (await localizeDestinations(destinations.filter((entry) => entry.scope === "local"), locale))
+    .map((entry) => ({ name: entry.name, path: destinationPath(entry) }))
+    .sort((a, b) => a.name.localeCompare(b.name, locale));
   const date = new Intl.DateTimeFormat(locale, { dateStyle: "medium" });
   const money = (units: number) => formatStorePrice(Math.round(units * 100), locale);
   const reward =
@@ -91,7 +98,7 @@ export default async function AccountReferralsPage({ params }: PageProps) {
           <CardTitle className="text-base">{tr("esim.referral.share", "Share your link")}</CardTitle>
         </CardHeader>
         <CardContent>
-          <ReferralCode code={centre.code} link={centre.link} />
+          <ReferralCode code={centre.code} base={appBaseUrl()} countries={countries} />
         </CardContent>
       </Card>
 
