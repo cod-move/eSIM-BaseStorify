@@ -12,6 +12,7 @@ import { esimDevicesRoute } from "./devices";
 import { esimPlanDetailsRoute } from "./plan-details";
 import { esimKycFileRoute, esimKycRoute, esimKycSubmitRoute } from "./kyc";
 import { toEsimDetail, toEsimSummary } from "./dto";
+import { esimCoverage } from "@/lib/esim/account/coverage";
 import { esimTopupQuoteRoute, esimTopupsRoute } from "./topups";
 import { esimNumberPriceRoute, esimNumberQuoteRoute, esimNumberShopRoute } from "./number-shop";
 import { cancelMyNumberPacketRoute, myNumberRemarkRoute, myNumberRoute, myNumbersRoute, myNumberTopupQuoteRoute, refreshMyNumberRoute } from "./numbers";
@@ -65,6 +66,20 @@ export const myEsimsRoute = defineRoute({
   },
 });
 
+/** The eSIM's countries and operators, added to its detail (left out when unknown). */
+async function withCoverage(detail: EsimDetail, userId: string, esimId: string, locale: string): Promise<EsimDetail> {
+  const countries = await esimCoverage(userId, esimId, locale).catch(() => []);
+  if (!countries.length) return detail;
+  return {
+    ...detail,
+    coverage: countries.map((country) => ({
+      code: country.code,
+      name: country.name,
+      operators: country.operators.map((entry) => ({ operator: entry.operator, ...(entry.network ? { network: entry.network } : {}) })),
+    })),
+  };
+}
+
 /** GET /me/esims/{id}: one of the shopper's eSIMs, with how to install it. */
 export const myEsimRoute = defineRoute({
   id: "me.esims.detail",
@@ -74,11 +89,11 @@ export const myEsimRoute = defineRoute({
   cache: { kind: "private" },
   etag: true,
   output: EsimDetail,
-  handler: async ({ session, params }) => {
+  handler: async ({ session, params, locale }) => {
     await connectDB();
     const view = await getCustomerEsim(session.user.id, params.id);
     if (!view) throw esimNotFound();
-    return toEsimDetail(view, await cancellationOf(session.user.id, params.id));
+    return withCoverage(await toEsimDetail(view, await cancellationOf(session.user.id, params.id)), session.user.id, params.id, locale);
   },
 });
 
@@ -93,11 +108,11 @@ export const refreshMyEsimRoute = defineRoute({
   output: EsimDetail,
   rateLimit: { bucket: "esim:refresh", preset: "moderate" },
   demo: "allow",
-  handler: async ({ session, params }) => {
+  handler: async ({ session, params, locale }) => {
     await connectDB();
     const result = await refreshCustomerEsim(session.user.id, params.id);
     if (!result.view) throw esimNotFound();
-    return toEsimDetail(result.view, await cancellationOf(session.user.id, params.id));
+    return withCoverage(await toEsimDetail(result.view, await cancellationOf(session.user.id, params.id)), session.user.id, params.id, locale);
   },
 });
 

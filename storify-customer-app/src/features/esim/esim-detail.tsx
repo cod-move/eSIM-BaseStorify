@@ -2,7 +2,7 @@ import { setStringAsync } from 'expo-clipboard';
 import { useRouter } from 'expo-router';
 import { openURL } from 'expo-linking';
 import { useState } from 'react';
-import { Platform, ScrollView, View } from 'react-native';
+import { Platform, Pressable, ScrollView, View } from 'react-native';
 import { useFormatter, useTranslations } from 'use-intl';
 
 import { useTabBarHeight } from '@/components/shell/tab-bar';
@@ -109,8 +109,48 @@ export function EsimDetailView({ esim }: { esim: EsimDetail }) {
         <Fact label={t('order')} value={esim.orderNumber} />
       </View>
 
+      {esim.coverage?.length ? <Coverage countries={esim.coverage} /> : null}
+
       <DeleteEsim id={esim.id} />
     </ScrollView>
+  );
+}
+
+const SHOWN_COUNTRIES = 8;
+
+/** The countries the eSIM works in, each with its operators and fastest network. */
+function Coverage({ countries }: { countries: NonNullable<EsimDetail['coverage']> }) {
+  const t = useTranslations('esim');
+  const [all, setAll] = useState(false);
+  const shown = all ? countries : countries.slice(0, SHOWN_COUNTRIES);
+  return (
+    <View className="gap-2 rounded-xl bg-surface p-4">
+      <Text variant="subheading">{t('planCoverage')}</Text>
+      {shown.map((country) => (
+        <View key={country.code} className="gap-0.5">
+          <Text>{country.name}</Text>
+          {country.operators.length ? (
+            <Text variant="caption">
+              {country.operators
+                .map((entry) =>
+                  entry.network ? `${entry.operator} (${entry.network})` : entry.operator
+                )
+                .join(', ')}
+            </Text>
+          ) : null}
+        </View>
+      ))}
+      {countries.length > SHOWN_COUNTRIES ? (
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => setAll((value) => !value)}
+          className="min-h-9 justify-center active:opacity-70">
+          <Text className="text-link">
+            {all ? t('filterFewer') : t('showAllCountries', { count: countries.length })}
+          </Text>
+        </Pressable>
+      ) : null}
+    </View>
   );
 }
 

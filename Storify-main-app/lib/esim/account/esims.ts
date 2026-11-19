@@ -57,7 +57,7 @@ export interface EsimView {
   bundles: IEsimProfile["bundles"];
 }
 
-async function ownerFilter(userId: string) {
+export async function ownerFilter(userId: string) {
   const user = await User.findById(userId).select({ email: 1, emailVerified: 1 }).lean<{
     email?: string;
     emailVerified?: boolean;

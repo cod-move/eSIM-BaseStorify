@@ -131,6 +131,20 @@ export const EsimDetail = EsimSummary.extend({
    * (`toBalance`) or back to the payment, `fee` is kept.
    */
   cancellation: z.object({ refund: Money, fee: Money, toBalance: z.boolean() }).optional(),
+  /**
+   * The countries it works in, each with its operators and their fastest
+   * network; names in the request's language. Left out when unknown (a
+   * migrated eSIM whose plan is not in the catalogue).
+   */
+  coverage: z
+    .array(
+      z.object({
+        code: z.string(),
+        name: z.string(),
+        operators: z.array(z.object({ operator: z.string(), network: z.string().optional() })),
+      }),
+    )
+    .optional(),
 });
 export type EsimDetail = z.infer<typeof EsimDetail>;
 

@@ -18,6 +18,8 @@ import { esimTopupStatus } from "@/lib/esim/topup/offers";
 import { REFUSAL_TEXT } from "@/lib/esim/topup/eligibility";
 import { TOPUP_STATUS_TEXT, listEsimTopups } from "@/lib/esim/topup/history";
 import { formatStorePrice } from "@/lib/esim/topup/format";
+import { esimCoverage } from "@/lib/esim/account/coverage";
+import { Flag } from "@/components/esim/flag";
 
 interface PageProps {
   params: Promise<{ locale: string; id: string }>;
@@ -39,7 +41,13 @@ export default async function AccountEsimPage({ params }: PageProps) {
   await connectDB();
   const esim = await getCustomerEsimFresh(session.user.id, id);
   if (!esim) notFound();
-  const [topup, topups, cancel] = await Promise.all([esimTopupStatus(session.user.id, id), listEsimTopups(session.user.id, id), shopperCancelOffer(session.user.id, id)]);
+  const [topup, topups, cancel, coverage] = await Promise.all([
+    esimTopupStatus(session.user.id, id),
+    listEsimTopups(session.user.id, id),
+    shopperCancelOffer(session.user.id, id),
+    esimCoverage(session.user.id, id, locale),
+  ]);
+  const noOperators = coverage.every((country) => country.operators.length === 0);
 
   const date = new Intl.DateTimeFormat(locale, { dateStyle: "medium" });
   const dateTime = new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short" });
@@ -223,6 +231,46 @@ export default async function AccountEsimPage({ params }: PageProps) {
           {vpn ? row(tr("esim.account.vpn", "VPN included"), [vpn.accountNumber, vpn.expiresAt ? date.format(vpn.expiresAt) : null].filter(Boolean).join(" · ") || "✓") : null}
         </CardContent>
       </Card>
+
+      {coverage.length ? (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">
+              {tr("esim.plans.coverageTitle", "Coverage and networks")}
+              <span className="ms-2 text-sm font-normal text-muted-foreground">
+                {tr("esim.account.coverageCount", "{count} countries", { count: coverage.length })}
+              </span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {noOperators ? (
+              <p className="text-sm text-muted-foreground">
+                {tr("esim.coverage.operatorUnknown", "Not provided by the supplier. Once installed, the eSIM connects to a local operator automatically.")}
+              </p>
+            ) : null}
+            <details open={coverage.length <= 12} className="group">
+              {coverage.length > 12 ? (
+                <summary className="cursor-pointer text-sm text-primary">{tr("esim.account.coverageShow", "Show all countries")}</summary>
+              ) : null}
+              <ul className="mt-2 divide-y">
+                {coverage.map((country) => (
+                  <li key={country.code} className="flex flex-wrap items-start justify-between gap-x-4 gap-y-1 py-2 text-sm">
+                    <span className="inline-flex items-center gap-2 font-medium">
+                      <Flag code={country.code} className="h-4 w-6 rounded-sm" />
+                      {country.name}
+                    </span>
+                    {country.operators.length ? (
+                      <span className="text-end text-muted-foreground">
+                        {country.operators.map((entry) => (entry.network ? `${entry.operator} (${entry.network})` : entry.operator)).join(" · ")}
+                      </span>
+                    ) : null}
+                  </li>
+                ))}
+              </ul>
+            </details>
+          </CardContent>
+        </Card>
+      ) : null}
 
       <div className="flex justify-end">
         <DeleteEsimButton esimId={esim.id} />
