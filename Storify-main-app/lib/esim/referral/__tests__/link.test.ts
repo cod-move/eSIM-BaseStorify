@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { inviteRedirectFor, safeReturnPath } from "../link";
+import { inviteRedirectFor, publicOrigin, safeReturnPath } from "../link";
 
 test("a page with ?ref= goes through the invite route and back, without the ref", () => {
   assert.equal(inviteRedirectFor("/", "?ref=CJRY52F5"), "/esim/invite/CJRY52F5?to=%2F");
@@ -23,4 +23,12 @@ test("the return path stays on this site", () => {
   for (const bad of [null, "", "https://evil.example", "//evil.example", "/\\evil", "/en/esim/invite/X"]) {
     assert.equal(safeReturnPath(bad, "/en/esim"), "/en/esim");
   }
+});
+
+test("the redirect goes to the visitor's own host, not the address Next listens on", () => {
+  const fallback = "http://localhost:3000";
+  assert.equal(publicOrigin(new Headers({ "x-forwarded-host": "www.codsim.cc", "x-forwarded-proto": "https" }), fallback), "https://www.codsim.cc");
+  assert.equal(publicOrigin(new Headers({ host: "www.codsim.cc", "x-forwarded-proto": "https" }), fallback), "https://www.codsim.cc");
+  assert.equal(publicOrigin(new Headers({ host: "evil/x" }), fallback), fallback);
+  assert.equal(publicOrigin(new Headers(), fallback), fallback);
 });

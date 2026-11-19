@@ -29,7 +29,7 @@ import { getSettings, Settings } from "@/models/settings.model";
 import { isMobileApiPath, mobileGate } from "@/lib/api-core/gate";
 import { resolveMobileAppSettings } from "@/lib/settings/mobile-app";
 import { blockedWhileImpersonating, hasImpersonationMarker } from "@/lib/esim/admin/impersonation-guard"; // [esim-patch] P60
-import { inviteRedirectFor } from "@/lib/esim/referral/link"; // [esim-patch] P80
+import { inviteRedirectFor, publicOrigin } from "@/lib/esim/referral/link"; // [esim-patch] P80
 
 /**
  * The store's default language owns the unprefixed URLs (`/products`), every
@@ -583,7 +583,8 @@ export async function proxy(request: NextRequest) {
   // [esim-patch] P80 an invite code on any page (?ref=CODE) goes through the invite route and back.
   if (request.method === "GET") {
     const invite = inviteRedirectFor(pathname, request.nextUrl.search);
-    if (invite) return new NextResponse(null, { status: 307, headers: { Location: invite } });
+    // The proxy takes absolute redirects only; the visitor's own host, as the reverse proxy forwards it.
+    if (invite) return NextResponse.redirect(new URL(invite, publicOrigin(request.headers, request.nextUrl.origin)), 307);
   }
 
   if (

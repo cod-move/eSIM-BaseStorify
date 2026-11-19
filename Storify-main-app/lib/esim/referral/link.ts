@@ -21,6 +21,19 @@ export function inviteRedirectFor(pathname: string, search: string): string | nu
   return `/esim/invite/${encodeURIComponent(code)}?to=${encodeURIComponent(to)}`;
 }
 
+/**
+ * The site's address as the visitor typed it: the reverse proxy's
+ * `X-Forwarded-Host`/`-Proto`, else `Host`, else `fallback`. Behind nginx the
+ * request's own URL is the address Next listens on (http://localhost:3000).
+ */
+export function publicOrigin(headers: Headers, fallback: string): string {
+  const host = (headers.get("x-forwarded-host") ?? headers.get("host") ?? "").split(",")[0].trim();
+  if (!host || !/^[A-Za-z0-9.-]+(:\d+)?$/.test(host)) return fallback;
+  const forwarded = headers.get("x-forwarded-proto")?.split(",")[0].trim();
+  const proto = forwarded === "http" || forwarded === "https" ? forwarded : new URL(fallback).protocol.replace(":", "");
+  return `${proto}://${host}`;
+}
+
 /** Where the invite route sends the visitor: a page of this site only, else `fallback`. */
 export function safeReturnPath(to: string | null | undefined, fallback: string): string {
   if (!to || !to.startsWith("/") || to.startsWith("//") || to.includes("\\") || /[\r\n]/.test(to)) return fallback;
