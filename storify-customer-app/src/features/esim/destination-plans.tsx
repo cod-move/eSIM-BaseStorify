@@ -13,6 +13,7 @@ import { useToast } from '@/components/ui/toast';
 import type { EsimDestinationDetail, EsimPlanOption } from '@/contracts/mobile/shop/v1/esim';
 import { useSetCartLine } from '@/features/cart/use-cart';
 import { addDays, daysBetween, readableDay } from '@/features/esim/start-date';
+import { CoverageFlags } from '@/features/esim/coverage-flags';
 import { DestinationFlag } from '@/features/esim/destination-flag';
 import { chooseFilter, filterPlans, openValues, type PlanFilters } from '@/features/esim/plan-filter';
 import { PlanDetailsSheet } from '@/features/esim/plan-details-sheet';
@@ -124,11 +125,7 @@ export function DestinationPlans({ destination }: { destination: EsimDestination
           <DestinationFlag destination={destination} size={52} />
           <View className="flex-1 gap-0.5">
             <Text variant="title">{destination.name}</Text>
-            {destination.scope === 'local' ? null : (
-              <Text variant="caption">
-                {destination.countryNames.map((country) => country.name).join(', ')}
-              </Text>
-            )}
+            {destination.scope === 'local' ? null : <CoverageFlags countries={destination.countryNames} />}
           </View>
         </View>
 
@@ -292,7 +289,7 @@ export function DestinationPlans({ destination }: { destination: EsimDestination
           </View>
         ) : null}
 
-        {destination.networks.length ? (
+        {destination.scope === 'local' && destination.networks.length ? (
           <View className="gap-1 rounded-xl bg-surface p-4">
             <Text variant="subheading">{t('networks')}</Text>
             {destination.networks.map((network) => (

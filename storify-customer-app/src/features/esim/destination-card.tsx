@@ -51,12 +51,14 @@ export function DestinationCard({
   );
 }
 
-/** Destinations two by two. */
+/** Destinations two by two, or one a row (regions and global plans: long names). */
 export function DestinationGrid({
   destinations,
   showPrice,
   onPress,
+  columns = 2,
 }: {
+  columns?: 1 | 2;
   destinations: EsimDestination[];
   showPrice?: boolean;
   onPress: (destination: EsimDestination) => void;
@@ -69,7 +71,7 @@ export function DestinationGrid({
           destination={destination}
           showPrice={showPrice}
           onPress={() => onPress(destination)}
-          className="w-[48.5%]"
+          className={columns === 2 ? 'w-[48.5%]' : 'w-full'}
         />
       ))}
     </View>

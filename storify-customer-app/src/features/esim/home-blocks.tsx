@@ -127,6 +127,7 @@ function DestinationTabs({ block }: { block: EsimDestinationsBlock }) {
         <View className="gap-3 p-3">
           <DestinationGrid
             destinations={current.destinations}
+            columns={current.scope === 'local' ? 2 : 1}
             showPrice={block.showPrice}
             onPress={(destination) => router.push(destinationHref(destination))}
           />
