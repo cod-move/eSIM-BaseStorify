@@ -91,6 +91,10 @@
     {
       "path": "/api/cron/esim-usage",
       "schedule": "*/30 * * * *"
+    },
+    {
+      "path": "/api/cron/esim-number-balance",
+      "schedule": "0 4 * * *"
     }
   ]
 }

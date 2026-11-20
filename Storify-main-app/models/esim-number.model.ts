@@ -65,6 +65,8 @@ export interface IEsimNumber extends mongoose.Document {
     lastUsedAt: Date | null;
     packages?: NumberCardPackage[];
   } | null;
+  /** The day (YYYY-MM-DD, UTC) each balance notice last went out: one of each kind a day. */
+  balanceAlerts?: { lowOn?: string | null; emptyOn?: string | null } | null;
   legacyId?: number | null;
   createdAt: Date;
   updatedAt: Date;
@@ -141,6 +143,10 @@ const EsimNumberSchema = new Schema<IEsimNumber>(
         },
         { _id: false },
       ),
+      default: null,
+    },
+    balanceAlerts: {
+      type: new Schema({ lowOn: { type: String, default: null }, emptyOn: { type: String, default: null } }, { _id: false }),
       default: null,
     },
     legacyId: { type: Number, default: null, sparse: true },
