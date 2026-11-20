@@ -23,10 +23,13 @@ export function DestinationBrowser({ destinations }: { destinations: EsimDestina
   const t = useTranslations('esim');
   const router = useRouter();
   const tabBar = useTabBarHeight();
-  // Two cards a row, 16 pt at the sides and 12 between them.
-  const cardWidth = (useWindowDimensions().width - 32 - 12) / 2;
   const [tab, setTab] = useState<Tab>('local');
   const [query, setQuery] = useState('');
+  // Countries two a row; regions and global plans (long names) and search results one a row.
+  const columns = tab === 'local' && !query.trim() ? 2 : 1;
+  // 16 pt at the sides and 12 between the two cards.
+  const width = useWindowDimensions().width - 32;
+  const cardWidth = columns === 2 ? (width - 12) / 2 : width;
 
   const shown = useMemo(() => {
     const words = query.trim().toLowerCase();
@@ -43,8 +46,9 @@ export function DestinationBrowser({ destinations }: { destinations: EsimDestina
       data={shown}
       keyExtractor={(destination) => `${destination.pathScope}:${destination.slug}`}
       className="flex-1 bg-background"
-      numColumns={2}
-      columnWrapperStyle={{ gap: 12 }}
+      key={columns}
+      numColumns={columns}
+      columnWrapperStyle={columns > 1 ? { gap: 12 } : undefined}
       contentContainerClassName="gap-3 px-4 pt-3"
       contentContainerStyle={{ paddingBottom: tabBar + 16 }}
       keyboardShouldPersistTaps="handled"
