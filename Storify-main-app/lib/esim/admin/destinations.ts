@@ -10,7 +10,7 @@ import { EsimProductLink } from "@/models/esim-product-link.model";
 import { revalidateProductContent } from "@/lib/cache-invalidation";
 import { publishDestinations, setPlansStatus } from "@/lib/esim/admin/plans";
 import { listDestinations } from "@/lib/esim/storefront/catalog";
-import { destinationNameIn } from "@/lib/esim/storefront/destination-name";
+import { automaticNameIn, destinationNameIn } from "@/lib/esim/storefront/destination-name";
 import { getLocaleRouting } from "@/lib/i18n/locale-routing";
 
 /**
@@ -178,7 +178,12 @@ export async function getDestinationNames(productSlug: string) {
   const given = Object.fromEntries(Object.entries((choice?.names ?? {}) as Record<string, string>).filter(([, value]) => typeof value === "string" && value.trim()));
   return {
     supplierName: destination.name,
-    languages: routing.enabled.map((locale) => ({ locale, automatic: destinationNameIn(destination, locale), given: given[locale] ?? "" })),
+    languages: routing.enabled.map((locale) => {
+      const automatic = destinationNameIn(destination, locale);
+      // Left in the supplier's English: worth a name of the admin's own.
+      const english = locale !== "en" && !locale.startsWith("en-") && automaticNameIn(destination, locale) === null;
+      return { locale, automatic, given: given[locale] ?? "", english };
+    }),
   };
 }
 

@@ -9,8 +9,13 @@
  *   a destination → Names), when there is one;
  * - otherwise, for a single country named plainly after itself ("China",
  *   "Japan"), the country's name in that language ("中国", "日本");
+ * - otherwise, for a region or several countries in one of the usual shapes
+ *   ("Europe (35 countries)", "China + Hong Kong", "Australia(Promo)"), the
+ *   name put together in that language (lib/esim/storefront/region-name.ts);
  * - otherwise the supplier's name.
  */
+
+import { regionNameIn } from "@/lib/esim/storefront/region-name";
 
 export interface NamedDestination {
   slug: string;
@@ -100,15 +105,22 @@ export function destinationNameIn(destination: NamedDestination, locale: string,
   const given = names[destination.slug]?.[locale]?.trim();
   if (given) return given;
   if (locale === "en" || locale.startsWith("en-")) return destination.name;
+  return automaticNameIn(destination, locale) ?? destination.name;
+}
+
+/** The name put together in `locale` (not English) without an admin's; null when it stays the supplier's. */
+export function automaticNameIn(destination: NamedDestination, locale: string): string | null {
   const country = destination.scope === "local" && destination.countries.length === 1 ? destination.countries[0] : null;
-  if (!country || !/^[A-Z]{2}$/.test(country.code)) return destination.name;
-  // Only a name that is just the country's: "China mainland" or "Japan 5G" stay as they are.
-  if (!namesCountry(destination.name, country.code, country.name)) return destination.name;
-  try {
-    return new Intl.DisplayNames([locale], { type: "region" }).of(country.code) ?? destination.name;
-  } catch {
-    return destination.name;
+  // Only a name that is just the country's: "China mainland" or "Japan 5G" are not.
+  if (country && /^[A-Z]{2}$/.test(country.code) && namesCountry(destination.name, country.code, country.name)) {
+    try {
+      const own = new Intl.DisplayNames([locale], { type: "region" }).of(country.code);
+      if (own) return own;
+    } catch {
+      // then as a region below, else the supplier's name
+    }
   }
+  return regionNameIn(destination.name, locale, ALSO_KNOWN_AS);
 }
 
 /** The destinations with their names in `locale`; the English name stays as `englishName`, for search. */

@@ -15,12 +15,13 @@ import { apiClient } from "@/lib/api/client";
 /**
  * A destination's name in each store language (WEB-01). Left empty, a
  * language shows the automatic name: the country's own name for a plain
- * single-country destination, the supplier's English name otherwise.
+ * single-country destination, a region's put together in the language
+ * (lib/esim/storefront/region-name.ts), the supplier's English otherwise.
  */
 
 export interface DestinationNamesView {
   supplierName: string;
-  languages: Array<{ locale: string; automatic: string; given: string }>;
+  languages: Array<{ locale: string; automatic: string; given: string; english?: boolean }>;
 }
 
 export function EsimDestinationNamesCard({ productSlug, names, canManage }: { productSlug: string; names: DestinationNamesView; canManage: boolean }) {
@@ -56,7 +57,7 @@ export function EsimDestinationNamesCard({ productSlug, names, canManage }: { pr
         <CardDescription>
           {t(
             "admin.esim.destinationNamesHint",
-            "The supplier calls it \"{name}\". Leave a language empty to show the automatic name in grey: the country's own name for a single country, the supplier's name otherwise.",
+            "The supplier calls it \"{name}\". Leave a language empty to show the automatic name in grey: a single country's own name, or a region's put together in that language (\"Europe (35 countries)\", \"China + Hong Kong\"). A name that cannot be put together keeps the supplier's English and is marked below.",
             { name: names.supplierName },
           )}
         </CardDescription>
@@ -76,6 +77,11 @@ export function EsimDestinationNamesCard({ productSlug, names, canManage }: { pr
                 disabled={!canManage}
                 onChange={(event) => setDraft({ ...draft, [entry.locale]: event.target.value })}
               />
+              {entry.english && !(draft[entry.locale] ?? "").trim() ? (
+                <p className="text-xs text-amber-600 dark:text-amber-400">
+                  {t("admin.esim.destinationNameEnglish", "Not translated: shows the supplier's English name")}
+                </p>
+              ) : null}
             </div>
           ))}
         </div>

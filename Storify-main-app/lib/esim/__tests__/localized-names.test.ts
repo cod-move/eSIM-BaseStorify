@@ -27,14 +27,46 @@ describe("destination names by language", () => {
   it("keeps English pages and names that say more than the country", () => {
     assert.equal(destinationNameIn(china, "en"), "China");
     assert.equal(destinationNameIn(mainland, "zh"), "China mainland");
-    assert.equal(destinationNameIn(europe, "zh"), "Europe 35 areas");
+    assert.equal(destinationNameIn(europe, "en"), "Europe 35 areas");
+  });
+
+  it("puts together regions and several countries in the page's language", () => {
+    const region = (name: string) => destinationNameIn({ slug: "x", name, scope: "regional", countries: [] }, "zh");
+    assert.equal(region("Europe 35 areas"), "欧洲（35 个国家/地区）");
+    assert.equal(region("Europe (35 countries)"), "欧洲（35 个国家/地区）");
+    assert.equal(region("Global (140 countries)"), "全球（140 个国家/地区）");
+    assert.equal(region("Caribbean (20+ areas)"), "加勒比地区（20+ 个国家/地区）");
+    assert.equal(region("Asia 30"), "亚洲（30 个国家/地区）");
+    assert.equal(region("West Asia8"), "西亚（8 个国家/地区）");
+    assert.equal(region("North and South America18"), "北美洲 + 南美洲（18 个国家/地区）");
+    assert.equal(region("Middle East & North Africa"), "中东 + 北非");
+    assert.equal(region("Europe 40 & Middle East"), "欧洲（40 个国家/地区） + 中东");
+    assert.equal(region("China + Hong Kong + Macao"), "中国 + 香港 + 澳门");
+    assert.equal(region("Japan & Korea"), "日本 + 韩国");
+    assert.equal(region("France,Germany,Italy & UK"), "法国 + 德国 + 意大利 + 英国");
+    assert.equal(region("Saudi Arabia + United Arab Emirates"), "沙特阿拉伯 + 阿拉伯联合酋长国");
+    assert.equal(region("Australia(Promo)"), "澳大利亚 · 特惠");
+    assert.equal(region("Mexico(New)"), "墨西哥 · 新");
+    assert.equal(region("Caribbean (20+ areas) 1GB/Day"), "加勒比地区（20+ 个国家/地区） · 每天 1GB");
+    assert.equal(region("South America (15+ areas) eSIM Unlimited -"), "南美洲（15+ 个国家/地区） · 无限流量");
+    assert.equal(destinationNameIn({ slug: "x", name: "Europe (35 countries)", scope: "regional", countries: [] }, "de"), "Europa (35 Länder)");
+    assert.equal(destinationNameIn({ slug: "x", name: "Europe (35 countries)", scope: "regional", countries: [] }, "zh-hant"), "歐洲（35 個國家/地區）");
+  });
+
+  it("leaves a name it does not fully understand in English", () => {
+    const region = (name: string, locale = "zh") => destinationNameIn({ slug: "x", name, scope: "regional", countries: [] }, locale);
+    assert.equal(region("Europe Plus"), "Europe Plus");
+    assert.equal(region("China + Atlantis"), "China + Atlantis");
+    assert.equal(region("Japan (3 countries)"), "Japan (3 countries)", "a count after one country");
+    assert.equal(region("Japan 5"), "Japan 5");
+    assert.equal(region("Middle East (5 countries)", "ig"), "Middle East (5 countries)", "a language without the region's word");
   });
 
   it("uses the name an admin gave for the language first", () => {
     const names = { "china-mainland": { zh: "中国大陆" }, "europe-35-areas": { zh: "欧洲 35 国" } };
     assert.equal(destinationNameIn(mainland, "zh", names), "中国大陆");
     assert.equal(destinationNameIn(europe, "zh", names), "欧洲 35 国");
-    assert.equal(destinationNameIn(europe, "ja", names), "Europe 35 areas", "another language without one keeps the supplier's");
+    assert.equal(destinationNameIn(europe, "ja", names), "ヨーロッパ（35か国・地域）", "another language without one is put together");
     const [shown] = destinationsIn([europe], "zh", names);
     assert.equal(shown.englishName, "Europe 35 areas", "the English name stays for search");
   });
