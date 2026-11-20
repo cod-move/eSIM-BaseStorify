@@ -306,7 +306,8 @@
       "whenFirstOrder": "उनके पहले ऑर्डर के बाद",
       "offerData": "आपके लिंक से जुड़ने वाले हर दोस्त के लिए {when} आपको {amount} डेटा मिलता है।",
       "friendGetsData": "आपके दोस्त को {when} {amount} डेटा मिलता है।",
-      "dataEarned": "मिला डेटा"
+      "dataEarned": "मिला डेटा",
+      "shareText": "Join me and we both get free data, plus more free data every day you check in:"
     },
     "kyc": {
       "title": "पहचान सत्यापन",

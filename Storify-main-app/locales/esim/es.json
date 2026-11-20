@@ -306,7 +306,8 @@
       "whenFirstOrder": "tras su primer pedido",
       "offerData": "Por cada amigo que se una con tu enlace recibes {amount} de datos, {when}.",
       "friendGetsData": "Tu amigo recibe {amount} de datos {when}.",
-      "dataEarned": "Datos ganados"
+      "dataEarned": "Datos ganados",
+      "shareText": "Únete y los dos recibimos datos gratis, y más datos gratis cada día que hagas check-in:"
     },
     "kyc": {
       "title": "Verificación de identidad",

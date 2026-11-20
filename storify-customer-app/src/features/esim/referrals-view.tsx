@@ -108,7 +108,7 @@ export function ReferralsContent({ centre }: { centre: EsimReferrals }) {
             label={t('share')}
             icon="share"
             className="flex-1"
-            onPress={() => void Share.share({ message: centre.link })}
+            onPress={() => void Share.share({ message: `${t('referralShareText')}\n${centre.link}` })}
           />
           <Button
             label={t('copy')}
@@ -116,7 +116,7 @@ export function ReferralsContent({ centre }: { centre: EsimReferrals }) {
             variant="secondary"
             className="flex-1"
             onPress={() => {
-              setStringAsync(centre.link)
+              setStringAsync(`${t('referralShareText')}\n${centre.link}`)
                 .then(() => toast.show({ message: t('copied') }))
                 .catch(() => undefined);
             }}

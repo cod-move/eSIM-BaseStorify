@@ -519,6 +519,7 @@
     "welcomeEnds": "請在 {date} 前結帳時使用。",
     "welcomeUse": "結帳時輸入即可使用。",
     "welcomeDone": "已使用或已過期。",
-    "friendsMore": "查看更多（還有 {count} 位）"
+    "friendsMore": "查看更多（還有 {count} 位）",
+    "referralShareText": "邀請好友註冊，雙方各得免費流量；每天簽到還能領取流量："
   }
 }

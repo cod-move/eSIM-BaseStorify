@@ -306,7 +306,8 @@
       "whenFirstOrder": "na hun eerste bestelling",
       "offerData": "Voor elke vriend die via jouw link lid wordt krijg je {amount} data, {when}.",
       "friendGetsData": "Je vriend krijgt {amount} data {when}.",
-      "dataEarned": "Verdiende data"
+      "dataEarned": "Verdiende data",
+      "shareText": "Doe mee en we krijgen allebei gratis data, plus elke dag extra data als je inchecken:"
     },
     "kyc": {
       "title": "Identiteitsverificatie",

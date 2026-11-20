@@ -310,7 +310,8 @@
       "whenFirstOrder": "對方首單完成後",
       "offerData": "每邀請一位好友透過你的連結註冊，{when}你可獲得 {amount} 流量。",
       "friendGetsData": "好友{when}也可獲得 {amount} 流量。",
-      "dataEarned": "已獲得流量"
+      "dataEarned": "已獲得流量",
+      "shareText": "邀請好友註冊，雙方各得免費流量；每天簽到還能領取流量："
     },
     "kyc": {
       "title": "身份認證",

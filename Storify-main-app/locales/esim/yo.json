@@ -306,7 +306,8 @@
       "whenFirstOrder": "after their first order",
       "offerData": "You get {amount} of data for each friend who joins with your link, {when}.",
       "friendGetsData": "Your friend gets {amount} of data {when}.",
-      "dataEarned": "Data earned"
+      "dataEarned": "Data earned",
+      "shareText": "Join me and we both get free data, plus more free data every day you check in:"
     },
     "kyc": {
       "title": "Ìjẹ́rìísí ìdánimọ̀",

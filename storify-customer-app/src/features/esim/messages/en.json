@@ -519,6 +519,7 @@
     "welcomeEnds": "Enter it at checkout before {date}.",
     "welcomeUse": "Enter it at checkout.",
     "welcomeDone": "Used or expired.",
-    "friendsMore": "Show more ({count} more)"
+    "friendsMore": "Show more ({count} more)",
+    "referralShareText": "Join me and we both get free data, plus more free data every day you check in:"
   }
 }

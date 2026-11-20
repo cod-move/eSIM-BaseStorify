@@ -95,7 +95,8 @@ export function ReferralCode({
           type="button"
           variant="outline"
           onClick={async () => {
-            await navigator.clipboard.writeText(link);
+            const intro = t("esim.referral.shareText", "Join me and we both get free data, plus more free data every day you check in:");
+            await navigator.clipboard.writeText(`${intro}\n${link}`);
             setCopied(true);
             setTimeout(() => setCopied(false), 1500);
           }}

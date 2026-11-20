@@ -306,7 +306,8 @@
       "whenFirstOrder": "তাদের প্রথম অর্ডারের পরে",
       "offerData": "আপনার লিংকে যোগ দেওয়া প্রতিটি বন্ধুর জন্য {when} আপনি {amount} ডেটা পাবেন।",
       "friendGetsData": "আপনার বন্ধু {when} {amount} ডেটা পাবে।",
-      "dataEarned": "পাওয়া ডেটা"
+      "dataEarned": "পাওয়া ডেটা",
+      "shareText": "Join me and we both get free data, plus more free data every day you check in:"
     },
     "kyc": {
       "title": "পরিচয় যাচাই",

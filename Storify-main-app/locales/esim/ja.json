@@ -306,7 +306,8 @@
       "whenFirstOrder": "初回注文の後",
       "offerData": "あなたのリンクで友達が登録するごとに、{when}に {amount} のデータがもらえます。",
       "friendGetsData": "友達も{when}に {amount} のデータがもらえます。",
-      "dataEarned": "獲得したデータ"
+      "dataEarned": "獲得したデータ",
+      "shareText": "一緒に登録すると、お互いに無料データがもらえます。毎日のチェックインでもデータがもらえます："
     },
     "kyc": {
       "title": "本人確認",
