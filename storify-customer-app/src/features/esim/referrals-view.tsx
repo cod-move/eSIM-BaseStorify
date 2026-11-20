@@ -12,7 +12,7 @@ import { isApiError } from '@/api/errors';
 import { ESIM_REWARD_STATUSES, type EsimReferrals } from '@/contracts/mobile/shop/v1/esim';
 import { useErrorMessage } from '@/i18n/use-error-message';
 
-import { useSetReferralCode } from './use-account';
+import { useEsimReferralFriends, useSetReferralCode } from './use-account';
 
 /** The store's own rule for a code (lib/esim/referral/rules.ts). */
 const CODE_PATTERN = /^[A-Z0-9]{4,16}$/;
@@ -62,6 +62,11 @@ export function ReferralsContent({ centre }: { centre: EsimReferrals }) {
   const describe = useErrorMessage();
   const setCode = useSetReferralCode();
   const [code, setCodeText] = useState(centre.code);
+  // Friends past the first page, read when the shopper asks for more.
+  const [wantMore, setWantMore] = useState(false);
+  const more = useEsimReferralFriends(wantMore);
+  const friends = [...centre.invited, ...(more.data?.pages.flatMap((page) => page.items) ?? [])];
+  const friendsTotal = centre.invitedTotal ?? centre.invited.length;
   const rate = (value: Rate) =>
     value.kind === 'percent' ? `${value.percent}%` : value.amount.formatted;
   const date = (value: string) => format.dateTime(new Date(value), { dateStyle: 'medium' });
@@ -174,15 +179,24 @@ export function ReferralsContent({ centre }: { centre: EsimReferrals }) {
       )}
 
       <View className="gap-2 rounded-xl bg-surface p-4">
-        <Text variant="subheading">{t('invited', { count: centre.invited.length })}</Text>
-        {centre.invited.length === 0 ? <Text variant="caption">{t('invitedNone')}</Text> : null}
-        {centre.invited.map((friend) => (
+        <Text variant="subheading">{t('invited', { count: friendsTotal })}</Text>
+        {friendsTotal === 0 ? <Text variant="caption">{t('invitedNone')}</Text> : null}
+        {friends.map((friend) => (
           <View key={friend.id} className="flex-row justify-between gap-3">
             <Text className="flex-1">{friend.who}</Text>
             <Text variant="caption">{date(friend.joinedAt)}</Text>
             <Text>{friend.data ? `+${friend.data.formatted}` : friend.rewards.formatted}</Text>
           </View>
         ))}
+        {friends.length < friendsTotal && (!wantMore || more.hasNextPage) ? (
+          <Button
+            label={t('friendsMore', { count: friendsTotal - friends.length })}
+            variant="secondary"
+            size="sm"
+            loading={more.isFetching}
+            onPress={() => (wantMore ? void more.fetchNextPage() : setWantMore(true))}
+          />
+        ) : null}
       </View>
 
       {centre.rewards.length ? (

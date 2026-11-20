@@ -492,6 +492,22 @@ const EsimRate = z.union([
   z.object({ kind: z.literal("fixed"), amount: Money }),
 ]);
 
+/** A friend who joined with the shopper's link, shown in part, and what they earned the shopper. */
+export const EsimReferralFriend = z.object({ id: z.string(), who: z.string(), joinedAt: z.string(), rewards: Money, data: DataAmount.optional() });
+export type EsimReferralFriend = z.infer<typeof EsimReferralFriend>;
+
+/** GET /me/esim-referrals/friends?page= — the friends, newest first, a page at a time. */
+export const EsimReferralFriendsQuery = z.object({ page: z.number().int().min(1).max(100_000).optional() });
+export type EsimReferralFriendsQuery = z.infer<typeof EsimReferralFriendsQuery>;
+
+export const EsimReferralFriends = z.object({
+  items: z.array(EsimReferralFriend),
+  page: z.number().int(),
+  totalPages: z.number().int(),
+  total: z.number().int(),
+});
+export type EsimReferralFriends = z.infer<typeof EsimReferralFriends>;
+
 /** GET /me/esim-referrals */
 export const EsimReferrals = z.object({
   enabled: z.boolean(),
@@ -518,8 +534,10 @@ export const EsimReferrals = z.object({
       })
       .optional(),
   }),
-  /** `data`: what this friend earned the shopper in data, when any. */
-  invited: z.array(z.object({ id: z.string(), who: z.string(), joinedAt: z.string(), rewards: Money, data: DataAmount.optional() })),
+  /** The newest friends (a first page); `data`: what this friend earned the shopper in data, when any. */
+  invited: z.array(EsimReferralFriend),
+  /** Everyone who joined with the link; more of `invited` from GET /me/esim-referrals/friends. Left out by older stores. */
+  invitedTotal: z.number().int().optional(),
   rewards: z.array(EsimReferralReward),
   totals: z.object({ credited: Money, pending: Money }),
   /** Data earned for inviting, all friends together. */

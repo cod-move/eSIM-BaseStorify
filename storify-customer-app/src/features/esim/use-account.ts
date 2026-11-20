@@ -1,7 +1,8 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import {
   getEsimKyc,
+  getEsimReferralFriends,
   getEsimReferrals,
   getEsimRewards,
   getEsimWallet,
@@ -76,6 +77,23 @@ export function useRedeemEsimReward() {
       void client.invalidateQueries({ queryKey: queryKeys.esimRewards(locale) });
       void client.invalidateQueries({ queryKey: queryKeys.esimList(locale) });
     },
+  });
+}
+
+/**
+ * The friends after the first page the centre brought, a page at a time,
+ * once the shopper asks for more. Under the centre's key, so reading the
+ * centre again reads these again too.
+ */
+export function useEsimReferralFriends(enabled: boolean) {
+  const locale = useLocale();
+  return useInfiniteQuery({
+    queryKey: [...queryKeys.esimReferrals(locale), 'friends'],
+    queryFn: ({ pageParam, signal }) => getEsimReferralFriends(locale, pageParam, signal),
+    initialPageParam: 2,
+    getNextPageParam: (last) => (last.page < last.totalPages ? last.page + 1 : undefined),
+    staleTime: STALE.private,
+    enabled,
   });
 }
 

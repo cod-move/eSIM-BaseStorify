@@ -6,7 +6,7 @@ import { MobileApiError } from "@/lib/api-core/errors";
 import { defineRoute, type RouteEntry } from "@/lib/api-core/registry";
 import { connectDB } from "@/lib/db";
 import { getCustomerEsim, hideCustomerEsim, listCustomerEsims, refreshCustomerEsim } from "@/lib/esim/account/esims";
-import { esimReferralCodeRoute, esimReferralsRoute, esimWalletRoute } from "./account";
+import { esimReferralCodeRoute, esimReferralFriendsRoute, esimReferralsRoute, esimWalletRoute } from "./account";
 import { esimRewardsRoutes } from "./rewards";
 import { esimDestinationRoute, esimDestinationsRoute } from "./destinations";
 import { esimDevicesRoute } from "./devices";
@@ -193,4 +193,4 @@ const ESIM_NUMBER_ROUTES: readonly RouteEntry[] = [
 ];
 
 /** The eSIM module's shopper endpoints, for the API's route list (patch P22). */
-export const esimShopRoutes: readonly RouteEntry[] = [myEsimsRoute, myEsimRoute, refreshMyEsimRoute, esimDestinationsRoute, esimDestinationRoute, esimPlanDetailsRoute, esimTopupsRoute, esimTopupQuoteRoute, esimDevicesRoute, esimWalletRoute, esimReferralsRoute, esimReferralCodeRoute, esimKycRoute, esimKycFileRoute, esimKycSubmitRoute, cancelMyEsimRoute, deleteMyEsimRoute, ...esimRewardsRoutes, ...ESIM_NUMBER_ROUTES];
+export const esimShopRoutes: readonly RouteEntry[] = [myEsimsRoute, myEsimRoute, refreshMyEsimRoute, esimDestinationsRoute, esimDestinationRoute, esimPlanDetailsRoute, esimTopupsRoute, esimTopupQuoteRoute, esimDevicesRoute, esimWalletRoute, esimReferralsRoute, esimReferralFriendsRoute, esimReferralCodeRoute, esimKycRoute, esimKycFileRoute, esimKycSubmitRoute, cancelMyEsimRoute, deleteMyEsimRoute, ...esimRewardsRoutes, ...ESIM_NUMBER_ROUTES];

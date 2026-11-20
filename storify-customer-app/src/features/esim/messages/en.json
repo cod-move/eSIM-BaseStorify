@@ -518,6 +518,7 @@
     "welcomeOff": "{discount} off",
     "welcomeEnds": "Enter it at checkout before {date}.",
     "welcomeUse": "Enter it at checkout.",
-    "welcomeDone": "Used or expired."
+    "welcomeDone": "Used or expired.",
+    "friendsMore": "Show more ({count} more)"
   }
 }

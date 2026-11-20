@@ -12,6 +12,7 @@ import {
   type EsimKycSubmitRequest,
   EsimPlanDetails,
   EsimReferralCode,
+  EsimReferralFriends,
   EsimReferrals,
   EsimRewards,
   EsimRewardsRedeemResult,
@@ -149,6 +150,14 @@ export function getEsimWallet(locale: string, signal: AbortSignal) {
 /** The shopper's referral code, link, friends and rewards. */
 export function getEsimReferrals(locale: string, signal: AbortSignal) {
   return api.data({ locale, path: '/me/esim-referrals', auth: 'user', signal }, EsimReferrals);
+}
+
+/** More of the friends who joined with the shopper's link, a page at a time (the first page comes with the centre). */
+export function getEsimReferralFriends(locale: string, page: number, signal: AbortSignal) {
+  return api.data(
+    { locale, path: '/me/esim-referrals/friends', query: { page }, auth: 'user', signal },
+    EsimReferralFriends
+  );
 }
 
 /** The rewards centre (福利中心): the data balance, the Telegram link, what the data buys, every entry. */

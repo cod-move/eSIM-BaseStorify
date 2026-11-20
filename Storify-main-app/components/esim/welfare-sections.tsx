@@ -1,4 +1,6 @@
 import { getTranslations } from "next-intl/server";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import Link from "@/components/language/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ReferralCode } from "@/components/esim/referral-code";
 import { formatStorePrice } from "@/lib/esim/topup/format";
@@ -36,6 +38,7 @@ export async function InviteSection({ centre, countries, base, locale }: { centr
   const date = new Intl.DateTimeFormat(locale, { dateStyle: "medium" });
   const money = (units: number) => formatStorePrice(Math.round(units * 100), locale);
   const data = centre.offer.rewardType === "data";
+  const pageHref = (page: number) => (page > 1 ? `/account/esims/rewards?tab=invite&page=${page}` : "/account/esims/rewards?tab=invite");
   const when = (on: "signup" | "first_order") =>
     on === "signup" ? tr("esim.referral.whenSignup", "when they sign up") : tr("esim.referral.whenFirstOrder", "after their first order");
 
@@ -90,7 +93,7 @@ export async function InviteSection({ centre, countries, base, locale }: { centr
       </Card>
 
       <div className="grid gap-4 sm:grid-cols-3">
-        <Stat label={tr("esim.referral.joined", "Joined")} value={centre.invited.length} />
+        <Stat label={tr("esim.referral.joined", "Joined")} value={centre.invitedTotal} />
         {data || centre.dataEarnedMb > 0 ? <Stat label={tr("esim.referral.dataEarned", "Data earned")} value={formatMb(centre.dataEarnedMb)} /> : null}
         {!data || centre.totals.paid > 0 ? <Stat label={tr("esim.referral.paid", "Rewards received")} value={money(centre.totals.paid)} /> : null}
         {!data || centre.totals.pending > 0 ? <Stat label={tr("esim.referral.pending", "On hold")} value={money(centre.totals.pending)} /> : null}
@@ -101,7 +104,7 @@ export async function InviteSection({ centre, countries, base, locale }: { centr
           <CardTitle className="text-base">{tr("esim.referral.friends", "People you invited")}</CardTitle>
         </CardHeader>
         <CardContent className="divide-y">
-          {centre.invited.length === 0 ? (
+          {centre.invitedTotal === 0 ? (
             <p className="text-sm text-muted-foreground">{tr("esim.referral.noFriends", "Nobody has joined with your link yet.")}</p>
           ) : (
             centre.invited.map((entry) => (
@@ -115,6 +118,23 @@ export async function InviteSection({ centre, countries, base, locale }: { centr
               </div>
             ))
           )}
+          {centre.invitedTotalPages > 1 ? (
+            <div className="flex items-center justify-center gap-3 pt-3 text-sm">
+              {centre.invitedPage > 1 ? (
+                <Link href={pageHref(centre.invitedPage - 1)} scroll={false} className="inline-flex items-center rounded-md border px-2 py-1 hover:bg-muted" aria-label={tr("esim.referral.previous", "Previous")}>
+                  <ChevronLeft className="h-4 w-4 rtl:rotate-180" />
+                </Link>
+              ) : null}
+              <span className="text-muted-foreground">
+                {centre.invitedPage} / {centre.invitedTotalPages}
+              </span>
+              {centre.invitedPage < centre.invitedTotalPages ? (
+                <Link href={pageHref(centre.invitedPage + 1)} scroll={false} className="inline-flex items-center rounded-md border px-2 py-1 hover:bg-muted" aria-label={tr("esim.referral.next", "Next")}>
+                  <ChevronRight className="h-4 w-4 rtl:rotate-180" />
+                </Link>
+              ) : null}
+            </div>
+          ) : null}
         </CardContent>
       </Card>
 

@@ -518,6 +518,7 @@
     "welcomeOff": "立減 {discount}",
     "welcomeEnds": "請在 {date} 前結帳時使用。",
     "welcomeUse": "結帳時輸入即可使用。",
-    "welcomeDone": "已使用或已過期。"
+    "welcomeDone": "已使用或已過期。",
+    "friendsMore": "查看更多（還有 {count} 位）"
   }
 }

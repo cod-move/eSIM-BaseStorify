@@ -28,7 +28,11 @@ export interface ReferralCentre {
   link: string;
   offer: { rewardType: "credit" | "data"; data: ReferralDataReward; commissionType: "percent" | "fixed"; commissionValue: number; orderLimit: number; validityDays: number; coupon: { enabled: boolean; type: "percentage" | "fixed"; value: number } };
   /** `dataMb`: data this friend earned the shopper (rewardType "data"). */
-  invited: Array<{ id: string; who: string; joinedAt: Date; rewards: number; dataMb: number }>;
+  invited: FriendRow[];
+  /** Everyone who joined with the shopper's link, and the pages `invited` is one of. */
+  invitedTotal: number;
+  invitedPage: number;
+  invitedTotalPages: number;
   /** Data earned for inviting, all friends together. */
   dataEarnedMb: number;
   /** What this shopper got for joining through a friend's link: who invited them, and the data given (0 until given). */
@@ -60,37 +64,86 @@ async function welcomeCouponOf(userId: string): Promise<ReferralCentre["welcomeC
   };
 }
 
-export async function referralCentre(userId: string): Promise<ReferralCentre> {
+/** A friend who joined: shown in part, when, and what they earned the shopper (money and data). */
+export interface FriendRow {
+  id: string;
+  who: string;
+  joinedAt: Date;
+  rewards: number;
+  dataMb: number;
+}
+
+export const FRIENDS_PER_PAGE = 20;
+
+/**
+ * The friends who joined with the shopper's link, newest first, a page at a
+ * time (a busy referrer has thousands), with what each earned them: their
+ * commissions not cancelled, and the data given for them.
+ */
+export async function referralFriends(userId: string, page = 1, perPage = FRIENDS_PER_PAGE): Promise<{ items: FriendRow[]; page: number; totalPages: number; total: number }> {
+  const referrer = new mongoose.Types.ObjectId(userId);
+  const total = await EsimReferral.countDocuments({ referrer });
+  const totalPages = Math.max(1, Math.ceil(total / perPage));
+  const current = Math.min(Math.max(1, Math.floor(page) || 1), totalPages);
+  const referrals = await EsimReferral.find({ referrer })
+    .sort({ createdAt: -1, _id: -1 })
+    .skip((current - 1) * perPage)
+    .limit(perPage)
+    .lean();
+  const referees = referrals.map((referral) => referral.referee);
+  const [users, earned, data] = await Promise.all([
+    User.find({ _id: { $in: referees } }).select({ email: 1 }).lean<Array<{ _id: mongoose.Types.ObjectId; email?: string }>>(),
+    EsimReferralCommission.aggregate<{ _id: mongoose.Types.ObjectId; amount: number }>([
+      { $match: { referrer, referee: { $in: referees }, status: { $ne: "cancelled" } } },
+      { $group: { _id: "$referee", amount: { $sum: "$amount" } } },
+    ]),
+    EsimRewardEntry.find({ user: referrer, kind: "referral", referral: { $in: referrals.map((referral) => referral._id) } })
+      .select({ mb: 1, referral: 1 })
+      .lean(),
+  ]);
+  const emailById = new Map(users.map((user) => [String(user._id), user.email]));
+  const earnedBy = new Map(earned.map((row) => [String(row._id), row.amount]));
+  const dataBy = new Map(data.map((row) => [String(row.referral), row.mb]));
+  return {
+    items: referrals.map((referral) => ({
+      id: String(referral._id),
+      who: maskEmail(emailById.get(String(referral.referee))),
+      joinedAt: referral.createdAt,
+      rewards: Math.round((earnedBy.get(String(referral.referee)) ?? 0) * 100) / 100,
+      dataMb: dataBy.get(String(referral._id)) ?? 0,
+    })),
+    page: current,
+    totalPages,
+    total,
+  };
+}
+
+/** The rewards listed in the centre (the totals count them all). */
+const REWARDS_SHOWN = 100;
+
+export async function referralCentre(userId: string, options: { friendsPage?: number } = {}): Promise<ReferralCentre> {
   // The shopper's own rules (REF-07) where an admin set them, so the centre shows what they really earn.
   const settings = await getReferrerSettings(userId);
   const code = await ensureReferralCode(userId);
   const referrer = new mongoose.Types.ObjectId(userId);
-  const [referrals, commissions, welcomeCoupon, dataRows, joined] = await Promise.all([
-    EsimReferral.find({ referrer }).sort({ createdAt: -1 }).limit(200).lean(),
-    EsimReferralCommission.find({ referrer }).sort({ createdAt: -1 }).limit(200).lean(),
+  const [friends, commissions, totals, welcomeCoupon, dataEarned, invitedRow, joined] = await Promise.all([
+    referralFriends(userId, options.friendsPage ?? 1),
+    EsimReferralCommission.find({ referrer }).sort({ createdAt: -1 }).limit(REWARDS_SHOWN).lean(),
+    EsimReferralCommission.aggregate<{ _id: CommissionStatus; amount: number }>([
+      { $match: { referrer, status: { $in: ["credited", "pending"] } } },
+      { $group: { _id: "$status", amount: { $sum: "$amount" } } },
+    ]),
     welcomeCouponOf(userId),
-    EsimRewardEntry.find({ user: referrer, kind: { $in: ["referral", "invited"] } }).select({ kind: 1, mb: 1, referral: 1, createdAt: 1 }).lean(),
+    EsimRewardEntry.aggregate<{ mb: number }>([{ $match: { user: referrer, kind: "referral" } }, { $group: { _id: null, mb: { $sum: "$mb" } } }]),
+    EsimRewardEntry.findOne({ user: referrer, kind: "invited" }).select({ mb: 1, createdAt: 1 }).lean(),
     EsimReferral.findOne({ referee: referrer }).lean(),
   ]);
-  const dataByReferral = new Map(dataRows.filter((row) => row.kind === "referral").map((row) => [String(row.referral), row.mb]));
-  const invitedRow = dataRows.find((row) => row.kind === "invited");
   const inviter = joined ? await User.findById(joined.referrer).select({ email: 1 }).lean<{ email?: string } | null>() : null;
   // Data still to come for joining: the inviter's rules give it on the first order, which has not come yet.
   const inviterRules = joined && !invitedRow ? await getReferrerSettings(joined.referrer) : null;
   const pendingMb =
     inviterRules?.enabled && inviterRules.rewardType === "data" && inviterRules.data.inviteeOn === "first_order" ? inviterRules.data.inviteeMb : 0;
-  const users = await User.find({ _id: { $in: referrals.map((referral) => referral.referee) } })
-    .select({ email: 1 })
-    .lean<Array<{ _id: mongoose.Types.ObjectId; email?: string }>>();
-  const emailById = new Map(users.map((user) => [String(user._id), user.email]));
-  const rewardsByReferee = new Map<string, number>();
-  for (const commission of commissions) {
-    if (commission.status === "cancelled") continue;
-    const key = String(commission.referee);
-    rewardsByReferee.set(key, (rewardsByReferee.get(key) ?? 0) + commission.amount);
-  }
-  const sum = (status: CommissionStatus) =>
-    Math.round(commissions.filter((entry) => entry.status === status).reduce((total, entry) => total + entry.amount, 0) * 100) / 100;
+  const sum = (status: CommissionStatus) => Math.round((totals.find((row) => row._id === status)?.amount ?? 0) * 100) / 100;
   return {
     enabled: settings.enabled,
     code,
@@ -104,14 +157,11 @@ export async function referralCentre(userId: string): Promise<ReferralCentre> {
       validityDays: settings.validityDays,
       coupon: { enabled: settings.coupon.enabled, type: settings.coupon.type, value: settings.coupon.value },
     },
-    invited: referrals.map((referral) => ({
-      id: String(referral._id),
-      who: maskEmail(emailById.get(String(referral.referee))),
-      joinedAt: referral.createdAt,
-      rewards: Math.round((rewardsByReferee.get(String(referral.referee)) ?? 0) * 100) / 100,
-      dataMb: dataByReferral.get(String(referral._id)) ?? 0,
-    })),
-    dataEarnedMb: [...dataByReferral.values()].reduce((total, mb) => total + mb, 0),
+    invited: friends.items,
+    invitedTotal: friends.total,
+    invitedPage: friends.page,
+    invitedTotalPages: friends.totalPages,
+    dataEarnedMb: dataEarned[0]?.mb ?? 0,
     received: joined
       ? { from: maskEmail(inviter?.email), joinedAt: joined.createdAt, dataMb: invitedRow?.mb ?? 0, dataAt: invitedRow?.createdAt ?? null, pendingMb }
       : null,

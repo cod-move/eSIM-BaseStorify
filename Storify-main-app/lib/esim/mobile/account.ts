@@ -1,10 +1,10 @@
-import { EsimReferralCode, EsimReferralCodeRequest, EsimReferrals, EsimWallet } from "@/contracts/mobile/shop/v1/esim";
+import { EsimReferralCode, EsimReferralCodeRequest, EsimReferralFriends, EsimReferralFriendsQuery, EsimReferrals, EsimWallet } from "@/contracts/mobile/shop/v1/esim";
 import { MobileApiError } from "@/lib/api-core/errors";
 import { defineRoute } from "@/lib/api-core/registry";
 import { toMoney } from "@/lib/api-core/shop/money";
 import { appBaseUrl } from "@/lib/app-url";
 import { connectDB } from "@/lib/db";
-import { referralCentre } from "@/lib/esim/referral/centre";
+import { referralCentre, referralFriends, type FriendRow } from "@/lib/esim/referral/centre";
 import { ReferralCodeError } from "@/lib/esim/referral/rules";
 import { setReferralCode } from "@/lib/esim/referral/service";
 import { findWalletProduct } from "@/lib/esim/wallet/product";
@@ -53,6 +53,33 @@ export const esimWalletRoute = defineRoute({
   },
 });
 
+/** A friend in the contract's shape. */
+function friendOf(entry: FriendRow, money: (amount: number) => ReturnType<typeof toMoney>) {
+  return {
+    id: entry.id,
+    who: entry.who,
+    joinedAt: new Date(entry.joinedAt).toISOString(),
+    rewards: money(entry.rewards),
+    ...(entry.dataMb > 0 ? { data: dataAmount(entry.dataMb) } : {}),
+  };
+}
+
+/** GET /me/esim-referrals/friends?page= */
+export const esimReferralFriendsRoute = defineRoute({
+  id: "me.esimReferrals.friends",
+  method: "GET",
+  path: "/me/esim-referrals/friends",
+  auth: "user",
+  cache: { kind: "private" },
+  input: EsimReferralFriendsQuery,
+  output: EsimReferralFriends,
+  handler: async ({ session, input }) => {
+    await connectDB();
+    const [friends, currency] = await Promise.all([referralFriends(session.user.id, input.page ?? 1), getStoreCurrency()]);
+    return { ...friends, items: friends.items.map((entry) => friendOf(entry, (amount) => toMoney(amount, currency))) };
+  },
+});
+
 /** GET /me/esim-referrals */
 export const esimReferralsRoute = defineRoute({
   id: "me.esimReferrals.get",
@@ -87,13 +114,8 @@ export const esimReferralsRoute = defineRoute({
           inviteeOn: offer.data.inviteeOn,
         },
       },
-      invited: centre.invited.map((entry) => ({
-        id: entry.id,
-        who: entry.who,
-        joinedAt: new Date(entry.joinedAt).toISOString(),
-        rewards: money(entry.rewards),
-        ...(entry.dataMb > 0 ? { data: dataAmount(entry.dataMb) } : {}),
-      })),
+      invited: centre.invited.map((entry) => friendOf(entry, (amount) => money(amount))),
+      invitedTotal: centre.invitedTotal,
       rewards: centre.rewards.map((reward) => ({
         id: reward.id,
         orderNumber: reward.orderNumber,
