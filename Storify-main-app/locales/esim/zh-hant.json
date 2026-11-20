@@ -305,7 +305,12 @@
       "welcomeMin": "訂單滿 {amount} 可用",
       "welcomeEnds": "請在 {date} 前結帳時輸入。",
       "welcomeUse": "結帳時輸入即可使用。",
-      "welcomeDone": "已使用或已過期。"
+      "welcomeDone": "已使用或已過期。",
+      "whenSignup": "對方註冊後",
+      "whenFirstOrder": "對方首單完成後",
+      "offerData": "每邀請一位好友透過你的連結註冊，{when}你可獲得 {amount} 流量。",
+      "friendGetsData": "好友{when}也可獲得 {amount} 流量。",
+      "dataEarned": "已獲得流量"
     },
     "kyc": {
       "title": "身份認證",
@@ -992,7 +997,23 @@
       "history": "記錄",
       "noHistory": "還沒有簽到記錄。",
       "teaser": "每天在 Telegram 簽到領免費流量",
-      "joinGroup": "進群簽到"
+      "joinGroup": "進群簽到",
+      "kindReferral": "邀請好友獎勵",
+      "kindInvited": "受邀註冊獎勵",
+      "tabCheckin": "簽到領流量",
+      "tabInvite": "邀請好友",
+      "tabReceived": "被贈流量",
+      "centre": "福利中心",
+      "centreDescription": "簽到、邀請好友都能領免費流量，攢夠後兌換 eSIM。",
+      "totalsAll": "共獲得 {earned} · 已兌換 {spent}",
+      "checkinCount": "已簽到 {count} 次",
+      "centreHint": "簽到領流量 · 邀請好友得流量",
+      "centreHintInvite": "邀請好友得獎勵",
+      "receivedNone": "你不是透過好友邀請註冊的。邀請好友也能獲得流量。",
+      "receivedTitle": "受邀獲贈流量",
+      "receivedFrom": "你於 {date} 透過 {who} 的邀請註冊。",
+      "receivedOn": "於 {date} 到帳",
+      "receivedPending": "首單完成後將贈送 {amount} 流量。"
     }
   },
   "admin": {
@@ -1883,7 +1904,20 @@
       "telegramViaEmail": "電郵驗證碼",
       "telegramUnlink": "解除綁定",
       "telegramNoMatch": "沒有符合的綁定帳號。",
-      "telegramNoLinks": "還沒有人綁定 Telegram。"
+      "telegramNoLinks": "還沒有人綁定 Telegram。",
+      "telegramDeleteAfter": "簽到訊息自動刪除（分鐘，0 = 不刪）",
+      "telegramDeleteHelp": "到時間後刪除用戶的簽到訊息和機器人的回覆。機器人必須是群管理員並有「刪除訊息」權限。",
+      "referralRewardType": "獎勵方式",
+      "referralTypeCredit": "餘額返傭",
+      "referralTypeData": "贈送流量",
+      "referralDataReferrer": "邀請人獲得",
+      "referralDataInvitee": "被邀請人獲得",
+      "referralDataHint": "每位好友各發一次，計入用戶福利中心的流量餘額，可兌換 eSIM。「首單」指好友在下方有效期內第一筆完成交付的訂單。",
+      "referralOnSignup": "好友註冊時",
+      "referralOnFirstOrder": "好友首單完成時",
+      "referralWhen": "發放時機",
+      "telegramKindReferral": "邀請好友",
+      "telegramKindInvited": "受邀註冊"
     },
     "sidebar": {
       "esim": "eSIM",

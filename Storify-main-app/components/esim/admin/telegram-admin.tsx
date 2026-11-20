@@ -46,6 +46,7 @@ type Draft = {
   enabled: boolean;
   groupIds: string;
   groupLink: string;
+  deleteAfterMinutes: number;
   minMb: number;
   maxMb: number;
   dailyCapMb: number;
@@ -57,6 +58,7 @@ const draftOf = (settings: TelegramSettingsView): Draft => ({
   enabled: settings.enabled,
   groupIds: settings.groupIds.join("\n"),
   groupLink: settings.groupLink ?? "",
+  deleteAfterMinutes: settings.deleteAfterMinutes,
   minMb: settings.minMb,
   maxMb: settings.maxMb,
   dailyCapMb: settings.dailyCapMb,
@@ -118,6 +120,7 @@ export function EsimTelegramAdmin({ settings, variants, stats, entries, links, s
       await apiClient.post("/api/esim/admin/telegram", {
         ...draft,
         groupIds: draft.groupIds.split(/[\s,]+/).map((id) => id.trim()).filter(Boolean),
+        deleteAfterMinutes: Number(draft.deleteAfterMinutes) || 0,
         minMb: Number(draft.minMb),
         maxMb: Number(draft.maxMb),
         dailyCapMb: Number(draft.dailyCapMb),
@@ -151,6 +154,8 @@ export function EsimTelegramAdmin({ settings, variants, stats, entries, links, s
     redeem: t("admin.esim.telegramKindRedeem", "Exchange"),
     refund: t("admin.esim.telegramKindRefund", "Given back"),
     adjust: t("admin.esim.telegramKindAdjust", "Adjustment"),
+    referral: t("admin.esim.telegramKindReferral", "Invited a friend"),
+    invited: t("admin.esim.telegramKindInvited", "Joined by invite"),
   };
 
   return (
@@ -253,6 +258,18 @@ export function EsimTelegramAdmin({ settings, variants, stats, entries, links, s
               <Input value={draft.groupLink} onChange={(event) => set("groupLink", event.target.value)} placeholder="https://t.me/your_group" disabled={!canManage} />
               <p className="text-xs text-muted-foreground">
                 {t("admin.esim.telegramGroupLinkHelp", "The bot sends it right after a shopper links their account, and the rewards page shows it.")}
+              </p>
+              <Label className="block pt-2">{t("admin.esim.telegramDeleteAfter", "Delete check-in messages after (minutes, 0 = keep)")}</Label>
+              <Input
+                type="number"
+                min={0}
+                max={1440}
+                value={draft.deleteAfterMinutes}
+                onChange={(event) => set("deleteAfterMinutes", Number(event.target.value))}
+                disabled={!canManage}
+              />
+              <p className="text-xs text-muted-foreground">
+                {t("admin.esim.telegramDeleteHelp", "Deletes the shopper's check-in and the bot's answer. The bot must be a group admin allowed to delete messages.")}
               </p>
             </div>
             <div className="grid grid-cols-2 gap-3">

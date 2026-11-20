@@ -10,8 +10,26 @@ import { walletCreditOfOrder } from "@/lib/esim/wallet/booking";
  * balance earns nothing; the balance spent later on eSIMs does.
  */
 
+/** When a data reward is given: the friend's sign-up through the link, or their first order delivered. */
+export type DataRewardTrigger = "signup" | "first_order";
+
+/**
+ * Data instead of money (二选一): the referrer gets `referrerMb` once per
+ * friend, the friend gets `inviteeMb`, each at its own moment. Added to the
+ * shopper's data balance (the check-in rewards balance), spent on eSIMs.
+ */
+export interface ReferralDataReward {
+  referrerMb: number;
+  referrerOn: DataRewardTrigger;
+  inviteeMb: number;
+  inviteeOn: DataRewardTrigger;
+}
+
 export interface ReferralSettings {
   enabled: boolean;
+  /** "credit": a balance commission on the friend's orders (below); "data": the data rewards in `data`. */
+  rewardType: "credit" | "data";
+  data: ReferralDataReward;
   commissionType: "percent" | "fixed";
   /** Percent, or cents for a fixed commission. */
   commissionValue: number;
@@ -35,6 +53,8 @@ export interface ReferralSettings {
 
 export const DEFAULT_REFERRAL_SETTINGS: ReferralSettings = {
   enabled: false,
+  rewardType: "credit",
+  data: { referrerMb: 1024, referrerOn: "first_order", inviteeMb: 500, inviteeOn: "first_order" },
   commissionType: "percent",
   commissionValue: 10,
   validityDays: 365,
@@ -51,6 +71,11 @@ export const DEFAULT_REFERRAL_SETTINGS: ReferralSettings = {
  */
 export interface ReferralOverride {
   enabled: boolean | null;
+  rewardType: ReferralSettings["rewardType"] | null;
+  referrerMb: number | null;
+  referrerOn: DataRewardTrigger | null;
+  inviteeMb: number | null;
+  inviteeOn: DataRewardTrigger | null;
   commissionType: ReferralSettings["commissionType"] | null;
   /** Percent, or cents for a fixed commission. */
   commissionValue: number | null;
@@ -68,6 +93,13 @@ export function effectiveReferralRule(settings: ReferralSettings, override?: Par
   return {
     ...settings,
     enabled: override.enabled ?? settings.enabled,
+    rewardType: override.rewardType ?? settings.rewardType,
+    data: {
+      referrerMb: override.referrerMb ?? settings.data.referrerMb,
+      referrerOn: override.referrerOn ?? settings.data.referrerOn,
+      inviteeMb: override.inviteeMb ?? settings.data.inviteeMb,
+      inviteeOn: override.inviteeOn ?? settings.data.inviteeOn,
+    },
     commissionType,
     commissionValue,
     validityDays: override.validityDays ?? settings.validityDays,
@@ -138,4 +170,27 @@ export function isDeducted(orderId: string, deductPercent: number): boolean {
   let hash = 2166136261;
   for (let index = 0; index < orderId.length; index += 1) hash = Math.imul(hash ^ orderId.charCodeAt(index), 16777619) >>> 0;
   return hash % 100 < deductPercent;
+}
+
+/**
+ * Which data rewards a moment gives (both, one or none): the referrer's and
+ * the friend's, each when its own trigger is this one and its amount is set.
+ * Nothing when referrals are off or reward with money; the referrer's share
+ * also falls in the deducted share (扣量) like a commission, by the referral.
+ * A first order must come while the referral is valid.
+ */
+export function dataRewardsAt(
+  trigger: DataRewardTrigger,
+  input: { referralId: string; validUntil: Date | null; at: Date },
+  settings: Pick<ReferralSettings, "enabled" | "rewardType" | "data" | "deductPercent">,
+): { referrerMb: number; inviteeMb: number } {
+  const none = { referrerMb: 0, inviteeMb: 0 };
+  if (!settings.enabled || settings.rewardType !== "data") return none;
+  if (trigger === "first_order" && input.validUntil && input.at > input.validUntil) return none;
+  const referrerMb =
+    settings.data.referrerOn === trigger && settings.data.referrerMb > 0 && !isDeducted(input.referralId, settings.deductPercent)
+      ? Math.floor(settings.data.referrerMb)
+      : 0;
+  const inviteeMb = settings.data.inviteeOn === trigger && settings.data.inviteeMb > 0 ? Math.floor(settings.data.inviteeMb) : 0;
+  return { referrerMb, inviteeMb };
 }

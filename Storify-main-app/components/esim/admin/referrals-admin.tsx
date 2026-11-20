@@ -18,7 +18,8 @@ import { usePathname, useRouter } from "@/hooks/use-locale-navigation";
 import { useFallbackTranslator } from "@/hooks/use-fallback-translator";
 import { cn } from "@/lib/utils";
 import { apiClient } from "@/lib/api/client";
-import type { ReferralSettings } from "@/lib/esim/referral/rules";
+import type { DataRewardTrigger, ReferralSettings } from "@/lib/esim/referral/rules";
+import { formatMb } from "@/lib/esim/telegram/format";
 import type { CommissionRow, CommissionView } from "@/lib/esim/admin/referrals";
 
 /**
@@ -117,20 +118,56 @@ export function EsimReferralsAdmin({ settings, list, view, search: initialSearch
           <Switch checked={value.enabled} disabled={!canManage} onCheckedChange={(enabled) => setValue({ ...value, enabled })} aria-label={t("admin.esim.referralEnabled", "Referrals on")} />
         </CardHeader>
         <CardContent className="space-y-5">
-          <div className="grid gap-4 sm:grid-cols-3">
-            <div className="space-y-1.5">
-              <Label>{t("admin.esim.referralReward", "Reward")}</Label>
-              <NativeSelect value={value.commissionType} disabled={!canManage} onChange={(event) => setValue({ ...value, commissionType: event.target.value as ReferralSettings["commissionType"] })}>
-                <option value="percent">{t("admin.esim.referralPercent", "% of each order")}</option>
-                <option value="fixed">{t("admin.esim.referralFixed", "Fixed amount per order")}</option>
-              </NativeSelect>
+          <div className="space-y-1.5 sm:max-w-xs">
+            <Label>{t("admin.esim.referralRewardType", "Reward type")}</Label>
+            <NativeSelect value={value.rewardType} disabled={!canManage} onChange={(event) => setValue({ ...value, rewardType: event.target.value as ReferralSettings["rewardType"] })}>
+              <option value="credit">{t("admin.esim.referralTypeCredit", "Balance commission")}</option>
+              <option value="data">{t("admin.esim.referralTypeData", "Bonus data")}</option>
+            </NativeSelect>
+          </div>
+          {value.rewardType === "data" ? (
+            <div className="grid gap-4 sm:grid-cols-2">
+              <DataRewardFields
+                t={t}
+                canManage={canManage}
+                title={t("admin.esim.referralDataReferrer", "The inviter gets")}
+                mb={value.data.referrerMb}
+                on={value.data.referrerOn}
+                onChange={(mb, on) => setValue({ ...value, data: { ...value.data, referrerMb: mb, referrerOn: on } })}
+              />
+              <DataRewardFields
+                t={t}
+                canManage={canManage}
+                title={t("admin.esim.referralDataInvitee", "The invited friend gets")}
+                mb={value.data.inviteeMb}
+                on={value.data.inviteeOn}
+                onChange={(mb, on) => setValue({ ...value, data: { ...value.data, inviteeMb: mb, inviteeOn: on } })}
+              />
+              <p className="text-xs text-muted-foreground sm:col-span-2">
+                {t("admin.esim.referralDataHint", "Once per friend each, added to the shopper's data balance in the rewards centre and exchanged there for an eSIM. \"First order\" counts the friend's first order delivered within the period below.")}
+              </p>
             </div>
-            {value.commissionType === "percent"
-              ? number(t("admin.esim.referralValue", "Value"), value.commissionValue, (next) => setValue({ ...value, commissionValue: Math.min(100, next) }), "%", "0.1")
-              : number(t("admin.esim.referralValue", "Value"), value.commissionValue / 100, (next) => setValue({ ...value, commissionValue: Math.round(next * 100) }), "USD", "0.01")}
-            {number(t("admin.esim.referralHold", "Holding period"), value.holdDays, (next) => setValue({ ...value, holdDays: Math.round(next) }), t("admin.esim.days", "days"))}
+          ) : null}
+          <div className="grid gap-4 sm:grid-cols-3">
+            {value.rewardType === "credit" ? (
+              <>
+                <div className="space-y-1.5">
+                  <Label>{t("admin.esim.referralReward", "Reward")}</Label>
+                  <NativeSelect value={value.commissionType} disabled={!canManage} onChange={(event) => setValue({ ...value, commissionType: event.target.value as ReferralSettings["commissionType"] })}>
+                    <option value="percent">{t("admin.esim.referralPercent", "% of each order")}</option>
+                    <option value="fixed">{t("admin.esim.referralFixed", "Fixed amount per order")}</option>
+                  </NativeSelect>
+                </div>
+                {value.commissionType === "percent"
+                  ? number(t("admin.esim.referralValue", "Value"), value.commissionValue, (next) => setValue({ ...value, commissionValue: Math.min(100, next) }), "%", "0.1")
+                  : number(t("admin.esim.referralValue", "Value"), value.commissionValue / 100, (next) => setValue({ ...value, commissionValue: Math.round(next * 100) }), "USD", "0.01")}
+                {number(t("admin.esim.referralHold", "Holding period"), value.holdDays, (next) => setValue({ ...value, holdDays: Math.round(next) }), t("admin.esim.days", "days"))}
+              </>
+            ) : null}
             {number(t("admin.esim.referralValidity", "Earns for"), value.validityDays, (next) => setValue({ ...value, validityDays: Math.round(next) }), t("admin.esim.referralDaysAfter", "days after joining (0 = always)"))}
-            {number(t("admin.esim.referralLimit", "Orders that earn"), value.orderLimit, (next) => setValue({ ...value, orderLimit: Math.round(next) }), t("admin.esim.referralLimitHint", "first orders (0 = all)"))}
+            {value.rewardType === "credit"
+              ? number(t("admin.esim.referralLimit", "Orders that earn"), value.orderLimit, (next) => setValue({ ...value, orderLimit: Math.round(next) }), t("admin.esim.referralLimitHint", "first orders (0 = all)"))
+              : null}
             {number(t("admin.esim.referralDeduct", "Deduction (扣量)"), value.deductPercent, (next) => setValue({ ...value, deductPercent: Math.min(100, Math.round(next)) }), t("admin.esim.referralDeductHint", "% of qualifying orders earn nothing"))}
           </div>
           <div className="space-y-3 rounded-lg border p-4">
@@ -246,6 +283,39 @@ export function EsimReferralsAdmin({ settings, list, view, search: initialSearch
           <Button size="sm" variant="outline" disabled={list.pagination.page >= list.pagination.totalPages} onClick={() => navigate({ page: String(list.pagination.page + 1) })}>›</Button>
         </div>
       ) : null}
+    </div>
+  );
+}
+
+type Translate = ReturnType<typeof useFallbackTranslator>;
+
+/** A data reward: how many MB, and when — the friend's sign-up or their first order. */
+export function DataRewardFields({
+  t,
+  title,
+  mb,
+  on,
+  onChange,
+  canManage,
+}: {
+  t: Translate;
+  title: string;
+  mb: number;
+  on: DataRewardTrigger;
+  onChange: (mb: number, on: DataRewardTrigger) => void;
+  canManage: boolean;
+}) {
+  return (
+    <div className="space-y-2 rounded-lg border p-3">
+      <div className="text-sm font-medium">{title}</div>
+      <div className="flex flex-wrap items-center gap-2">
+        <Input type="number" min={0} className="w-28" disabled={!canManage} value={mb} onChange={(event) => onChange(Math.max(0, Math.round(Number(event.target.value) || 0)), on)} />
+        <span className="text-sm text-muted-foreground">MB ({formatMb(mb)})</span>
+      </div>
+      <NativeSelect value={on} disabled={!canManage} onChange={(event) => onChange(mb, event.target.value as DataRewardTrigger)}>
+        <option value="signup">{t("admin.esim.referralOnSignup", "When the friend signs up")}</option>
+        <option value="first_order">{t("admin.esim.referralOnFirstOrder", "On the friend's first order")}</option>
+      </NativeSelect>
     </div>
   );
 }

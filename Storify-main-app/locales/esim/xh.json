@@ -301,7 +301,12 @@
       "welcomeMin": "ii-odolo ukusuka ku-{amount}",
       "welcomeEnds": "Yifake xa uhlawula phambi kwe-{date}.",
       "welcomeUse": "Yifake xa uhlawula.",
-      "welcomeDone": "Isetyenzisiwe okanye iphelelwe lixesha."
+      "welcomeDone": "Isetyenzisiwe okanye iphelelwe lixesha.",
+      "whenSignup": "when they sign up",
+      "whenFirstOrder": "after their first order",
+      "offerData": "You get {amount} of data for each friend who joins with your link, {when}.",
+      "friendGetsData": "Your friend gets {amount} of data {when}.",
+      "dataEarned": "Data earned"
     },
     "kyc": {
       "title": "Ukuqinisekiswa kwesazisi",
@@ -981,7 +986,23 @@
       "history": "History",
       "noHistory": "No check-ins yet.",
       "teaser": "Check in on Telegram every day for free data",
-      "joinGroup": "Open the group to check in"
+      "joinGroup": "Open the group to check in",
+      "kindReferral": "A friend you invited",
+      "kindInvited": "Joined through a friend's invite",
+      "tabCheckin": "Check-in data",
+      "tabInvite": "Invite friends",
+      "tabReceived": "Data received",
+      "centre": "Rewards centre",
+      "centreDescription": "Get free data by checking in on Telegram and inviting friends, and exchange it for an eSIM.",
+      "totalsAll": "{earned} earned · {spent} exchanged",
+      "checkinCount": "{count} check-ins so far",
+      "centreHint": "Check-in data · invite friends for data",
+      "centreHintInvite": "Invite friends and get rewarded",
+      "receivedNone": "You did not join through a friend's invite. Invite friends to earn data instead.",
+      "receivedTitle": "Data from your invite",
+      "receivedFrom": "You joined through {who}'s invite on {date}.",
+      "receivedOn": "added on {date}",
+      "receivedPending": "{amount} of data is added after your first order."
     }
   },
   "admin": {
@@ -1787,7 +1808,20 @@
       "telegramViaEmail": "email code",
       "telegramUnlink": "Unlink",
       "telegramNoMatch": "No linked account matches.",
-      "telegramNoLinks": "No one has linked Telegram yet."
+      "telegramNoLinks": "No one has linked Telegram yet.",
+      "telegramDeleteAfter": "Delete check-in messages after (minutes, 0 = keep)",
+      "telegramDeleteHelp": "Deletes the shopper's check-in and the bot's answer. The bot must be a group admin allowed to delete messages.",
+      "referralRewardType": "Reward type",
+      "referralTypeCredit": "Balance commission",
+      "referralTypeData": "Bonus data",
+      "referralDataReferrer": "The inviter gets",
+      "referralDataInvitee": "The invited friend gets",
+      "referralDataHint": "Once per friend each, added to the shopper's data balance in the rewards centre and exchanged there for an eSIM. \"First order\" counts the friend's first order delivered within the period below.",
+      "referralOnSignup": "When the friend signs up",
+      "referralOnFirstOrder": "On the friend's first order",
+      "referralWhen": "When",
+      "telegramKindReferral": "Invited a friend",
+      "telegramKindInvited": "Joined by invite"
     },
     "sidebar": {
       "esim": "eSIM",

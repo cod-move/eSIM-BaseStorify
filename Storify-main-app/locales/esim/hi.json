@@ -301,7 +301,12 @@
       "welcomeMin": "{amount} से ऊपर के ऑर्डर",
       "welcomeEnds": "{date} से पहले चेकआउट पर डालें।",
       "welcomeUse": "चेकआउट पर डालें।",
-      "welcomeDone": "इस्तेमाल हो चुका या समाप्त।"
+      "welcomeDone": "इस्तेमाल हो चुका या समाप्त।",
+      "whenSignup": "साइन अप करने पर",
+      "whenFirstOrder": "उनके पहले ऑर्डर के बाद",
+      "offerData": "आपके लिंक से जुड़ने वाले हर दोस्त के लिए {when} आपको {amount} डेटा मिलता है।",
+      "friendGetsData": "आपके दोस्त को {when} {amount} डेटा मिलता है।",
+      "dataEarned": "मिला डेटा"
     },
     "kyc": {
       "title": "पहचान सत्यापन",
@@ -981,7 +986,23 @@
       "history": "इतिहास",
       "noHistory": "अभी कोई चेक-इन नहीं।",
       "teaser": "रोज़ Telegram पर चेक-इन करें, मुफ़्त डेटा पाएँ",
-      "joinGroup": "चेक-इन के लिए ग्रुप खोलें"
+      "joinGroup": "चेक-इन के लिए ग्रुप खोलें",
+      "kindReferral": "आपके आमंत्रित दोस्त",
+      "kindInvited": "दोस्त के आमंत्रण से जुड़े",
+      "tabCheckin": "चेक-इन डेटा",
+      "tabInvite": "दोस्तों को आमंत्रित करें",
+      "tabReceived": "मिला डेटा",
+      "centre": "रिवॉर्ड सेंटर",
+      "centreDescription": "Telegram पर चेक-इन और दोस्तों को आमंत्रित करके मुफ़्त डेटा पाएँ और eSIM से बदलें।",
+      "totalsAll": "{earned} मिला · {spent} बदला",
+      "checkinCount": "अब तक {count} चेक-इन",
+      "centreHint": "चेक-इन डेटा · आमंत्रण पर डेटा",
+      "centreHintInvite": "दोस्तों को आमंत्रित करें और इनाम पाएँ",
+      "receivedNone": "आप किसी दोस्त के आमंत्रण से नहीं जुड़े। डेटा पाने के लिए दोस्तों को आमंत्रित करें।",
+      "receivedTitle": "आमंत्रण से मिला डेटा",
+      "receivedFrom": "आप {date} को {who} के आमंत्रण से जुड़े।",
+      "receivedOn": "{date} को जोड़ा गया",
+      "receivedPending": "पहले ऑर्डर के बाद {amount} डेटा जोड़ा जाएगा।"
     }
   },
   "admin": {
@@ -1787,7 +1808,20 @@
       "telegramViaEmail": "email code",
       "telegramUnlink": "Unlink",
       "telegramNoMatch": "No linked account matches.",
-      "telegramNoLinks": "No one has linked Telegram yet."
+      "telegramNoLinks": "No one has linked Telegram yet.",
+      "telegramDeleteAfter": "Delete check-in messages after (minutes, 0 = keep)",
+      "telegramDeleteHelp": "Deletes the shopper's check-in and the bot's answer. The bot must be a group admin allowed to delete messages.",
+      "referralRewardType": "Reward type",
+      "referralTypeCredit": "Balance commission",
+      "referralTypeData": "Bonus data",
+      "referralDataReferrer": "The inviter gets",
+      "referralDataInvitee": "The invited friend gets",
+      "referralDataHint": "Once per friend each, added to the shopper's data balance in the rewards centre and exchanged there for an eSIM. \"First order\" counts the friend's first order delivered within the period below.",
+      "referralOnSignup": "When the friend signs up",
+      "referralOnFirstOrder": "On the friend's first order",
+      "referralWhen": "When",
+      "telegramKindReferral": "Invited a friend",
+      "telegramKindInvited": "Joined by invite"
     },
     "sidebar": {
       "esim": "eSIM",

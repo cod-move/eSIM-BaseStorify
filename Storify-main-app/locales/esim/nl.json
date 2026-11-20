@@ -301,7 +301,12 @@
       "welcomeMin": "bestellingen vanaf {amount}",
       "welcomeEnds": "Voer hem vóór {date} in bij het afrekenen.",
       "welcomeUse": "Voer hem in bij het afrekenen.",
-      "welcomeDone": "Gebruikt of verlopen."
+      "welcomeDone": "Gebruikt of verlopen.",
+      "whenSignup": "bij aanmelding",
+      "whenFirstOrder": "na hun eerste bestelling",
+      "offerData": "Voor elke vriend die via jouw link lid wordt krijg je {amount} data, {when}.",
+      "friendGetsData": "Je vriend krijgt {amount} data {when}.",
+      "dataEarned": "Verdiende data"
     },
     "kyc": {
       "title": "Identiteitsverificatie",
@@ -981,7 +986,23 @@
       "history": "Geschiedenis",
       "noHistory": "Nog geen check-ins.",
       "teaser": "Check elke dag in op Telegram voor gratis data",
-      "joinGroup": "Open de groep om in te checken"
+      "joinGroup": "Open de groep om in te checken",
+      "kindReferral": "Een uitgenodigde vriend",
+      "kindInvited": "Lid via een uitnodiging",
+      "tabCheckin": "Data via check-in",
+      "tabInvite": "Vrienden uitnodigen",
+      "tabReceived": "Ontvangen data",
+      "centre": "Beloningscentrum",
+      "centreDescription": "Krijg gratis data door in te checken op Telegram en vrienden uit te nodigen, en wissel het in voor een eSIM.",
+      "totalsAll": "{earned} verdiend · {spent} ingewisseld",
+      "checkinCount": "{count} check-ins tot nu toe",
+      "centreHint": "Data via check-in · data voor uitnodigingen",
+      "centreHintInvite": "Nodig vrienden uit en word beloond",
+      "receivedNone": "Je bent niet via een uitnodiging lid geworden. Nodig vrienden uit om data te verdienen.",
+      "receivedTitle": "Data van je uitnodiging",
+      "receivedFrom": "Je werd op {date} lid via de uitnodiging van {who}.",
+      "receivedOn": "toegevoegd op {date}",
+      "receivedPending": "Na je eerste bestelling wordt {amount} data toegevoegd."
     }
   },
   "admin": {
@@ -1787,7 +1808,20 @@
       "telegramViaEmail": "email code",
       "telegramUnlink": "Unlink",
       "telegramNoMatch": "No linked account matches.",
-      "telegramNoLinks": "No one has linked Telegram yet."
+      "telegramNoLinks": "No one has linked Telegram yet.",
+      "telegramDeleteAfter": "Delete check-in messages after (minutes, 0 = keep)",
+      "telegramDeleteHelp": "Deletes the shopper's check-in and the bot's answer. The bot must be a group admin allowed to delete messages.",
+      "referralRewardType": "Reward type",
+      "referralTypeCredit": "Balance commission",
+      "referralTypeData": "Bonus data",
+      "referralDataReferrer": "The inviter gets",
+      "referralDataInvitee": "The invited friend gets",
+      "referralDataHint": "Once per friend each, added to the shopper's data balance in the rewards centre and exchanged there for an eSIM. \"First order\" counts the friend's first order delivered within the period below.",
+      "referralOnSignup": "When the friend signs up",
+      "referralOnFirstOrder": "On the friend's first order",
+      "referralWhen": "When",
+      "telegramKindReferral": "Invited a friend",
+      "telegramKindInvited": "Joined by invite"
     },
     "sidebar": {
       "esim": "eSIM",

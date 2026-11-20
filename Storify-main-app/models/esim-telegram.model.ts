@@ -22,6 +22,8 @@ export interface IEsimTelegramSettings extends mongoose.Document {
   groupIds: string[];
   /** The group's invite link (https://t.me/…), shown to a shopper once linked and on the rewards page. */
   groupLink: string | null;
+  /** Check-in messages in the group (the shopper's and the bot's answer) are deleted this many minutes later; 0 = kept. */
+  deleteAfterMinutes: number;
   minMb: number;
   maxMb: number;
   /** Most MB handed out by check-ins in one day, across everyone; 0 = no limit. */
@@ -47,6 +49,7 @@ const EsimTelegramSettingsSchema = new Schema<IEsimTelegramSettings>(
     botUsername: { type: String, default: null, maxlength: 64 },
     groupIds: { type: [{ type: String, maxlength: 32 }], default: [] },
     groupLink: { type: String, default: null, maxlength: 300 },
+    deleteAfterMinutes: { type: Number, default: 0, min: 0, max: 1440 },
     minMb: { type: Number, default: 10, min: 1, max: 100_000 },
     maxMb: { type: Number, default: 100, min: 1, max: 100_000 },
     dailyCapMb: { type: Number, default: 0, min: 0, max: 100_000_000 },
@@ -153,11 +156,12 @@ const EsimRewardAccountSchema = new Schema<IEsimRewardAccount>(
   { timestamps: true },
 );
 
-export type RewardEntryKind = "checkin" | "redeem" | "refund" | "adjust";
+/** "referral": data for inviting a friend; "invited": data for joining through a friend's link. */
+export type RewardEntryKind = "checkin" | "redeem" | "refund" | "adjust" | "referral" | "invited";
 
 /**
  * Every change to a balance. `key` is unique: `checkin:<telegram id>:<day>`,
- * `redeem:<user>:<request id>`, `refund:<redeem entry>`, `adjust:<id>`.
+ * `redeem:<user>:<request id>`, `refund:<redeem entry>`, `adjust:<id>`, `referral:<referral>`, `invited:<referral>`.
  * A redemption is `pending` until its order exists, then `done` with the
  * order; one whose order could not be made is `failed` and refunded.
  */
@@ -170,6 +174,7 @@ export interface IEsimRewardEntry extends mongoose.Document {
   day: string | null;
   telegramUserId: string | null;
   chatId: string | null;
+  referral?: mongoose.Types.ObjectId | null;
   itemId: mongoose.Types.ObjectId | null;
   itemName: string | null;
   order: mongoose.Types.ObjectId | null;
@@ -183,7 +188,9 @@ export interface IEsimRewardEntry extends mongoose.Document {
 const EsimRewardEntrySchema = new Schema<IEsimRewardEntry>(
   {
     user: { type: Schema.Types.ObjectId, ref: "User", required: true },
-    kind: { type: String, enum: ["checkin", "redeem", "refund", "adjust"], required: true },
+    kind: { type: String, enum: ["checkin", "redeem", "refund", "adjust", "referral", "invited"], required: true },
+    /** The referral a "referral" or "invited" row was given for. */
+    referral: { type: Schema.Types.ObjectId, ref: "EsimReferral", default: null },
     mb: { type: Number, required: true },
     key: { type: String, required: true, unique: true },
     day: { type: String, default: null },
@@ -215,7 +222,31 @@ const EsimRewardDaySchema = new Schema<IEsimRewardDay>({
   checkins: { type: Number, default: 0 },
 });
 
-for (const name of ["EsimTelegramSettings", "EsimTelegramLink", "EsimTelegramPending", "EsimRewardAccount", "EsimRewardEntry", "EsimRewardDay"]) {
+/**
+ * A group message to delete later (the check-in and the bot's answer, when
+ * the admin set deleteAfterMinutes). Tried by the fulfilment cron once due;
+ * Mongo drops the row a day after it was due either way.
+ */
+export interface IEsimTelegramDeletion extends mongoose.Document {
+  chatId: string;
+  messageId: number;
+  deleteAt: Date;
+  tries: number;
+  purgeAt: Date;
+}
+
+const EsimTelegramDeletionSchema = new Schema<IEsimTelegramDeletion>({
+  chatId: { type: String, required: true },
+  messageId: { type: Number, required: true },
+  deleteAt: { type: Date, required: true },
+  tries: { type: Number, default: 0 },
+  purgeAt: { type: Date, required: true },
+});
+EsimTelegramDeletionSchema.index({ chatId: 1, messageId: 1 }, { unique: true });
+EsimTelegramDeletionSchema.index({ deleteAt: 1 });
+EsimTelegramDeletionSchema.index({ purgeAt: 1 }, { expireAfterSeconds: 0 });
+
+for (const name of ["EsimTelegramSettings", "EsimTelegramLink", "EsimTelegramPending", "EsimRewardAccount", "EsimRewardEntry", "EsimRewardDay", "EsimTelegramDeletion"]) {
   if (models[name]) delete models[name];
 }
 
@@ -225,6 +256,7 @@ export const EsimTelegramPending = model<IEsimTelegramPending>("EsimTelegramPend
 export const EsimRewardAccount = model<IEsimRewardAccount>("EsimRewardAccount", EsimRewardAccountSchema);
 export const EsimRewardEntry = model<IEsimRewardEntry>("EsimRewardEntry", EsimRewardEntrySchema);
 export const EsimRewardDay = model<IEsimRewardDay>("EsimRewardDay", EsimRewardDaySchema);
+export const EsimTelegramDeletion = model<IEsimTelegramDeletion>("EsimTelegramDeletion", EsimTelegramDeletionSchema);
 
 export async function getTelegramSettings(): Promise<IEsimTelegramSettings> {
   return EsimTelegramSettings.findOneAndUpdate(

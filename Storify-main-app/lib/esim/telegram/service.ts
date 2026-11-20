@@ -57,6 +57,8 @@ export const TelegramSettingsSchema = z
       .trim()
       .max(300)
       .refine((value) => !value || /^https:\/\/(t\.me|telegram\.me)\/\S+$/i.test(value), "A Telegram link starts with https://t.me/"),
+    /** Minutes before a check-in and its answer are deleted from the group; 0 = kept. */
+    deleteAfterMinutes: z.number().int().min(0).max(1440),
     minMb: z.number().int().min(1).max(100_000),
     maxMb: z.number().int().min(1).max(100_000),
     dailyCapMb: z.number().int().min(0).max(100_000_000),
@@ -90,6 +92,7 @@ export interface TelegramSettingsView {
   botUsername: string | null;
   groupIds: string[];
   groupLink: string | null;
+  deleteAfterMinutes: number;
   minMb: number;
   maxMb: number;
   dailyCapMb: number;
@@ -104,6 +107,7 @@ export async function telegramSettingsView(): Promise<TelegramSettingsView> {
     botUsername: settings.botUsername,
     groupIds: [...settings.groupIds],
     groupLink: settings.groupLink ?? null,
+    deleteAfterMinutes: settings.deleteAfterMinutes ?? 0,
     minMb: settings.minMb,
     maxMb: settings.maxMb,
     dailyCapMb: settings.dailyCapMb,
@@ -160,6 +164,7 @@ export async function saveTelegramSettings(input: TelegramSettingsInput) {
         enabled: input.enabled,
         groupIds: [...new Set(input.groupIds.map((id) => id.trim()))],
         groupLink: input.groupLink.trim() || null,
+        deleteAfterMinutes: input.deleteAfterMinutes,
         minMb: input.minMb,
         maxMb: input.maxMb,
         dailyCapMb: input.dailyCapMb,
@@ -419,6 +424,52 @@ export async function rewardsPage(userId: string) {
       .sort((a, b) => a.costMb - b.costMb)
       .map((item) => ({ id: String(item._id), name: item.name, costMb: item.costMb })),
   };
+}
+
+// ── Data given for other reasons (referrals) ─────────────────────────────
+
+/**
+ * Adds data to a shopper's balance once per `key`, with its ledger row, in a
+ * transaction. False when that key was already given (a retried hook).
+ */
+export async function grantRewardData(input: {
+  userId: string;
+  mb: number;
+  kind: "referral" | "invited";
+  key: string;
+  referralId?: string;
+  note?: string;
+}): Promise<boolean> {
+  const mb = Math.floor(input.mb);
+  if (!(mb > 0) || !mongoose.isValidObjectId(input.userId)) return false;
+  const user = oid(input.userId);
+  if (await EsimRewardEntry.exists({ key: input.key })) return false;
+  await EsimRewardAccount.updateOne({ user }, { $setOnInsert: { user } }, { upsert: true }).catch((error) => {
+    if (!isDuplicate(error)) throw error;
+  });
+  try {
+    await runTransaction("esim-reward-grant", async (session) => {
+      await EsimRewardEntry.create(
+        [
+          {
+            user,
+            kind: input.kind,
+            mb,
+            key: input.key,
+            referral: input.referralId && mongoose.isValidObjectId(input.referralId) ? oid(input.referralId) : null,
+            note: input.note ?? null,
+            status: "done",
+          },
+        ],
+        { session },
+      );
+      await EsimRewardAccount.updateOne({ user }, { $inc: { balanceMb: mb, earnedMb: mb } }, { session });
+    });
+    return true;
+  } catch (error) {
+    if (isDuplicate(error)) return false;
+    throw error;
+  }
 }
 
 // ── Admin ────────────────────────────────────────────────────────────────

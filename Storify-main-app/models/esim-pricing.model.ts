@@ -77,6 +77,9 @@ export interface IEsimSettings extends mongoose.Document {
   /** Referrals (REF-02/06): see lib/esim/referral/rules.ts for what each setting means. */
   referral: {
     enabled: boolean;
+    /** "credit": balance commission; "data": the data rewards below (二选一). */
+    rewardType?: "credit" | "data";
+    data?: { referrerMb: number; referrerOn: "signup" | "first_order"; inviteeMb: number; inviteeOn: "signup" | "first_order" };
     commissionType: "percent" | "fixed";
     commissionValue: number;
     validityDays: number;
@@ -169,6 +172,13 @@ const EsimSettingsSchema = new Schema<IEsimSettings>(
     },
     referral: {
       enabled: { type: Boolean, default: false },
+      rewardType: { type: String, enum: ["credit", "data"], default: "credit" },
+      data: {
+        referrerMb: { type: Number, default: 1024, min: 0, max: 10_000_000 },
+        referrerOn: { type: String, enum: ["signup", "first_order"], default: "first_order" },
+        inviteeMb: { type: Number, default: 500, min: 0, max: 10_000_000 },
+        inviteeOn: { type: String, enum: ["signup", "first_order"], default: "first_order" },
+      },
       commissionType: { type: String, enum: ["percent", "fixed"], default: "percent" },
       commissionValue: { type: Number, default: 10, min: 0 },
       validityDays: { type: Number, default: 365, min: 0 },

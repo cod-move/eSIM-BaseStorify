@@ -15,6 +15,15 @@ import { getReferralSettings } from "@/lib/esim/referral/service";
 
 export const ReferralSettingsSchema = z.object({
   enabled: z.boolean(),
+  rewardType: z.enum(["credit", "data"]).default("credit"),
+  data: z
+    .object({
+      referrerMb: z.number().int().min(0).max(10_000_000),
+      referrerOn: z.enum(["signup", "first_order"]),
+      inviteeMb: z.number().int().min(0).max(10_000_000),
+      inviteeOn: z.enum(["signup", "first_order"]),
+    })
+    .default({ referrerMb: 1024, referrerOn: "first_order", inviteeMb: 500, inviteeOn: "first_order" }),
   commissionType: z.enum(["percent", "fixed"]),
   commissionValue: z.number().min(0).max(100_000),
   validityDays: z.number().int().min(0).max(3650),
@@ -35,7 +44,7 @@ export async function saveReferralSettings(next: z.infer<typeof ReferralSettings
   await connectDB();
   const before = await getReferralSettings();
   const settings = await getEsimSettings();
-  settings.referral = { ...next, coupon: { ...next.coupon } };
+  settings.referral = { ...next, data: { ...next.data }, coupon: { ...next.coupon } };
   await settings.save();
   return { before, after: next };
 }
@@ -135,6 +144,11 @@ export async function commissionAction(id: string, action: "cancel" | "settle", 
 export const ReferralOverrideSchema = z.object({
   email: z.string().trim().toLowerCase().email(),
   enabled: z.boolean().nullable(),
+  rewardType: z.enum(["credit", "data"]).nullable().default(null),
+  referrerMb: z.number().int().min(0).max(10_000_000).nullable().default(null),
+  referrerOn: z.enum(["signup", "first_order"]).nullable().default(null),
+  inviteeMb: z.number().int().min(0).max(10_000_000).nullable().default(null),
+  inviteeOn: z.enum(["signup", "first_order"]).nullable().default(null),
   commissionType: z.enum(["percent", "fixed"]).nullable(),
   /** Percent, or cents for a fixed commission. */
   commissionValue: z.number().min(0).max(100_000).nullable(),
@@ -151,6 +165,11 @@ export interface ReferralOverrideRow {
   userId: string;
   email: string | null;
   enabled: boolean | null;
+  rewardType: "credit" | "data" | null;
+  referrerMb: number | null;
+  referrerOn: "signup" | "first_order" | null;
+  inviteeMb: number | null;
+  inviteeOn: "signup" | "first_order" | null;
   commissionType: "percent" | "fixed" | null;
   commissionValue: number | null;
   validityDays: number | null;
@@ -175,6 +194,11 @@ export async function listReferralOverrides(): Promise<ReferralOverrideRow[]> {
     userId: String(row.user),
     email: email.get(String(row.user)) ?? null,
     enabled: row.enabled ?? null,
+    rewardType: row.rewardType ?? null,
+    referrerMb: row.referrerMb ?? null,
+    referrerOn: row.referrerOn ?? null,
+    inviteeMb: row.inviteeMb ?? null,
+    inviteeOn: row.inviteeOn ?? null,
     commissionType: row.commissionType ?? null,
     commissionValue: row.commissionValue ?? null,
     validityDays: row.validityDays ?? null,
@@ -188,8 +212,8 @@ export async function listReferralOverrides(): Promise<ReferralOverrideRow[]> {
 
 export class ReferralOverrideError extends Error {}
 
-const overrideFields = (row: { enabled?: unknown; commissionType?: unknown; commissionValue?: unknown; validityDays?: unknown; orderLimit?: unknown; deductPercent?: unknown; note?: unknown } | null) =>
-  row ? { enabled: row.enabled ?? null, commissionType: row.commissionType ?? null, commissionValue: row.commissionValue ?? null, validityDays: row.validityDays ?? null, orderLimit: row.orderLimit ?? null, deductPercent: row.deductPercent ?? null, note: row.note ?? null } : null;
+const overrideFields = (row: { enabled?: unknown; rewardType?: unknown; referrerMb?: unknown; referrerOn?: unknown; inviteeMb?: unknown; inviteeOn?: unknown; commissionType?: unknown; commissionValue?: unknown; validityDays?: unknown; orderLimit?: unknown; deductPercent?: unknown; note?: unknown } | null) =>
+  row ? { enabled: row.enabled ?? null, rewardType: row.rewardType ?? null, referrerMb: row.referrerMb ?? null, referrerOn: row.referrerOn ?? null, inviteeMb: row.inviteeMb ?? null, inviteeOn: row.inviteeOn ?? null, commissionType: row.commissionType ?? null, commissionValue: row.commissionValue ?? null, validityDays: row.validityDays ?? null, orderLimit: row.orderLimit ?? null, deductPercent: row.deductPercent ?? null, note: row.note ?? null } : null;
 
 /** Sets a referrer's own rules, found by email; returns what was there before for the audit log. */
 export async function saveReferralOverride(input: ReferralOverrideInput, updatedBy: string | null) {

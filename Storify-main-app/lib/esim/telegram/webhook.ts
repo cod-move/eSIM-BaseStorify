@@ -4,6 +4,7 @@ import { timingSafeEqual } from "node:crypto";
 import { appBaseUrl } from "@/lib/app-url";
 import { getTelegramSettings } from "@/models/esim-telegram.model";
 import { sendMessage, webhookSecret } from "@/lib/esim/telegram/bot-api";
+import { scheduleDeletion } from "@/lib/esim/telegram/deletions";
 import { formatMb, looksLikeEmail, parseCommand } from "@/lib/esim/telegram/rules";
 import {
   checkIn,
@@ -61,7 +62,15 @@ export async function handleTelegramUpdate(update: unknown): Promise<void> {
   const say = words(botLanguage(sender.languageCode));
   const chatId = String(message.chat.id);
   const isPrivate = message.chat.type === "private";
-  const reply = (text: string) => sendMessage(message.chat.id, text, { replyTo: isPrivate ? undefined : message.message_id });
+  const send = (text: string) => sendMessage(message.chat.id, text, { replyTo: isPrivate ? undefined : message.message_id });
+  const reply = async (text: string): Promise<void> => {
+    await send(text);
+  };
+  /** A check-in answer in the group: it and the shopper's message go after the minutes the admin set. */
+  const answerCheckin = async (text: string): Promise<void> => {
+    const sent = await send(text);
+    await scheduleDeletion(chatId, [message.message_id, sent], settings.deleteAfterMinutes ?? 0);
+  };
   const site = appBaseUrl().replace(/\/$/, "");
   const bot = settings.botUsername ?? "";
 
@@ -77,15 +86,15 @@ export async function handleTelegramUpdate(update: unknown): Promise<void> {
       const result = await checkIn(sender, chatId);
       switch (result.status) {
         case "ok":
-          return reply(say.checkedIn(nameOf(sender), formatMb(result.mb), formatMb(result.balanceMb)));
+          return answerCheckin(say.checkedIn(nameOf(sender), formatMb(result.mb), formatMb(result.balanceMb)));
         case "already":
-          return reply(say.already(nameOf(sender), formatMb(result.balanceMb)));
+          return answerCheckin(say.already(nameOf(sender), formatMb(result.balanceMb)));
         case "cap":
-          return reply(say.capReached);
+          return answerCheckin(say.capReached);
         case "not_linked":
-          return reply(say.notLinked(nameOf(sender), bot));
+          return answerCheckin(say.notLinked(nameOf(sender), bot));
         case "disabled":
-          return reply(say.disabled);
+          return answerCheckin(say.disabled);
         default:
           return;
       }

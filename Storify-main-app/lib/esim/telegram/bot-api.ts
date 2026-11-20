@@ -60,17 +60,41 @@ export async function setCommands(commands: Array<{ command: string; description
   return call<boolean>("setMyCommands", { commands, ...(languageCode ? { language_code: languageCode } : {}) });
 }
 
-/** A reply in a chat; `replyTo` answers that message. Failures are logged, never thrown: a reply is a courtesy. */
-export async function sendMessage(chatId: number | string, text: string, options: { replyTo?: number; html?: boolean } = {}) {
+/**
+ * A reply in a chat; `replyTo` answers that message. Answers the sent
+ * message's id, or null when it failed — failures are logged, never thrown:
+ * a reply is a courtesy.
+ */
+export async function sendMessage(chatId: number | string, text: string, options: { replyTo?: number; html?: boolean } = {}): Promise<number | null> {
   try {
-    await call("sendMessage", {
+    const sent = await call<{ message_id: number }>("sendMessage", {
       chat_id: chatId,
       text,
       ...(options.html ? { parse_mode: "HTML" } : {}),
       link_preview_options: { is_disabled: true },
       ...(options.replyTo ? { reply_parameters: { message_id: options.replyTo, allow_sending_without_reply: true } } : {}),
     });
+    return sent.message_id ?? null;
   } catch (error) {
     console.error("Telegram check-in bot: sendMessage failed:", (error as Error).message);
+    return null;
+  }
+}
+
+/**
+ * Deletes messages in a chat (the bot must be a group admin allowed to
+ * delete messages for anyone else's). Answers false when Telegram refused;
+ * a message already gone counts as deleted.
+ */
+export async function deleteMessages(chatId: number | string, messageIds: number[]): Promise<boolean> {
+  if (!messageIds.length) return true;
+  try {
+    await call<boolean>("deleteMessages", { chat_id: chatId, message_ids: messageIds.slice(0, 100) });
+    return true;
+  } catch (error) {
+    const message = (error as Error).message;
+    if (/message to delete not found|MESSAGE_ID_INVALID/i.test(message)) return true;
+    console.error("Telegram check-in bot: deleteMessages failed:", message);
+    return false;
   }
 }

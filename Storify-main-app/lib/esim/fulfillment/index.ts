@@ -24,6 +24,7 @@ import { processNumberRequests } from "@/lib/esim/numbers/requests";
 import { enqueueOrderNumberTopups } from "@/lib/esim/numbers/topup";
 import { findNumberTopupProduct } from "@/lib/esim/numbers/product";
 import { restoreAfterTopupOrder } from "@/lib/esim/wallet/park";
+import { runTelegramDeletions } from "@/lib/esim/telegram/deletions";
 
 /**
  * The two ways eSIM fulfilment is driven. Payment settlement calls the first
@@ -120,9 +121,14 @@ export async function runFulfilmentCron() {
   const numberRequests = await processNumberRequests({ limit: 50, budgetMs: 10_000 });
   // NUM-04: holds nobody paid for go back on sale.
   const released = await releaseExpiredReservations();
+  // The Telegram rewards group: check-ins and the bot's answers whose time is up are deleted.
+  const telegramDeleted = await runTelegramDeletions().catch((error) => {
+    console.error("Telegram message deletion failed:", error);
+    return { deleted: 0, failed: 0 };
+  });
   const deliveries: Record<string, string> = {};
   for (const orderId of new Set([...result.orders, ...topups.orders, ...numbers.orders, ...numberOps.orders, ...(await unrefundedOrders())])) {
     deliveries[orderId] = await settleOrderDelivery(orderId);
   }
-  return { swept, ...result, topups, numbers: { ...numbers, released, ops: numberOps, transfers: cardTransfers, adjustments: cardAdjustments, requests: numberRequests }, deliveries };
+  return { swept, ...result, topups, numbers: { ...numbers, released, ops: numberOps, transfers: cardTransfers, adjustments: cardAdjustments, requests: numberRequests }, telegramDeleted, deliveries };
 }

@@ -31,6 +31,13 @@ export async function getReferralSettings(): Promise<ReferralSettings> {
   const defaults = DEFAULT_REFERRAL_SETTINGS;
   return {
     enabled: stored?.enabled ?? defaults.enabled,
+    rewardType: stored?.rewardType ?? defaults.rewardType,
+    data: {
+      referrerMb: stored?.data?.referrerMb ?? defaults.data.referrerMb,
+      referrerOn: stored?.data?.referrerOn ?? defaults.data.referrerOn,
+      inviteeMb: stored?.data?.inviteeMb ?? defaults.data.inviteeMb,
+      inviteeOn: stored?.data?.inviteeOn ?? defaults.data.inviteeOn,
+    },
     commissionType: stored?.commissionType ?? defaults.commissionType,
     commissionValue: stored?.commissionValue ?? defaults.commissionValue,
     validityDays: stored?.validityDays ?? defaults.validityDays,
@@ -175,6 +182,9 @@ export async function recordSignupReferral(userId: string, code: string | null):
     return null;
   });
   if (couponCode) await EsimReferral.updateOne({ _id: referral._id }, { $set: { couponCode } });
+  // Data rewards whose moment is the sign-up (rewardType "data"); imported here, as it imports this file.
+  const { giveReferralData } = await import("@/lib/esim/referral/data-rewards");
+  await giveReferralData(referral, "signup", now).catch((error) => console.error("Referral data reward at sign-up failed:", error));
   return { referrer: String(owner.user), couponCode };
 }
 

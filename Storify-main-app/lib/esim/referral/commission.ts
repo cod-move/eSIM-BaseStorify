@@ -12,6 +12,8 @@ import { escapeHtml } from "@/lib/email/escape-html";
 import { appBaseUrl } from "@/lib/app-url";
 import { commissionAllowed, commissionBase, commissionFor, isDeducted } from "@/lib/esim/referral/rules";
 import { getReferralSettings, getReferrerSettings } from "@/lib/esim/referral/service";
+import { giveReferralData } from "@/lib/esim/referral/data-rewards";
+import { REWARD_PAYMENT_METHOD } from "@/lib/esim/telegram/redeem";
 
 /**
  * Referral commission (REF-02/03/04).
@@ -39,9 +41,10 @@ type OrderView = {
   customs?: { dutyAmount?: number | null } | null;
   items: Array<{ price?: number; quantity?: number; lineAttributes?: unknown }>;
   createdAt: Date;
+  paymentMethod?: string;
 };
 
-const ORDER_FIELDS = { orderNumber: 1, status: 1, customerId: 1, guestEmail: 1, currency: 1, total: 1, refundedTotal: 1, tax: 1, shippingCost: 1, customs: 1, items: 1, createdAt: 1 };
+const ORDER_FIELDS = { paymentMethod: 1, orderNumber: 1, status: 1, customerId: 1, guestEmail: 1, currency: 1, total: 1, refundedTotal: 1, tax: 1, shippingCost: 1, customs: 1, items: 1, createdAt: 1 };
 
 /** The commission a delivered order earns, if it is a referee's; idempotent per order. */
 export async function earnReferralCommission(orderId: unknown): Promise<IEsimReferralCommission | null> {
@@ -53,6 +56,12 @@ export async function earnReferralCommission(orderId: unknown): Promise<IEsimRef
   const referral = await EsimReferral.findOne({ referee: new mongoose.Types.ObjectId(String(order.customerId)) }).lean();
   if (!referral) return null;
   const settings = await getReferrerSettings(referral.referrer);
+  // Rewards in data (二选一): the friend's first delivered order may be one's moment; never a commission.
+  // An eSIM exchanged for saved data is not an order the friend bought.
+  if (settings.rewardType === "data") {
+    if (order.paymentMethod !== REWARD_PAYMENT_METHOD) await giveReferralData(referral, "first_order", order.createdAt);
+    return null;
+  }
   const earnedSoFar = await EsimReferralCommission.countDocuments({ referral: referral._id, status: { $ne: "cancelled" } });
   if (!commissionAllowed({ validUntil: referral.validUntil, orderDate: order.createdAt, earnedSoFar }, settings).ok) return null;
   // 扣量: a set share of qualifying orders earns nothing; stable per order, so retries agree.

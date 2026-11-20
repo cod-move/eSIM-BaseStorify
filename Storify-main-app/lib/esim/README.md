@@ -192,6 +192,10 @@ Shoppers link Telegram to their account, send `/checkin` (or 签到) once a day 
 
 Linking: "Link Telegram" on `/account/esims/rewards` (a one-time start link, 15 minutes), or `/bind email` in the bot and the 6-digit code mailed to the account (10 minutes, 5 tries, 3 codes an hour; the bot answers the same whether or not the email has an account). One Telegram account per store account. A check-in counts once a day per Telegram account and per store account (ledger key `checkin:<telegram id>:<day>`). Exchanging takes the data off in a transaction with its ledger row (keyed by the page's request id), then makes a paid order at no charge (`paymentMethod: esim_reward`) issued like any other; an order that cannot be made gives the data back. An eSIM that fails later is refunded as money (nothing) by the usual settlement: give the data back by hand under "Adjust a shopper's balance". With the bot's privacy mode on, a plain "签到" in a group never reaches it; `/checkin` always does.
 
+Group tidy-up: with "Delete check-in messages after N minutes" set, a check-in and the bot's answer are queued (`EsimTelegramDeletion`) and deleted by the fulfilment cron once due; the bot must be a group admin with "Delete messages" (a refused delete is tried 3 times, then dropped).
+
+Rewards centre (`/account/esims/rewards`, 福利中心): one data balance, three tabs — check-in on Telegram, invite friends (the referral centre; `/account/esims/referrals` redirects here) and data received for joining. Referrals reward in money **or** data (`referral.rewardType`, 二选一, also per referrer in REF-07): in data, the inviter gets `referrerMb` once per friend and the friend `inviteeMb`, each at the friend's sign-up or first delivered order (`referrerOn` / `inviteeOn`); ledger keys `referral:<referral>` and `invited:<referral>` (`lib/esim/referral/data-rewards.ts`). An eSIM exchanged for data is never a "first order".
+
 ## Adding a payment gateway
 
 1. Write `payments/plugins/<code>.ts` implementing `PaymentPlugin`: start a payment (a page or QR data) and read a notification, returning `null` for anything not authentic.

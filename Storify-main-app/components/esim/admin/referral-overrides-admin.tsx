@@ -15,6 +15,7 @@ import { useFallbackTranslator } from "@/hooks/use-fallback-translator";
 import { apiClient } from "@/lib/api/client";
 import type { ReferralSettings } from "@/lib/esim/referral/rules";
 import type { ReferralOverrideRow } from "@/lib/esim/admin/referrals";
+import { formatMb } from "@/lib/esim/telegram/format";
 
 /**
  * Referrers with rules of their own (REF-07): an admin sets a referrer's
@@ -31,6 +32,11 @@ interface Props {
 interface Draft {
   email: string;
   enabled: "" | "on" | "off";
+  rewardType: "" | "credit" | "data";
+  referrerMb: string;
+  referrerOn: "" | "signup" | "first_order";
+  inviteeMb: string;
+  inviteeOn: "" | "signup" | "first_order";
   commissionType: "" | "percent" | "fixed";
   /** As typed: percent, or USD for a fixed reward. */
   commissionValue: string;
@@ -40,12 +46,17 @@ interface Draft {
   note: string;
 }
 
-const EMPTY: Draft = { email: "", enabled: "", commissionType: "", commissionValue: "", validityDays: "", orderLimit: "", deductPercent: "", note: "" };
+const EMPTY: Draft = { email: "", enabled: "", rewardType: "", referrerMb: "", referrerOn: "", inviteeMb: "", inviteeOn: "", commissionType: "", commissionValue: "", validityDays: "", orderLimit: "", deductPercent: "", note: "" };
 
 function toDraft(row: ReferralOverrideRow): Draft {
   return {
     email: row.email ?? "",
     enabled: row.enabled === null ? "" : row.enabled ? "on" : "off",
+    rewardType: row.rewardType ?? "",
+    referrerMb: row.referrerMb === null ? "" : String(row.referrerMb),
+    referrerOn: row.referrerOn ?? "",
+    inviteeMb: row.inviteeMb === null ? "" : String(row.inviteeMb),
+    inviteeOn: row.inviteeOn ?? "",
     commissionType: row.commissionType ?? "",
     commissionValue: row.commissionValue === null ? "" : String(row.commissionType === "fixed" ? row.commissionValue / 100 : row.commissionValue),
     validityDays: row.validityDays === null ? "" : String(row.validityDays),
@@ -74,6 +85,11 @@ export function EsimReferralOverridesAdmin({ settings, rows, canManage }: Props)
       await apiClient.post("/api/esim/admin/referrals/users", {
         email: draft.email.trim(),
         enabled: draft.enabled === "" ? null : draft.enabled === "on",
+        rewardType: draft.rewardType || null,
+        referrerMb: int(draft.referrerMb),
+        referrerOn: draft.referrerOn || null,
+        inviteeMb: int(draft.inviteeMb),
+        inviteeOn: draft.inviteeOn || null,
         commissionType: type,
         commissionValue: typed === null ? null : type === "fixed" ? Math.round(typed * 100) : typed,
         validityDays: int(draft.validityDays),
@@ -104,7 +120,7 @@ export function EsimReferralOverridesAdmin({ settings, rows, canManage }: Props)
     }
   }
 
-  const field = (label: string, key: "commissionValue" | "validityDays" | "orderLimit" | "deductPercent", placeholder: string, step = "1") => (
+  const field = (label: string, key: "commissionValue" | "validityDays" | "orderLimit" | "deductPercent" | "referrerMb" | "inviteeMb", placeholder: string, step = "1") => (
     <div className="space-y-1.5">
       <Label>{label}</Label>
       <Input type="number" min={0} step={step} disabled={!canManage} placeholder={placeholder} value={draft[key]} onChange={(event) => setDraft({ ...draft, [key]: event.target.value })} />
@@ -112,6 +128,27 @@ export function EsimReferralOverridesAdmin({ settings, rows, canManage }: Props)
   );
 
   const effectiveType = draft.commissionType || settings.commissionType;
+  const effectiveReward = draft.rewardType || settings.rewardType;
+  const whenLabel = (on: "signup" | "first_order") => (on === "signup" ? t("admin.esim.referralOnSignup", "When the friend signs up") : t("admin.esim.referralOnFirstOrder", "On the friend's first order"));
+  const trigger = (key: "referrerOn" | "inviteeOn", store: "signup" | "first_order") => (
+    <div className="space-y-1.5">
+      <Label>{t("admin.esim.referralWhen", "When")}</Label>
+      <NativeSelect value={draft[key]} onChange={(event) => setDraft({ ...draft, [key]: event.target.value as Draft["referrerOn"] })}>
+        <option value="">{storeDefault} ({whenLabel(store)})</option>
+        <option value="signup">{whenLabel("signup")}</option>
+        <option value="first_order">{whenLabel("first_order")}</option>
+      </NativeSelect>
+    </div>
+  );
+  const rewardLabel = (row: ReferralOverrideRow) => {
+    const type = row.rewardType ?? settings.rewardType;
+    if (type === "data") {
+      const referrer = row.referrerMb ?? settings.data.referrerMb;
+      const invitee = row.inviteeMb ?? settings.data.inviteeMb;
+      return `${t("admin.esim.referralTypeData", "Bonus data")}: ${formatMb(referrer)} / ${formatMb(invitee)}${row.rewardType === null && row.referrerMb === null && row.inviteeMb === null ? ` (${storeDefault})` : ""}`;
+    }
+    return row.commissionType ? reward(row.commissionType, row.commissionValue ?? 0) : storeDefault;
+  };
 
   return (
     <Card>
@@ -138,6 +175,28 @@ export function EsimReferralOverridesAdmin({ settings, rows, canManage }: Props)
                 </NativeSelect>
               </div>
               <div className="space-y-1.5">
+                <Label>{t("admin.esim.referralRewardType", "Reward type")}</Label>
+                <NativeSelect value={draft.rewardType} onChange={(event) => setDraft({ ...draft, rewardType: event.target.value as Draft["rewardType"] })}>
+                  <option value="">
+                    {storeDefault} ({settings.rewardType === "data" ? t("admin.esim.referralTypeData", "Bonus data") : t("admin.esim.referralTypeCredit", "Balance commission")})
+                  </option>
+                  <option value="credit">{t("admin.esim.referralTypeCredit", "Balance commission")}</option>
+                  <option value="data">{t("admin.esim.referralTypeData", "Bonus data")}</option>
+                </NativeSelect>
+              </div>
+              {effectiveReward === "data" ? (
+                <>
+                  <div />
+                  <div />
+                  {field(`${t("admin.esim.referralDataReferrer", "The inviter gets")} (MB)`, "referrerMb", `${storeDefault}: ${settings.data.referrerMb}`)}
+                  {trigger("referrerOn", settings.data.referrerOn)}
+                  <div />
+                  {field(`${t("admin.esim.referralDataInvitee", "The invited friend gets")} (MB)`, "inviteeMb", `${storeDefault}: ${settings.data.inviteeMb}`)}
+                  {trigger("inviteeOn", settings.data.inviteeOn)}
+                  <div />
+                </>
+              ) : null}
+              <div className={effectiveReward === "data" ? "hidden" : "space-y-1.5"}>
                 <Label>{t("admin.esim.referralReward", "Reward")}</Label>
                 <NativeSelect value={draft.commissionType} onChange={(event) => setDraft({ ...draft, commissionType: event.target.value as Draft["commissionType"], commissionValue: "" })}>
                   <option value="">{storeDefault} ({reward(settings.commissionType, settings.commissionValue)})</option>
@@ -145,7 +204,7 @@ export function EsimReferralOverridesAdmin({ settings, rows, canManage }: Props)
                   <option value="fixed">{t("admin.esim.referralFixed", "Fixed amount per order")}</option>
                 </NativeSelect>
               </div>
-              {draft.commissionType
+              {draft.commissionType && effectiveReward === "credit"
                 ? field(`${t("admin.esim.referralValue", "Value")} (${effectiveType === "percent" ? "%" : "USD"})`, "commissionValue", "", effectiveType === "percent" ? "0.1" : "0.01")
                 : <div />}
               <div />
@@ -190,7 +249,7 @@ export function EsimReferralOverridesAdmin({ settings, rows, canManage }: Props)
                     <div className="text-xs text-muted-foreground">{t("admin.esim.referralOverrideFriends", "{count} friends joined", { count: row.referrals })}{row.note ? ` · ${row.note}` : ""}</div>
                   </TableCell>
                   <TableCell className="text-sm">{row.enabled === null ? storeDefault : row.enabled ? t("admin.esim.on", "On") : t("admin.esim.off", "Off")}</TableCell>
-                  <TableCell className="text-sm">{row.commissionType ? reward(row.commissionType, row.commissionValue ?? 0) : storeDefault}</TableCell>
+                  <TableCell className="text-sm">{rewardLabel(row)}</TableCell>
                   <TableCell className="text-sm">{row.validityDays === null ? storeDefault : row.validityDays}</TableCell>
                   <TableCell className="text-sm">{row.orderLimit === null ? storeDefault : row.orderLimit}</TableCell>
                   <TableCell className="text-sm">{row.deductPercent === null ? storeDefault : `${row.deductPercent}%`}</TableCell>

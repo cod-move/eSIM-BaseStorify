@@ -1,5 +1,5 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { ChevronLeft, ChevronRight, Gift, Phone, Plus, Send, Smartphone, Wallet } from "lucide-react";
+import { ChevronLeft, ChevronRight, Gift, Phone, Plus, Smartphone, Wallet } from "lucide-react";
 import Link from "@/components/language/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -34,7 +34,7 @@ export default async function AccountEsimsPage({ params, searchParams }: PagePro
     ? await Promise.all([pageCustomerEsims(session.user.id, wantedPage), storeCreditSummary(session.user.id), listCustomerNumbers(session.user.id)])
     : [{ items: [], page: 1, totalPages: 1, total: 0 }, [], []];
   const esims = esimPage.items;
-  // The check-in rewards card shows once the rewards are open.
+  // The rewards centre card names check-ins only once they are open.
   const rewardsOpen = (await getTelegramSettings()).enabled;
   const pageHref = (page: number) => (page > 1 ? `/account/esims?page=${page}` : "/account/esims");
   const balance = balances.find((entry) => entry.currency === "USD")?.balance ?? 0;
@@ -75,30 +75,24 @@ export default async function AccountEsimsPage({ params, searchParams }: PagePro
           </CardContent>
         </Card>
       </Link>
-      <Link href="/account/esims/referrals" className="block">
+      <Link href="/account/esims/rewards" className="block">
         <Card className="gap-0 py-0 transition-colors hover:bg-muted/40">
           <CardContent className="flex items-center justify-between gap-4 p-4 text-sm">
             <span className="flex items-center gap-3">
               <Gift className="h-5 w-5 shrink-0 text-primary" aria-hidden />
-              <span>{tr("esim.referral.teaser", "Invite friends and earn a reward on their orders")}</span>
+              <span>
+                <span className="font-medium">{tr("esim.rewards.centre", "Rewards centre")}</span>
+                <span className="block text-xs text-muted-foreground">
+                  {rewardsOpen
+                    ? tr("esim.rewards.centreHint", "Check-in data · invite friends for data")
+                    : tr("esim.rewards.centreHintInvite", "Invite friends and get rewarded")}
+                </span>
+              </span>
             </span>
             <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground rtl:rotate-180" />
           </CardContent>
         </Card>
       </Link>
-      {rewardsOpen ? (
-        <Link href="/account/esims/rewards" className="block">
-          <Card className="gap-0 py-0 transition-colors hover:bg-muted/40">
-            <CardContent className="flex items-center justify-between gap-4 p-4 text-sm">
-              <span className="flex items-center gap-3">
-                <Send className="h-5 w-5 shrink-0 text-primary" aria-hidden />
-                <span>{tr("esim.rewards.teaser", "Check in on Telegram every day for free data")}</span>
-              </span>
-              <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground rtl:rotate-180" />
-            </CardContent>
-          </Card>
-        </Link>
-      ) : null}
       <Link href="/account/esims/verification" className="block text-sm text-muted-foreground hover:text-foreground">
         {tr("esim.kyc.link", "Identity verification")} →
       </Link>

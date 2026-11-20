@@ -63,6 +63,13 @@ const EsimReferralSchema = new Schema<IEsimReferral>(
 export interface IEsimReferralOverride extends mongoose.Document {
   user: mongoose.Types.ObjectId;
   enabled: boolean | null;
+  /** "credit" or "data" (二选一); null follows the store. */
+  rewardType: "credit" | "data" | null;
+  /** Data rewards (MB) and when each is given; null follows the store. */
+  referrerMb: number | null;
+  referrerOn: "signup" | "first_order" | null;
+  inviteeMb: number | null;
+  inviteeOn: "signup" | "first_order" | null;
   commissionType: "percent" | "fixed" | null;
   /** Percent, or cents for a fixed commission. */
   commissionValue: number | null;
@@ -80,6 +87,11 @@ const EsimReferralOverrideSchema = new Schema<IEsimReferralOverride>(
   {
     user: { type: Schema.Types.ObjectId, ref: "User", required: true, unique: true },
     enabled: { type: Boolean, default: null },
+    rewardType: { type: String, enum: ["credit", "data", null], default: null },
+    referrerMb: { type: Number, default: null, min: 0, max: 10_000_000 },
+    referrerOn: { type: String, enum: ["signup", "first_order", null], default: null },
+    inviteeMb: { type: Number, default: null, min: 0, max: 10_000_000 },
+    inviteeOn: { type: String, enum: ["signup", "first_order", null], default: null },
     commissionType: { type: String, enum: ["percent", "fixed", null], default: null },
     commissionValue: { type: Number, default: null, min: 0 },
     validityDays: { type: Number, default: null, min: 0 },
