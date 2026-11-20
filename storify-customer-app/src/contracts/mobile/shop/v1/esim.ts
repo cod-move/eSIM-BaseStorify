@@ -506,12 +506,114 @@ export const EsimReferrals = z.object({
     validityDays: z.number().int(),
     /** The friend's welcome discount, when there is one. */
     friendDiscount: EsimRate.optional(),
+    /** "credit" (the commission above) or "data" (`data` below): one or the other. Left out by older stores. */
+    rewardType: z.enum(["credit", "data"]).optional(),
+    /** rewardType "data": once per friend each, at the friend's sign-up or first order. */
+    data: z
+      .object({
+        referrer: DataAmount,
+        referrerOn: z.enum(["signup", "first_order"]),
+        invitee: DataAmount,
+        inviteeOn: z.enum(["signup", "first_order"]),
+      })
+      .optional(),
   }),
-  invited: z.array(z.object({ id: z.string(), who: z.string(), joinedAt: z.string(), rewards: Money })),
+  /** `data`: what this friend earned the shopper in data, when any. */
+  invited: z.array(z.object({ id: z.string(), who: z.string(), joinedAt: z.string(), rewards: Money, data: DataAmount.optional() })),
   rewards: z.array(EsimReferralReward),
   totals: z.object({ credited: Money, pending: Money }),
+  /** Data earned for inviting, all friends together. */
+  dataEarned: DataAmount.optional(),
+  /** What the shopper got for joining through a friend's link; left out when they did not. */
+  received: z
+    .object({
+      /** The inviter, shown in part ("j***@example.com"). */
+      from: z.string(),
+      joinedAt: z.string(),
+      /** Given so far; left out until it is. */
+      data: DataAmount.optional(),
+      dataAt: z.string().optional(),
+      /** Still to come after the shopper's first order. */
+      pending: DataAmount.optional(),
+    })
+    .optional(),
+  /** The shopper's own welcome coupon for joining through a link. */
+  welcomeCoupon: z
+    .object({ code: z.string(), discount: EsimRate, minOrder: Money.optional(), endsAt: z.string().optional(), active: z.boolean() })
+    .optional(),
 });
 export type EsimReferrals = z.infer<typeof EsimReferrals>;
+
+/*
+ * The rewards centre (福利中心, the website's /account/esims/rewards): one
+ * data balance, filled by daily Telegram check-ins and data referrals, and
+ * exchanged for an eSIM.
+ *
+ * GET /me/esim-rewards: the balance, the Telegram link, the eSIMs the data
+ * buys and every entry. POST /me/esim-rewards/telegram answers a one-time
+ * link that opens the bot and links the account (15 minutes); DELETE
+ * /me/esim-rewards/telegram unlinks it. POST /me/esim-rewards/redeem spends
+ * the data on an item: a paid order at no charge, issued like any other.
+ * Refusals: 409 CONFLICT with `reason` one of ESIM_REWARD_REFUSALS.
+ */
+export const ESIM_REWARD_REFUSALS = ["DISABLED", "NO_ITEM", "NOT_ENOUGH", "FAILED", "BOT_NOT_SET_UP"] as const;
+
+/** What an entry was: a check-in, an exchange, data given back, an adjustment by the store, or a referral. */
+export const ESIM_REWARD_KINDS = ["checkin", "redeem", "refund", "adjust", "referral", "invited"] as const;
+
+export const EsimRewardEntry = z.object({
+  id: z.string(),
+  /** One of ESIM_REWARD_KINDS; one the app does not know shows as a plain entry. */
+  kind: z.string(),
+  /** Signed: + earned or given back, − spent. */
+  amount: DataAmount,
+  /** "done", "pending" or "failed" (an exchange that did not go through, its data given back). */
+  status: z.string(),
+  itemName: z.string().optional(),
+  orderId: z.string().optional(),
+  orderNumber: z.string().optional(),
+  /** The store's reason for an adjustment. */
+  note: z.string().optional(),
+  createdAt: z.string(),
+});
+export type EsimRewardEntry = z.infer<typeof EsimRewardEntry>;
+
+/** GET /me/esim-rewards */
+export const EsimRewards = z.object({
+  /** Telegram check-ins are open (exchanging needs it too). */
+  enabled: z.boolean(),
+  balance: DataAmount,
+  earned: DataAmount,
+  spent: DataAmount,
+  checkins: z.number().int(),
+  telegram: z.object({
+    /** The bot's @username; left out until the store connects it. */
+    bot: z.string().optional(),
+    /** The rewards group's invite link, when the store set one. */
+    groupLink: z.string().optional(),
+    linked: z.object({ username: z.string().optional(), name: z.string().optional(), linkedAt: z.string() }).optional(),
+  }),
+  items: z.array(z.object({ id: z.string(), name: z.string(), cost: DataAmount })),
+  history: z.array(EsimRewardEntry),
+});
+export type EsimRewards = z.infer<typeof EsimRewards>;
+
+/** POST /me/esim-rewards/telegram */
+export const EsimRewardsTelegramLink = z.object({ url: z.string() });
+export type EsimRewardsTelegramLink = z.infer<typeof EsimRewardsTelegramLink>;
+
+/** POST /me/esim-rewards/telegram and DELETE: nothing to send. */
+export const EsimRewardsEmptyInput = z.object({}).strict();
+
+/** POST /me/esim-rewards/redeem — `requestId` made per tap, so a retry spends once. */
+export const EsimRewardsRedeemRequest = z.object({
+  itemId: z.string().regex(/^[a-f0-9]{24}$/),
+  requestId: z.string().regex(/^[A-Za-z0-9_-]{8,64}$/),
+});
+export type EsimRewardsRedeemRequest = z.infer<typeof EsimRewardsRedeemRequest>;
+
+export const EsimRewardsRedeemResult = z.object({ orderId: z.string(), orderNumber: z.string(), balance: DataAmount });
+export type EsimRewardsRedeemResult = z.infer<typeof EsimRewardsRedeemResult>;
 
 /** PATCH /me/esim-referrals/code */
 export const EsimReferralCodeRequest = z.object({ code: z.string().trim().min(1).max(40) });

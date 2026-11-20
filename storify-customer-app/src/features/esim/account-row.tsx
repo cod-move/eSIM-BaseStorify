@@ -5,7 +5,8 @@ import { NavRow, RowGroup } from '@/components/ui/rows';
 
 /**
  * The eSIM module's rows on the Account tab, under the purchases (patch
- * P23): My eSIMs, the balance, inviting friends and identity verification.
+ * P23): My eSIMs, the balance, the rewards centre (check-ins and inviting
+ * friends) and identity verification.
  */
 export function EsimAccountRow() {
   const t = useTranslations('esim');
@@ -21,8 +22,8 @@ export function EsimAccountRow() {
       />
       <NavRow
         icon="share"
-        title={t('inviteFriends')}
-        onPress={() => router.push('/account/esims/referrals')}
+        title={t('rewardsCentre')}
+        onPress={() => router.push('/account/esims/rewards')}
       />
       <NavRow
         icon="shield"

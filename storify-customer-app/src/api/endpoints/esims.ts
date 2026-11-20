@@ -1,4 +1,6 @@
 /** Endpoints: the shopper's eSIMs (the eSIM module, APP-03/04). */
+import * as z from 'zod';
+
 import {
   EsimDestinationDetail,
   EsimDestinationList,
@@ -11,6 +13,9 @@ import {
   EsimPlanDetails,
   EsimReferralCode,
   EsimReferrals,
+  EsimRewards,
+  EsimRewardsRedeemResult,
+  EsimRewardsTelegramLink,
   EsimWallet,
   EsimList,
   EsimTopupQuote,
@@ -144,6 +149,41 @@ export function getEsimWallet(locale: string, signal: AbortSignal) {
 /** The shopper's referral code, link, friends and rewards. */
 export function getEsimReferrals(locale: string, signal: AbortSignal) {
   return api.data({ locale, path: '/me/esim-referrals', auth: 'user', signal }, EsimReferrals);
+}
+
+/** The rewards centre (福利中心): the data balance, the Telegram link, what the data buys, every entry. */
+export function getEsimRewards(locale: string, signal: AbortSignal) {
+  return api.data({ locale, path: '/me/esim-rewards', auth: 'user', signal }, EsimRewards);
+}
+
+/** A one-time link that opens the check-in bot and links this account. */
+export function linkEsimTelegram(locale: string) {
+  return api.data(
+    { locale, path: '/me/esim-rewards/telegram', method: 'POST', auth: 'user', body: {} },
+    EsimRewardsTelegramLink
+  );
+}
+
+/** Unlinks Telegram; the data saved stays. */
+export function unlinkEsimTelegram(locale: string) {
+  return api.data(
+    { locale, path: '/me/esim-rewards/telegram', method: 'DELETE', auth: 'user' },
+    z.object({ unlinked: z.boolean() })
+  );
+}
+
+/** Spends saved data on an eSIM; `requestId` made per tap, so a retry spends once. */
+export function redeemEsimReward(locale: string, itemId: string, requestId: string) {
+  return api.data(
+    {
+      locale,
+      path: '/me/esim-rewards/redeem',
+      method: 'POST',
+      auth: 'user',
+      body: { itemId, requestId },
+    },
+    EsimRewardsRedeemResult
+  );
 }
 
 /** Chooses another referral code; the store refuses one that is taken or malformed. */

@@ -33,15 +33,7 @@ const isKnownStatus = (status: string): status is RewardStatus =>
  */
 export function ReferralsView({ centre }: { centre: EsimReferrals }) {
   const t = useTranslations('esim');
-  const format = useFormatter();
-  const toast = useToast();
-  const describe = useErrorMessage();
   const tabBar = useTabBarHeight();
-  const setCode = useSetReferralCode();
-  const [code, setCodeText] = useState(centre.code);
-  const rate = (value: Rate) =>
-    value.kind === 'percent' ? `${value.percent}%` : value.amount.formatted;
-  const date = (value: string) => format.dateTime(new Date(value), { dateStyle: 'medium' });
 
   if (!centre.enabled) {
     return <Text className="p-6 text-center text-muted">{t('referralsOff')}</Text>;
@@ -53,16 +45,56 @@ export function ReferralsView({ centre }: { centre: EsimReferrals }) {
       contentContainerClassName="gap-4 px-4 pt-3"
       contentContainerStyle={{ paddingBottom: tabBar + 16 }}
       keyboardShouldPersistTaps="handled">
+      <ReferralsContent centre={centre} />
+    </ScrollView>
+  );
+}
+
+/**
+ * The referral centre's cards without a scroll view of their own, for the
+ * rewards centre's "Invite friends" tab: the offer (money or data), the link
+ * and code, totals, friends and rewards.
+ */
+export function ReferralsContent({ centre }: { centre: EsimReferrals }) {
+  const t = useTranslations('esim');
+  const format = useFormatter();
+  const toast = useToast();
+  const describe = useErrorMessage();
+  const setCode = useSetReferralCode();
+  const [code, setCodeText] = useState(centre.code);
+  const rate = (value: Rate) =>
+    value.kind === 'percent' ? `${value.percent}%` : value.amount.formatted;
+  const date = (value: string) => format.dateTime(new Date(value), { dateStyle: 'medium' });
+
+  const data = centre.offer.rewardType === 'data' ? centre.offer.data : undefined;
+  const when = (on: 'signup' | 'first_order') =>
+    on === 'signup' ? t('whenSignup') : t('whenFirstOrder');
+
+  if (!centre.enabled) {
+    return <Text className="p-6 text-center text-muted">{t('referralsOff')}</Text>;
+  }
+
+  return (
+    <>
       <View className="gap-3 rounded-xl bg-surface p-4">
         <Text variant="subheading">{t('inviteTitle')}</Text>
-        <Text>
-          {centre.offer.friendDiscount
-            ? t('inviteOfferBoth', {
-                friend: rate(centre.offer.friendDiscount),
-                you: rate(centre.offer.commission),
-              })
-            : t('inviteOffer', { you: rate(centre.offer.commission) })}
-        </Text>
+        {data ? (
+          <Text>
+            {t('inviteOfferData', { you: data.referrer.formatted, when: when(data.referrerOn) })}
+            {data.invitee.bytes > 0
+              ? ` ${t('inviteFriendData', { friend: data.invitee.formatted, when: when(data.inviteeOn) })}`
+              : ''}
+          </Text>
+        ) : (
+          <Text>
+            {centre.offer.friendDiscount
+              ? t('inviteOfferBoth', {
+                  friend: rate(centre.offer.friendDiscount),
+                  you: rate(centre.offer.commission),
+                })
+              : t('inviteOffer', { you: rate(centre.offer.commission) })}
+          </Text>
+        )}
         <Text variant="caption" selectable>
           {centre.link}
         </Text>
@@ -111,7 +143,10 @@ export function ReferralsView({ centre }: { centre: EsimReferrals }) {
                 },
                 onError: (error: unknown) => {
                   const reason = isApiError(error) ? error.reason : undefined;
-                  const key = reason && reason in CODE_REFUSALS ? CODE_REFUSALS[reason as keyof typeof CODE_REFUSALS] : undefined;
+                  const key =
+                    reason && reason in CODE_REFUSALS
+                      ? CODE_REFUSALS[reason as keyof typeof CODE_REFUSALS]
+                      : undefined;
                   toast.show({ message: key ? t(key) : describe(error) });
                 },
               });
@@ -120,16 +155,23 @@ export function ReferralsView({ centre }: { centre: EsimReferrals }) {
         ) : null}
       </View>
 
-      <View className="flex-row gap-3">
-        <View className="flex-1 gap-1 rounded-xl bg-surface p-4">
-          <Text variant="caption">{t('rewardsCredited')}</Text>
-          <Text variant="price">{centre.totals.credited.formatted}</Text>
+      {data ? (
+        <View className="gap-1 rounded-xl bg-surface p-4">
+          <Text variant="caption">{t('dataEarned')}</Text>
+          <Text variant="price">{centre.dataEarned?.formatted ?? '0 MB'}</Text>
         </View>
-        <View className="flex-1 gap-1 rounded-xl bg-surface p-4">
-          <Text variant="caption">{t('rewardsPending')}</Text>
-          <Text variant="price">{centre.totals.pending.formatted}</Text>
+      ) : (
+        <View className="flex-row gap-3">
+          <View className="flex-1 gap-1 rounded-xl bg-surface p-4">
+            <Text variant="caption">{t('rewardsCredited')}</Text>
+            <Text variant="price">{centre.totals.credited.formatted}</Text>
+          </View>
+          <View className="flex-1 gap-1 rounded-xl bg-surface p-4">
+            <Text variant="caption">{t('rewardsPending')}</Text>
+            <Text variant="price">{centre.totals.pending.formatted}</Text>
+          </View>
         </View>
-      </View>
+      )}
 
       <View className="gap-2 rounded-xl bg-surface p-4">
         <Text variant="subheading">{t('invited', { count: centre.invited.length })}</Text>
@@ -138,7 +180,7 @@ export function ReferralsView({ centre }: { centre: EsimReferrals }) {
           <View key={friend.id} className="flex-row justify-between gap-3">
             <Text className="flex-1">{friend.who}</Text>
             <Text variant="caption">{date(friend.joinedAt)}</Text>
-            <Text>{friend.rewards.formatted}</Text>
+            <Text>{friend.data ? `+${friend.data.formatted}` : friend.rewards.formatted}</Text>
           </View>
         ))}
       </View>
@@ -164,6 +206,6 @@ export function ReferralsView({ centre }: { centre: EsimReferrals }) {
           ))}
         </View>
       ) : null}
-    </ScrollView>
+    </>
   );
 }

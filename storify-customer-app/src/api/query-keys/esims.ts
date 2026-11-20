@@ -12,6 +12,8 @@ export const esimsKeys = {
   /** The balance and the referral centre (APP-07). */
   esimWallet: (locale: string) => ['private', locale, 'esims', 'wallet'] as const,
   esimReferrals: (locale: string) => ['private', locale, 'esims', 'referrals'] as const,
+  /** The rewards centre (福利中心): data balance, Telegram link, items, entries. */
+  esimRewards: (locale: string) => ['private', locale, 'esims', 'rewards'] as const,
   esimKyc: (locale: string) => ['private', locale, 'esims', 'kyc'] as const,
   /** Phones that take an eSIM. */
   esimDevices: (locale: string) => ['public', locale, 'esims', 'devices'] as const,

@@ -11,6 +11,7 @@ import { findWalletProduct } from "@/lib/esim/wallet/product";
 import { getStoreCurrency } from "@/lib/intl/server-currency";
 import { storeCreditSummary } from "@/lib/store-credit/store-credit";
 import { getEsimSettings } from "@/models/esim-pricing.model";
+import { dataAmount } from "./rewards";
 
 /**
  * The shopper app's balance and referrals (APP-07): the website's own readers
@@ -78,12 +79,20 @@ export const esimReferralsRoute = defineRoute({
         ...(offer.coupon.enabled
           ? { friendDiscount: rate(offer.coupon.type === "percentage" ? "percent" : "fixed", offer.coupon.value) }
           : {}),
+        rewardType: offer.rewardType,
+        data: {
+          referrer: dataAmount(offer.data.referrerMb),
+          referrerOn: offer.data.referrerOn,
+          invitee: dataAmount(offer.data.inviteeMb),
+          inviteeOn: offer.data.inviteeOn,
+        },
       },
       invited: centre.invited.map((entry) => ({
         id: entry.id,
         who: entry.who,
         joinedAt: new Date(entry.joinedAt).toISOString(),
         rewards: money(entry.rewards),
+        ...(entry.dataMb > 0 ? { data: dataAmount(entry.dataMb) } : {}),
       })),
       rewards: centre.rewards.map((reward) => ({
         id: reward.id,
@@ -94,6 +103,29 @@ export const esimReferralsRoute = defineRoute({
         ...(reward.creditedAt ? { creditedAt: new Date(reward.creditedAt).toISOString() } : {}),
       })),
       totals: { credited: money(centre.totals.paid), pending: money(centre.totals.pending) },
+      dataEarned: dataAmount(centre.dataEarnedMb),
+      ...(centre.received
+        ? {
+            received: {
+              from: centre.received.from,
+              joinedAt: new Date(centre.received.joinedAt).toISOString(),
+              ...(centre.received.dataMb > 0 ? { data: dataAmount(centre.received.dataMb) } : {}),
+              ...(centre.received.dataAt ? { dataAt: new Date(centre.received.dataAt).toISOString() } : {}),
+              ...(centre.received.pendingMb > 0 ? { pending: dataAmount(centre.received.pendingMb) } : {}),
+            },
+          }
+        : {}),
+      ...(centre.welcomeCoupon
+        ? {
+            welcomeCoupon: {
+              code: centre.welcomeCoupon.code,
+              discount: rate(centre.welcomeCoupon.type === "percentage" ? "percent" : "fixed", centre.welcomeCoupon.type === "percentage" ? centre.welcomeCoupon.value : Math.round(centre.welcomeCoupon.value * 100)),
+              ...(centre.welcomeCoupon.minOrder > 0 ? { minOrder: money(centre.welcomeCoupon.minOrder) } : {}),
+              ...(centre.welcomeCoupon.endsAt ? { endsAt: new Date(centre.welcomeCoupon.endsAt).toISOString() } : {}),
+              active: centre.welcomeCoupon.active,
+            },
+          }
+        : {}),
     };
   },
 });

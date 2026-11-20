@@ -3,7 +3,11 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   getEsimKyc,
   getEsimReferrals,
+  getEsimRewards,
   getEsimWallet,
+  linkEsimTelegram,
+  redeemEsimReward,
+  unlinkEsimTelegram,
   setEsimReferralCode,
   submitEsimKyc,
 } from '@/api/endpoints/esims';
@@ -31,6 +35,47 @@ export function useEsimReferrals() {
     staleTime: STALE.private,
     // Asked again each time the screen opens: the store may have turned referrals on or off since.
     refetchOnMount: 'always',
+  });
+}
+
+/** The rewards centre (福利中心), read again each time the screen opens. */
+export function useEsimRewards() {
+  const locale = useLocale();
+  return useQuery({
+    queryKey: queryKeys.esimRewards(locale),
+    queryFn: ({ signal }) => getEsimRewards(locale, signal),
+    staleTime: STALE.private,
+    refetchOnMount: 'always',
+  });
+}
+
+/** A one-time link to the check-in bot (opened by the caller). */
+export function useLinkEsimTelegram() {
+  const locale = useLocale();
+  return useMutation({ mutationFn: () => linkEsimTelegram(locale) });
+}
+
+/** Unlinks Telegram; the centre is read again. */
+export function useUnlinkEsimTelegram() {
+  const locale = useLocale();
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: () => unlinkEsimTelegram(locale),
+    onSuccess: () => void client.invalidateQueries({ queryKey: queryKeys.esimRewards(locale) }),
+  });
+}
+
+/** Exchanges saved data for an eSIM; the centre and the eSIM list are read again. */
+export function useRedeemEsimReward() {
+  const locale = useLocale();
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: ({ itemId, requestId }: { itemId: string; requestId: string }) =>
+      redeemEsimReward(locale, itemId, requestId),
+    onSettled: () => {
+      void client.invalidateQueries({ queryKey: queryKeys.esimRewards(locale) });
+      void client.invalidateQueries({ queryKey: queryKeys.esimList(locale) });
+    },
   });
 }
 
