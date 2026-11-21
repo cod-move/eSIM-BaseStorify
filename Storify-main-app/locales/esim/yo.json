@@ -307,7 +307,12 @@
       "offerData": "You get {amount} of data for each friend who joins with your link, {when}.",
       "friendGetsData": "Your friend gets {amount} of data {when}.",
       "dataEarned": "Data earned",
-      "shareText": "Join me and we both get free data, plus more free data every day you check in:"
+      "shareText": "Join me and we both get free data, plus more free data every day you check in:",
+      "rewardsRecent": "Ọjọ́ 30 sẹ́yìn",
+      "rewardsShowRecent": "Ọjọ́ 30 sẹ́yìn nìkan",
+      "rewardsShowAll": "Fi gbogbo rẹ̀ hàn",
+      "rewardsNoneRecent": "Kò sí èrè ní ọjọ́ 30 sẹ́yìn.",
+      "dataAdded": "A ti fi kún data rẹ"
     },
     "kyc": {
       "title": "Ìjẹ́rìísí ìdánimọ̀",
@@ -1009,6 +1014,13 @@
       "limitMonth": "O kò ní eSIM tí ò ń lò, nítorí náà wíwọlé ń fún ọ ní {cap} jù lọ lóṣù. Oṣù yìí: {used}.",
       "limitFull": "O ti dé òpin.",
       "limitBuy": "Ra eSIM kan láti mú òpin náà kúrò"
+    },
+    "coupons": {
+      "title": "Àwọn kúpọ́nù mi",
+      "description": "Tẹ kóòdù náà nígbà ìsanwó láti lò ó.",
+      "none": "O kò ní kúpọ́nù kankan báyìí.",
+      "personal": "Fún ìwọ nìkan",
+      "code": "Kóòdù"
     }
   },
   "admin": {

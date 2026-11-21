@@ -311,7 +311,12 @@
       "offerData": "You get {amount} of data for each friend who joins with your link, {when}.",
       "friendGetsData": "Your friend gets {amount} of data {when}.",
       "dataEarned": "Data earned",
-      "shareText": "Join me and we both get free data, plus more free data every day you check in:"
+      "shareText": "Join me and we both get free data, plus more free data every day you check in:",
+      "rewardsRecent": "Last 30 days",
+      "rewardsShowRecent": "Last 30 days only",
+      "rewardsShowAll": "Show all",
+      "rewardsNoneRecent": "No rewards in the last 30 days.",
+      "dataAdded": "Added to your data"
     },
     "kyc": {
       "title": "Identity verification",
@@ -1020,6 +1025,13 @@
       "limitMonth": "You have no eSIM in use, so check-ins give at most {cap} a month. This month: {used}.",
       "limitFull": "The limit is reached.",
       "limitBuy": "Buy an eSIM to lift the limit"
+    },
+    "coupons": {
+      "title": "My coupons",
+      "description": "Enter a code at checkout to use it.",
+      "none": "You have no coupons at the moment.",
+      "personal": "Just for you",
+      "code": "Code"
     }
   },
   "admin": {

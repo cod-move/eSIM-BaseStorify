@@ -1,6 +1,6 @@
 import {
   Bell,
-  FileText,
+  Gift, // [esim-patch] P11
   Heart,
   Wallet,
   LayoutDashboard,
@@ -11,6 +11,8 @@ import {
   Shield,
   Smartphone, // [esim-patch] P11
   LifeBuoy, // [esim-patch] P11
+  Ticket, // [esim-patch] P11
+  UserPlus, // [esim-patch] P11
   User,
 } from "lucide-react";
 import type { LoyaltyTier } from "@/types";
@@ -56,6 +58,25 @@ export const dashboardLinks: AccountNavLink[] = [
     href: "/account/esims",
     icon: Smartphone,
   },
+  // [esim-patch] P11 My coupons, the rewards centre and Invite friends, after "My eSIMs".
+  {
+    labelKey: "esim.coupons.title",
+    labelFallback: "My coupons",
+    href: "/account/esims/coupons",
+    icon: Ticket,
+  },
+  {
+    labelKey: "esim.rewards.centre",
+    labelFallback: "Rewards centre",
+    href: "/account/esims/rewards",
+    icon: Gift,
+  },
+  {
+    labelKey: "esim.referral.title",
+    labelFallback: "Invite friends",
+    href: "/account/esims/referrals",
+    icon: UserPlus,
+  },
   {
     labelKey: "common.notifications",
     href: "/account/notifications",
@@ -79,12 +100,7 @@ export const dashboardLinks: AccountNavLink[] = [
     href: "/account/esims/support",
     icon: LifeBuoy,
   },
-  {
-    labelKey: "account.quotes",
-    labelFallback: "Quotes",
-    href: "/account/quotes",
-    icon: FileText,
-  },
+  // [esim-patch] P11 "Quotes" taken out of the menu (the eSIM store takes no quote requests); /account/quotes still works.
   {
     labelKey: "account.wishlist",
     href: "/account/wishlist",

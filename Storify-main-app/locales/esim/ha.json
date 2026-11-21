@@ -307,7 +307,12 @@
       "offerData": "You get {amount} of data for each friend who joins with your link, {when}.",
       "friendGetsData": "Your friend gets {amount} of data {when}.",
       "dataEarned": "Data earned",
-      "shareText": "Join me and we both get free data, plus more free data every day you check in:"
+      "shareText": "Join me and we both get free data, plus more free data every day you check in:",
+      "rewardsRecent": "Kwanaki 30 da suka gabata",
+      "rewardsShowRecent": "Kwanaki 30 da suka gabata kaɗai",
+      "rewardsShowAll": "Nuna duka",
+      "rewardsNoneRecent": "Babu lada a kwanaki 30 da suka gabata.",
+      "dataAdded": "An ƙara zuwa data ɗinka"
     },
     "kyc": {
       "title": "Tabbatar da shaida",
@@ -1009,6 +1014,13 @@
       "limitMonth": "Ba ka da eSIM da ake amfani da ita, don haka shiga yana ba ka har {cap} a wata. Wannan wata: {used}.",
       "limitFull": "An kai iyaka.",
       "limitBuy": "Sayi eSIM don cire iyakar"
+    },
+    "coupons": {
+      "title": "Kuponina",
+      "description": "Shigar da lambar a lokacin biya don amfani da ita.",
+      "none": "Ba ka da kupon a yanzu.",
+      "personal": "Domin kai kaɗai",
+      "code": "Lamba"
     }
   },
   "admin": {

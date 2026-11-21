@@ -33,12 +33,37 @@ function Stat({ label, value }: { label: string; value: string | number }) {
   );
 }
 
-export async function InviteSection({ centre, countries, base, locale }: { centre: ReferralCentre; countries: Array<{ name: string; path: string }>; base: string; locale: string }) {
+export async function InviteSection({
+  centre,
+  countries,
+  base,
+  locale,
+  allRewards = false,
+}: {
+  centre: ReferralCentre;
+  countries: Array<{ name: string; path: string }>;
+  base: string;
+  locale: string;
+  /** Every reward listed, not only the last month's. */
+  allRewards?: boolean;
+}) {
   const tr = await translator();
   const date = new Intl.DateTimeFormat(locale, { dateStyle: "medium" });
   const money = (units: number) => formatStorePrice(Math.round(units * 100), locale);
   const data = centre.offer.rewardType === "data";
-  const pageHref = (page: number) => (page > 1 ? `/account/esims/rewards?page=${page}` : "/account/esims/rewards");
+  const href = (page: number, all: boolean) => {
+    const params = new URLSearchParams();
+    if (all) params.set("rewards", "all");
+    if (page > 1) params.set("page", String(page));
+    const query = params.toString();
+    return query ? `/account/esims/referrals?${query}` : "/account/esims/referrals";
+  };
+  const pageHref = (page: number) => href(page, allRewards);
+  // Money and data rewards in one list, newest first.
+  const rewardRows = [
+    ...centre.rewards.map((entry) => ({ kind: "money" as const, at: entry.createdAt, entry })),
+    ...centre.dataRewards.map((entry) => ({ kind: "data" as const, at: entry.createdAt, entry })),
+  ].sort((a, b) => b.at.getTime() - a.at.getTime());
   const when = (on: "signup" | "first_order") =>
     on === "signup" ? tr("esim.referral.whenSignup", "when they sign up") : tr("esim.referral.whenFirstOrder", "after their first order");
 
@@ -99,6 +124,52 @@ export async function InviteSection({ centre, countries, base, locale }: { centr
         {!data || centre.totals.pending > 0 ? <Stat label={tr("esim.referral.pending", "On hold")} value={money(centre.totals.pending)} /> : null}
       </div>
 
+      {centre.rewardsEver > 0 ? (
+        <Card>
+          <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2 space-y-0">
+            <CardTitle className="text-base">
+              {tr("esim.referral.rewards", "Rewards")}
+              {centre.rewardsSince ? <span className="ms-2 text-sm font-normal text-muted-foreground">{tr("esim.referral.rewardsRecent", "Last 30 days")}</span> : null}
+            </CardTitle>
+            <Link href={href(1, !allRewards)} scroll={false} className="text-sm text-primary hover:underline">
+              {allRewards ? tr("esim.referral.rewardsShowRecent", "Last 30 days only") : tr("esim.referral.rewardsShowAll", "Show all")}
+            </Link>
+          </CardHeader>
+          <CardContent className="divide-y">
+            {rewardRows.length === 0 ? (
+              <p className="text-sm text-muted-foreground">{tr("esim.referral.rewardsNoneRecent", "No rewards in the last 30 days.")}</p>
+            ) : (
+              rewardRows.map((row) =>
+                row.kind === "money" ? (
+                  <div key={row.entry.id} className="flex flex-wrap justify-between gap-x-4 gap-y-1 py-2 text-sm">
+                    <div>
+                      <div className="font-medium">{money(row.entry.amount)}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {tr("esim.account.order", "Order {number}", { number: row.entry.orderNumber })} · {date.format(row.entry.createdAt)}
+                      </div>
+                    </div>
+                    <div className="text-end text-xs text-muted-foreground">
+                      {tr(`esim.referral.status.${row.entry.status}`, STATUS_TEXT[row.entry.status])}
+                      {row.entry.status === "pending" ? ` · ${tr("esim.referral.payableOn", "from {date}", { date: date.format(row.entry.payableAt) })}` : ""}
+                    </div>
+                  </div>
+                ) : (
+                  <div key={row.entry.id} className="flex flex-wrap justify-between gap-x-4 gap-y-1 py-2 text-sm">
+                    <div>
+                      <div className="font-medium text-emerald-600 dark:text-emerald-400">+{formatMb(row.entry.mb)}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {row.entry.who} · {date.format(row.entry.createdAt)}
+                      </div>
+                    </div>
+                    <div className="text-end text-xs text-muted-foreground">{tr("esim.referral.dataAdded", "Added to your data")}</div>
+                  </div>
+                ),
+              )
+            )}
+          </CardContent>
+        </Card>
+      ) : null}
+
       <Card>
         <CardHeader>
           <CardTitle className="text-base">{tr("esim.referral.friends", "People you invited")}</CardTitle>
@@ -138,29 +209,6 @@ export async function InviteSection({ centre, countries, base, locale }: { centr
         </CardContent>
       </Card>
 
-      {centre.rewards.length ? (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">{tr("esim.referral.rewards", "Rewards")}</CardTitle>
-          </CardHeader>
-          <CardContent className="divide-y">
-            {centre.rewards.map((entry) => (
-              <div key={entry.id} className="flex flex-wrap justify-between gap-x-4 gap-y-1 py-2 text-sm">
-                <div>
-                  <div className="font-medium">{money(entry.amount)}</div>
-                  <div className="text-xs text-muted-foreground">
-                    {tr("esim.account.order", "Order {number}", { number: entry.orderNumber })} · {date.format(entry.createdAt)}
-                  </div>
-                </div>
-                <div className="text-end text-xs text-muted-foreground">
-                  {tr(`esim.referral.status.${entry.status}`, STATUS_TEXT[entry.status])}
-                  {entry.status === "pending" ? ` · ${tr("esim.referral.payableOn", "from {date}", { date: date.format(entry.payableAt) })}` : ""}
-                </div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      ) : null}
     </div>
   );
 }

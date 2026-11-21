@@ -307,7 +307,12 @@
       "offerData": "আপনার লিংকে যোগ দেওয়া প্রতিটি বন্ধুর জন্য {when} আপনি {amount} ডেটা পাবেন।",
       "friendGetsData": "আপনার বন্ধু {when} {amount} ডেটা পাবে।",
       "dataEarned": "পাওয়া ডেটা",
-      "shareText": "Join me and we both get free data, plus more free data every day you check in:"
+      "shareText": "Join me and we both get free data, plus more free data every day you check in:",
+      "rewardsRecent": "গত ৩০ দিন",
+      "rewardsShowRecent": "শুধু গত ৩০ দিন",
+      "rewardsShowAll": "সব দেখুন",
+      "rewardsNoneRecent": "গত ৩০ দিনে কোনো পুরস্কার নেই।",
+      "dataAdded": "আপনার ডেটায় যোগ হয়েছে"
     },
     "kyc": {
       "title": "পরিচয় যাচাই",
@@ -1009,6 +1014,13 @@
       "limitMonth": "আপনার কোনো ব্যবহৃত eSIM নেই, তাই চেক-ইনে মাসে সর্বোচ্চ {cap} পাওয়া যায়। এই মাসে: {used}।",
       "limitFull": "সীমা পূর্ণ হয়েছে।",
       "limitBuy": "সীমা তুলতে একটি eSIM কিনুন"
+    },
+    "coupons": {
+      "title": "আমার কুপন",
+      "description": "ব্যবহার করতে চেকআউটে কোডটি লিখুন।",
+      "none": "এই মুহূর্তে আপনার কোনো কুপন নেই।",
+      "personal": "শুধু আপনার জন্য",
+      "code": "কোড"
     }
   },
   "admin": {

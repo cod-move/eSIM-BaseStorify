@@ -28,7 +28,8 @@ import {
 } from "./account-nav-links";
 import { useAvatarUpload } from "./use-avatar-upload";
 
-const TITLE_SECTIONS = [...dashboardLinks, ...settingsLinks];
+// [esim-patch] P11 longest address first, so /account/esims/coupons is titled "My coupons", not "My eSIMs".
+const TITLE_SECTIONS = [...dashboardLinks, ...settingsLinks].sort((a, b) => b.href.length - a.href.length);
 
 const getInitials = (name: string) =>
   name

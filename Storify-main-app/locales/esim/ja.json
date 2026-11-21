@@ -307,7 +307,12 @@
       "offerData": "あなたのリンクで友達が登録するごとに、{when}に {amount} のデータがもらえます。",
       "friendGetsData": "友達も{when}に {amount} のデータがもらえます。",
       "dataEarned": "獲得したデータ",
-      "shareText": "一緒に登録すると、お互いに無料データがもらえます。毎日のチェックインでもデータがもらえます："
+      "shareText": "一緒に登録すると、お互いに無料データがもらえます。毎日のチェックインでもデータがもらえます：",
+      "rewardsRecent": "過去30日間",
+      "rewardsShowRecent": "過去30日間のみ",
+      "rewardsShowAll": "すべて表示",
+      "rewardsNoneRecent": "過去30日間の特典はありません。",
+      "dataAdded": "データに追加済み"
     },
     "kyc": {
       "title": "本人確認",
@@ -1009,6 +1014,13 @@
       "limitMonth": "利用中の eSIM がないため、チェックインで受け取れるのは1か月 {cap} までです。今月：{used}。",
       "limitFull": "上限に達しました。",
       "limitBuy": "eSIM を購入すると制限が解除されます"
+    },
+    "coupons": {
+      "title": "マイクーポン",
+      "description": "お会計時にコードを入力すると使えます。",
+      "none": "現在使えるクーポンはありません。",
+      "personal": "あなた専用",
+      "code": "コード"
     }
   },
   "admin": {

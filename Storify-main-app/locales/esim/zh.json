@@ -311,7 +311,12 @@
       "offerData": "每邀请一位好友通过你的链接注册，{when}你可获得 {amount} 流量。",
       "friendGetsData": "好友{when}也可获得 {amount} 流量。",
       "dataEarned": "已获得流量",
-      "shareText": "邀请好友注册，双方各得免费流量；每天签到还能领取流量："
+      "shareText": "邀请好友注册，双方各得免费流量；每天签到还能领取流量：",
+      "rewardsRecent": "最近 30 天",
+      "rewardsShowRecent": "只看最近 30 天",
+      "rewardsShowAll": "查看全部",
+      "rewardsNoneRecent": "最近 30 天没有奖励。",
+      "dataAdded": "已加到你的流量"
     },
     "kyc": {
       "title": "身份认证",
@@ -1020,6 +1025,13 @@
       "limitMonth": "你当前没有使用中的 eSIM，签到每月最多领 {cap}，本月已领 {used}。",
       "limitFull": "已领满。",
       "limitBuy": "购买一个 eSIM 即可解除限制"
+    },
+    "coupons": {
+      "title": "我的优惠券",
+      "description": "结账时输入优惠码即可使用。",
+      "none": "你目前没有优惠券。",
+      "personal": "专属",
+      "code": "优惠码"
     }
   },
   "admin": {

@@ -307,7 +307,12 @@
       "offerData": "Vous recevez {amount} de données pour chaque ami inscrit avec votre lien, {when}.",
       "friendGetsData": "Votre ami reçoit {amount} de données {when}.",
       "dataEarned": "Données gagnées",
-      "shareText": "Inscris-toi et nous recevons tous les deux des données gratuites, plus des données chaque jour où tu fais ton check-in :"
+      "shareText": "Inscris-toi et nous recevons tous les deux des données gratuites, plus des données chaque jour où tu fais ton check-in :",
+      "rewardsRecent": "30 derniers jours",
+      "rewardsShowRecent": "Seulement les 30 derniers jours",
+      "rewardsShowAll": "Tout afficher",
+      "rewardsNoneRecent": "Aucune récompense ces 30 derniers jours.",
+      "dataAdded": "Ajouté à vos données"
     },
     "kyc": {
       "title": "Vérification d'identité",
@@ -1009,6 +1014,13 @@
       "limitMonth": "Vous n’avez aucune eSIM en cours d’utilisation : les check-ins donnent au plus {cap} par mois. Ce mois-ci : {used}.",
       "limitFull": "La limite est atteinte.",
       "limitBuy": "Achetez une eSIM pour lever la limite"
+    },
+    "coupons": {
+      "title": "Mes coupons",
+      "description": "Saisissez le code lors du paiement pour l’utiliser.",
+      "none": "Vous n’avez aucun coupon pour le moment.",
+      "personal": "Rien que pour vous",
+      "code": "Code"
     }
   },
   "admin": {

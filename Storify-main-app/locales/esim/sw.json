@@ -307,7 +307,12 @@
       "offerData": "You get {amount} of data for each friend who joins with your link, {when}.",
       "friendGetsData": "Your friend gets {amount} of data {when}.",
       "dataEarned": "Data earned",
-      "shareText": "Join me and we both get free data, plus more free data every day you check in:"
+      "shareText": "Join me and we both get free data, plus more free data every day you check in:",
+      "rewardsRecent": "Siku 30 zilizopita",
+      "rewardsShowRecent": "Siku 30 zilizopita pekee",
+      "rewardsShowAll": "Onyesha zote",
+      "rewardsNoneRecent": "Hakuna zawadi katika siku 30 zilizopita.",
+      "dataAdded": "Imeongezwa kwenye data yako"
     },
     "kyc": {
       "title": "Uthibitishaji wa utambulisho",
@@ -1009,6 +1014,13 @@
       "limitMonth": "Huna eSIM inayotumika, kwa hivyo kuingia kunakupa hadi {cap} kwa mwezi. Mwezi huu: {used}.",
       "limitFull": "Kikomo kimefikiwa.",
       "limitBuy": "Nunua eSIM ili kuondoa kikomo"
+    },
+    "coupons": {
+      "title": "Kuponi zangu",
+      "description": "Weka msimbo wakati wa kulipa ili kuutumia.",
+      "none": "Huna kuponi kwa sasa.",
+      "personal": "Kwa ajili yako tu",
+      "code": "Msimbo"
     }
   },
   "admin": {

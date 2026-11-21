@@ -2,7 +2,7 @@
 
 import { useState, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
-import { CalendarCheck, ChevronLeft, ChevronRight, Gift, Info, Send, UserPlus, Users } from "lucide-react";
+import { CalendarCheck, ChevronLeft, ChevronRight, Gift, Info, Send, Users } from "lucide-react";
 import Link from "@/components/language/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -40,14 +40,15 @@ async function readError(response: Response, fallback: string) {
 const requestId = () => (typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`);
 
 /**
- * The rewards centre (福利中心): the data saved so far, three tabs — check-in
- * on Telegram (link it via the bot's start link or /bind), invite friends,
- * and data received for joining — then the eSIMs the data buys and every
- * entry. The invite and received tabs are rendered on the server and passed in.
+ * The rewards centre (福利中心): the data saved so far, two tabs — check-in
+ * on Telegram (link it via the bot's start link or /bind) and data received
+ * for joining — then the eSIMs the data buys and every entry. The received
+ * tab is rendered on the server and passed in; inviting friends has its own
+ * page.
  */
-export type WelfareTab = "checkin" | "invite" | "received";
+export type WelfareTab = "checkin" | "received";
 
-export function TelegramRewards({ data, tab, inviteTab, receivedTab }: { data: Data; tab: WelfareTab; inviteTab: ReactNode; receivedTab: ReactNode }) {
+export function TelegramRewards({ data, tab, receivedTab }: { data: Data; tab: WelfareTab; receivedTab: ReactNode }) {
   const t = useFallbackTranslator(useTranslations());
   const router = useRouter();
   const { confirm } = useConfirmation();
@@ -140,14 +141,13 @@ export function TelegramRewards({ data, tab, inviteTab, receivedTab }: { data: D
 
   const historyHref = (page: number) => {
     const params = new URLSearchParams();
-    if (tab !== "invite") params.set("tab", tab);
+    if (tab !== "checkin") params.set("tab", tab);
     if (page > 1) params.set("hpage", String(page));
     const query = params.toString();
     return query ? `/account/esims/rewards?${query}` : "/account/esims/rewards";
   };
 
   const tabs: Array<{ id: WelfareTab; label: string; icon: typeof Gift }> = [
-    { id: "invite", label: t("esim.rewards.tabInvite", "Invite friends"), icon: UserPlus },
     { id: "checkin", label: t("esim.rewards.tabCheckin", "Check-in data"), icon: CalendarCheck },
     { id: "received", label: t("esim.rewards.tabReceived", "Data received"), icon: Gift },
   ];
@@ -180,14 +180,14 @@ export function TelegramRewards({ data, tab, inviteTab, receivedTab }: { data: D
         </CardContent>
       </Card>
 
-      <nav className="grid grid-cols-3 gap-2 sm:gap-3" aria-label={t("esim.rewards.centre", "Rewards centre")}>
+      <nav className="grid grid-cols-2 gap-2 sm:gap-3" aria-label={t("esim.rewards.centre", "Rewards centre")}>
         {tabs.map((entry) => {
           const active = tab === entry.id;
           const Icon = entry.icon;
           return (
             <Link
               key={entry.id}
-              href={entry.id === "invite" ? "/account/esims/rewards" : `/account/esims/rewards?tab=${entry.id}`}
+              href={entry.id === "checkin" ? "/account/esims/rewards" : `/account/esims/rewards?tab=${entry.id}`}
               scroll={false}
               aria-current={active ? "page" : undefined}
               className={`flex flex-col items-center justify-center gap-1.5 rounded-xl border-2 px-2 py-3 text-center text-sm font-medium transition-colors sm:flex-row sm:gap-2.5 sm:py-4 sm:text-base ${
@@ -209,7 +209,6 @@ export function TelegramRewards({ data, tab, inviteTab, receivedTab }: { data: D
         })}
       </nav>
 
-      {tab === "invite" ? inviteTab : null}
       {tab === "received" ? receivedTab : null}
       {tab === "checkin" ? (
         <div className="space-y-4">

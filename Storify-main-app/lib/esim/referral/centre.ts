@@ -38,6 +38,12 @@ export interface ReferralCentre {
   /** What this shopper got for joining through a friend's link: who invited them, and the data given (0 until given). */
   received: { from: string; joinedAt: Date; dataMb: number; dataAt: Date | null; pendingMb: number } | null;
   rewards: Array<{ id: string; orderNumber: string; amount: number; currency: string; status: CommissionStatus; payableAt: Date; creditedAt: Date | null; createdAt: Date }>;
+  /** Data given for inviting (rewardType "data"), in the same window as `rewards`: for whom, and when. */
+  dataRewards: Array<{ id: string; mb: number; who: string; createdAt: Date }>;
+  /** From when `rewards` and `dataRewards` are listed; null = all of them. */
+  rewardsSince: Date | null;
+  /** Rewards of either kind ever, so the page can say there are older ones. */
+  rewardsEver: number;
   totals: { paid: number; pending: number };
   /** The welcome coupon this shopper got for joining with a friend's link (REF-06); null if none. */
   welcomeCoupon: { code: string; type: "percentage" | "fixed"; value: number; minOrder: number; endsAt: Date | null; active: boolean } | null;
@@ -121,14 +127,23 @@ export async function referralFriends(userId: string, page = 1, perPage = FRIEND
 /** The rewards listed in the centre (the totals count them all). */
 const REWARDS_SHOWN = 100;
 
-export async function referralCentre(userId: string, options: { friendsPage?: number } = {}): Promise<ReferralCentre> {
+/** How far back the centre lists rewards unless asked for all of them. */
+export const REWARDS_RECENT_DAYS = 30;
+
+/**
+ * `rewardsSince`: list rewards from then on; null for all; left out, the
+ * last REWARDS_RECENT_DAYS days.
+ */
+export async function referralCentre(userId: string, options: { friendsPage?: number; rewardsSince?: Date | null } = {}): Promise<ReferralCentre> {
+  const since = options.rewardsSince === undefined ? new Date(Date.now() - REWARDS_RECENT_DAYS * 86_400_000) : options.rewardsSince;
+  const after = since ? { createdAt: { $gte: since } } : {};
   // The shopper's own rules (REF-07) where an admin set them, so the centre shows what they really earn.
   const settings = await getReferrerSettings(userId);
   const code = await ensureReferralCode(userId);
   const referrer = new mongoose.Types.ObjectId(userId);
   const [friends, commissions, totals, welcomeCoupon, dataEarned, invitedRow, joined] = await Promise.all([
     referralFriends(userId, options.friendsPage ?? 1),
-    EsimReferralCommission.find({ referrer }).sort({ createdAt: -1 }).limit(REWARDS_SHOWN).lean(),
+    EsimReferralCommission.find({ referrer, ...after }).sort({ createdAt: -1 }).limit(REWARDS_SHOWN).lean(),
     EsimReferralCommission.aggregate<{ _id: CommissionStatus; amount: number }>([
       { $match: { referrer, status: { $in: ["credited", "pending"] } } },
       { $group: { _id: "$status", amount: { $sum: "$amount" } } },
@@ -138,6 +153,20 @@ export async function referralCentre(userId: string, options: { friendsPage?: nu
     EsimRewardEntry.findOne({ user: referrer, kind: "invited" }).select({ mb: 1, createdAt: 1 }).lean(),
     EsimReferral.findOne({ referee: referrer }).lean(),
   ]);
+  const [dataRows, commissionsEver, dataEver] = await Promise.all([
+    EsimRewardEntry.find({ user: referrer, kind: "referral", ...after }).sort({ createdAt: -1 }).limit(REWARDS_SHOWN).select({ mb: 1, referral: 1, createdAt: 1 }).lean(),
+    EsimReferralCommission.countDocuments({ referrer }),
+    EsimRewardEntry.countDocuments({ user: referrer, kind: "referral" }),
+  ]);
+  const dataReferralIds = dataRows.map((row) => row.referral).filter((id): id is mongoose.Types.ObjectId => Boolean(id));
+  const dataReferrals = await EsimReferral.find({ _id: { $in: dataReferralIds } })
+    .select({ referee: 1 })
+    .lean<Array<{ _id: mongoose.Types.ObjectId; referee: mongoose.Types.ObjectId }>>();
+  const dataReferees = await User.find({ _id: { $in: dataReferrals.map((row) => row.referee) } })
+    .select({ email: 1 })
+    .lean<Array<{ _id: mongoose.Types.ObjectId; email?: string }>>();
+  const refereeOf = new Map(dataReferrals.map((row) => [String(row._id), String(row.referee)]));
+  const emailOf = new Map(dataReferees.map((row) => [String(row._id), row.email]));
   const inviter = joined ? await User.findById(joined.referrer).select({ email: 1 }).lean<{ email?: string } | null>() : null;
   // Data still to come for joining: the inviter's rules give it on the first order, which has not come yet.
   const inviterRules = joined && !invitedRow ? await getReferrerSettings(joined.referrer) : null;
@@ -175,6 +204,14 @@ export async function referralCentre(userId: string, options: { friendsPage?: nu
       creditedAt: commission.creditedAt,
       createdAt: commission.createdAt,
     })),
+    dataRewards: dataRows.map((row) => ({
+      id: String(row._id),
+      mb: row.mb,
+      who: maskEmail(emailOf.get(refereeOf.get(String(row.referral)) ?? "")),
+      createdAt: row.createdAt,
+    })),
+    rewardsSince: since,
+    rewardsEver: commissionsEver + dataEver,
     totals: { paid: sum("credited"), pending: sum("pending") },
     welcomeCoupon,
   };

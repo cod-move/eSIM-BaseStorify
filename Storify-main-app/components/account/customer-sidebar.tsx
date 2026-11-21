@@ -90,12 +90,16 @@ export function CustomerSidebar({ locale, stats = {} }: CustomerSidebarProps) {
       ? link.labelFallback
       : t(link.labelKey);
 
-  const isItemActive = (href: string) => {
+  const matchesPath = (href: string) => {
     const fullPath = `/${locale}${href}`;
     // Overview is the account root, so it would prefix-match every sub-page.
     if (href === "/account") return pathname === fullPath;
     return pathname === fullPath || pathname.startsWith(`${fullPath}/`);
   };
+  // [esim-patch] P11 the most specific item wins: "My coupons" (/account/esims/coupons), not also "My eSIMs".
+  const isItemActive = (href: string) =>
+    matchesPath(href) &&
+    ![...dashboardLinks, ...settingsLinks].some((other) => other.href.length > href.length && other.href.startsWith(`${href}/`) && matchesPath(other.href));
 
   const isRTL = locale === "ar" || rtl;
   const sidebarSide = isRTL ? "right" : "left";

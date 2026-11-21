@@ -307,7 +307,12 @@
       "offerData": "You get {amount} of data for each friend who joins with your link, {when}.",
       "friendGetsData": "Your friend gets {amount} of data {when}.",
       "dataEarned": "Data earned",
-      "shareText": "Join me and we both get free data, plus more free data every day you check in:"
+      "shareText": "Join me and we both get free data, plus more free data every day you check in:",
+      "rewardsRecent": "Laaste 30 dae",
+      "rewardsShowRecent": "Net laaste 30 dae",
+      "rewardsShowAll": "Wys alles",
+      "rewardsNoneRecent": "Geen belonings in die laaste 30 dae nie.",
+      "dataAdded": "By jou data gevoeg"
     },
     "kyc": {
       "title": "Identiteitsverifikasie",
@@ -1009,6 +1014,13 @@
       "limitMonth": "Jy het geen eSIM in gebruik nie, dus gee inklok hoogstens {cap} per maand. Hierdie maand: {used}.",
       "limitFull": "Die limiet is bereik.",
       "limitBuy": "Koop ’n eSIM om die limiet op te hef"
+    },
+    "coupons": {
+      "title": "My koepons",
+      "description": "Tik die kode by die betaalpunt in om dit te gebruik.",
+      "none": "Jy het tans geen koepons nie.",
+      "personal": "Net vir jou",
+      "code": "Kode"
     }
   },
   "admin": {

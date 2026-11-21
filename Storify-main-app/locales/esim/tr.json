@@ -307,7 +307,12 @@
       "offerData": "Bağlantınızla katılan her arkadaş için {when} {amount} veri kazanırsınız.",
       "friendGetsData": "Arkadaşınız da {when} {amount} veri kazanır.",
       "dataEarned": "Kazanılan veri",
-      "shareText": "Katıl, ikimiz de ücretsiz veri kazanalım; her gün giriş yaparak daha fazla veri al:"
+      "shareText": "Katıl, ikimiz de ücretsiz veri kazanalım; her gün giriş yaparak daha fazla veri al:",
+      "rewardsRecent": "Son 30 gün",
+      "rewardsShowRecent": "Yalnızca son 30 gün",
+      "rewardsShowAll": "Tümünü göster",
+      "rewardsNoneRecent": "Son 30 günde ödül yok.",
+      "dataAdded": "Verinize eklendi"
     },
     "kyc": {
       "title": "Kimlik doğrulama",
@@ -1009,6 +1014,13 @@
       "limitMonth": "Kullanımda eSIM'iniz olmadığı için check-in ile ayda en fazla {cap} alabilirsiniz. Bu ay: {used}.",
       "limitFull": "Sınıra ulaşıldı.",
       "limitBuy": "Sınırı kaldırmak için bir eSIM satın alın"
+    },
+    "coupons": {
+      "title": "Kuponlarım",
+      "description": "Kullanmak için ödeme sırasında kodu girin.",
+      "none": "Şu anda kuponunuz yok.",
+      "personal": "Size özel",
+      "code": "Kod"
     }
   },
   "admin": {

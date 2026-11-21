@@ -307,7 +307,12 @@
       "offerData": "You get {amount} of data for each friend who joins with your link, {when}.",
       "friendGetsData": "Your friend gets {amount} of data {when}.",
       "dataEarned": "Data earned",
-      "shareText": "Join me and we both get free data, plus more free data every day you check in:"
+      "shareText": "Join me and we both get free data, plus more free data every day you check in:",
+      "rewardsRecent": "Izinsuku ezingama-30 ezedlule",
+      "rewardsShowRecent": "Izinsuku ezingama-30 ezedlule kuphela",
+      "rewardsShowAll": "Bonisa konke",
+      "rewardsNoneRecent": "Awukho imivuzo ezinsukwini ezingama-30 ezedlule.",
+      "dataAdded": "Yengezwe kudatha yakho"
     },
     "kyc": {
       "title": "Ukuqinisekiswa komazisi",
@@ -1009,6 +1014,13 @@
       "limitMonth": "Awunayo i-eSIM esetshenziswayo, ngakho ukungena kukunika okuphezulu kuka-{cap} ngenyanga. Kule nyanga: {used}.",
       "limitFull": "Umkhawulo ufinyelelwe.",
       "limitBuy": "Thenga i-eSIM ukuze ususe umkhawulo"
+    },
+    "coupons": {
+      "title": "Amakhuphoni ami",
+      "description": "Faka ikhodi lapho ukhokha ukuze uyisebenzise.",
+      "none": "Awunawo amakhuphoni okwamanje.",
+      "personal": "Okwakho kuphela",
+      "code": "Ikhodi"
     }
   },
   "admin": {

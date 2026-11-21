@@ -307,7 +307,12 @@
       "offerData": "You get {amount} of data for each friend who joins with your link, {when}.",
       "friendGetsData": "Your friend gets {amount} of data {when}.",
       "dataEarned": "Data earned",
-      "shareText": "Join me and we both get free data, plus more free data every day you check in:"
+      "shareText": "Join me and we both get free data, plus more free data every day you check in:",
+      "rewardsRecent": "Ụbọchị 30 gara aga",
+      "rewardsShowRecent": "Naanị ụbọchị 30 gara aga",
+      "rewardsShowAll": "Gosi ha niile",
+      "rewardsNoneRecent": "Enweghị ụgwọ ọrụ n’ụbọchị 30 gara aga.",
+      "dataAdded": "Etinyere na data gị"
     },
     "kyc": {
       "title": "Nkwenye njirimara",
@@ -1009,6 +1014,13 @@
       "limitMonth": "Ị nweghị eSIM a na-eji, ya mere ịbanye na-enye gị ruo {cap} kwa ọnwa. Ọnwa a: {used}.",
       "limitFull": "Erutela oke.",
       "limitBuy": "Zụta eSIM iji wepụ oke ahụ"
+    },
+    "coupons": {
+      "title": "Kupọn m",
+      "description": "Tinye koodu ahụ mgbe ị na-akwụ ụgwọ iji jiri ya.",
+      "none": "Ị nweghị kupọn ugbu a.",
+      "personal": "Maka gị naanị",
+      "code": "Koodu"
     }
   },
   "admin": {
