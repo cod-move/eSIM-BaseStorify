@@ -15,19 +15,19 @@ interface PageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
-const TABS: WelfareTab[] = ["checkin", "invite", "received"];
+const TABS: WelfareTab[] = ["invite", "checkin", "received"];
 
 /**
  * The rewards centre (福利中心): data for daily Telegram check-ins, for
  * inviting friends, and for joining through a friend's invite, on one
- * balance that is exchanged for an eSIM. `?tab=invite|received`.
+ * balance that is exchanged for an eSIM. Opens on inviting friends; `?tab=checkin|received`.
  */
 export default async function AccountRewardsPage({ params, searchParams }: PageProps) {
   const { locale } = await params;
   setRequestLocale(locale);
   const query = await searchParams;
   const wanted = Array.isArray(query.tab) ? query.tab[0] : query.tab;
-  const tab = TABS.includes(wanted as WelfareTab) ? (wanted as WelfareTab) : "checkin";
+  const tab = TABS.includes(wanted as WelfareTab) ? (wanted as WelfareTab) : "invite";
   const session = await getAccountSession();
   if (!session) notFound();
   await connectDB();

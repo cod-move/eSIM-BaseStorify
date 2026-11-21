@@ -38,7 +38,7 @@ export async function InviteSection({ centre, countries, base, locale }: { centr
   const date = new Intl.DateTimeFormat(locale, { dateStyle: "medium" });
   const money = (units: number) => formatStorePrice(Math.round(units * 100), locale);
   const data = centre.offer.rewardType === "data";
-  const pageHref = (page: number) => (page > 1 ? `/account/esims/rewards?tab=invite&page=${page}` : "/account/esims/rewards?tab=invite");
+  const pageHref = (page: number) => (page > 1 ? `/account/esims/rewards?page=${page}` : "/account/esims/rewards");
   const when = (on: "signup" | "first_order") =>
     on === "signup" ? tr("esim.referral.whenSignup", "when they sign up") : tr("esim.referral.whenFirstOrder", "after their first order");
 

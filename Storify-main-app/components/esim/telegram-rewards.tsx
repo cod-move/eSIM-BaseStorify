@@ -2,7 +2,7 @@
 
 import { useState, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
-import { ChevronLeft, Gift, Send, Users } from "lucide-react";
+import { CalendarCheck, ChevronLeft, Gift, Send, UserPlus, Users } from "lucide-react";
 import Link from "@/components/language/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -132,10 +132,10 @@ export function TelegramRewards({ data, tab, inviteTab, receivedTab }: { data: D
     }
   };
 
-  const tabs: Array<{ id: WelfareTab; label: string }> = [
-    { id: "checkin", label: t("esim.rewards.tabCheckin", "Check-in data") },
-    { id: "invite", label: t("esim.rewards.tabInvite", "Invite friends") },
-    { id: "received", label: t("esim.rewards.tabReceived", "Data received") },
+  const tabs: Array<{ id: WelfareTab; label: string; icon: typeof Gift }> = [
+    { id: "invite", label: t("esim.rewards.tabInvite", "Invite friends"), icon: UserPlus },
+    { id: "checkin", label: t("esim.rewards.tabCheckin", "Check-in data"), icon: CalendarCheck },
+    { id: "received", label: t("esim.rewards.tabReceived", "Data received"), icon: Gift },
   ];
 
   return (
@@ -166,22 +166,33 @@ export function TelegramRewards({ data, tab, inviteTab, receivedTab }: { data: D
         </CardContent>
       </Card>
 
-      <nav className="flex gap-1 overflow-x-auto border-b" aria-label={t("esim.rewards.centre", "Rewards centre")}>
-        {tabs.map((entry) => (
-          <Link
-            key={entry.id}
-            href={entry.id === "checkin" ? "/account/esims/rewards" : `/account/esims/rewards?tab=${entry.id}`}
-            scroll={false}
-            aria-current={tab === entry.id ? "page" : undefined}
-            className={
-              tab === entry.id
-                ? "-mb-px whitespace-nowrap border-b-2 border-primary px-3 py-2 text-sm font-medium"
-                : "-mb-px whitespace-nowrap border-b-2 border-transparent px-3 py-2 text-sm text-muted-foreground hover:text-foreground"
-            }
-          >
-            {entry.label}
-          </Link>
-        ))}
+      <nav className="grid grid-cols-3 gap-2 sm:gap-3" aria-label={t("esim.rewards.centre", "Rewards centre")}>
+        {tabs.map((entry) => {
+          const active = tab === entry.id;
+          const Icon = entry.icon;
+          return (
+            <Link
+              key={entry.id}
+              href={entry.id === "invite" ? "/account/esims/rewards" : `/account/esims/rewards?tab=${entry.id}`}
+              scroll={false}
+              aria-current={active ? "page" : undefined}
+              className={`flex flex-col items-center justify-center gap-1.5 rounded-xl border-2 px-2 py-3 text-center text-sm font-medium transition-colors sm:flex-row sm:gap-2.5 sm:py-4 sm:text-base ${
+                active
+                  ? "border-primary bg-primary text-primary-foreground shadow-md"
+                  : "border-border bg-card text-foreground hover:border-primary/60 hover:bg-primary/5"
+              }`}
+            >
+              <span
+                className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${
+                  active ? "bg-primary-foreground/20" : "bg-primary/10 text-primary"
+                }`}
+              >
+                <Icon className="h-5 w-5" aria-hidden />
+              </span>
+              <span className="leading-tight">{entry.label}</span>
+            </Link>
+          );
+        })}
       </nav>
 
       {tab === "invite" ? inviteTab : null}

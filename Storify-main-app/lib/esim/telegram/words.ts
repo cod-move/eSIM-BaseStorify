@@ -37,7 +37,7 @@ const zh: Words = {
   help: (bot, site) =>
     `欢迎！每天在群里发 /checkin 或「签到」可随机领取流量，攒够后在网站兑换 eSIM。\n\n` +
     `先绑定账号（二选一）：\n` +
-    `1. 登录网站 ${site}/account/esims/rewards ，点「绑定 Telegram」\n` +
+    `1. 登录网站 ${site}/account/esims/rewards?tab=checkin ，点「绑定 Telegram」\n` +
     `2. 在这里发 /bind 你的注册邮箱 ，再把邮件里的 6 位验证码发给我\n\n` +
     `/balance 查看已攒流量`,
   checkedIn: (name, amount, balance) => `${name} 签到成功，获得 ${amount}！累计 ${balance}。`,
@@ -55,7 +55,7 @@ const zh: Words = {
   codeTooMany: "验证码发得太频繁了，请一小时后再试。",
   codeWrong: "验证码不对，请再检查一下。",
   codeExpired: "验证码已失效或尝试次数过多，请重新发 /bind 你的邮箱。",
-  balance: (amount, checkins, site) => `已攒流量：${amount}（共签到 ${checkins} 次）\n兑换 eSIM：${site}/account/esims/rewards`,
+  balance: (amount, checkins, site) => `已攒流量：${amount}（共签到 ${checkins} 次）\n兑换 eSIM：${site}/account/esims/rewards?tab=checkin`,
   balanceNone: "你还没有绑定账号，发 /start 查看绑定方法。",
   chatId: (id) => `本群 ID：${id}`,
   emailSubject: "你的 Telegram 绑定验证码",
@@ -66,7 +66,7 @@ const en: Words = {
   help: (bot, site) =>
     `Welcome! Send /checkin in the group once a day for free data, then exchange it for an eSIM on the website.\n\n` +
     `First link your account (either way):\n` +
-    `1. Sign in at ${site}/account/esims/rewards and tap "Link Telegram"\n` +
+    `1. Sign in at ${site}/account/esims/rewards?tab=checkin and tap "Link Telegram"\n` +
     `2. Send /bind your@email here, then send me the 6-digit code from the email\n\n` +
     `/balance shows the data you have saved`,
   checkedIn: (name, amount, balance) => `${name} checked in and got ${amount}! Total ${balance}.`,
@@ -84,7 +84,7 @@ const en: Words = {
   codeTooMany: "Too many codes asked for. Please try again in an hour.",
   codeWrong: "That code is not right. Please check it.",
   codeExpired: "The code has expired or was tried too often. Send /bind your@email again.",
-  balance: (amount, checkins, site) => `Data saved: ${amount} (${checkins} check-ins)\nExchange it for an eSIM: ${site}/account/esims/rewards`,
+  balance: (amount, checkins, site) => `Data saved: ${amount} (${checkins} check-ins)\nExchange it for an eSIM: ${site}/account/esims/rewards?tab=checkin`,
   balanceNone: "Your account is not linked yet. Send /start to see how.",
   chatId: (id) => `This chat's ID: ${id}`,
   emailSubject: "Your Telegram link code",

@@ -35,12 +35,12 @@ const requestId = () => `${Date.now().toString(36)}${Math.random().toString(36).
 
 /**
  * The rewards centre (福利中心, the website's /account/esims/rewards): the
- * data balance; three tabs — check in on Telegram, invite friends, data
+ * data balance; three tabs — invite friends, check in on Telegram, data
  * received for joining; then the eSIMs the data buys and every entry.
  */
 export function RewardsCentreView({
   rewards,
-  initialTab = 'checkin',
+  initialTab = 'invite',
 }: {
   rewards: EsimRewards;
   initialTab?: RewardsTab;
@@ -68,8 +68,8 @@ export function RewardsCentreView({
         value={tab}
         onChange={setTab}
         tabs={[
-          { value: 'checkin', label: t('rewardsTabCheckin') },
           { value: 'invite', label: t('rewardsTabInvite') },
+          { value: 'checkin', label: t('rewardsTabCheckin') },
           { value: 'received', label: t('rewardsTabReceived') },
         ]}
       />
