@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { dayKey, formatMb, isTimezone, looksLikeEmail, parseCommand, rollMb, withinCap } from "@/lib/esim/telegram/rules";
+import { dayKey, formatMb, isTimezone, looksLikeEmail, parseCommand, periodStart, rollMb, withinCap } from "@/lib/esim/telegram/rules";
 
 describe("Telegram check-in rules", () => {
   it("counts the day in the store's time zone", () => {
@@ -61,5 +61,20 @@ describe("Telegram check-in rules", () => {
     assert.equal(looksLikeEmail("a@b.co"), true);
     assert.equal(looksLikeEmail("not an email"), false);
     assert.equal(looksLikeEmail("a@b"), false);
+  });
+
+  it("starts a limit period on the day, the Monday, or the 1st", () => {
+    assert.equal(periodStart("2026-11-21", "day"), "2026-11-21");
+    assert.equal(periodStart("2026-11-21", "month"), "2026-11-01");
+    assert.equal(periodStart("2026-11-21", "week"), "2026-11-16", "a Saturday's week began on Monday");
+    assert.equal(periodStart("2026-11-16", "week"), "2026-11-16", "a Monday is its own start");
+    assert.equal(periodStart("2026-11-22", "week"), "2026-11-16", "Sunday ends the week");
+    assert.equal(periodStart("2026-03-01", "week"), "2026-02-23", "across a month");
+  });
+
+  it("cuts a roll to what is left of the period's limit", () => {
+    assert.equal(withinCap(80, 250, 300), 50);
+    assert.equal(withinCap(80, 300, 300), 0);
+    assert.equal(withinCap(30, 100, 300), 30);
   });
 });

@@ -39,6 +39,22 @@ export function withinCap(rolled: number, grantedToday: number, dailyCapMb: numb
   return Math.max(0, Math.min(rolled, dailyCapMb - grantedToday));
 }
 
+export type LimitPeriod = "day" | "week" | "month";
+
+/**
+ * The first day of the period `day` ("2026-11-21") falls in: itself, the
+ * Monday of its week, or the 1st of its month. Day keys compare as strings,
+ * so the period's check-ins are those with `day >= periodStart`.
+ */
+export function periodStart(day: string, period: LimitPeriod): string {
+  if (period === "day") return day;
+  if (period === "month") return `${day.slice(0, 7)}-01`;
+  const date = new Date(`${day}T00:00:00Z`);
+  const back = (date.getUTCDay() + 6) % 7;
+  date.setUTCDate(date.getUTCDate() - back);
+  return date.toISOString().slice(0, 10);
+}
+
 export { formatMb } from "@/lib/esim/telegram/format";
 
 /** A one-time secret for a link or code, and the hash kept in its place. */

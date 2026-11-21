@@ -1003,7 +1003,12 @@
       "receivedTitle": "आमंत्रण से मिला डेटा",
       "receivedFrom": "आप {date} को {who} के आमंत्रण से जुड़े।",
       "receivedOn": "{date} को जोड़ा गया",
-      "receivedPending": "पहले ऑर्डर के बाद {amount} डेटा जोड़ा जाएगा।"
+      "receivedPending": "पहले ऑर्डर के बाद {amount} डेटा जोड़ा जाएगा।",
+      "limitDay": "आपके पास कोई इस्तेमाल में eSIM नहीं है, इसलिए चेक-इन से प्रतिदिन अधिकतम {cap} मिलता है। आज: {used}।",
+      "limitWeek": "आपके पास कोई इस्तेमाल में eSIM नहीं है, इसलिए चेक-इन से प्रति सप्ताह अधिकतम {cap} मिलता है। इस सप्ताह: {used}।",
+      "limitMonth": "आपके पास कोई इस्तेमाल में eSIM नहीं है, इसलिए चेक-इन से प्रति माह अधिकतम {cap} मिलता है। इस माह: {used}।",
+      "limitFull": "सीमा पूरी हो गई।",
+      "limitBuy": "सीमा हटाने के लिए eSIM खरीदें"
     }
   },
   "admin": {
@@ -1823,7 +1828,15 @@
       "referralOnFirstOrder": "On the friend's first order",
       "referralWhen": "When",
       "telegramKindReferral": "Invited a friend",
-      "telegramKindInvited": "Joined by invite"
+      "telegramKindInvited": "Joined by invite",
+      "telegramNoEsimLimit": "बिना इस्तेमाल में eSIM वाले ग्राहकों को सीमित करें",
+      "telegramLimitPeriod": "प्रति",
+      "telegramPeriodDay": "दिन",
+      "telegramPeriodWeek": "सप्ताह (सोमवार से)",
+      "telegramPeriodMonth": "माह",
+      "telegramLimitCap": "अधिकतम (MB)",
+      "telegramNoEsimLimitHelp": "जिस ग्राहक के पास इंस्टॉल के लिए तैयार, इंस्टॉल या इस्तेमाल में कोई eSIM नहीं है (डेटा से बदले गए नहीं गिने जाते), उसे अवधि में (ऊपर के टाइम ज़ोन में) चेक-इन से अधिकतम इतना मिलता है। फिर बॉट उसे सीमा हटाने के लिए वेबसाइट पर eSIM खरीदने या अगली अवधि में आने को कहता है।",
+      "telegramKindAll": "सभी"
     },
     "sidebar": {
       "esim": "eSIM",

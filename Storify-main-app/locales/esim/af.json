@@ -1003,7 +1003,12 @@
       "receivedTitle": "Data from your invite",
       "receivedFrom": "You joined through {who}'s invite on {date}.",
       "receivedOn": "added on {date}",
-      "receivedPending": "{amount} of data is added after your first order."
+      "receivedPending": "{amount} of data is added after your first order.",
+      "limitDay": "Jy het geen eSIM in gebruik nie, dus gee inklok hoogstens {cap} per dag. Vandag: {used}.",
+      "limitWeek": "Jy het geen eSIM in gebruik nie, dus gee inklok hoogstens {cap} per week. Hierdie week: {used}.",
+      "limitMonth": "Jy het geen eSIM in gebruik nie, dus gee inklok hoogstens {cap} per maand. Hierdie maand: {used}.",
+      "limitFull": "Die limiet is bereik.",
+      "limitBuy": "Koop ’n eSIM om die limiet op te hef"
     }
   },
   "admin": {
@@ -1823,7 +1828,15 @@
       "referralOnFirstOrder": "On the friend's first order",
       "referralWhen": "When",
       "telegramKindReferral": "Invited a friend",
-      "telegramKindInvited": "Joined by invite"
+      "telegramKindInvited": "Joined by invite",
+      "telegramNoEsimLimit": "Beperk kopers sonder ’n eSIM in gebruik",
+      "telegramLimitPeriod": "Per",
+      "telegramPeriodDay": "Dag",
+      "telegramPeriodWeek": "Week (vanaf Maandag)",
+      "telegramPeriodMonth": "Maand",
+      "telegramLimitCap": "Hoogstens (MB)",
+      "telegramNoEsimLimitHelp": "’n Koper sonder ’n eSIM wat gereed is om te installeer, geïnstalleer of in gebruik is (dié wat vir data omgeruil is, tel nie), kry hoogstens soveel van inklok in die tydperk, in die tydsone hierbo. Die bot sê dan vir hulle om ’n eSIM op die webwerf te koop om die limiet op te hef, of volgende tydperk terug te kom.",
+      "telegramKindAll": "Alles"
     },
     "sidebar": {
       "esim": "eSIM",

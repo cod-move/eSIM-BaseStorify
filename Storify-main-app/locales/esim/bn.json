@@ -1003,7 +1003,12 @@
       "receivedTitle": "আমন্ত্রণ থেকে পাওয়া ডেটা",
       "receivedFrom": "আপনি {date} তারিখে {who}-এর আমন্ত্রণে যোগ দিয়েছেন।",
       "receivedOn": "{date} তারিখে যোগ হয়েছে",
-      "receivedPending": "প্রথম অর্ডারের পরে {amount} ডেটা যোগ হবে।"
+      "receivedPending": "প্রথম অর্ডারের পরে {amount} ডেটা যোগ হবে।",
+      "limitDay": "আপনার কোনো ব্যবহৃত eSIM নেই, তাই চেক-ইনে দিনে সর্বোচ্চ {cap} পাওয়া যায়। আজ: {used}।",
+      "limitWeek": "আপনার কোনো ব্যবহৃত eSIM নেই, তাই চেক-ইনে সপ্তাহে সর্বোচ্চ {cap} পাওয়া যায়। এই সপ্তাহে: {used}।",
+      "limitMonth": "আপনার কোনো ব্যবহৃত eSIM নেই, তাই চেক-ইনে মাসে সর্বোচ্চ {cap} পাওয়া যায়। এই মাসে: {used}।",
+      "limitFull": "সীমা পূর্ণ হয়েছে।",
+      "limitBuy": "সীমা তুলতে একটি eSIM কিনুন"
     }
   },
   "admin": {
@@ -1823,7 +1828,15 @@
       "referralOnFirstOrder": "On the friend's first order",
       "referralWhen": "When",
       "telegramKindReferral": "Invited a friend",
-      "telegramKindInvited": "Joined by invite"
+      "telegramKindInvited": "Joined by invite",
+      "telegramNoEsimLimit": "ব্যবহৃত eSIM ছাড়া গ্রাহকদের সীমিত করুন",
+      "telegramLimitPeriod": "প্রতি",
+      "telegramPeriodDay": "দিন",
+      "telegramPeriodWeek": "সপ্তাহ (সোমবার থেকে)",
+      "telegramPeriodMonth": "মাস",
+      "telegramLimitCap": "সর্বোচ্চ (MB)",
+      "telegramNoEsimLimitHelp": "যে গ্রাহকের ইনস্টলের জন্য প্রস্তুত, ইনস্টল করা বা ব্যবহৃত কোনো eSIM নেই (ডেটায় বিনিময় করাগুলি গণ্য নয়), সে সময়কালে (উপরের সময় অঞ্চলে) চেক-ইনে সর্বোচ্চ এতটুকু পায়। তারপর বট সীমা তুলতে ওয়েবসাইটে eSIM কিনতে বা পরের সময়কালে আসতে বলে।",
+      "telegramKindAll": "সব"
     },
     "sidebar": {
       "esim": "eSIM",

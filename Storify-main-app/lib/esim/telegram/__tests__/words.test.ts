@@ -19,4 +19,19 @@ describe("Telegram bot words", () => {
     assert.match(without, /\/checkin/);
     assert.doesNotMatch(without, /t\.me/);
   });
+
+  it("without an eSIM in use, says the period's limit is reached: buy one, or come back next period", () => {
+    const zh = words("zh").limitReached("小明", "month", "300 MB", "https://shop.test");
+    assert.match(zh, /本月/);
+    assert.match(zh, /300 MB/);
+    assert.match(zh, /购买/);
+    assert.ok(zh.includes("https://shop.test/esim"));
+    assert.match(zh, /下个月/);
+    const en = words("en").limitReached("Ann", "week", "300 MB", "https://shop.test");
+    assert.match(en, /this week/);
+    assert.match(en, /next week/);
+    const full = words("zh").limitFull("month", "300 MB", "https://shop.test");
+    assert.match(full, /本月的签到流量已领满 300 MB/);
+    assert.match(full, /下个月/);
+  });
 });

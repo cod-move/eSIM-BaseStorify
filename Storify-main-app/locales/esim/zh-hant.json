@@ -1014,7 +1014,12 @@
       "receivedTitle": "受邀獲贈流量",
       "receivedFrom": "你於 {date} 透過 {who} 的邀請註冊。",
       "receivedOn": "於 {date} 到帳",
-      "receivedPending": "首單完成後將贈送 {amount} 流量。"
+      "receivedPending": "首單完成後將贈送 {amount} 流量。",
+      "limitDay": "你目前沒有使用中的 eSIM，簽到每天最多領 {cap}，今天已領 {used}。",
+      "limitWeek": "你目前沒有使用中的 eSIM，簽到每週最多領 {cap}，本週已領 {used}。",
+      "limitMonth": "你目前沒有使用中的 eSIM，簽到每月最多領 {cap}，本月已領 {used}。",
+      "limitFull": "已領滿。",
+      "limitBuy": "購買一個 eSIM 即可解除限制"
     }
   },
   "admin": {
@@ -1919,7 +1924,15 @@
       "referralOnFirstOrder": "好友首單完成時",
       "referralWhen": "發放時機",
       "telegramKindReferral": "邀請好友",
-      "telegramKindInvited": "受邀註冊"
+      "telegramKindInvited": "受邀註冊",
+      "telegramNoEsimLimit": "限制沒有使用中 eSIM 的用戶",
+      "telegramLimitPeriod": "週期",
+      "telegramPeriodDay": "每天",
+      "telegramPeriodWeek": "每週（從週一起）",
+      "telegramPeriodMonth": "每月",
+      "telegramLimitCap": "最多（MB）",
+      "telegramNoEsimLimitHelp": "用戶沒有待安裝、已安裝或使用中的 eSIM（用簽到流量兌換的不算）時，在一個週期內（按上面的時區）簽到最多只能領這麼多。領滿後機器人會提示用戶在網站購買 eSIM 解除限制，或下個週期再領。",
+      "telegramKindAll": "全部"
     },
     "sidebar": {
       "esim": "eSIM",

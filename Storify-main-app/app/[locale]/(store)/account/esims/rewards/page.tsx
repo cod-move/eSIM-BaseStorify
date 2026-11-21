@@ -32,7 +32,11 @@ export default async function AccountRewardsPage({ params, searchParams }: PageP
   if (!session) notFound();
   await connectDB();
   const friendsPage = Number(Array.isArray(query.page) ? query.page[0] : query.page) || 1;
-  const [data, centre] = await Promise.all([rewardsPage(session.user.id), tab === "checkin" ? null : referralCentre(session.user.id, { friendsPage })]);
+  const historyPage = Number(Array.isArray(query.hpage) ? query.hpage[0] : query.hpage) || 1;
+  const [data, centre] = await Promise.all([
+    rewardsPage(session.user.id, { historyPage }),
+    tab === "checkin" ? null : referralCentre(session.user.id, { friendsPage }),
+  ]);
 
   let inviteTab = null;
   let receivedTab = null;

@@ -1014,7 +1014,12 @@
       "receivedTitle": "Data from your invite",
       "receivedFrom": "You joined through {who}'s invite on {date}.",
       "receivedOn": "added on {date}",
-      "receivedPending": "{amount} of data is added after your first order."
+      "receivedPending": "{amount} of data is added after your first order.",
+      "limitDay": "You have no eSIM in use, so check-ins give at most {cap} a day. Today: {used}.",
+      "limitWeek": "You have no eSIM in use, so check-ins give at most {cap} a week. This week: {used}.",
+      "limitMonth": "You have no eSIM in use, so check-ins give at most {cap} a month. This month: {used}.",
+      "limitFull": "The limit is reached.",
+      "limitBuy": "Buy an eSIM to lift the limit"
     }
   },
   "admin": {
@@ -1919,7 +1924,15 @@
       "referralOnFirstOrder": "On the friend's first order",
       "referralWhen": "When",
       "telegramKindReferral": "Invited a friend",
-      "telegramKindInvited": "Joined by invite"
+      "telegramKindInvited": "Joined by invite",
+      "telegramNoEsimLimit": "Limit shoppers without an eSIM in use",
+      "telegramLimitPeriod": "Per",
+      "telegramPeriodDay": "Day",
+      "telegramPeriodWeek": "Week (from Monday)",
+      "telegramPeriodMonth": "Month",
+      "telegramLimitCap": "At most (MB)",
+      "telegramNoEsimLimitHelp": "A shopper with no eSIM ready to install, installed or in use (eSIMs exchanged for data do not count) gets at most this much from check-ins in the period, in the time zone above. The bot then tells them to buy an eSIM on the website to lift the limit, or to come back next period.",
+      "telegramKindAll": "All"
     },
     "sidebar": {
       "esim": "eSIM",

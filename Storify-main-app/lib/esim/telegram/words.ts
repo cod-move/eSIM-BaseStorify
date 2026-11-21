@@ -5,6 +5,9 @@
 
 export type BotLanguage = "zh" | "en";
 
+/** The period of the limit without an eSIM in use. */
+export type LimitPeriodWord = "day" | "week" | "month";
+
 export function botLanguage(code: string | null | undefined): BotLanguage {
   return code?.toLowerCase().startsWith("zh") ? "zh" : "en";
 }
@@ -14,6 +17,10 @@ type Words = {
   checkedIn: (name: string, amount: string, balance: string) => string;
   already: (name: string, balance: string) => string;
   capReached: string;
+  /** No eSIM in use and the period's check-in data all taken: buy one, or come back next period. */
+  limitReached: (name: string, period: LimitPeriodWord, cap: string, site: string) => string;
+  /** After the check-in that reaches the limit without an eSIM in use (nothing is said before). */
+  limitFull: (period: LimitPeriodWord, cap: string, site: string) => string;
   notLinked: (name: string, bot: string) => string;
   disabled: string;
   groupOnly: string;
@@ -33,6 +40,11 @@ type Words = {
   emailBody: (code: string) => string;
 };
 
+const ZH_THIS: Record<LimitPeriodWord, string> = { day: "今天", week: "本周", month: "本月" };
+const ZH_NEXT: Record<LimitPeriodWord, string> = { day: "明天", week: "下周", month: "下个月" };
+const EN_THIS: Record<LimitPeriodWord, string> = { day: "today", week: "this week", month: "this month" };
+const EN_NEXT: Record<LimitPeriodWord, string> = { day: "tomorrow", week: "next week", month: "next month" };
+
 const zh: Words = {
   help: (bot, site) =>
     `欢迎！每天在群里发 /checkin 或「签到」可随机领取流量，攒够后在网站兑换 eSIM。\n\n` +
@@ -43,6 +55,10 @@ const zh: Words = {
   checkedIn: (name, amount, balance) => `${name} 签到成功，获得 ${amount}！累计 ${balance}。`,
   already: (name, balance) => `${name} 今天已经签到过了，明天再来。累计 ${balance}。`,
   capReached: "今天的签到流量已经送完了，明天早点来。",
+  limitReached: (name, period, cap, site) =>
+    `${name} ${ZH_THIS[period]}的签到流量已领满 ${cap}。你当前没有使用中的 eSIM，在网站购买一个 eSIM 即可解除限制：${site}/esim ，或${ZH_NEXT[period]}再来领取。`,
+  limitFull: (period, cap, site) =>
+    `\n${ZH_THIS[period]}的签到流量已领满 ${cap}。你当前没有使用中的 eSIM，在网站购买一个 eSIM 即可解除限制：${site}/esim ，或${ZH_NEXT[period]}再来领取。`,
   notLinked: (name, bot) => `${name} 还没有绑定账号。请私聊 @${bot} 发 /start 按提示绑定。`,
   disabled: "签到活动暂未开放。",
   groupOnly: "签到要在活动群里发哦。",
@@ -72,6 +88,10 @@ const en: Words = {
   checkedIn: (name, amount, balance) => `${name} checked in and got ${amount}! Total ${balance}.`,
   already: (name, balance) => `${name}, you already checked in today. Come back tomorrow. Total ${balance}.`,
   capReached: "Today's check-in data has all been given out. Come back earlier tomorrow.",
+  limitReached: (name, period, cap, site) =>
+    `${name}, you have had all ${cap} of check-in data for ${EN_THIS[period]}. You have no eSIM in use: buy one on the website to lift the limit (${site}/esim), or come back ${EN_NEXT[period]}.`,
+  limitFull: (period, cap, site) =>
+    `\nThat is all ${cap} of check-in data for ${EN_THIS[period]}. You have no eSIM in use: buy one on the website to lift the limit (${site}/esim), or come back ${EN_NEXT[period]}.`,
   notLinked: (name, bot) => `${name}, your account is not linked yet. Message @${bot} and send /start to link it.`,
   disabled: "Check-in rewards are not open at the moment.",
   groupOnly: "Please check in in the rewards group.",

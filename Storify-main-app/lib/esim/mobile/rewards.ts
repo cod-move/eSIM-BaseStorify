@@ -1,6 +1,8 @@
 import {
   EsimRewards,
   EsimRewardsEmptyInput,
+  EsimRewardsHistory,
+  EsimRewardsHistoryQuery,
   EsimRewardsRedeemRequest,
   EsimRewardsRedeemResult,
   EsimRewardsTelegramLink,
@@ -15,7 +17,7 @@ import { esimFulfilOrder } from "@/lib/esim/fulfillment";
 import { runAfterResponse } from "@/lib/esim/admin/route";
 import { formatMb } from "@/lib/esim/telegram/format";
 import { redeemReward } from "@/lib/esim/telegram/redeem";
-import { createLinkToken, rewardsPage, unlinkTelegram } from "@/lib/esim/telegram/service";
+import { createLinkToken, rewardHistory, rewardsPage, unlinkTelegram, type RewardEntryView } from "@/lib/esim/telegram/service";
 
 /**
  * The shopper app's rewards centre (福利中心): the website's own readers and
@@ -57,18 +59,42 @@ export const esimRewardsRoute = defineRoute({
           : {}),
       },
       items: page.items.map((item) => ({ id: item.id, name: item.name, cost: dataAmount(item.costMb) })),
-      history: page.history.map((entry) => ({
-        id: entry.id,
-        kind: entry.kind,
-        amount: dataAmount(entry.mb),
-        status: entry.status,
-        ...(entry.itemName ? { itemName: entry.itemName } : {}),
-        ...(entry.orderId ? { orderId: entry.orderId } : {}),
-        ...(entry.orderNumber ? { orderNumber: entry.orderNumber } : {}),
-        ...(entry.note ? { note: entry.note } : {}),
-        createdAt: entry.createdAt,
-      })),
+      history: page.history.items.map(entryOf),
+      historyPages: page.history.totalPages,
+      ...(page.limit
+        ? { checkinLimit: { period: page.limit.period, cap: dataAmount(page.limit.capMb), used: dataAmount(Math.min(page.limit.usedMb, page.limit.capMb)) } }
+        : {}),
     };
+  },
+});
+
+function entryOf(entry: RewardEntryView) {
+  return {
+    id: entry.id,
+    kind: entry.kind,
+    amount: dataAmount(entry.mb),
+    status: entry.status,
+    ...(entry.itemName ? { itemName: entry.itemName } : {}),
+    ...(entry.orderId ? { orderId: entry.orderId } : {}),
+    ...(entry.orderNumber ? { orderNumber: entry.orderNumber } : {}),
+    ...(entry.note ? { note: entry.note } : {}),
+    createdAt: entry.createdAt,
+  };
+}
+
+/** GET /me/esim-rewards/history?page= */
+export const esimRewardsHistoryRoute = defineRoute({
+  id: "me.esimRewards.history",
+  method: "GET",
+  path: "/me/esim-rewards/history",
+  auth: "user",
+  cache: { kind: "private" },
+  input: EsimRewardsHistoryQuery,
+  output: EsimRewardsHistory,
+  handler: async ({ session, input }) => {
+    await connectDB();
+    const history = await rewardHistory(session.user.id, input.page ?? 1);
+    return { ...history, items: history.items.map(entryOf) };
   },
 });
 
@@ -143,4 +169,4 @@ export const esimRewardsRedeemRoute = defineRoute({
   },
 });
 
-export const esimRewardsRoutes = [esimRewardsRoute, esimRewardsTelegramLinkRoute, esimRewardsTelegramUnlinkRoute, esimRewardsRedeemRoute];
+export const esimRewardsRoutes = [esimRewardsRoute, esimRewardsHistoryRoute, esimRewardsTelegramLinkRoute, esimRewardsTelegramUnlinkRoute, esimRewardsRedeemRoute];

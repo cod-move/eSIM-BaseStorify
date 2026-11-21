@@ -1003,7 +1003,12 @@
       "receivedTitle": "بيانات من دعوتك",
       "receivedFrom": "انضممت بدعوة من {who} في {date}.",
       "receivedOn": "أضيفت في {date}",
-      "receivedPending": "تُضاف {amount} من البيانات بعد طلبك الأول."
+      "receivedPending": "تُضاف {amount} من البيانات بعد طلبك الأول.",
+      "limitDay": "ليس لديك eSIM قيد الاستخدام، لذا يمنحك تسجيل الحضور {cap} كحد أقصى يوميًا. اليوم: {used}.",
+      "limitWeek": "ليس لديك eSIM قيد الاستخدام، لذا يمنحك تسجيل الحضور {cap} كحد أقصى أسبوعيًا. هذا الأسبوع: {used}.",
+      "limitMonth": "ليس لديك eSIM قيد الاستخدام، لذا يمنحك تسجيل الحضور {cap} كحد أقصى شهريًا. هذا الشهر: {used}.",
+      "limitFull": "تم بلوغ الحد.",
+      "limitBuy": "اشترِ eSIM لرفع الحد"
     }
   },
   "admin": {
@@ -1823,7 +1828,15 @@
       "referralOnFirstOrder": "On the friend's first order",
       "referralWhen": "When",
       "telegramKindReferral": "Invited a friend",
-      "telegramKindInvited": "Joined by invite"
+      "telegramKindInvited": "Joined by invite",
+      "telegramNoEsimLimit": "تقييد العملاء الذين ليس لديهم eSIM قيد الاستخدام",
+      "telegramLimitPeriod": "لكل",
+      "telegramPeriodDay": "يوم",
+      "telegramPeriodWeek": "أسبوع (من الاثنين)",
+      "telegramPeriodMonth": "شهر",
+      "telegramLimitCap": "الحد الأقصى (ميغابايت)",
+      "telegramNoEsimLimitHelp": "العميل الذي ليس لديه eSIM جاهزة للتثبيت أو مثبتة أو قيد الاستخدام (لا تُحتسب المستبدلة بالبيانات) يحصل على هذا القدر كحد أقصى من تسجيل الحضور خلال الفترة، حسب المنطقة الزمنية أعلاه. ثم يخبره البوت بشراء eSIM من الموقع لرفع الحد أو العودة في الفترة التالية.",
+      "telegramKindAll": "الكل"
     },
     "sidebar": {
       "esim": "eSIM",

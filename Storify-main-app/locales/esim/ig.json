@@ -1003,7 +1003,12 @@
       "receivedTitle": "Data from your invite",
       "receivedFrom": "You joined through {who}'s invite on {date}.",
       "receivedOn": "added on {date}",
-      "receivedPending": "{amount} of data is added after your first order."
+      "receivedPending": "{amount} of data is added after your first order.",
+      "limitDay": "Ị nweghị eSIM a na-eji, ya mere ịbanye na-enye gị ruo {cap} kwa ụbọchị. Taa: {used}.",
+      "limitWeek": "Ị nweghị eSIM a na-eji, ya mere ịbanye na-enye gị ruo {cap} kwa izu. Izu a: {used}.",
+      "limitMonth": "Ị nweghị eSIM a na-eji, ya mere ịbanye na-enye gị ruo {cap} kwa ọnwa. Ọnwa a: {used}.",
+      "limitFull": "Erutela oke.",
+      "limitBuy": "Zụta eSIM iji wepụ oke ahụ"
     }
   },
   "admin": {
@@ -1823,7 +1828,15 @@
       "referralOnFirstOrder": "On the friend's first order",
       "referralWhen": "When",
       "telegramKindReferral": "Invited a friend",
-      "telegramKindInvited": "Joined by invite"
+      "telegramKindInvited": "Joined by invite",
+      "telegramNoEsimLimit": "Gbochie ndị ahịa na-enweghị eSIM a na-eji",
+      "telegramLimitPeriod": "Kwa",
+      "telegramPeriodDay": "Ụbọchị",
+      "telegramPeriodWeek": "Izu (site na Mọnde)",
+      "telegramPeriodMonth": "Ọnwa",
+      "telegramLimitCap": "Kachasị (MB)",
+      "telegramNoEsimLimitHelp": "Onye ahịa na-enweghị eSIM dị njikere ịwụnye, ewụnyere ma ọ bụ a na-eji (ndị e ji data gbanwere anaghị agụ) na-enweta kachasị nke a site n’ịbanye n’oge ahụ, dịka mpaghara oge dị n’elu. Bot na-agwa ya ka ọ zụta eSIM na webụsaịtị iji wepụ oke ahụ, ma ọ bụ lọghachi n’oge ọzọ.",
+      "telegramKindAll": "Ha niile"
     },
     "sidebar": {
       "esim": "eSIM",

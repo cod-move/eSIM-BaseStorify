@@ -495,6 +495,11 @@
     "redeemFailed": "The exchange did not go through and your data was given back. Please try again.",
     "rewardsHistory": "History",
     "rewardsNoHistory": "Nothing yet.",
+    "rewardsLimitDay": "You have no eSIM in use, so check-ins give at most {cap} a day. Today: {used}.",
+    "rewardsLimitWeek": "You have no eSIM in use, so check-ins give at most {cap} a week. This week: {used}.",
+    "rewardsLimitMonth": "You have no eSIM in use, so check-ins give at most {cap} a month. This month: {used}.",
+    "rewardsLimitBuy": "Buy an eSIM to lift the limit",
+    "rewardsHistoryMore": "Show more",
     "rewardsKind": {
       "checkin": "Daily check-in",
       "redeem": "Exchanged: {name}",

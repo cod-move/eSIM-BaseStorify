@@ -1003,7 +1003,12 @@
       "receivedTitle": "Davetinizden gelen veri",
       "receivedFrom": "{date} tarihinde {who} davetiyle katıldınız.",
       "receivedOn": "{date} tarihinde eklendi",
-      "receivedPending": "İlk siparişinizden sonra {amount} veri eklenir."
+      "receivedPending": "İlk siparişinizden sonra {amount} veri eklenir.",
+      "limitDay": "Kullanımda eSIM'iniz olmadığı için check-in ile günde en fazla {cap} alabilirsiniz. Bugün: {used}.",
+      "limitWeek": "Kullanımda eSIM'iniz olmadığı için check-in ile haftada en fazla {cap} alabilirsiniz. Bu hafta: {used}.",
+      "limitMonth": "Kullanımda eSIM'iniz olmadığı için check-in ile ayda en fazla {cap} alabilirsiniz. Bu ay: {used}.",
+      "limitFull": "Sınıra ulaşıldı.",
+      "limitBuy": "Sınırı kaldırmak için bir eSIM satın alın"
     }
   },
   "admin": {
@@ -1823,7 +1828,15 @@
       "referralOnFirstOrder": "On the friend's first order",
       "referralWhen": "When",
       "telegramKindReferral": "Invited a friend",
-      "telegramKindInvited": "Joined by invite"
+      "telegramKindInvited": "Joined by invite",
+      "telegramNoEsimLimit": "Kullanımda eSIM'i olmayan müşterileri sınırla",
+      "telegramLimitPeriod": "Dönem",
+      "telegramPeriodDay": "Gün",
+      "telegramPeriodWeek": "Hafta (pazartesiden)",
+      "telegramPeriodMonth": "Ay",
+      "telegramLimitCap": "En fazla (MB)",
+      "telegramNoEsimLimitHelp": "Kuruluma hazır, kurulu veya kullanımda eSIM'i olmayan (veriyle takas edilenler sayılmaz) bir müşteri, dönem içinde (yukarıdaki saat diliminde) check-in ile en fazla bu kadar alır. Bot daha sonra sınırı kaldırmak için sitede eSIM almasını veya sonraki dönemde gelmesini söyler.",
+      "telegramKindAll": "Tümü"
     },
     "sidebar": {
       "esim": "eSIM",

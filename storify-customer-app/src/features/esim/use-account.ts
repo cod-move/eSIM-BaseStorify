@@ -5,6 +5,7 @@ import {
   getEsimReferralFriends,
   getEsimReferrals,
   getEsimRewards,
+  getEsimRewardsHistory,
   getEsimWallet,
   linkEsimTelegram,
   redeemEsimReward,
@@ -47,6 +48,19 @@ export function useEsimRewards() {
     queryFn: ({ signal }) => getEsimRewards(locale, signal),
     staleTime: STALE.private,
     refetchOnMount: 'always',
+  });
+}
+
+/** History past the first page, read when the shopper asks for more. */
+export function useEsimRewardsHistory(enabled: boolean) {
+  const locale = useLocale();
+  return useInfiniteQuery({
+    queryKey: [...queryKeys.esimRewards(locale), 'history'],
+    queryFn: ({ pageParam, signal }) => getEsimRewardsHistory(locale, pageParam, signal),
+    initialPageParam: 2,
+    getNextPageParam: (last) => (last.page < last.totalPages ? last.page + 1 : undefined),
+    staleTime: STALE.private,
+    enabled,
   });
 }
 

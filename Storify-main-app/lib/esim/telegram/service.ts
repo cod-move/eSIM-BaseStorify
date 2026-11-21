@@ -17,7 +17,8 @@ import {
 } from "@/models/esim-telegram.model";
 import { sendEmail } from "@/lib/email/email";
 import { escapeHtml } from "@/lib/email/escape-html";
-import { dayKey, hashSecret, isTimezone, newEmailCode, newLinkToken, rollMb, withinCap } from "@/lib/esim/telegram/rules";
+import { dayKey, hashSecret, isTimezone, newEmailCode, newLinkToken, periodStart, rollMb, withinCap, type LimitPeriod } from "@/lib/esim/telegram/rules";
+import { hasLiveEsim } from "@/lib/esim/telegram/live-esim";
 import { words, type BotLanguage } from "@/lib/esim/telegram/words";
 
 /**
@@ -62,6 +63,12 @@ export const TelegramSettingsSchema = z
     minMb: z.number().int().min(1).max(100_000),
     maxMb: z.number().int().min(1).max(100_000),
     dailyCapMb: z.number().int().min(0).max(100_000_000),
+    /** The most a shopper without an eSIM in use gets from check-ins per period. */
+    noEsimLimit: z.object({
+      enabled: z.boolean(),
+      period: z.enum(["day", "week", "month"]),
+      capMb: z.number().int().min(1).max(100_000_000),
+    }),
     timezone: z.string().trim().min(1).max(64).refine(isTimezone, "Unknown time zone"),
     items: z
       .array(
@@ -87,6 +94,19 @@ export interface RewardItemView {
   enabled: boolean;
 }
 
+export interface NoEsimLimit {
+  enabled: boolean;
+  period: LimitPeriod;
+  capMb: number;
+}
+
+/** The limit as saved, or its defaults (on, 300 MB a month) for settings saved before it existed. */
+export function noEsimLimitOf(settings: { noEsimLimit?: Partial<NoEsimLimit> | null }): NoEsimLimit {
+  const saved = settings.noEsimLimit ?? {};
+  const period = saved.period === "day" || saved.period === "week" ? saved.period : "month";
+  return { enabled: saved.enabled ?? true, period, capMb: saved.capMb && saved.capMb > 0 ? saved.capMb : 300 };
+}
+
 export interface TelegramSettingsView {
   enabled: boolean;
   botUsername: string | null;
@@ -96,6 +116,7 @@ export interface TelegramSettingsView {
   minMb: number;
   maxMb: number;
   dailyCapMb: number;
+  noEsimLimit: NoEsimLimit;
   timezone: string;
   items: RewardItemView[];
 }
@@ -111,6 +132,7 @@ export async function telegramSettingsView(): Promise<TelegramSettingsView> {
     minMb: settings.minMb,
     maxMb: settings.maxMb,
     dailyCapMb: settings.dailyCapMb,
+    noEsimLimit: noEsimLimitOf(settings),
     timezone: settings.timezone,
     items: settings.items.map((item) => ({
       id: String(item._id),
@@ -168,6 +190,7 @@ export async function saveTelegramSettings(input: TelegramSettingsInput) {
         minMb: input.minMb,
         maxMb: input.maxMb,
         dailyCapMb: input.dailyCapMb,
+        noEsimLimit: input.noEsimLimit,
         timezone: input.timezone,
         items,
       },
@@ -289,9 +312,17 @@ export async function linkOfTelegramUser(telegramUserId: string) {
 
 // ── Check-in ─────────────────────────────────────────────────────────────
 
+/** Where a shopper without an eSIM in use stands against the limit: given so far this period, of how much. */
+export interface CheckinLimit {
+  period: LimitPeriod;
+  capMb: number;
+  usedMb: number;
+}
+
 export type CheckinResult =
-  | { status: "ok"; mb: number; balanceMb: number }
+  | { status: "ok"; mb: number; balanceMb: number; limit: CheckinLimit | null }
   | { status: "already"; balanceMb: number }
+  | { status: "limit"; balanceMb: number; limit: CheckinLimit }
   | { status: "cap" }
   | { status: "not_linked" }
   | { status: "disabled" }
@@ -299,8 +330,22 @@ export type CheckinResult =
 
 class AlreadyCheckedIn extends Error {}
 class CapReached extends Error {}
+class LimitReached extends Error {}
 
-/** A check-in by this Telegram user in this chat. Once a day per Telegram account and per store account. */
+/** Check-in data a shopper got from `since` (a day key) on. */
+async function checkinMbSince(user: mongoose.Types.ObjectId, since: string, session: mongoose.ClientSession): Promise<number> {
+  const [row] = await EsimRewardEntry.aggregate<{ mb: number }>([
+    { $match: { user, kind: "checkin", day: { $gte: since } } },
+    { $group: { _id: null, mb: { $sum: "$mb" } } },
+  ]).session(session);
+  return row?.mb ?? 0;
+}
+
+/**
+ * A check-in by this Telegram user in this chat. Once a day per Telegram
+ * account and per store account. A shopper without an eSIM in use gets at
+ * most the limit's amount per period (lifted by buying an eSIM).
+ */
 export async function checkIn(sender: TelegramSender, chatId: string, now = new Date()): Promise<CheckinResult> {
   const settings = await getTelegramSettings();
   if (!settings.enabled) return { status: "disabled" };
@@ -317,6 +362,9 @@ export async function checkIn(sender: TelegramSender, chatId: string, now = new 
     ).catch(console.error);
   }
   const rolled = rollMb(settings.minMb, settings.maxMb);
+  const rule = noEsimLimitOf(settings);
+  const limited = rule.enabled && !(await hasLiveEsim(String(user), now));
+  const since = periodStart(day, rule.period);
 
   // The rows the transaction updates exist first: an upsert inside it could clash with a concurrent insert.
   await EsimRewardAccount.updateOne({ user }, { $setOnInsert: { user } }, { upsert: true }).catch((error) => {
@@ -331,6 +379,15 @@ export async function checkIn(sender: TelegramSender, chatId: string, now = new 
   try {
     const result = await runTransaction("esim-telegram-checkin", async (session) => {
       let mb = rolled;
+      let limit: CheckinLimit | null = null;
+      if (limited) {
+        const before = await EsimRewardAccount.findOne({ user }).session(session).lean();
+        if (before?.lastCheckinDay === day) throw new AlreadyCheckedIn();
+        const usedMb = await checkinMbSince(user, since, session);
+        limit = { period: rule.period, capMb: rule.capMb, usedMb };
+        mb = withinCap(rolled, usedMb, rule.capMb);
+        if (mb <= 0) throw new LimitReached();
+      }
       if (settings.dailyCapMb) {
         const today = await EsimRewardDay.findOne({ day }).session(session).lean();
         mb = withinCap(rolled, today?.grantedMb ?? 0, settings.dailyCapMb);
@@ -347,11 +404,15 @@ export async function checkIn(sender: TelegramSender, chatId: string, now = new 
         [{ user, kind: "checkin", mb, key: `checkin:${sender.id}:${day}`, day, telegramUserId: sender.id, chatId, status: "done" }],
         { session },
       );
-      return { mb, balanceMb: account.balanceMb };
+      return { mb, balanceMb: account.balanceMb, limit: limit ? { ...limit, usedMb: limit.usedMb + mb } : null };
     });
     return { status: "ok", ...result };
   } catch (error) {
     if (error instanceof CapReached) return { status: "cap" };
+    if (error instanceof LimitReached) {
+      const account = await EsimRewardAccount.findOne({ user }).lean();
+      return { status: "limit", balanceMb: account?.balanceMb ?? 0, limit: { period: rule.period, capMb: rule.capMb, usedMb: rule.capMb } };
+    }
     if (error instanceof AlreadyCheckedIn || isDuplicate(error)) {
       const account = await EsimRewardAccount.findOne({ user }).lean();
       return { status: "already", balanceMb: account?.balanceMb ?? 0 };
@@ -399,20 +460,54 @@ export function entryView(entry: IEsimRewardEntry): RewardEntryView {
   };
 }
 
-export async function rewardHistory(userId: string, limit = 30): Promise<RewardEntryView[]> {
-  const rows = await EsimRewardEntry.find({ user: oid(userId) }).sort({ createdAt: -1 }).limit(limit).lean<IEsimRewardEntry[]>();
-  return rows.map(entryView);
+export interface RewardHistoryPage {
+  items: RewardEntryView[];
+  page: number;
+  totalPages: number;
+  total: number;
+}
+
+export const HISTORY_PER_PAGE = 20;
+
+/** A shopper's ledger, newest first, a page at a time (a page past the end is the last). */
+export async function rewardHistory(userId: string, page = 1, perPage = HISTORY_PER_PAGE): Promise<RewardHistoryPage> {
+  const filter = { user: oid(userId) };
+  const total = await EsimRewardEntry.countDocuments(filter);
+  const totalPages = Math.max(1, Math.ceil(total / perPage));
+  const at = Math.min(Math.max(1, Math.floor(page) || 1), totalPages);
+  const rows = await EsimRewardEntry.find(filter)
+    .sort({ createdAt: -1, _id: -1 })
+    .skip((at - 1) * perPage)
+    .limit(perPage)
+    .lean<IEsimRewardEntry[]>();
+  return { items: rows.map(entryView), page: at, totalPages, total };
+}
+
+/** The limit without an eSIM in use as it stands for this shopper now; null when it does not apply to them. */
+export async function checkinLimitOf(userId: string, now = new Date()): Promise<CheckinLimit | null> {
+  const settings = await getTelegramSettings();
+  const rule = noEsimLimitOf(settings);
+  if (!rule.enabled || (await hasLiveEsim(userId, now))) return null;
+  const since = periodStart(dayKey(now, settings.timezone), rule.period);
+  const [row] = await EsimRewardEntry.aggregate<{ mb: number }>([
+    { $match: { user: oid(userId), kind: "checkin", day: { $gte: since } } },
+    { $group: { _id: null, mb: { $sum: "$mb" } } },
+  ]);
+  return { period: rule.period, capMb: rule.capMb, usedMb: row?.mb ?? 0 };
 }
 
 /** What the account page shows: the link, the balance, the history and what can be bought with it. */
-export async function rewardsPage(userId: string) {
-  const [settings, linkRow, account, history] = await Promise.all([
+export async function rewardsPage(userId: string, options: { historyPage?: number } = {}) {
+  const [settings, linkRow, account, history, limit] = await Promise.all([
     getTelegramSettings(),
     EsimTelegramLink.findOne({ user: oid(userId) }).lean(),
     rewardAccountOf(userId),
-    rewardHistory(userId),
+    rewardHistory(userId, options.historyPage ?? 1),
+    checkinLimitOf(userId),
   ]);
   return {
+    // Shown only once the limit is reached: nothing is said while there is some left.
+    limit: limit && limit.usedMb >= limit.capMb ? limit : null,
     enabled: settings.enabled,
     botUsername: settings.botUsername,
     groupLink: settings.groupLink ?? null,
@@ -511,11 +606,20 @@ export interface AdminRewardRow extends RewardEntryView {
   telegram: TelegramIdentity | null;
 }
 
-/** The latest ledger rows, newest first, with each shopper's email and Telegram account; `kind` narrows them. */
-export async function adminRewardEntries(options: { kind?: IEsimRewardEntry["kind"]; limit?: number } = {}): Promise<AdminRewardRow[]> {
-  const rows = await EsimRewardEntry.find(options.kind ? { kind: options.kind } : {})
-    .sort({ createdAt: -1 })
-    .limit(options.limit ?? 50)
+/** The ledger, newest first, a page at a time, with each shopper's email and Telegram account; `kind` narrows it. */
+export async function adminRewardEntries(
+  options: { kind?: IEsimRewardEntry["kind"]; page?: number; perPage?: number } = {},
+): Promise<{ rows: AdminRewardRow[]; page: number; totalPages: number; total: number }> {
+  const filter = options.kind ? { kind: options.kind } : {};
+  const perPage = options.perPage ?? 50;
+  // An estimate for the whole ledger (it grows by every check-in); an exact count for one kind.
+  const total = options.kind ? await EsimRewardEntry.countDocuments(filter) : await EsimRewardEntry.estimatedDocumentCount();
+  const totalPages = Math.max(1, Math.ceil(total / perPage));
+  const page = Math.min(Math.max(1, Math.floor(options.page ?? 1) || 1), totalPages);
+  const rows = await EsimRewardEntry.find(filter)
+    .sort({ createdAt: -1, _id: -1 })
+    .skip((page - 1) * perPage)
+    .limit(perPage)
     .lean<IEsimRewardEntry[]>();
   const ids = [...new Set(rows.map((row) => String(row.user)))].map(oid);
   const [users, links] = await Promise.all([
@@ -526,7 +630,12 @@ export async function adminRewardEntries(options: { kind?: IEsimRewardEntry["kin
   const telegramOf = new Map(
     links.map((entry) => [String(entry.user), { telegramUserId: entry.telegramUserId, username: entry.username, firstName: entry.firstName }]),
   );
-  return rows.map((row) => ({ ...entryView(row), email: emailOf.get(String(row.user)) ?? null, telegram: telegramOf.get(String(row.user)) ?? null }));
+  return {
+    rows: rows.map((row) => ({ ...entryView(row), email: emailOf.get(String(row.user)) ?? null, telegram: telegramOf.get(String(row.user)) ?? null })),
+    page,
+    totalPages,
+    total,
+  };
 }
 
 export interface AdminLinkRow extends TelegramIdentity {

@@ -1003,7 +1003,12 @@
       "receivedTitle": "招待でもらったデータ",
       "receivedFrom": "{date} に {who} さんの招待で登録しました。",
       "receivedOn": "{date} に追加",
-      "receivedPending": "初回注文の後に {amount} のデータが追加されます。"
+      "receivedPending": "初回注文の後に {amount} のデータが追加されます。",
+      "limitDay": "利用中の eSIM がないため、チェックインで受け取れるのは1日 {cap} までです。今日：{used}。",
+      "limitWeek": "利用中の eSIM がないため、チェックインで受け取れるのは1週間 {cap} までです。今週：{used}。",
+      "limitMonth": "利用中の eSIM がないため、チェックインで受け取れるのは1か月 {cap} までです。今月：{used}。",
+      "limitFull": "上限に達しました。",
+      "limitBuy": "eSIM を購入すると制限が解除されます"
     }
   },
   "admin": {
@@ -1823,7 +1828,15 @@
       "referralOnFirstOrder": "On the friend's first order",
       "referralWhen": "When",
       "telegramKindReferral": "Invited a friend",
-      "telegramKindInvited": "Joined by invite"
+      "telegramKindInvited": "Joined by invite",
+      "telegramNoEsimLimit": "利用中の eSIM がない顧客を制限",
+      "telegramLimitPeriod": "期間",
+      "telegramPeriodDay": "1日",
+      "telegramPeriodWeek": "1週間（月曜から）",
+      "telegramPeriodMonth": "1か月",
+      "telegramLimitCap": "上限（MB）",
+      "telegramNoEsimLimitHelp": "インストール待ち・インストール済み・利用中の eSIM（データで交換したものを除く）がない顧客は、期間内（上のタイムゾーン）にチェックインで受け取れる量がこの上限までになります。上限に達すると、ボットがサイトで eSIM を購入して制限を解除するか、次の期間に再度受け取るよう案内します。",
+      "telegramKindAll": "すべて"
     },
     "sidebar": {
       "esim": "eSIM",

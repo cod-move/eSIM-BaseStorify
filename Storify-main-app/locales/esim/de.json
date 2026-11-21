@@ -1003,7 +1003,12 @@
       "receivedTitle": "Daten aus deiner Einladung",
       "receivedFrom": "Du bist am {date} über die Einladung von {who} beigetreten.",
       "receivedOn": "am {date} gutgeschrieben",
-      "receivedPending": "Nach deiner ersten Bestellung werden {amount} Daten gutgeschrieben."
+      "receivedPending": "Nach deiner ersten Bestellung werden {amount} Daten gutgeschrieben.",
+      "limitDay": "Du hast keine eSIM in Benutzung, daher gibt es fürs Einchecken höchstens {cap} pro Tag. Heute: {used}.",
+      "limitWeek": "Du hast keine eSIM in Benutzung, daher gibt es fürs Einchecken höchstens {cap} pro Woche. Diese Woche: {used}.",
+      "limitMonth": "Du hast keine eSIM in Benutzung, daher gibt es fürs Einchecken höchstens {cap} pro Monat. Diesen Monat: {used}.",
+      "limitFull": "Das Limit ist erreicht.",
+      "limitBuy": "Kaufe eine eSIM, um das Limit aufzuheben"
     }
   },
   "admin": {
@@ -1823,7 +1828,15 @@
       "referralOnFirstOrder": "On the friend's first order",
       "referralWhen": "When",
       "telegramKindReferral": "Invited a friend",
-      "telegramKindInvited": "Joined by invite"
+      "telegramKindInvited": "Joined by invite",
+      "telegramNoEsimLimit": "Kunden ohne eSIM in Benutzung begrenzen",
+      "telegramLimitPeriod": "Pro",
+      "telegramPeriodDay": "Tag",
+      "telegramPeriodWeek": "Woche (ab Montag)",
+      "telegramPeriodMonth": "Monat",
+      "telegramLimitCap": "Höchstens (MB)",
+      "telegramNoEsimLimitHelp": "Ein Kunde ohne eSIM, die zur Installation bereit, installiert oder in Benutzung ist (gegen Daten eingetauschte zählen nicht), bekommt im Zeitraum (in der Zeitzone oben) höchstens so viel durchs Einchecken. Der Bot rät dann, auf der Website eine eSIM zu kaufen, um das Limit aufzuheben, oder im nächsten Zeitraum wiederzukommen.",
+      "telegramKindAll": "Alle"
     },
     "sidebar": {
       "esim": "eSIM",

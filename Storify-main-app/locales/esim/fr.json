@@ -1003,7 +1003,12 @@
       "receivedTitle": "Données de votre invitation",
       "receivedFrom": "Vous vous êtes inscrit via l'invitation de {who} le {date}.",
       "receivedOn": "ajoutées le {date}",
-      "receivedPending": "{amount} de données sont ajoutées après votre première commande."
+      "receivedPending": "{amount} de données sont ajoutées après votre première commande.",
+      "limitDay": "Vous n’avez aucune eSIM en cours d’utilisation : les check-ins donnent au plus {cap} par jour. Aujourd’hui : {used}.",
+      "limitWeek": "Vous n’avez aucune eSIM en cours d’utilisation : les check-ins donnent au plus {cap} par semaine. Cette semaine : {used}.",
+      "limitMonth": "Vous n’avez aucune eSIM en cours d’utilisation : les check-ins donnent au plus {cap} par mois. Ce mois-ci : {used}.",
+      "limitFull": "La limite est atteinte.",
+      "limitBuy": "Achetez une eSIM pour lever la limite"
     }
   },
   "admin": {
@@ -1823,7 +1828,15 @@
       "referralOnFirstOrder": "On the friend's first order",
       "referralWhen": "When",
       "telegramKindReferral": "Invited a friend",
-      "telegramKindInvited": "Joined by invite"
+      "telegramKindInvited": "Joined by invite",
+      "telegramNoEsimLimit": "Limiter les clients sans eSIM en cours d’utilisation",
+      "telegramLimitPeriod": "Par",
+      "telegramPeriodDay": "Jour",
+      "telegramPeriodWeek": "Semaine (à partir du lundi)",
+      "telegramPeriodMonth": "Mois",
+      "telegramLimitCap": "Au plus (Mo)",
+      "telegramNoEsimLimitHelp": "Un client sans eSIM prête à installer, installée ou en cours d’utilisation (celles échangées contre des données ne comptent pas) reçoit au plus cette quantité par check-in sur la période, dans le fuseau horaire ci-dessus. Le bot lui propose alors d’acheter une eSIM sur le site pour lever la limite, ou de revenir à la période suivante.",
+      "telegramKindAll": "Tout"
     },
     "sidebar": {
       "esim": "eSIM",

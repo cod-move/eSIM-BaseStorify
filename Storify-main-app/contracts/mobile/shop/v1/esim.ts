@@ -612,9 +612,30 @@ export const EsimRewards = z.object({
     linked: z.object({ username: z.string().optional(), name: z.string().optional(), linkedAt: z.string() }).optional(),
   }),
   items: z.array(z.object({ id: z.string(), name: z.string(), cost: DataAmount })),
+  /** The latest entries: the history's first page (GET /me/esim-rewards/history for more). */
   history: z.array(EsimRewardEntry),
+  /** Pages of history in all; left out by an older server (then `history` is all there is). */
+  historyPages: z.number().int().optional(),
+  /**
+   * Without an eSIM in use, check-ins give at most `cap` per `period`
+   * ("day", "week" or "month"); `used` is taken so far. Sent only once the
+   * limit is reached; left out while some is left or when it does not apply.
+   */
+  checkinLimit: z.object({ period: z.string(), cap: DataAmount, used: DataAmount }).optional(),
 });
 export type EsimRewards = z.infer<typeof EsimRewards>;
+
+/** GET /me/esim-rewards/history?page= — the entries, newest first, a page at a time. */
+export const EsimRewardsHistoryQuery = z.object({ page: z.number().int().min(1).max(100_000).optional() });
+export type EsimRewardsHistoryQuery = z.infer<typeof EsimRewardsHistoryQuery>;
+
+export const EsimRewardsHistory = z.object({
+  items: z.array(EsimRewardEntry),
+  page: z.number().int(),
+  totalPages: z.number().int(),
+  total: z.number().int(),
+});
+export type EsimRewardsHistory = z.infer<typeof EsimRewardsHistory>;
 
 /** POST /me/esim-rewards/telegram */
 export const EsimRewardsTelegramLink = z.object({ url: z.string() });

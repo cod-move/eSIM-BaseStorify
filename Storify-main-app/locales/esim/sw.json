@@ -1003,7 +1003,12 @@
       "receivedTitle": "Data from your invite",
       "receivedFrom": "You joined through {who}'s invite on {date}.",
       "receivedOn": "added on {date}",
-      "receivedPending": "{amount} of data is added after your first order."
+      "receivedPending": "{amount} of data is added after your first order.",
+      "limitDay": "Huna eSIM inayotumika, kwa hivyo kuingia kunakupa hadi {cap} kwa siku. Leo: {used}.",
+      "limitWeek": "Huna eSIM inayotumika, kwa hivyo kuingia kunakupa hadi {cap} kwa wiki. Wiki hii: {used}.",
+      "limitMonth": "Huna eSIM inayotumika, kwa hivyo kuingia kunakupa hadi {cap} kwa mwezi. Mwezi huu: {used}.",
+      "limitFull": "Kikomo kimefikiwa.",
+      "limitBuy": "Nunua eSIM ili kuondoa kikomo"
     }
   },
   "admin": {
@@ -1823,7 +1828,15 @@
       "referralOnFirstOrder": "On the friend's first order",
       "referralWhen": "When",
       "telegramKindReferral": "Invited a friend",
-      "telegramKindInvited": "Joined by invite"
+      "telegramKindInvited": "Joined by invite",
+      "telegramNoEsimLimit": "Weka kikomo kwa wateja wasio na eSIM inayotumika",
+      "telegramLimitPeriod": "Kwa",
+      "telegramPeriodDay": "Siku",
+      "telegramPeriodWeek": "Wiki (kuanzia Jumatatu)",
+      "telegramPeriodMonth": "Mwezi",
+      "telegramLimitCap": "Hadi (MB)",
+      "telegramNoEsimLimitHelp": "Mteja asiye na eSIM iliyo tayari kusakinishwa, iliyosakinishwa au inayotumika (zilizobadilishwa kwa data hazihesabiwi) hupata hadi kiasi hiki kwa kuingia katika kipindi, kwa saa za eneo hapo juu. Kisha boti humwambia anunue eSIM kwenye tovuti ili kuondoa kikomo, au arudi kipindi kijacho.",
+      "telegramKindAll": "Zote"
     },
     "sidebar": {
       "esim": "eSIM",

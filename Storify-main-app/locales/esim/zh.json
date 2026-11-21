@@ -1014,7 +1014,12 @@
       "receivedTitle": "受邀获赠流量",
       "receivedFrom": "你于 {date} 通过 {who} 的邀请注册。",
       "receivedOn": "于 {date} 到账",
-      "receivedPending": "首单完成后将赠送 {amount} 流量。"
+      "receivedPending": "首单完成后将赠送 {amount} 流量。",
+      "limitDay": "你当前没有使用中的 eSIM，签到每天最多领 {cap}，今天已领 {used}。",
+      "limitWeek": "你当前没有使用中的 eSIM，签到每周最多领 {cap}，本周已领 {used}。",
+      "limitMonth": "你当前没有使用中的 eSIM，签到每月最多领 {cap}，本月已领 {used}。",
+      "limitFull": "已领满。",
+      "limitBuy": "购买一个 eSIM 即可解除限制"
     }
   },
   "admin": {
@@ -1919,7 +1924,15 @@
       "referralOnFirstOrder": "好友首单完成时",
       "referralWhen": "发放时机",
       "telegramKindReferral": "邀请好友",
-      "telegramKindInvited": "受邀注册"
+      "telegramKindInvited": "受邀注册",
+      "telegramNoEsimLimit": "限制没有使用中 eSIM 的用户",
+      "telegramLimitPeriod": "周期",
+      "telegramPeriodDay": "每天",
+      "telegramPeriodWeek": "每周（从周一起）",
+      "telegramPeriodMonth": "每月",
+      "telegramLimitCap": "最多（MB）",
+      "telegramNoEsimLimitHelp": "用户没有待安装、已安装或使用中的 eSIM（用签到流量兑换的不算）时，在一个周期内（按上面的时区）签到最多只能领这么多。领满后机器人会提示用户在网站购买 eSIM 解除限制，或下个周期再领。",
+      "telegramKindAll": "全部"
     },
     "sidebar": {
       "esim": "eSIM",

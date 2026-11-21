@@ -15,6 +15,7 @@ import {
   EsimReferralFriends,
   EsimReferrals,
   EsimRewards,
+  EsimRewardsHistory,
   EsimRewardsRedeemResult,
   EsimRewardsTelegramLink,
   EsimWallet,
@@ -163,6 +164,14 @@ export function getEsimReferralFriends(locale: string, page: number, signal: Abo
 /** The rewards centre (福利中心): the data balance, the Telegram link, what the data buys, every entry. */
 export function getEsimRewards(locale: string, signal: AbortSignal) {
   return api.data({ locale, path: '/me/esim-rewards', auth: 'user', signal }, EsimRewards);
+}
+
+/** More of the rewards history, a page at a time (the first page comes with the centre). */
+export function getEsimRewardsHistory(locale: string, page: number, signal: AbortSignal) {
+  return api.data(
+    { locale, path: '/me/esim-rewards/history', query: { page }, auth: 'user', signal },
+    EsimRewardsHistory
+  );
 }
 
 /** A one-time link that opens the check-in bot and links this account. */

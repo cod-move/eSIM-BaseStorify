@@ -2,7 +2,7 @@
 
 import { useState, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
-import { CalendarCheck, ChevronLeft, Gift, Send, UserPlus, Users } from "lucide-react";
+import { CalendarCheck, ChevronLeft, ChevronRight, Gift, Info, Send, UserPlus, Users } from "lucide-react";
 import Link from "@/components/language/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,7 +18,13 @@ type Data = {
   groupLink: string | null;
   link: { username: string | null; firstName: string | null; linkedAt: string } | null;
   account: { balanceMb: number; earnedMb: number; spentMb: number; checkins: number; lastCheckinDay: string | null };
-  history: Array<{ id: string; kind: "checkin" | "redeem" | "refund" | "adjust" | "referral" | "invited"; mb: number; status: string; itemName: string | null; orderNumber: string | null; note: string | null; createdAt: string }>;
+  history: {
+    items: Array<{ id: string; kind: "checkin" | "redeem" | "refund" | "adjust" | "referral" | "invited"; mb: number; status: string; itemName: string | null; orderNumber: string | null; note: string | null; createdAt: string }>;
+    page: number;
+    totalPages: number;
+  };
+  /** The check-in limit for a shopper without an eSIM in use; null when it does not apply to them. */
+  limit: { period: "day" | "week" | "month"; capMb: number; usedMb: number } | null;
   items: Array<{ id: string; name: string; costMb: number }>;
 };
 
@@ -113,7 +119,7 @@ export function TelegramRewards({ data, tab, inviteTab, receivedTab }: { data: D
     }
   }
 
-  const kindLabel = (row: Data["history"][number]) => {
+  const kindLabel = (row: Data["history"]["items"][number]) => {
     switch (row.kind) {
       case "checkin":
         return t("esim.rewards.kindCheckin", "Daily check-in");
@@ -130,6 +136,14 @@ export function TelegramRewards({ data, tab, inviteTab, receivedTab }: { data: D
       default:
         return row.note ? t("esim.rewards.kindAdjustNote", "Adjusted by us: {note}", { note: row.note }) : t("esim.rewards.kindAdjust", "Adjusted by us");
     }
+  };
+
+  const historyHref = (page: number) => {
+    const params = new URLSearchParams();
+    if (tab !== "invite") params.set("tab", tab);
+    if (page > 1) params.set("hpage", String(page));
+    const query = params.toString();
+    return query ? `/account/esims/rewards?${query}` : "/account/esims/rewards";
   };
 
   const tabs: Array<{ id: WelfareTab; label: string; icon: typeof Gift }> = [
@@ -202,6 +216,7 @@ export function TelegramRewards({ data, tab, inviteTab, receivedTab }: { data: D
           <p className="text-sm text-muted-foreground">
             {t("esim.rewards.description", "Check in once a day in our Telegram group for free data, save it up, and exchange it for an eSIM.")}
           </p>
+          {data.limit ? <LimitNotice limit={data.limit} /> : null}
           {!data.enabled ? (
             <Card>
               <CardContent className="py-6 text-sm text-muted-foreground">{t("esim.rewards.closed", "Check-in rewards are not open at the moment.")}</CardContent>
@@ -294,9 +309,9 @@ export function TelegramRewards({ data, tab, inviteTab, receivedTab }: { data: D
           <CardTitle className="text-base">{t("esim.rewards.history", "History")}</CardTitle>
         </CardHeader>
         <CardContent>
-          {data.history.length ? (
+          {data.history.items.length ? (
             <div className="divide-y">
-              {data.history.map((row) => (
+              {data.history.items.map((row) => (
                 <div key={row.id} className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 py-2 text-sm">
                   <div className="min-w-0">
                     <div>{kindLabel(row)}</div>
@@ -315,8 +330,50 @@ export function TelegramRewards({ data, tab, inviteTab, receivedTab }: { data: D
           ) : (
             <p className="text-sm text-muted-foreground">{t("esim.rewards.noHistory", "No check-ins yet.")}</p>
           )}
+          {data.history.totalPages > 1 ? (
+            <div className="flex items-center justify-center gap-3 pt-3 text-sm">
+              {data.history.page > 1 ? (
+                <Link href={historyHref(data.history.page - 1)} scroll={false} className="inline-flex items-center rounded-md border px-2 py-1 hover:bg-muted" aria-label={t("esim.referral.previous", "Previous")}>
+                  <ChevronLeft className="h-4 w-4 rtl:rotate-180" />
+                </Link>
+              ) : null}
+              <span className="text-muted-foreground">
+                {data.history.page} / {data.history.totalPages}
+              </span>
+              {data.history.page < data.history.totalPages ? (
+                <Link href={historyHref(data.history.page + 1)} scroll={false} className="inline-flex items-center rounded-md border px-2 py-1 hover:bg-muted" aria-label={t("esim.referral.next", "Next")}>
+                  <ChevronRight className="h-4 w-4 rtl:rotate-180" />
+                </Link>
+              ) : null}
+            </div>
+          ) : null}
         </CardContent>
       </Card>
+    </div>
+  );
+}
+
+/** The check-in limit without an eSIM in use: how much of it is taken, and that buying an eSIM lifts it. */
+function LimitNotice({ limit }: { limit: NonNullable<Data["limit"]> }) {
+  const t = useFallbackTranslator(useTranslations());
+  const values = { cap: formatMb(limit.capMb), used: formatMb(Math.min(limit.usedMb, limit.capMb)) };
+  const text = {
+    day: t("esim.rewards.limitDay", "You have no eSIM in use, so check-ins give at most {cap} a day. Today: {used}.", values),
+    week: t("esim.rewards.limitWeek", "You have no eSIM in use, so check-ins give at most {cap} a week. This week: {used}.", values),
+    month: t("esim.rewards.limitMonth", "You have no eSIM in use, so check-ins give at most {cap} a month. This month: {used}.", values),
+  }[limit.period];
+  return (
+    <div className="flex gap-3 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-200">
+      <Info className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
+      <div className="space-y-1">
+        <p>{text}</p>
+        <p>
+          {limit.usedMb >= limit.capMb ? t("esim.rewards.limitFull", "The limit is reached.") + " " : ""}
+          <Link href="/esim" className="font-medium underline underline-offset-2">
+            {t("esim.rewards.limitBuy", "Buy an eSIM to lift the limit")}
+          </Link>
+        </p>
+      </div>
     </div>
   );
 }

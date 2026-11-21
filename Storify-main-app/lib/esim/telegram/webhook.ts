@@ -86,7 +86,15 @@ export async function handleTelegramUpdate(update: unknown): Promise<void> {
       const result = await checkIn(sender, chatId);
       switch (result.status) {
         case "ok":
-          return answerCheckin(say.checkedIn(nameOf(sender), formatMb(result.mb), formatMb(result.balanceMb)));
+          return answerCheckin(
+            say.checkedIn(nameOf(sender), formatMb(result.mb), formatMb(result.balanceMb)) +
+              // Said only once the limit is reached by this check-in.
+              (result.limit && result.limit.usedMb >= result.limit.capMb
+                ? say.limitFull(result.limit.period, formatMb(result.limit.capMb), site)
+                : ""),
+          );
+        case "limit":
+          return answerCheckin(say.limitReached(nameOf(sender), result.limit.period, formatMb(result.limit.capMb), site));
         case "already":
           return answerCheckin(say.already(nameOf(sender), formatMb(result.balanceMb)));
         case "cap":

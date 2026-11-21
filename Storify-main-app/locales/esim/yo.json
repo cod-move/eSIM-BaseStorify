@@ -1003,7 +1003,12 @@
       "receivedTitle": "Data from your invite",
       "receivedFrom": "You joined through {who}'s invite on {date}.",
       "receivedOn": "added on {date}",
-      "receivedPending": "{amount} of data is added after your first order."
+      "receivedPending": "{amount} of data is added after your first order.",
+      "limitDay": "O kò ní eSIM tí ò ń lò, nítorí náà wíwọlé ń fún ọ ní {cap} jù lọ lójúmọ́. Òní: {used}.",
+      "limitWeek": "O kò ní eSIM tí ò ń lò, nítorí náà wíwọlé ń fún ọ ní {cap} jù lọ lọ́sẹ̀. Ọ̀sẹ̀ yìí: {used}.",
+      "limitMonth": "O kò ní eSIM tí ò ń lò, nítorí náà wíwọlé ń fún ọ ní {cap} jù lọ lóṣù. Oṣù yìí: {used}.",
+      "limitFull": "O ti dé òpin.",
+      "limitBuy": "Ra eSIM kan láti mú òpin náà kúrò"
     }
   },
   "admin": {
@@ -1823,7 +1828,15 @@
       "referralOnFirstOrder": "On the friend's first order",
       "referralWhen": "When",
       "telegramKindReferral": "Invited a friend",
-      "telegramKindInvited": "Joined by invite"
+      "telegramKindInvited": "Joined by invite",
+      "telegramNoEsimLimit": "Dín àwọn oníbàárà tí kò ní eSIM tí wọ́n ń lò kù",
+      "telegramLimitPeriod": "Fún",
+      "telegramPeriodDay": "Ọjọ́",
+      "telegramPeriodWeek": "Ọ̀sẹ̀ (láti Ajé)",
+      "telegramPeriodMonth": "Oṣù",
+      "telegramLimitCap": "Jù lọ (MB)",
+      "telegramNoEsimLimitHelp": "Oníbàárà tí kò ní eSIM tó ṣetán láti fi sí, tí a ti fi sí tàbí tí ó ń lò (àwọn tí a fi data pààrọ̀ kò ka) yóò gba èyí jù lọ láti wíwọlé ní àsìkò náà, ní agbègbè àkókò lókè. Bọ́ọ̀tì yóò sọ fún un pé kí ó ra eSIM lórí ojú-òpó láti mú òpin kúrò, tàbí kí ó padà wá ní àsìkò tó ń bọ̀.",
+      "telegramKindAll": "Gbogbo"
     },
     "sidebar": {
       "esim": "eSIM",

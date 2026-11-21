@@ -1,4 +1,5 @@
 import { openURL } from 'expo-linking';
+import { router } from 'expo-router';
 import { useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import { useFormatter, useTranslations } from 'use-intl';
@@ -18,6 +19,7 @@ import { ReferralsContent } from './referrals-view';
 import {
   useEsimReferrals,
   useLinkEsimTelegram,
+  useEsimRewardsHistory,
   useRedeemEsimReward,
   useUnlinkEsimTelegram,
 } from './use-account';
@@ -98,6 +100,7 @@ function CheckinTab({ rewards }: { rewards: EsimRewards }) {
       <Text variant="subheading">Telegram</Text>
       <Text variant="caption">{t('rewardsCheckinHow')}</Text>
       {!rewards.enabled ? <Text className="text-muted">{t('rewardsClosed')}</Text> : null}
+      {rewards.checkinLimit ? <LimitNotice limit={rewards.checkinLimit} /> : null}
       <Text variant="caption">{t('rewardsCheckins', { count: rewards.checkins })}</Text>
       {telegram.linked ? (
         <>
@@ -295,9 +298,38 @@ function ExchangeCard({ rewards }: { rewards: EsimRewards }) {
   );
 }
 
+/** Without an eSIM in use, check-ins give at most so much a period; buying one lifts it. */
+function LimitNotice({ limit }: { limit: NonNullable<EsimRewards['checkinLimit']> }) {
+  const t = useTranslations('esim');
+  const values = { cap: limit.cap.formatted, used: limit.used.formatted };
+  const text =
+    limit.period === 'day'
+      ? t('rewardsLimitDay', values)
+      : limit.period === 'week'
+        ? t('rewardsLimitWeek', values)
+        : t('rewardsLimitMonth', values);
+  return (
+    <View className="gap-2 rounded-lg bg-warning/10 p-3">
+      <Text>{text}</Text>
+      <Button
+        label={t('rewardsLimitBuy')}
+        size="sm"
+        variant="secondary"
+        onPress={() => router.push('/esim')}
+      />
+    </View>
+  );
+}
+
 function HistoryCard({ rewards }: { rewards: EsimRewards }) {
   const t = useTranslations('esim');
   const format = useFormatter();
+  // Entries past the first page, read when the shopper asks for more.
+  const [wantMore, setWantMore] = useState(false);
+  const more = useEsimRewardsHistory(wantMore);
+  const history = [...rewards.history, ...(more.data?.pages.flatMap((page) => page.items) ?? [])];
+  const pages = rewards.historyPages ?? 1;
+  const hasMore = pages > 1 && (!wantMore || more.hasNextPage === true);
   const when = (value: string) =>
     format.dateTime(new Date(value), { dateStyle: 'medium', timeStyle: 'short' });
   const label = (entry: EsimRewards['history'][number]) => {
@@ -326,8 +358,8 @@ function HistoryCard({ rewards }: { rewards: EsimRewards }) {
   return (
     <View className="gap-2 rounded-xl bg-surface p-4">
       <Text variant="subheading">{t('rewardsHistory')}</Text>
-      {rewards.history.length === 0 ? <Text variant="caption">{t('rewardsNoHistory')}</Text> : null}
-      {rewards.history.map((entry) => (
+      {history.length === 0 ? <Text variant="caption">{t('rewardsNoHistory')}</Text> : null}
+      {history.map((entry) => (
         <View key={entry.id} className="flex-row items-center justify-between gap-3">
           <View className="flex-1">
             <Text>{label(entry)}</Text>
@@ -342,6 +374,15 @@ function HistoryCard({ rewards }: { rewards: EsimRewards }) {
           </Text>
         </View>
       ))}
+      {hasMore ? (
+        <Button
+          label={t('rewardsHistoryMore')}
+          variant="secondary"
+          size="sm"
+          loading={more.isFetching}
+          onPress={() => (wantMore ? void more.fetchNextPage() : setWantMore(true))}
+        />
+      ) : null}
     </View>
   );
 }

@@ -495,6 +495,11 @@
     "redeemFailed": "兑换没有成功，流量已退回，请重试。",
     "rewardsHistory": "记录",
     "rewardsNoHistory": "还没有记录。",
+    "rewardsLimitDay": "你当前没有使用中的 eSIM，签到每天最多领 {cap}，今天已领 {used}。",
+    "rewardsLimitWeek": "你当前没有使用中的 eSIM，签到每周最多领 {cap}，本周已领 {used}。",
+    "rewardsLimitMonth": "你当前没有使用中的 eSIM，签到每月最多领 {cap}，本月已领 {used}。",
+    "rewardsLimitBuy": "购买 eSIM 解除限制",
+    "rewardsHistoryMore": "查看更多",
     "rewardsKind": {
       "checkin": "每日签到",
       "redeem": "兑换：{name}",

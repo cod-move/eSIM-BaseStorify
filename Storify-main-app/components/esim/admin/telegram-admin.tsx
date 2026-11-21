@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
+import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Loader2, Plus, RefreshCw, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -13,7 +14,7 @@ import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/toast-notification";
-import { useRouter } from "@/hooks/use-locale-navigation";
+import { usePathname, useRouter } from "@/hooks/use-locale-navigation";
 import { useFallbackTranslator } from "@/hooks/use-fallback-translator";
 import { apiClient } from "@/lib/api/client";
 import { formatMb } from "@/lib/esim/telegram/format";
@@ -24,7 +25,9 @@ interface Props {
   settings: TelegramSettingsView;
   variants: Array<{ productId: string; variantId: string; name: string; priceMinor: number }>;
   stats: { day: string; todayCheckins: number; todayMb: number; linkedAccounts: number; balanceMb: number; earnedMb: number; spentMb: number };
-  entries: AdminRewardRow[];
+  entries: { rows: AdminRewardRow[]; page: number; totalPages: number; total: number };
+  /** The ledger's kind filter; "" = all. */
+  kind: string;
   links: { rows: AdminLinkRow[]; page: number; totalPages: number; total: number };
   search: string;
   canManage: boolean;
@@ -50,6 +53,7 @@ type Draft = {
   minMb: number;
   maxMb: number;
   dailyCapMb: number;
+  noEsimLimit: TelegramSettingsView["noEsimLimit"];
   timezone: string;
   items: Array<{ id?: string; variantId: string; costMb: number; enabled: boolean }>;
 };
@@ -62,6 +66,7 @@ const draftOf = (settings: TelegramSettingsView): Draft => ({
   minMb: settings.minMb,
   maxMb: settings.maxMb,
   dailyCapMb: settings.dailyCapMb,
+  noEsimLimit: { ...settings.noEsimLimit },
   timezone: settings.timezone,
   items: settings.items.map((item) => ({ id: item.id, variantId: item.variantId, costMb: item.costMb, enabled: item.enabled })),
 });
@@ -74,9 +79,22 @@ const errorText = (error: unknown) => (error instanceof Error ? error.message : 
  * cap, which eSIMs the saved data buys and for how much, a hand adjustment of
  * a shopper's balance, and the latest ledger rows.
  */
-export function EsimTelegramAdmin({ settings, variants, stats, entries, links, search, canManage }: Props) {
+export function EsimTelegramAdmin({ settings, variants, stats, entries, kind, links, search, canManage }: Props) {
   const t = useFallbackTranslator(useTranslations());
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const [ledgerPending, startLedger] = useTransition();
+  /** Another page or kind of the ledger; the linked-accounts search and page stay. */
+  const goLedger = (nextKind: string, page: number) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (nextKind) params.set("kind", nextKind);
+    else params.delete("kind");
+    if (page > 1) params.set("epage", String(page));
+    else params.delete("epage");
+    const query = params.toString();
+    startLedger(() => router.push(query ? `${pathname}?${query}` : pathname, { scroll: false }));
+  };
   const [draft, setDraft] = useState<Draft>(() => draftOf(settings));
   const [saving, setSaving] = useState(false);
   const [bot, setBot] = useState<BotStatus | null>(null);
@@ -124,6 +142,7 @@ export function EsimTelegramAdmin({ settings, variants, stats, entries, links, s
         minMb: Number(draft.minMb),
         maxMb: Number(draft.maxMb),
         dailyCapMb: Number(draft.dailyCapMb),
+        noEsimLimit: { ...draft.noEsimLimit, capMb: Number(draft.noEsimLimit.capMb) },
         items: draft.items.filter((item) => item.variantId).map((item) => ({ ...item, costMb: Number(item.costMb) })),
       });
       toast.success(t("admin.esim.saved", "Saved"));
@@ -291,6 +310,46 @@ export function EsimTelegramAdmin({ settings, variants, stats, entries, links, s
               </div>
             </div>
           </div>
+          <div className="space-y-3 rounded-md border p-3">
+            <label className="flex items-center gap-3 text-sm font-medium">
+              <Switch
+                checked={draft.noEsimLimit.enabled}
+                onCheckedChange={(value) => set("noEsimLimit", { ...draft.noEsimLimit, enabled: value })}
+                disabled={!canManage}
+              />
+              {t("admin.esim.telegramNoEsimLimit", "Limit shoppers without an eSIM in use")}
+            </label>
+            <div className="grid max-w-md grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label>{t("admin.esim.telegramLimitPeriod", "Per")}</Label>
+                <NativeSelect
+                  value={draft.noEsimLimit.period}
+                  disabled={!canManage || !draft.noEsimLimit.enabled}
+                  onChange={(event) => set("noEsimLimit", { ...draft.noEsimLimit, period: event.target.value as Draft["noEsimLimit"]["period"] })}
+                >
+                  <option value="day">{t("admin.esim.telegramPeriodDay", "Day")}</option>
+                  <option value="week">{t("admin.esim.telegramPeriodWeek", "Week (from Monday)")}</option>
+                  <option value="month">{t("admin.esim.telegramPeriodMonth", "Month")}</option>
+                </NativeSelect>
+              </div>
+              <div className="space-y-1.5">
+                <Label>{t("admin.esim.telegramLimitCap", "At most (MB)")}</Label>
+                <Input
+                  type="number"
+                  min={1}
+                  value={draft.noEsimLimit.capMb}
+                  onChange={(event) => set("noEsimLimit", { ...draft.noEsimLimit, capMb: Number(event.target.value) })}
+                  disabled={!canManage || !draft.noEsimLimit.enabled}
+                />
+              </div>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {t(
+                "admin.esim.telegramNoEsimLimitHelp",
+                "A shopper with no eSIM ready to install, installed or in use (eSIMs exchanged for data do not count) gets at most this much from check-ins in the period, in the time zone above. The bot then tells them to buy an eSIM on the website to lift the limit, or to come back next period.",
+              )}
+            </p>
+          </div>
         </CardContent>
       </Card>
 
@@ -389,8 +448,18 @@ export function EsimTelegramAdmin({ settings, variants, stats, entries, links, s
       <TelegramLinksAdmin links={links} search={search} canManage={canManage} />
 
       <Card>
-        <CardHeader>
-          <CardTitle className="text-base">{t("admin.esim.telegramLedger", "Latest activity")}</CardTitle>
+        <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-3 space-y-0">
+          <CardTitle className="text-base">
+            {t("admin.esim.telegramLedger", "Latest activity")} <span className="text-muted-foreground">({entries.total})</span>
+          </CardTitle>
+          <NativeSelect className="w-auto" value={kind} onChange={(event) => goLedger(event.target.value, 1)} disabled={ledgerPending}>
+            <option value="">{t("admin.esim.telegramKindAll", "All")}</option>
+            {(Object.keys(kindLabel) as Array<keyof typeof kindLabel>).map((entry) => (
+              <option key={entry} value={entry}>
+                {kindLabel[entry]}
+              </option>
+            ))}
+          </NativeSelect>
         </CardHeader>
         <CardContent>
           <Table>
@@ -403,8 +472,8 @@ export function EsimTelegramAdmin({ settings, variants, stats, entries, links, s
               </TableRow>
             </TableHeader>
             <TableBody>
-              {entries.length ? (
-                entries.map((row) => (
+              {entries.rows.length ? (
+                entries.rows.map((row) => (
                   <TableRow key={row.id}>
                     <TableCell className="whitespace-nowrap text-xs">{new Date(row.createdAt).toLocaleString()}</TableCell>
                     <TableCell className="text-xs">
@@ -437,6 +506,19 @@ export function EsimTelegramAdmin({ settings, variants, stats, entries, links, s
               )}
             </TableBody>
           </Table>
+          {entries.totalPages > 1 ? (
+            <div className="flex items-center justify-end gap-2 pt-3 text-sm">
+              <Button variant="outline" size="sm" disabled={entries.page <= 1 || ledgerPending} onClick={() => goLedger(kind, entries.page - 1)}>
+                ‹
+              </Button>
+              <span className="text-muted-foreground">
+                {entries.page} / {entries.totalPages}
+              </span>
+              <Button variant="outline" size="sm" disabled={entries.page >= entries.totalPages || ledgerPending} onClick={() => goLedger(kind, entries.page + 1)}>
+                ›
+              </Button>
+            </div>
+          ) : null}
         </CardContent>
       </Card>
     </div>

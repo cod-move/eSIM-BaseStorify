@@ -28,6 +28,12 @@ export interface IEsimTelegramSettings extends mongoose.Document {
   maxMb: number;
   /** Most MB handed out by check-ins in one day, across everyone; 0 = no limit. */
   dailyCapMb: number;
+  /**
+   * For a shopper without an eSIM in use (one bought, not exchanged for
+   * data): at most `capMb` from check-ins per day, week or month, in the
+   * check-in time zone. Buying an eSIM lifts it.
+   */
+  noEsimLimit: { enabled: boolean; period: "day" | "week" | "month"; capMb: number };
   /** The time zone a check-in day runs in (IANA name). */
   timezone: string;
   /** What the saved-up data can be exchanged for: a published eSIM variant at a price in MB. */
@@ -53,6 +59,11 @@ const EsimTelegramSettingsSchema = new Schema<IEsimTelegramSettings>(
     minMb: { type: Number, default: 10, min: 1, max: 100_000 },
     maxMb: { type: Number, default: 100, min: 1, max: 100_000 },
     dailyCapMb: { type: Number, default: 0, min: 0, max: 100_000_000 },
+    noEsimLimit: {
+      enabled: { type: Boolean, default: true },
+      period: { type: String, enum: ["day", "week", "month"], default: "month" },
+      capMb: { type: Number, default: 300, min: 0, max: 100_000_000 },
+    },
     timezone: { type: String, default: "Asia/Shanghai", maxlength: 64 },
     items: {
       type: [
@@ -207,6 +218,8 @@ const EsimRewardEntrySchema = new Schema<IEsimRewardEntry>(
   { timestamps: { createdAt: true, updatedAt: false } },
 );
 EsimRewardEntrySchema.index({ user: 1, createdAt: -1 });
+// A shopper's check-ins in a period (the limit without an eSIM in use).
+EsimRewardEntrySchema.index({ user: 1, kind: 1, day: 1 });
 EsimRewardEntrySchema.index({ kind: 1, createdAt: -1 });
 
 /** MB handed out by check-ins on one day, for the daily cap. */

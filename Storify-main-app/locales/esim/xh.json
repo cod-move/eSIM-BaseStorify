@@ -1003,7 +1003,12 @@
       "receivedTitle": "Data from your invite",
       "receivedFrom": "You joined through {who}'s invite on {date}.",
       "receivedOn": "added on {date}",
-      "receivedPending": "{amount} of data is added after your first order."
+      "receivedPending": "{amount} of data is added after your first order.",
+      "limitDay": "Akunayo i-eSIM esetyenziswayo, ngoko ukungena kukunika ubuninzi be-{cap} ngosuku. Namhlanje: {used}.",
+      "limitWeek": "Akunayo i-eSIM esetyenziswayo, ngoko ukungena kukunika ubuninzi be-{cap} ngeveki. Kule veki: {used}.",
+      "limitMonth": "Akunayo i-eSIM esetyenziswayo, ngoko ukungena kukunika ubuninzi be-{cap} ngenyanga. Kule nyanga: {used}.",
+      "limitFull": "Umda ufikelelwe.",
+      "limitBuy": "Thenga i-eSIM ukususa umda"
     }
   },
   "admin": {
@@ -1823,7 +1828,15 @@
       "referralOnFirstOrder": "On the friend's first order",
       "referralWhen": "When",
       "telegramKindReferral": "Invited a friend",
-      "telegramKindInvited": "Joined by invite"
+      "telegramKindInvited": "Joined by invite",
+      "telegramNoEsimLimit": "Nciphisa abathengi abangenayo i-eSIM esetyenziswayo",
+      "telegramLimitPeriod": "Nge",
+      "telegramPeriodDay": "Usuku",
+      "telegramPeriodWeek": "Iveki (ukusuka ngoMvulo)",
+      "telegramPeriodMonth": "Inyanga",
+      "telegramLimitCap": "Ubuninzi (MB)",
+      "telegramNoEsimLimitHelp": "Umthengi ongenayo i-eSIM elungele ukufakwa, efakiweyo okanye esetyenziswayo (ezitshintshiselwe idatha azibalwa) ufumana ubuninzi obu kukungena kweli xesha, ngexesha lommandla ongentla. Ibhoti emva koko imxelela ukuba athenge i-eSIM kwiwebhusayithi ukususa umda, okanye abuye kwixesha elilandelayo.",
+      "telegramKindAll": "Zonke"
     },
     "sidebar": {
       "esim": "eSIM",
