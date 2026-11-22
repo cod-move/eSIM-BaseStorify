@@ -1848,7 +1848,16 @@
       "telegramPeriodMonth": "Maand",
       "telegramLimitCap": "Hoogstens (MB)",
       "telegramNoEsimLimitHelp": "’n Koper sonder ’n eSIM wat gereed is om te installeer, geïnstalleer of in gebruik is (dié wat vir data omgeruil is, tel nie), kry hoogstens soveel van inklok in die tydperk, in die tydsone hierbo. Die bot sê dan vir hulle om ’n eSIM op die webwerf te koop om die limiet op te hef, of volgende tydperk terug te kom.",
-      "telegramKindAll": "Alles"
+      "telegramKindAll": "Alles",
+      "numbersPicked": "{count} gekies",
+      "numbersPutOnSale": "Te koop aanbied",
+      "numbersTakeOffSale": "Van verkoop onttrek",
+      "clearSelection": "Maak keuse skoon",
+      "selectAll": "Kies alles",
+      "numbersPutOn": "{count} nommers te koop aangebied",
+      "numbersTakenOff": "{count} nommers van verkoop onttrek",
+      "numbersAlreadyOn": "Reeds te koop",
+      "numbersAlreadyOff": "Reeds onttrek"
     },
     "sidebar": {
       "esim": "eSIM",
@@ -1872,6 +1881,9 @@
       "esimNumbers": "Nommers",
       "esimNumberPackages": "Nommer-datapakkette",
       "esimTelegram": "Telegram check-in"
+    },
+    "phrases": {
+      "email_unverified": "E-pos nie bevestig nie"
     }
   },
   "finance": {

@@ -109,7 +109,9 @@ export async function numberShop(filters: ShopNumberFilters): Promise<NumberShop
   const [rows, total, codes, packets, provider, product, settings] = await Promise.all([
     EsimNumber.find(match)
       .select({ dialCode: 1, nationalNumber: 1, country: 1, priceMinor: 1, premiumMinor: 1 })
-      .sort({ premiumMinor: 1, priceMinor: 1, msisdn: 1 })
+      // "All" mixes standard and memorable numbers in number order (by price, every standard one came first);
+      // a standard-only or memorable-only list stays cheapest first.
+      .sort(filters.premium === "premium" || filters.premium === "standard" ? { premiumMinor: 1, priceMinor: 1, msisdn: 1 } : { msisdn: 1 })
       .skip((page - 1) * NUMBERS_SHOP_PAGE_SIZE)
       .limit(NUMBERS_SHOP_PAGE_SIZE)
       .lean(),

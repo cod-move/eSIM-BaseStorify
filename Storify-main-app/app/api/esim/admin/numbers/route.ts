@@ -3,7 +3,7 @@ import { successResponse } from "@/lib/api/response";
 import { withApi } from "@/lib/api/handler";
 import { ValidationError } from "@/lib/api/errors";
 import { validateBody } from "@/lib/api/validate";
-import { deleteNumbers, importNumbers, updateNumber } from "@/lib/esim/admin/numbers";
+import { deleteNumbers, importNumbers, setNumbersStatus, updateNumber } from "@/lib/esim/admin/numbers";
 import { MAX_IMPORT_LINES } from "@/lib/esim/numbers/import";
 import { ESIM_WRITE, auditEsim } from "@/lib/esim/admin/route";
 
@@ -28,9 +28,10 @@ const NumbersSchema = z.discriminatedUnion("action", [
     status: z.enum(["available", "retired"]).optional(),
   }),
   z.object({ action: z.literal("delete"), ids: z.array(z.string().max(40)).min(1).max(500) }),
+  z.object({ action: z.literal("status"), ids: z.array(z.string().max(40)).min(1).max(500), status: z.enum(["available", "retired"]) }),
 ]);
 
-/** Number-card stock (NUM-01): import a batch (or check one first), change a free number, remove unsold ones. */
+/** Number-card stock (NUM-01): import a batch (or check one first), change a free number, put unsold ones on or off sale, remove them. */
 export const POST = withApi(ESIM_WRITE, async ({ request, session }) => {
   const body = await validateBody(request, NumbersSchema);
   if (body.action === "import") {
@@ -64,6 +65,18 @@ export const POST = withApi(ESIM_WRITE, async ({ request, session }) => {
         after: change.after,
       });
       return successResponse({ ok: true });
+    }
+    if (body.action === "status") {
+      const changed = await setNumbersStatus(body.ids, body.status);
+      if (changed.length) {
+        await auditEsim(request, session, {
+          resourceId: "esim:numbers",
+          resourceName: "Number stock",
+          summary: `${body.status === "available" ? "Put on sale" : "Took off sale"} ${changed.length} numbers`,
+          after: { status: body.status, numbers: changed },
+        });
+      }
+      return successResponse({ changed: changed.length });
     }
     const removed = await deleteNumbers(body.ids);
     if (removed.length) {

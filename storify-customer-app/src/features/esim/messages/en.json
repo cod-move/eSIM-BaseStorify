@@ -112,6 +112,8 @@
     "invited": "{count, plural, =0 {No friends yet} one {# friend joined} other {# friends joined}}",
     "invitedNone": "Share your link: friends who join with it show up here.",
     "rewards": "Rewards",
+    "rewardsLast30": "Last 30 days",
+    "rewardsNoneLast30": "No rewards in the last 30 days.",
     "payableOn": "added on {date}",
     "referralsOff": "Inviting friends is not available at the moment.",
     "rewardStatus": {

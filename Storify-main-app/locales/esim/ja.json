@@ -1848,7 +1848,16 @@
       "telegramPeriodMonth": "1か月",
       "telegramLimitCap": "上限（MB）",
       "telegramNoEsimLimitHelp": "インストール待ち・インストール済み・利用中の eSIM（データで交換したものを除く）がない顧客は、期間内（上のタイムゾーン）にチェックインで受け取れる量がこの上限までになります。上限に達すると、ボットがサイトで eSIM を購入して制限を解除するか、次の期間に再度受け取るよう案内します。",
-      "telegramKindAll": "すべて"
+      "telegramKindAll": "すべて",
+      "numbersPicked": "{count} 件選択中",
+      "numbersPutOnSale": "販売を開始",
+      "numbersTakeOffSale": "販売を停止",
+      "clearSelection": "選択を解除",
+      "selectAll": "すべて選択",
+      "numbersPutOn": "{count} 件の番号を販売開始しました",
+      "numbersTakenOff": "{count} 件の番号を販売停止しました",
+      "numbersAlreadyOn": "すでに販売中です",
+      "numbersAlreadyOff": "すでに販売停止中です"
     },
     "sidebar": {
       "esim": "eSIM",
@@ -1872,6 +1881,9 @@
       "esimNumbers": "番号",
       "esimNumberPackages": "番号のデータパッケージ",
       "esimTelegram": "Telegram チェックイン"
+    },
+    "phrases": {
+      "email_unverified": "メール未確認"
     }
   },
   "finance": {

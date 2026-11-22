@@ -110,6 +110,7 @@
 | P78 | 已改 | `.gitignore`；删除（无法加标记）：`Storify-1.0.0.apk`、`storify-business-1.0.0.apk` | `.gitignore` 末尾加 `*.apk`、`*.aab` 两行；根目录两个官方预编译安装包从仓库移除 | 编译出来的安装包不放进 git（每个 80~150 MB），本地编译的 APK 放在根目录也不会被提交。官方的两个预编译包只是演示用，删掉不影响任何代码 | 合并官方新版时，如果官方又带了新的 `.apk`，同样不要保留；`.gitignore` 冲突时保留这两行 |
 | P79 | 已改 | `Storify-main-app/lib/api-core/shop/coupons/list.ts`（`listedCoupons`） | 优惠券列表（GET /coupons）除了「展示给顾客」的券，再加上只给当前登录用户的专属券（`restrictedToUserId` 等于本人、未用完、未过期） | 推荐返佣发给受邀用户的欢迎券不公开展示，原来 App 优惠券列表里看不到 | 合并官方新版时保留 `$or` 和 `userId` 参数 |
 | P80 | 已改 | `Storify-main-app/proxy.ts`（import 一行；`proxy()` 里维护判断之前一段） | 任意页面带 `?ref=邀请码` 的 GET 请求，307 转到 `/esim/invite/邀请码?to=原页面`（去掉 ref），由邀请路由写 cookie 后回到原页面；判断逻辑在 `lib/esim/referral/link.ts` | 推荐链接可以分享任意页面，默认分享首页 `/?ref=邀请码` | 合并官方新版时保留这一段和 import |
+| P81 | 已改 | `Storify-main-app/lib/customers/customer-list.ts`（`USER_LOOKUP` 的 `$project`；`applyCustomerIdentityFilters`）；`components/admin/customers-data-table.tsx`（`CustomerListItem.user`；「账户」列；状态标签页） | 用户投影里加 `emailVerified`；状态 `unverified` 时只留有账户且 `user.emailVerified` 不为 true 的；表格「账户」列在状态标签下加「邮箱未验证」标签，标签页「访客」后加「邮箱未验证」 | 管理后台顾客列表看不出谁没验证邮箱 | 合并官方新版时保留这三处；`admin.phrases.email_unverified` 的译文在 `locales/esim/*.json` |
 
 > 新增插入点时按编号往后加；某项最终没改，就把状态改为 `取消` 并保留记录。
 

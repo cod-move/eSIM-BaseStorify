@@ -112,6 +112,8 @@
     "invited": "{count} 位好友已加入",
     "invitedNone": "分享你的鏈接，通過它註冊的好友會顯示在這裡。",
     "rewards": "獎勵",
+    "rewardsLast30": "最近 30 天",
+    "rewardsNoneLast30": "最近 30 天沒有獎勵。",
     "payableOn": "{date} 到賬",
     "referralsOff": "邀請好友功能暫未開放。",
     "rewardStatus": {

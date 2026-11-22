@@ -1944,7 +1944,16 @@
       "telegramPeriodMonth": "Month",
       "telegramLimitCap": "At most (MB)",
       "telegramNoEsimLimitHelp": "A shopper with no eSIM ready to install, installed or in use (eSIMs exchanged for data do not count) gets at most this much from check-ins in the period, in the time zone above. The bot then tells them to buy an eSIM on the website to lift the limit, or to come back next period.",
-      "telegramKindAll": "All"
+      "telegramKindAll": "All",
+      "numbersPicked": "{count} selected",
+      "numbersPutOnSale": "Put on sale",
+      "numbersTakeOffSale": "Take off sale",
+      "clearSelection": "Clear",
+      "selectAll": "Select all",
+      "numbersPutOn": "{count} numbers put on sale",
+      "numbersTakenOff": "{count} numbers taken off sale",
+      "numbersAlreadyOn": "Already on sale",
+      "numbersAlreadyOff": "Already off sale"
     },
     "sidebar": {
       "esim": "eSIM",
@@ -1968,6 +1977,9 @@
       "esimNumbers": "Numbers",
       "esimNumberPackages": "Number data packages",
       "esimTelegram": "Telegram check-in"
+    },
+    "phrases": {
+      "email_unverified": "Email unverified"
     }
   },
   "finance": {

@@ -1848,7 +1848,16 @@
       "telegramPeriodMonth": "Ay",
       "telegramLimitCap": "En fazla (MB)",
       "telegramNoEsimLimitHelp": "Kuruluma hazır, kurulu veya kullanımda eSIM'i olmayan (veriyle takas edilenler sayılmaz) bir müşteri, dönem içinde (yukarıdaki saat diliminde) check-in ile en fazla bu kadar alır. Bot daha sonra sınırı kaldırmak için sitede eSIM almasını veya sonraki dönemde gelmesini söyler.",
-      "telegramKindAll": "Tümü"
+      "telegramKindAll": "Tümü",
+      "numbersPicked": "{count} seçildi",
+      "numbersPutOnSale": "Satışa çıkar",
+      "numbersTakeOffSale": "Satıştan kaldır",
+      "clearSelection": "Seçimi temizle",
+      "selectAll": "Tümünü seç",
+      "numbersPutOn": "{count} numara satışa çıkarıldı",
+      "numbersTakenOff": "{count} numara satıştan kaldırıldı",
+      "numbersAlreadyOn": "Zaten satışta",
+      "numbersAlreadyOff": "Zaten satış dışı"
     },
     "sidebar": {
       "esim": "eSIM",
@@ -1872,6 +1881,9 @@
       "esimNumbers": "Numaralar",
       "esimNumberPackages": "Numara veri paketleri",
       "esimTelegram": "Telegram girişi"
+    },
+    "phrases": {
+      "email_unverified": "E-posta doğrulanmadı"
     }
   },
   "finance": {

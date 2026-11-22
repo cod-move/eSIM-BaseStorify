@@ -1944,7 +1944,16 @@
       "telegramPeriodMonth": "每月",
       "telegramLimitCap": "最多（MB）",
       "telegramNoEsimLimitHelp": "用户没有待安装、已安装或使用中的 eSIM（用签到流量兑换的不算）时，在一个周期内（按上面的时区）签到最多只能领这么多。领满后机器人会提示用户在网站购买 eSIM 解除限制，或下个周期再领。",
-      "telegramKindAll": "全部"
+      "telegramKindAll": "全部",
+      "numbersPicked": "已选 {count} 个",
+      "numbersPutOnSale": "批量上架",
+      "numbersTakeOffSale": "批量下架",
+      "clearSelection": "取消选择",
+      "selectAll": "全选",
+      "numbersPutOn": "已上架 {count} 个号码",
+      "numbersTakenOff": "已下架 {count} 个号码",
+      "numbersAlreadyOn": "所选号码都已上架",
+      "numbersAlreadyOff": "所选号码都已下架"
     },
     "sidebar": {
       "esim": "eSIM",
@@ -1968,6 +1977,9 @@
       "esimNumbers": "号码卡",
       "esimNumberPackages": "号码流量包",
       "esimTelegram": "Telegram 签到"
+    },
+    "phrases": {
+      "email_unverified": "邮箱未验证"
     }
   },
   "finance": {

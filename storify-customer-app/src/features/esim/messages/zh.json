@@ -112,6 +112,8 @@
     "invited": "{count} 位好友已加入",
     "invitedNone": "分享你的链接，通过它注册的好友会显示在这里。",
     "rewards": "奖励",
+    "rewardsLast30": "最近 30 天",
+    "rewardsNoneLast30": "最近 30 天没有奖励。",
     "payableOn": "{date} 到账",
     "referralsOff": "邀请好友功能暂未开放。",
     "rewardStatus": {

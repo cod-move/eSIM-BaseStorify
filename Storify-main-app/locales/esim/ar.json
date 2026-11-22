@@ -1848,7 +1848,16 @@
       "telegramPeriodMonth": "شهر",
       "telegramLimitCap": "الحد الأقصى (ميغابايت)",
       "telegramNoEsimLimitHelp": "العميل الذي ليس لديه eSIM جاهزة للتثبيت أو مثبتة أو قيد الاستخدام (لا تُحتسب المستبدلة بالبيانات) يحصل على هذا القدر كحد أقصى من تسجيل الحضور خلال الفترة، حسب المنطقة الزمنية أعلاه. ثم يخبره البوت بشراء eSIM من الموقع لرفع الحد أو العودة في الفترة التالية.",
-      "telegramKindAll": "الكل"
+      "telegramKindAll": "الكل",
+      "numbersPicked": "تم تحديد {count}",
+      "numbersPutOnSale": "طرح للبيع",
+      "numbersTakeOffSale": "إيقاف البيع",
+      "clearSelection": "مسح التحديد",
+      "selectAll": "تحديد الكل",
+      "numbersPutOn": "طُرح {count} رقمًا للبيع",
+      "numbersTakenOff": "أُوقف بيع {count} رقمًا",
+      "numbersAlreadyOn": "معروضة للبيع بالفعل",
+      "numbersAlreadyOff": "متوقفة عن البيع بالفعل"
     },
     "sidebar": {
       "esim": "eSIM",
@@ -1872,6 +1881,9 @@
       "esimNumbers": "الأرقام",
       "esimNumberPackages": "باقات بيانات الأرقام",
       "esimTelegram": "تسجيل حضور Telegram"
+    },
+    "phrases": {
+      "email_unverified": "البريد غير مُتحقق منه"
     }
   },
   "finance": {

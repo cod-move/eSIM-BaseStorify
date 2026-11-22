@@ -97,6 +97,7 @@ interface CustomerListItem {
     phone?: string;
     role: string;
     status?: "active" | "inactive" | "banned";
+    emailVerified?: boolean; // [esim-patch] P81
     createdAt: string;
   };
 }
@@ -544,10 +545,18 @@ export function CustomersDataTable({
             guest: tr("Guest", "অতিথি"),
           };
           return (
-            <span className={`${BADGE_CLASS} ${ACCOUNT_STYLES[status]}`}>
-              <Circle className="h-2.5 w-2.5 fill-current stroke-0" />
-              {labels[status]}
-            </span>
+            <div className="flex flex-col items-start gap-1">
+              <span className={`${BADGE_CLASS} ${ACCOUNT_STYLES[status]}`}>
+                <Circle className="h-2.5 w-2.5 fill-current stroke-0" />
+                {labels[status]}
+              </span>
+              {/* [esim-patch] P81 an account whose email is not verified says so. */}
+              {row.user && row.user.emailVerified !== true ? (
+                <span className={`${BADGE_CLASS} bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-300`}>
+                  {tr("Email unverified", "ইমেইল যাচাই হয়নি")}
+                </span>
+              ) : null}
+            </div>
           );
         },
         className: "w-[120px]",
@@ -680,6 +689,7 @@ export function CustomersDataTable({
       { id: "inactive", label: tr("Inactive", "নিষ্ক্রিয়") },
       { id: "banned", label: tr("Banned", "নিষিদ্ধ") },
       { id: "guest", label: tr("Guest", "অতিথি") },
+      { id: "unverified", label: tr("Email unverified", "ইমেইল যাচাই হয়নি") }, // [esim-patch] P81
     ],
     [tr],
   );

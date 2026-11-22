@@ -124,6 +124,8 @@ export const esimReferralsRoute = defineRoute({
         payableAt: new Date(reward.payableAt).toISOString(),
         ...(reward.creditedAt ? { creditedAt: new Date(reward.creditedAt).toISOString() } : {}),
       })),
+      dataRewards: centre.dataRewards.map((entry) => ({ id: entry.id, who: entry.who, data: dataAmount(entry.mb), at: new Date(entry.createdAt).toISOString() })),
+      rewardsEver: centre.rewardsEver,
       totals: { credited: money(centre.totals.paid), pending: money(centre.totals.pending) },
       dataEarned: dataAmount(centre.dataEarnedMb),
       ...(centre.received

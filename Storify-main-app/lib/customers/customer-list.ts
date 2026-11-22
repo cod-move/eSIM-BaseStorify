@@ -85,6 +85,7 @@ export const USER_LOOKUP: PipelineStage = {
           phone: 1,
           role: 1,
           status: 1,
+          emailVerified: 1, // [esim-patch] P81 the list marks accounts whose email is not verified
           createdAt: 1,
         },
       },
@@ -142,6 +143,9 @@ function applyCustomerIdentityFilters(
   }
   if (status === "guest") {
     profileConditions.push({ isGuest: true });
+  } else if (status === "unverified") {
+    // [esim-patch] P81 the "Email unverified" tab: accounts (not guests) whose email is not verified.
+    userConditions.push({ "user._id": { $exists: true }, "user.emailVerified": { $ne: true } });
   } else if (
     status &&
     status !== "all" &&

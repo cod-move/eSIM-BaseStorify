@@ -236,6 +236,20 @@ export async function updateNumber(id: string, update: NumberUpdate) {
 }
 
 /** Removes numbers that never sold (a wrong import); sold or held ones stay. */
+/**
+ * Puts unsold numbers on sale ("available") or takes them off ("retired"),
+ * many at once. Held and sold ones are left alone; answers the numbers
+ * changed (those already so are not).
+ */
+export async function setNumbersStatus(ids: string[], status: "available" | "retired") {
+  await connectDB();
+  const valid = ids.filter((id) => mongoose.isValidObjectId(id));
+  const from = status === "available" ? "retired" : "available";
+  const rows = await EsimNumber.find({ _id: { $in: valid }, status: from, customer: null }).select({ msisdn: 1 }).lean();
+  await EsimNumber.updateMany({ _id: { $in: rows.map((row) => row._id) }, status: from, customer: null }, { $set: { status } });
+  return rows.map((row) => row.msisdn);
+}
+
 export async function deleteNumbers(ids: string[]) {
   await connectDB();
   const valid = ids.filter((id) => mongoose.isValidObjectId(id));

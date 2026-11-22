@@ -19,7 +19,7 @@ const one = (value: string | string[] | undefined) => (Array.isArray(value) ? va
 
 /**
  * Invite friends (REF-05), in the account menu of its own: the link, the
- * offer, the rewards (the last month unless `?rewards=all`) and the people
+ * offer, the last 30 days' rewards and the people
  * invited, a page at a time (`?page=`).
  */
 export default async function AccountReferralsPage({ params, searchParams }: PageProps) {
@@ -29,10 +29,9 @@ export default async function AccountReferralsPage({ params, searchParams }: Pag
   const session = await getAccountSession();
   if (!session) notFound();
   await connectDB();
-  const allRewards = one(query.rewards) === "all";
   const [t, centre, destinations] = await Promise.all([
     getTranslations(),
-    referralCentre(session.user.id, { friendsPage: Number(one(query.page)) || 1, ...(allRewards ? { rewardsSince: null } : {}) }),
+    referralCentre(session.user.id, { friendsPage: Number(one(query.page)) || 1 }),
     listDestinations(),
   ]);
   // The countries a shopper may send a friend to (the invite link's "A country").
@@ -50,7 +49,7 @@ export default async function AccountReferralsPage({ params, searchParams }: Pag
         </Link>
         <h1 className="text-xl font-bold sm:text-2xl">{tr("esim.referral.title", "Invite friends")}</h1>
       </div>
-      <InviteSection centre={centre} countries={countries} base={appBaseUrl()} locale={locale} allRewards={allRewards} />
+      <InviteSection centre={centre} countries={countries} base={appBaseUrl()} locale={locale} />
     </div>
   );
 }

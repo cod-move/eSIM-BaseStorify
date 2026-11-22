@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { ChevronLeft, ChevronRight, Loader2, Pencil, Search, Trash2, Upload, Wallet } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -56,6 +57,8 @@ export function EsimNumbersAdmin({ list, filters, canManage }: { list: AdminNumb
   const [editing, setEditing] = useState<{ row: AdminNumber; price: string; premium: string; note: string } | null>(null);
   const [importing, setImporting] = useState(false);
   const [credit, setCredit] = useState<AdminNumber | null>(null);
+  // Numbers ticked for putting on or taking off sale together (unsold ones only).
+  const [picked, setPicked] = useState<Set<string>>(new Set());
   const [busy, setBusy] = useState(false);
 
   const statusLabel = (status: EsimNumberStatus | "all") =>
@@ -92,6 +95,39 @@ export function EsimNumbersAdmin({ list, filters, canManage }: { list: AdminNumb
   }
 
   const free = (row: AdminNumber) => row.status === "available" || row.status === "retired";
+  const pickable = list.rows.filter(free);
+  const pickedRows = pickable.filter((row) => picked.has(row.id));
+  const allPicked = pickable.length > 0 && pickedRows.length === pickable.length;
+  const toggle = (id: string, on: boolean) =>
+    setPicked((current) => {
+      const next = new Set(current);
+      if (on) next.add(id);
+      else next.delete(id);
+      return next;
+    });
+
+  async function setStatus(status: "available" | "retired") {
+    const ids = pickedRows.filter((row) => row.status !== status).map((row) => row.id);
+    if (!ids.length) {
+      toast.success(status === "available" ? t("admin.esim.numbersAlreadyOn", "Already on sale") : t("admin.esim.numbersAlreadyOff", "Already off sale"));
+      return;
+    }
+    setBusy(true);
+    try {
+      const result = await apiClient.post<{ changed: number }>("/api/esim/admin/numbers", { action: "status", ids, status });
+      toast.success(
+        status === "available"
+          ? t("admin.esim.numbersPutOn", "{count} numbers put on sale", { count: result.changed })
+          : t("admin.esim.numbersTakenOff", "{count} numbers taken off sale", { count: result.changed }),
+      );
+      setPicked(new Set());
+      router.refresh();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : String(error));
+    } finally {
+      setBusy(false);
+    }
+  }
 
   return (
     <div className="space-y-4">
@@ -159,12 +195,38 @@ export function EsimNumbersAdmin({ list, filters, canManage }: { list: AdminNumb
         {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
       </div>
 
+      {canManage && pickedRows.length ? (
+        <div className="flex flex-wrap items-center gap-2 rounded-lg border bg-muted/40 p-2 text-sm">
+          <span className="px-1 font-medium">{t("admin.esim.numbersPicked", "{count} selected", { count: pickedRows.length })}</span>
+          <Button size="sm" disabled={busy} onClick={() => void setStatus("available")}>
+            {t("admin.esim.numbersPutOnSale", "Put on sale")}
+          </Button>
+          <Button size="sm" variant="outline" disabled={busy} onClick={() => void setStatus("retired")}>
+            {t("admin.esim.numbersTakeOffSale", "Take off sale")}
+          </Button>
+          <Button size="sm" variant="ghost" disabled={busy} onClick={() => setPicked(new Set())}>
+            {t("admin.esim.clearSelection", "Clear")}
+          </Button>
+          {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+        </div>
+      ) : null}
+
       <Card>
         <CardContent className="pt-6">
           {list.rows.length ? (
             <Table>
               <TableHeader>
                 <TableRow>
+                  {canManage ? (
+                    <TableHead className="w-8">
+                      <Checkbox
+                        checked={allPicked}
+                        disabled={!pickable.length}
+                        onCheckedChange={(on) => setPicked(on === true ? new Set(pickable.map((row) => row.id)) : new Set())}
+                        aria-label={t("admin.esim.selectAll", "Select all")}
+                      />
+                    </TableHead>
+                  ) : null}
                   <TableHead>{t("admin.esim.number", "Number")}</TableHead>
                   <TableHead>ICCID</TableHead>
                   <TableHead className="text-right">{t("admin.esim.numberPrice", "Price")} ({list.currency})</TableHead>
@@ -178,6 +240,13 @@ export function EsimNumbersAdmin({ list, filters, canManage }: { list: AdminNumb
               <TableBody>
                 {list.rows.map((row) => (
                   <TableRow key={row.id}>
+                    {canManage ? (
+                      <TableCell className="w-8">
+                        {free(row) ? (
+                          <Checkbox checked={picked.has(row.id)} onCheckedChange={(on) => toggle(row.id, on === true)} aria-label={`+${row.msisdn}`} />
+                        ) : null}
+                      </TableCell>
+                    ) : null}
                     <TableCell className="whitespace-nowrap font-medium">
                       +{row.dialCode} {row.nationalNumber}
                       {row.country ? <span className="ml-1 text-xs text-muted-foreground">{row.country}</span> : null}

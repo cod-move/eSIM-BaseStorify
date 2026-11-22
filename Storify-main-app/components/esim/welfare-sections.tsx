@@ -38,27 +38,17 @@ export async function InviteSection({
   countries,
   base,
   locale,
-  allRewards = false,
 }: {
   centre: ReferralCentre;
   countries: Array<{ name: string; path: string }>;
   base: string;
   locale: string;
-  /** Every reward listed, not only the last month's. */
-  allRewards?: boolean;
 }) {
   const tr = await translator();
   const date = new Intl.DateTimeFormat(locale, { dateStyle: "medium" });
   const money = (units: number) => formatStorePrice(Math.round(units * 100), locale);
   const data = centre.offer.rewardType === "data";
-  const href = (page: number, all: boolean) => {
-    const params = new URLSearchParams();
-    if (all) params.set("rewards", "all");
-    if (page > 1) params.set("page", String(page));
-    const query = params.toString();
-    return query ? `/account/esims/referrals?${query}` : "/account/esims/referrals";
-  };
-  const pageHref = (page: number) => href(page, allRewards);
+  const pageHref = (page: number) => (page > 1 ? `/account/esims/referrals?page=${page}` : "/account/esims/referrals");
   // Money and data rewards in one list, newest first.
   const rewardRows = [
     ...centre.rewards.map((entry) => ({ kind: "money" as const, at: entry.createdAt, entry })),
@@ -131,9 +121,6 @@ export async function InviteSection({
               {tr("esim.referral.rewards", "Rewards")}
               {centre.rewardsSince ? <span className="ms-2 text-sm font-normal text-muted-foreground">{tr("esim.referral.rewardsRecent", "Last 30 days")}</span> : null}
             </CardTitle>
-            <Link href={href(1, !allRewards)} scroll={false} className="text-sm text-primary hover:underline">
-              {allRewards ? tr("esim.referral.rewardsShowRecent", "Last 30 days only") : tr("esim.referral.rewardsShowAll", "Show all")}
-            </Link>
           </CardHeader>
           <CardContent className="divide-y">
             {rewardRows.length === 0 ? (

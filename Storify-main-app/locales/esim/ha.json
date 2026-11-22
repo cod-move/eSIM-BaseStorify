@@ -1848,7 +1848,16 @@
       "telegramPeriodMonth": "Wata",
       "telegramLimitCap": "Mafi yawa (MB)",
       "telegramNoEsimLimitHelp": "Mai siye da ba shi da eSIM da ke shirye a saka, an saka ko ana amfani da ita (waɗanda aka musanya da data ba a ƙirga ba) yana samun mafi yawa wannan adadin daga shiga a lokacin, bisa yankin lokaci na sama. Sai bot ya gaya masa ya sayi eSIM a shafin don cire iyaka, ko ya dawo a lokaci na gaba.",
-      "telegramKindAll": "Duka"
+      "telegramKindAll": "Duka",
+      "numbersPicked": "An zaɓi {count}",
+      "numbersPutOnSale": "Sa a kasuwa",
+      "numbersTakeOffSale": "Cire daga kasuwa",
+      "clearSelection": "Share zaɓi",
+      "selectAll": "Zaɓi duka",
+      "numbersPutOn": "An sa lambobi {count} a kasuwa",
+      "numbersTakenOff": "An cire lambobi {count} daga kasuwa",
+      "numbersAlreadyOn": "Tuni suna kasuwa",
+      "numbersAlreadyOff": "Tuni an cire su"
     },
     "sidebar": {
       "esim": "eSIM",
@@ -1872,6 +1881,9 @@
       "esimNumbers": "Lambobi",
       "esimNumberPackages": "Fakitin data na lambobi",
       "esimTelegram": "Telegram check-in"
+    },
+    "phrases": {
+      "email_unverified": "Ba a tabbatar da imel ba"
     }
   },
   "finance": {

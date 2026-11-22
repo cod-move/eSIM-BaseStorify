@@ -1848,7 +1848,16 @@
       "telegramPeriodMonth": "माह",
       "telegramLimitCap": "अधिकतम (MB)",
       "telegramNoEsimLimitHelp": "जिस ग्राहक के पास इंस्टॉल के लिए तैयार, इंस्टॉल या इस्तेमाल में कोई eSIM नहीं है (डेटा से बदले गए नहीं गिने जाते), उसे अवधि में (ऊपर के टाइम ज़ोन में) चेक-इन से अधिकतम इतना मिलता है। फिर बॉट उसे सीमा हटाने के लिए वेबसाइट पर eSIM खरीदने या अगली अवधि में आने को कहता है।",
-      "telegramKindAll": "सभी"
+      "telegramKindAll": "सभी",
+      "numbersPicked": "{count} चुने गए",
+      "numbersPutOnSale": "बिक्री पर लगाएँ",
+      "numbersTakeOffSale": "बिक्री से हटाएँ",
+      "clearSelection": "चयन हटाएँ",
+      "selectAll": "सभी चुनें",
+      "numbersPutOn": "{count} नंबर बिक्री पर लगाए गए",
+      "numbersTakenOff": "{count} नंबर बिक्री से हटाए गए",
+      "numbersAlreadyOn": "पहले से बिक्री पर हैं",
+      "numbersAlreadyOff": "पहले से बिक्री से हटे हैं"
     },
     "sidebar": {
       "esim": "eSIM",
@@ -1872,6 +1881,9 @@
       "esimNumbers": "नंबर",
       "esimNumberPackages": "नंबर डेटा पैकेज",
       "esimTelegram": "Telegram चेक-इन"
+    },
+    "phrases": {
+      "email_unverified": "ईमेल सत्यापित नहीं"
     }
   },
   "finance": {

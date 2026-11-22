@@ -1848,7 +1848,16 @@
       "telegramPeriodMonth": "Monat",
       "telegramLimitCap": "Höchstens (MB)",
       "telegramNoEsimLimitHelp": "Ein Kunde ohne eSIM, die zur Installation bereit, installiert oder in Benutzung ist (gegen Daten eingetauschte zählen nicht), bekommt im Zeitraum (in der Zeitzone oben) höchstens so viel durchs Einchecken. Der Bot rät dann, auf der Website eine eSIM zu kaufen, um das Limit aufzuheben, oder im nächsten Zeitraum wiederzukommen.",
-      "telegramKindAll": "Alle"
+      "telegramKindAll": "Alle",
+      "numbersPicked": "{count} ausgewählt",
+      "numbersPutOnSale": "In den Verkauf",
+      "numbersTakeOffSale": "Aus dem Verkauf",
+      "clearSelection": "Auswahl aufheben",
+      "selectAll": "Alle auswählen",
+      "numbersPutOn": "{count} Nummern in den Verkauf genommen",
+      "numbersTakenOff": "{count} Nummern aus dem Verkauf genommen",
+      "numbersAlreadyOn": "Schon im Verkauf",
+      "numbersAlreadyOff": "Schon aus dem Verkauf"
     },
     "sidebar": {
       "esim": "eSIM",
@@ -1872,6 +1881,9 @@
       "esimNumbers": "Nummern",
       "esimNumberPackages": "Nummern-Datenpakete",
       "esimTelegram": "Telegram-Check-in"
+    },
+    "phrases": {
+      "email_unverified": "E-Mail nicht bestätigt"
     }
   },
   "finance": {

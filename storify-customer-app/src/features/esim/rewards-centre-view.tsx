@@ -15,7 +15,6 @@ import { useToast } from '@/components/ui/toast';
 import type { EsimReferrals, EsimRewards } from '@/contracts/mobile/shop/v1/esim';
 import { useErrorMessage } from '@/i18n/use-error-message';
 
-import { ReferralsContent } from './referrals-view';
 import {
   useEsimReferrals,
   useLinkEsimTelegram,
@@ -24,7 +23,7 @@ import {
   useUnlinkEsimTelegram,
 } from './use-account';
 
-export type RewardsTab = 'checkin' | 'invite' | 'received';
+export type RewardsTab = 'checkin' | 'received';
 
 const REDEEM_REFUSALS = {
   DISABLED: 'rewardsClosed',
@@ -37,12 +36,12 @@ const requestId = () => `${Date.now().toString(36)}${Math.random().toString(36).
 
 /**
  * The rewards centre (福利中心, the website's /account/esims/rewards): the
- * data balance; three tabs — invite friends, check in on Telegram, data
+ * data balance; two tabs — check in on Telegram, data
  * received for joining; then the eSIMs the data buys and every entry.
  */
 export function RewardsCentreView({
   rewards,
-  initialTab = 'invite',
+  initialTab = 'checkin',
 }: {
   rewards: EsimRewards;
   initialTab?: RewardsTab;
@@ -70,13 +69,12 @@ export function RewardsCentreView({
         value={tab}
         onChange={setTab}
         tabs={[
-          { value: 'invite', label: t('rewardsTabInvite') },
           { value: 'checkin', label: t('rewardsTabCheckin') },
           { value: 'received', label: t('rewardsTabReceived') },
         ]}
       />
 
-      {tab === 'checkin' ? <CheckinTab rewards={rewards} /> : <ReferralTab tab={tab} />}
+      {tab === 'checkin' ? <CheckinTab rewards={rewards} /> : <ReceivedTab />}
 
       <ExchangeCard rewards={rewards} />
       <HistoryCard rewards={rewards} />
@@ -149,17 +147,13 @@ function CheckinTab({ rewards }: { rewards: EsimRewards }) {
   );
 }
 
-/** Invite friends and data received: the referral centre, read when one of these tabs is first opened. */
-function ReferralTab({ tab }: { tab: 'invite' | 'received' }) {
+/** Data received for joining: the referral centre's, read when the tab is first opened. Inviting friends has its own screen. */
+function ReceivedTab() {
   const centre = useEsimReferrals();
   if (centre.isPending) return <LoadingState />;
   if (centre.isError)
     return <ErrorState error={centre.error} onRetry={() => void centre.refetch()} />;
-  return tab === 'invite' ? (
-    <ReferralsContent centre={centre.data} />
-  ) : (
-    <ReceivedContent centre={centre.data} />
-  );
+  return <ReceivedContent centre={centre.data} />;
 }
 
 function ReceivedContent({ centre }: { centre: EsimReferrals }) {

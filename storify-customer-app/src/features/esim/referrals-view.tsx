@@ -67,6 +67,15 @@ export function ReferralsContent({ centre }: { centre: EsimReferrals }) {
   const more = useEsimReferralFriends(wantMore);
   const friends = [...centre.invited, ...(more.data?.pages.flatMap((page) => page.items) ?? [])];
   const friendsTotal = centre.invitedTotal ?? centre.invited.length;
+  // The last 30 days' rewards, money and data together, newest first.
+  const rewardRows = [
+    ...centre.rewards.map((reward) => ({
+      kind: 'money' as const,
+      at: reward.creditedAt ?? reward.payableAt,
+      reward,
+    })),
+    ...(centre.dataRewards ?? []).map((reward) => ({ kind: 'data' as const, at: reward.at, reward })),
+  ].sort((a, b) => b.at.localeCompare(a.at));
   const rate = (value: Rate) =>
     value.kind === 'percent' ? `${value.percent}%` : value.amount.formatted;
   const date = (value: string) => format.dateTime(new Date(value), { dateStyle: 'medium' });
@@ -178,6 +187,42 @@ export function ReferralsContent({ centre }: { centre: EsimReferrals }) {
         </View>
       )}
 
+      {(centre.rewardsEver ?? centre.rewards.length) > 0 ? (
+        <View className="gap-2 rounded-xl bg-surface p-4">
+          <View className="flex-row items-baseline justify-between gap-3">
+            <Text variant="subheading">{t('rewards')}</Text>
+            <Text variant="caption">{t('rewardsLast30')}</Text>
+          </View>
+          {rewardRows.length === 0 ? <Text variant="caption">{t('rewardsNoneLast30')}</Text> : null}
+          {rewardRows.map((row) =>
+            row.kind === 'money' ? (
+              <View key={row.reward.id} className="flex-row items-center justify-between gap-3">
+                <View className="flex-1">
+                  <Text>{row.reward.orderNumber}</Text>
+                  <Text variant="caption">
+                    {isKnownStatus(row.reward.status)
+                      ? t(`rewardStatus.${row.reward.status}`)
+                      : row.reward.status}
+                    {row.reward.status === 'pending'
+                      ? ` · ${t('payableOn', { date: date(row.reward.payableAt) })}`
+                      : ''}
+                  </Text>
+                </View>
+                <Text>{row.reward.amount.formatted}</Text>
+              </View>
+            ) : (
+              <View key={row.reward.id} className="flex-row items-center justify-between gap-3">
+                <View className="flex-1">
+                  <Text>{row.reward.who}</Text>
+                  <Text variant="caption">{date(row.reward.at)}</Text>
+                </View>
+                <Text className="text-success">+{row.reward.data.formatted}</Text>
+              </View>
+            )
+          )}
+        </View>
+      ) : null}
+
       <View className="gap-2 rounded-xl bg-surface p-4">
         <Text variant="subheading">{t('invited', { count: friendsTotal })}</Text>
         {friendsTotal === 0 ? <Text variant="caption">{t('invitedNone')}</Text> : null}
@@ -199,27 +244,6 @@ export function ReferralsContent({ centre }: { centre: EsimReferrals }) {
         ) : null}
       </View>
 
-      {centre.rewards.length ? (
-        <View className="gap-2 rounded-xl bg-surface p-4">
-          <Text variant="subheading">{t('rewards')}</Text>
-          {centre.rewards.map((reward) => (
-            <View key={reward.id} className="flex-row items-center justify-between gap-3">
-              <View className="flex-1">
-                <Text>{reward.orderNumber}</Text>
-                <Text variant="caption">
-                  {isKnownStatus(reward.status)
-                    ? t(`rewardStatus.${reward.status}`)
-                    : reward.status}
-                  {reward.status === 'pending'
-                    ? ` · ${t('payableOn', { date: date(reward.payableAt) })}`
-                    : ''}
-                </Text>
-              </View>
-              <Text>{reward.amount.formatted}</Text>
-            </View>
-          ))}
-        </View>
-      ) : null}
     </>
   );
 }

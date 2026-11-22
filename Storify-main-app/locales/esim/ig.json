@@ -1848,7 +1848,16 @@
       "telegramPeriodMonth": "Ọnwa",
       "telegramLimitCap": "Kachasị (MB)",
       "telegramNoEsimLimitHelp": "Onye ahịa na-enweghị eSIM dị njikere ịwụnye, ewụnyere ma ọ bụ a na-eji (ndị e ji data gbanwere anaghị agụ) na-enweta kachasị nke a site n’ịbanye n’oge ahụ, dịka mpaghara oge dị n’elu. Bot na-agwa ya ka ọ zụta eSIM na webụsaịtị iji wepụ oke ahụ, ma ọ bụ lọghachi n’oge ọzọ.",
-      "telegramKindAll": "Ha niile"
+      "telegramKindAll": "Ha niile",
+      "numbersPicked": "Ahọrọla {count}",
+      "numbersPutOnSale": "Tinye maka ire",
+      "numbersTakeOffSale": "Wepụ n’ire",
+      "clearSelection": "Kpochapụ nhọrọ",
+      "selectAll": "Họrọ ha niile",
+      "numbersPutOn": "Etinyere nọmba {count} maka ire",
+      "numbersTakenOff": "Ewepụrụ nọmba {count} n’ire",
+      "numbersAlreadyOn": "Ha nọworị maka ire",
+      "numbersAlreadyOff": "Ewepụrụla ha"
     },
     "sidebar": {
       "esim": "eSIM",
@@ -1872,6 +1881,9 @@
       "esimNumbers": "Nọmba",
       "esimNumberPackages": "Ngwugwu data nọmba",
       "esimTelegram": "Telegram check-in"
+    },
+    "phrases": {
+      "email_unverified": "Akwadoghị email"
     }
   },
   "finance": {

@@ -538,7 +538,12 @@ export const EsimReferrals = z.object({
   invited: z.array(EsimReferralFriend),
   /** Everyone who joined with the link; more of `invited` from GET /me/esim-referrals/friends. Left out by older stores. */
   invitedTotal: z.number().int().optional(),
+  /** The last 30 days' commissions (older ones are not listed). */
   rewards: z.array(EsimReferralReward),
+  /** The last 30 days' data given for inviting: for whom and when. Left out by older stores. */
+  dataRewards: z.array(z.object({ id: z.string(), who: z.string(), data: DataAmount, at: z.string() })).optional(),
+  /** Rewards of either kind ever (listed or not), so the app knows to show the list. Left out by older stores. */
+  rewardsEver: z.number().int().optional(),
   totals: z.object({ credited: Money, pending: Money }),
   /** Data earned for inviting, all friends together. */
   dataEarned: DataAmount.optional(),

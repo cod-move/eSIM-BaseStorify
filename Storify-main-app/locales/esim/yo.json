@@ -1848,7 +1848,16 @@
       "telegramPeriodMonth": "Oṣù",
       "telegramLimitCap": "Jù lọ (MB)",
       "telegramNoEsimLimitHelp": "Oníbàárà tí kò ní eSIM tó ṣetán láti fi sí, tí a ti fi sí tàbí tí ó ń lò (àwọn tí a fi data pààrọ̀ kò ka) yóò gba èyí jù lọ láti wíwọlé ní àsìkò náà, ní agbègbè àkókò lókè. Bọ́ọ̀tì yóò sọ fún un pé kí ó ra eSIM lórí ojú-òpó láti mú òpin kúrò, tàbí kí ó padà wá ní àsìkò tó ń bọ̀.",
-      "telegramKindAll": "Gbogbo"
+      "telegramKindAll": "Gbogbo",
+      "numbersPicked": "A ti yan {count}",
+      "numbersPutOnSale": "Fi sí títà",
+      "numbersTakeOffSale": "Yọ kúrò nínú títà",
+      "clearSelection": "Pa yíyàn rẹ́",
+      "selectAll": "Yan gbogbo rẹ̀",
+      "numbersPutOn": "A ti fi nọ́mbà {count} sí títà",
+      "numbersTakenOff": "A ti yọ nọ́mbà {count} kúrò nínú títà",
+      "numbersAlreadyOn": "Wọ́n ti wà ní títà",
+      "numbersAlreadyOff": "Wọ́n ti yọ wọ́n kúrò"
     },
     "sidebar": {
       "esim": "eSIM",
@@ -1872,6 +1881,9 @@
       "esimNumbers": "Àwọn nọ́mbà",
       "esimNumberPackages": "Pákẹ́ẹ̀jì dátà nọ́mbà",
       "esimTelegram": "Telegram check-in"
+    },
+    "phrases": {
+      "email_unverified": "A kò tíì fi ìmúdájú sí ímeèlì"
     }
   },
   "finance": {

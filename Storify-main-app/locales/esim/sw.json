@@ -1848,7 +1848,16 @@
       "telegramPeriodMonth": "Mwezi",
       "telegramLimitCap": "Hadi (MB)",
       "telegramNoEsimLimitHelp": "Mteja asiye na eSIM iliyo tayari kusakinishwa, iliyosakinishwa au inayotumika (zilizobadilishwa kwa data hazihesabiwi) hupata hadi kiasi hiki kwa kuingia katika kipindi, kwa saa za eneo hapo juu. Kisha boti humwambia anunue eSIM kwenye tovuti ili kuondoa kikomo, au arudi kipindi kijacho.",
-      "telegramKindAll": "Zote"
+      "telegramKindAll": "Zote",
+      "numbersPicked": "{count} zimechaguliwa",
+      "numbersPutOnSale": "Weka sokoni",
+      "numbersTakeOffSale": "Ondoa sokoni",
+      "clearSelection": "Futa uteuzi",
+      "selectAll": "Chagua zote",
+      "numbersPutOn": "Nambari {count} zimewekwa sokoni",
+      "numbersTakenOff": "Nambari {count} zimeondolewa sokoni",
+      "numbersAlreadyOn": "Tayari ziko sokoni",
+      "numbersAlreadyOff": "Tayari zimeondolewa"
     },
     "sidebar": {
       "esim": "eSIM",
@@ -1872,6 +1881,9 @@
       "esimNumbers": "Namba",
       "esimNumberPackages": "Vifurushi vya data vya namba",
       "esimTelegram": "Telegram check-in"
+    },
+    "phrases": {
+      "email_unverified": "Barua pepe haijathibitishwa"
     }
   },
   "finance": {

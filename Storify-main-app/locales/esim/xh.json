@@ -1848,7 +1848,16 @@
       "telegramPeriodMonth": "Inyanga",
       "telegramLimitCap": "Ubuninzi (MB)",
       "telegramNoEsimLimitHelp": "Umthengi ongenayo i-eSIM elungele ukufakwa, efakiweyo okanye esetyenziswayo (ezitshintshiselwe idatha azibalwa) ufumana ubuninzi obu kukungena kweli xesha, ngexesha lommandla ongentla. Ibhoti emva koko imxelela ukuba athenge i-eSIM kwiwebhusayithi ukususa umda, okanye abuye kwixesha elilandelayo.",
-      "telegramKindAll": "Zonke"
+      "telegramKindAll": "Zonke",
+      "numbersPicked": "Kukhethwe {count}",
+      "numbersPutOnSale": "Beka ukuthengiswa",
+      "numbersTakeOffSale": "Susa ekuthengisweni",
+      "clearSelection": "Cima ukukhetha",
+      "selectAll": "Khetha zonke",
+      "numbersPutOn": "Iinombolo ezingu-{count} zibekwe ukuthengiswa",
+      "numbersTakenOff": "Iinombolo ezingu-{count} zisusiwe ekuthengisweni",
+      "numbersAlreadyOn": "Sele zithengiswa",
+      "numbersAlreadyOff": "Sele zisusiwe"
     },
     "sidebar": {
       "esim": "eSIM",
@@ -1872,6 +1881,9 @@
       "esimNumbers": "Iinombolo",
       "esimNumberPackages": "Iiphakheji zedatha zeenombolo",
       "esimTelegram": "Telegram check-in"
+    },
+    "phrases": {
+      "email_unverified": "I-imeyile ayiqinisekiswanga"
     }
   },
   "finance": {
