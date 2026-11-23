@@ -17,6 +17,19 @@ import yoMessages from "@/locales/esim/yo.json";
 import zhMessages from "@/locales/esim/zh.json";
 import zhHantMessages from "@/locales/esim/zh-hant.json";
 import zuMessages from "@/locales/esim/zu.json";
+import afStore from "@/locales/esim/store/af.json";
+import deStore from "@/locales/esim/store/de.json";
+import esStore from "@/locales/esim/store/es.json";
+import frStore from "@/locales/esim/store/fr.json";
+import haStore from "@/locales/esim/store/ha.json";
+import hiStore from "@/locales/esim/store/hi.json";
+import igStore from "@/locales/esim/store/ig.json";
+import nlStore from "@/locales/esim/store/nl.json";
+import swStore from "@/locales/esim/store/sw.json";
+import trStore from "@/locales/esim/store/tr.json";
+import xhStore from "@/locales/esim/store/xh.json";
+import yoStore from "@/locales/esim/store/yo.json";
+import zuStore from "@/locales/esim/store/zu.json";
 import arStore from "@/locales/esim/store/ar.json";
 import bnStore from "@/locales/esim/store/bn.json";
 import jaStore from "@/locales/esim/store/ja.json";
@@ -75,11 +88,24 @@ function mergeDeep(base: Messages, override: Messages): Messages {
 
 /** Storify's own strings it leaves untranslated, for the store's languages (see above). */
 const STORE: Record<string, Messages> = {
+  af: afStore as Messages,
   ar: arStore as Messages,
   bn: bnStore as Messages,
+  de: deStore as Messages,
+  es: esStore as Messages,
+  fr: frStore as Messages,
+  ha: haStore as Messages,
+  hi: hiStore as Messages,
+  ig: igStore as Messages,
   ja: jaStore as Messages,
-  zh: zhStore as Messages,
+  nl: nlStore as Messages,
+  sw: swStore as Messages,
+  tr: trStore as Messages,
+  xh: xhStore as Messages,
+  yo: yoStore as Messages,
   "zh-hant": zhHantStore as Messages,
+  zh: zhStore as Messages,
+  zu: zuStore as Messages,
 };
 
 const merged = new Map<string, Messages>();

@@ -1,0 +1,9 @@
+{
+  "home": {
+    "couponOfferPercent": "Isaphulelo se-{value}%",
+    "couponOfferFixed": "Isaphulelo se-{amount}",
+    "couponOfferFreeShipping": "Ukuthunyelwa simahla",
+    "couponMinOrder": "Kwii-odolo ezingaphezu kwe-{amount}",
+    "couponEnds": "Iphela ngo-{date}"
+  }
+}

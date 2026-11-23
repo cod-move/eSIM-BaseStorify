@@ -62,5 +62,11 @@
   },
   "common": {
     "retry": "আবার চেষ্টা করুন"
+  },
+  "home": {
+    "couponOfferPercent": "{value}% ছাড়",
+    "couponOfferFixed": "{amount} ছাড়",
+    "couponMinOrder": "{amount}-এর বেশি অর্ডারে",
+    "couponEnds": "{date} তারিখে শেষ"
   }
 }

@@ -1893,12 +1893,5 @@
       "opening_balance_equity": "Imali yebhalansi yokuvula",
       "esim_supplier_prepaid": "Ibhalansi yabahlinzeki be-eSIM (ekhokhelwe kusengaphambili)"
     }
-  },
-  "home": {
-    "couponOfferPercent": "Isaphulelo esingu-{value}%",
-    "couponOfferFixed": "Isaphulelo esingu-{amount}",
-    "couponOfferFreeShipping": "Ukuthunyelwa mahhala",
-    "couponMinOrder": "Kuma-oda angaphezu kuka-{amount}",
-    "couponEnds": "Iphela ngo-{date}"
   }
 }

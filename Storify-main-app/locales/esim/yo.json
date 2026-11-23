@@ -1893,12 +1893,5 @@
       "opening_balance_equity": "Olú-owó ìyókù ìbẹ̀rẹ̀",
       "esim_supplier_prepaid": "Ìyókù owó àwọn olùpèsè eSIM (tí a sanwó ṣáájú)"
     }
-  },
-  "home": {
-    "couponOfferPercent": "Ẹ̀dínwó {value}%",
-    "couponOfferFixed": "Ẹ̀dínwó {amount}",
-    "couponOfferFreeShipping": "Ìfiránṣẹ́ ọ̀fẹ́",
-    "couponMinOrder": "Fún àṣẹ tó ju {amount} lọ",
-    "couponEnds": "Yóò parí ní {date}"
   }
 }

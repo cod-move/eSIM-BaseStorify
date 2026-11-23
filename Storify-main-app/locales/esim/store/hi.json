@@ -1,0 +1,28 @@
+{
+  "home": {
+    "couponOfferPercent": "{value}% की छूट",
+    "couponOfferFixed": "{amount} की छूट",
+    "couponMinOrder": "{amount} से अधिक के ऑर्डर पर",
+    "couponEnds": "{date} को समाप्त"
+  },
+  "coupon": {
+    "upTo": "अधिकतम {amount} की छूट",
+    "selectedProductsOnly": "केवल चुनिंदा उत्पाद",
+    "sellerOnly": "केवल {seller} के उत्पादों पर",
+    "oncePerCustomer": "प्रति ग्राहक एक बार",
+    "usesPerCustomer": "प्रति ग्राहक {count} बार",
+    "refusedNotFound": "यह कोड मौजूद नहीं है",
+    "refusedNotActive": "यह कोड सक्रिय नहीं है",
+    "refusedNotStartedYet": "यह कोड अभी सक्रिय नहीं है",
+    "refusedNotStarted": "{date} से शुरू",
+    "refusedExpired": "यह कोड समाप्त हो गया है",
+    "refusedUsedUp": "यह कोड पूरा उपयोग हो चुका है",
+    "refusedAlreadyUsed": "आप यह कोड पहले ही उपयोग कर चुके हैं",
+    "refusedSpendMore": "यह कोड उपयोग करने के लिए {amount} और जोड़ें",
+    "refusedMinimum": "आपका ऑर्डर इस कोड की न्यूनतम राशि से कम है",
+    "refusedNotForCart": "आपकी कार्ट के आइटम पर लागू नहीं",
+    "refusedQuoted": "कोटेड मूल्य पर कोड लागू नहीं होते",
+    "refusedShippingFree": "इस ऑर्डर पर शिपिंग पहले से मुफ़्त है",
+    "refusedNoSellerDelivery": "यह कोड एक विक्रेता की डिलीवरी के लिए है, जो इस ऑर्डर में नहीं है"
+  }
+}

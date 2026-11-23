@@ -139,7 +139,25 @@
     "enterCode": "クーポンコードを入力してください",
     "freeShippingApplied": "送料無料が適用されました",
     "removed": "クーポンを外しました",
-    "placeholder": "クーポンコードを入力"
+    "placeholder": "クーポンコードを入力",
+    "upTo": "最大 {amount} オフ",
+    "selectedProductsOnly": "対象商品のみ",
+    "sellerOnly": "{seller} の商品のみ",
+    "oncePerCustomer": "お一人様 1 回まで",
+    "usesPerCustomer": "お一人様 {count} 回まで",
+    "refusedNotFound": "このコードは存在しません",
+    "refusedNotActive": "このコードは無効です",
+    "refusedNotStartedYet": "このコードはまだ使えません",
+    "refusedNotStarted": "{date} から利用可",
+    "refusedExpired": "このコードは期限切れです",
+    "refusedUsedUp": "このコードは上限に達しました",
+    "refusedAlreadyUsed": "このコードは使用済みです",
+    "refusedSpendMore": "あと {amount} のお買い物で利用できます",
+    "refusedMinimum": "ご注文金額が最低利用額に達していません",
+    "refusedNotForCart": "カート内の商品には使えません",
+    "refusedQuoted": "見積価格にはコードを使えません",
+    "refusedShippingFree": "このご注文はすでに送料無料です",
+    "refusedNoSellerDelivery": "このコードは特定の販売者の送料用ですが、このご注文には含まれていません"
   },
   "common": {
     "retry": "再試行",
@@ -148,5 +166,11 @@
   "cart": {
     "finalSale": "最終セール品のため返品できません",
     "viewCart": "カートを見る"
+  },
+  "home": {
+    "couponOfferPercent": "{value}% オフ",
+    "couponOfferFixed": "{amount} オフ",
+    "couponMinOrder": "{amount} 以上のご注文で利用可",
+    "couponEnds": "{date} まで"
   }
 }

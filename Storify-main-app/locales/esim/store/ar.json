@@ -115,5 +115,11 @@
   },
   "product": {
     "secureCheckout": "دفع آمن"
+  },
+  "home": {
+    "couponOfferPercent": "خصم {value}%",
+    "couponOfferFixed": "خصم {amount}",
+    "couponMinOrder": "للطلبات التي تزيد عن {amount}",
+    "couponEnds": "ينتهي في {date}"
   }
 }

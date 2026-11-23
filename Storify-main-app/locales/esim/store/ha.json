@@ -1,0 +1,29 @@
+{
+  "home": {
+    "couponOfferPercent": "Ragin {value}%",
+    "couponOfferFixed": "Ragin {amount}",
+    "couponOfferFreeShipping": "Jigila kyauta",
+    "couponMinOrder": "A odar da ta haura {amount}",
+    "couponEnds": "Zai ƙare {date}"
+  },
+  "coupon": {
+    "upTo": "Ragi har zuwa {amount}",
+    "selectedProductsOnly": "Kayayyakin da aka zaɓa kawai",
+    "sellerOnly": "A kayayyakin {seller} kawai",
+    "oncePerCustomer": "Sau ɗaya ga kowane abokin ciniki",
+    "usesPerCustomer": "Sau {count} ga kowane abokin ciniki",
+    "refusedNotFound": "Wannan lambar babu ita",
+    "refusedNotActive": "Wannan lambar ba ta aiki",
+    "refusedNotStartedYet": "Wannan lambar ba ta fara aiki ba tukuna",
+    "refusedNotStarted": "Za ta fara {date}",
+    "refusedExpired": "Wannan lambar ta ƙare",
+    "refusedUsedUp": "An gama amfani da wannan lambar",
+    "refusedAlreadyUsed": "Ka riga ka yi amfani da wannan lambar",
+    "refusedSpendMore": "Ƙara {amount} don amfani da wannan lambar",
+    "refusedMinimum": "Odarka ba ta kai mafi ƙarancin wannan lambar ba",
+    "refusedNotForCart": "Ba ta dace da kayayyakin cikin kwandonka ba",
+    "refusedQuoted": "Ba a amfani da lamba a farashin ƙididdiga",
+    "refusedShippingFree": "Jigila ta riga ta zama kyauta a wannan odar",
+    "refusedNoSellerDelivery": "Wannan lambar ta jigilar mai sayarwa ɗaya ce, wanda babu shi a wannan odar"
+  }
+}

@@ -1992,31 +1992,5 @@
       "opening_balance_equity": "期初余额权益",
       "esim_supplier_prepaid": "eSIM 供应商预付余额"
     }
-  },
-  "home": {
-    "couponOfferPercent": "{value}% 折扣",
-    "couponOfferFixed": "立减 {amount}",
-    "couponMinOrder": "订单满 {amount} 可用",
-    "couponEnds": "{date} 到期"
-  },
-  "coupon": {
-    "upTo": "最多优惠 {amount}",
-    "selectedProductsOnly": "仅限指定商品",
-    "sellerOnly": "仅限 {seller} 的商品",
-    "oncePerCustomer": "每人限用 1 次",
-    "usesPerCustomer": "每人限用 {count} 次",
-    "refusedNotFound": "优惠码不存在",
-    "refusedNotActive": "优惠码未启用",
-    "refusedNotStartedYet": "优惠码尚未生效",
-    "refusedNotStarted": "{date} 起可用",
-    "refusedExpired": "优惠码已过期",
-    "refusedUsedUp": "优惠码已领完",
-    "refusedAlreadyUsed": "你已经用过这个优惠码",
-    "refusedSpendMore": "再买 {amount} 即可使用",
-    "refusedMinimum": "订单金额未达到使用门槛",
-    "refusedNotForCart": "不适用于购物车中的商品",
-    "refusedQuoted": "报价订单不能使用优惠码",
-    "refusedShippingFree": "这笔订单已经免运费",
-    "refusedNoSellerDelivery": "此优惠码只抵扣某个商家的运费，这笔订单里没有该商家的配送"
   }
 }

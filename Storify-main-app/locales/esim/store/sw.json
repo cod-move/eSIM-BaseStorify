@@ -1,0 +1,29 @@
+{
+  "home": {
+    "couponOfferPercent": "Punguzo la {value}%",
+    "couponOfferFixed": "Punguzo la {amount}",
+    "couponOfferFreeShipping": "Usafirishaji bure",
+    "couponMinOrder": "Kwa oda zaidi ya {amount}",
+    "couponEnds": "Inaisha {date}"
+  },
+  "coupon": {
+    "upTo": "Punguzo hadi {amount}",
+    "selectedProductsOnly": "Bidhaa zilizochaguliwa tu",
+    "sellerOnly": "Kwa bidhaa za {seller} tu",
+    "oncePerCustomer": "Mara moja kwa kila mteja",
+    "usesPerCustomer": "Mara {count} kwa kila mteja",
+    "refusedNotFound": "Msimbo huu haupo",
+    "refusedNotActive": "Msimbo huu haujawashwa",
+    "refusedNotStartedYet": "Msimbo huu bado haujaanza",
+    "refusedNotStarted": "Unaanza {date}",
+    "refusedExpired": "Muda wa msimbo huu umeisha",
+    "refusedUsedUp": "Msimbo huu umeshatumika wote",
+    "refusedAlreadyUsed": "Umeshatumia msimbo huu",
+    "refusedSpendMore": "Ongeza {amount} zaidi kutumia msimbo huu",
+    "refusedMinimum": "Oda yako iko chini ya kiwango cha msimbo huu",
+    "refusedNotForCart": "Haufai bidhaa zilizo kwenye kikapu chako",
+    "refusedQuoted": "Misimbo haitumiki kwa bei ya nukuu",
+    "refusedShippingFree": "Usafirishaji tayari ni bure kwa oda hii",
+    "refusedNoSellerDelivery": "Msimbo huu ni wa usafirishaji wa muuzaji ambaye hayupo kwenye oda hii"
+  }
+}

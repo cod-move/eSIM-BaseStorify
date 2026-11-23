@@ -1,0 +1,29 @@
+{
+  "home": {
+    "couponOfferPercent": "{value}% korting",
+    "couponOfferFixed": "{amount} korting",
+    "couponOfferFreeShipping": "Gratis verzending",
+    "couponMinOrder": "Bij bestellingen boven {amount}",
+    "couponEnds": "Geldig t/m {date}"
+  },
+  "coupon": {
+    "upTo": "Tot {amount} korting",
+    "selectedProductsOnly": "Alleen geselecteerde producten",
+    "sellerOnly": "Alleen op producten van {seller}",
+    "oncePerCustomer": "Eén keer per klant",
+    "usesPerCustomer": "{count} keer per klant",
+    "refusedNotFound": "Deze code bestaat niet",
+    "refusedNotActive": "Deze code is niet actief",
+    "refusedNotStartedYet": "Deze code is nog niet actief",
+    "refusedNotStarted": "Geldig vanaf {date}",
+    "refusedExpired": "Deze code is verlopen",
+    "refusedUsedUp": "Deze code is op",
+    "refusedAlreadyUsed": "Je hebt deze code al gebruikt",
+    "refusedSpendMore": "Nog {amount} om deze code te gebruiken",
+    "refusedMinimum": "Je bestelling haalt het minimum van deze code niet",
+    "refusedNotForCart": "Niet voor de artikelen in je winkelwagen",
+    "refusedQuoted": "Codes gelden niet voor een offerteprijs",
+    "refusedShippingFree": "Verzending is al gratis voor deze bestelling",
+    "refusedNoSellerDelivery": "Deze code dekt de verzending van een verkoper die niet in deze bestelling zit"
+  }
+}

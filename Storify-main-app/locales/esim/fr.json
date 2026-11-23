@@ -1893,31 +1893,5 @@
       "opening_balance_equity": "Capitaux propres d'ouverture",
       "esim_supplier_prepaid": "Solde fournisseurs eSIM (prépayé)"
     }
-  },
-  "home": {
-    "couponOfferPercent": "{value} % de réduction",
-    "couponOfferFixed": "{amount} de réduction",
-    "couponMinOrder": "Dès {amount} d'achat",
-    "couponEnds": "Jusqu'au {date}"
-  },
-  "coupon": {
-    "upTo": "Jusqu'à {amount} de réduction",
-    "selectedProductsOnly": "Produits sélectionnés uniquement",
-    "sellerOnly": "Uniquement sur les produits de {seller}",
-    "oncePerCustomer": "Une fois par client",
-    "usesPerCustomer": "{count} utilisations par client",
-    "refusedNotFound": "Ce code n'existe pas",
-    "refusedNotActive": "Ce code n'est pas actif",
-    "refusedNotStartedYet": "Ce code n'est pas encore actif",
-    "refusedNotStarted": "Valable à partir du {date}",
-    "refusedExpired": "Ce code a expiré",
-    "refusedUsedUp": "Ce code a atteint sa limite",
-    "refusedAlreadyUsed": "Vous avez déjà utilisé ce code",
-    "refusedSpendMore": "Ajoutez {amount} pour utiliser ce code",
-    "refusedMinimum": "Votre commande n'atteint pas le minimum de ce code",
-    "refusedNotForCart": "Non valable pour les articles de votre panier",
-    "refusedQuoted": "Les codes ne s'appliquent pas à un prix sur devis",
-    "refusedShippingFree": "La livraison est déjà gratuite pour cette commande",
-    "refusedNoSellerDelivery": "Ce code couvre la livraison d'un vendeur absent de cette commande"
   }
 }

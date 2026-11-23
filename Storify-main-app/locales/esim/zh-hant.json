@@ -1992,31 +1992,5 @@
       "opening_balance_equity": "期初餘額權益",
       "esim_supplier_prepaid": "eSIM 供應商預付餘額"
     }
-  },
-  "home": {
-    "couponOfferPercent": "{value}% 折扣",
-    "couponOfferFixed": "立減 {amount}",
-    "couponMinOrder": "訂單滿 {amount} 可用",
-    "couponEnds": "{date} 到期"
-  },
-  "coupon": {
-    "upTo": "最多優惠 {amount}",
-    "selectedProductsOnly": "僅限指定商品",
-    "sellerOnly": "僅限 {seller} 的商品",
-    "oncePerCustomer": "每人限用 1 次",
-    "usesPerCustomer": "每人限用 {count} 次",
-    "refusedNotFound": "優惠碼不存在",
-    "refusedNotActive": "優惠碼未啟用",
-    "refusedNotStartedYet": "優惠碼尚未生效",
-    "refusedNotStarted": "{date} 起可用",
-    "refusedExpired": "優惠碼已過期",
-    "refusedUsedUp": "優惠碼已領完",
-    "refusedAlreadyUsed": "你已經用過這個優惠碼",
-    "refusedSpendMore": "再買 {amount} 即可使用",
-    "refusedMinimum": "訂單金額未達使用門檻",
-    "refusedNotForCart": "不適用於購物車中的商品",
-    "refusedQuoted": "報價訂單不能使用優惠碼",
-    "refusedShippingFree": "這筆訂單已經免運費",
-    "refusedNoSellerDelivery": "此優惠碼只抵扣某個商家的運費，這筆訂單裡沒有該商家的配送"
   }
 }

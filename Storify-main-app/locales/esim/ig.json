@@ -1893,12 +1893,5 @@
       "opening_balance_equity": "Ego isi nguzozi mmeghe",
       "esim_supplier_prepaid": "Nguzozi ndị na-eweta eSIM (akwụrụ tupu)"
     }
-  },
-  "home": {
-    "couponOfferPercent": "Mbelata {value}%",
-    "couponOfferFixed": "Mbelata {amount}",
-    "couponOfferFreeShipping": "Mbupu n'efu",
-    "couponMinOrder": "Maka ịtụnye karịrị {amount}",
-    "couponEnds": "Ọ ga-agwụ na {date}"
   }
 }

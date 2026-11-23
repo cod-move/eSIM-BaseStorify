@@ -1,0 +1,9 @@
+{
+  "home": {
+    "couponOfferPercent": "Ẹ̀dínwó {value}%",
+    "couponOfferFixed": "Ẹ̀dínwó {amount}",
+    "couponOfferFreeShipping": "Ìfiránṣẹ́ ọ̀fẹ́",
+    "couponMinOrder": "Fún àṣẹ tó ju {amount} lọ",
+    "couponEnds": "Yóò parí ní {date}"
+  }
+}

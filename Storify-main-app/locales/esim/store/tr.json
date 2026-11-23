@@ -1,0 +1,8 @@
+{
+  "home": {
+    "couponOfferPercent": "%{value} indirim",
+    "couponOfferFixed": "{amount} indirim",
+    "couponMinOrder": "{amount} üzeri siparişlerde",
+    "couponEnds": "Son gün {date}"
+  }
+}

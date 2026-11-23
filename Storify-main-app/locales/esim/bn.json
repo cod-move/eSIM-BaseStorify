@@ -1893,11 +1893,5 @@
       "opening_balance_equity": "প্রারম্ভিক ব্যালেন্স ইক্যুইটি",
       "esim_supplier_prepaid": "eSIM সরবরাহকারী ব্যালেন্স (প্রিপেইড)"
     }
-  },
-  "home": {
-    "couponOfferPercent": "{value}% ছাড়",
-    "couponOfferFixed": "{amount} ছাড়",
-    "couponMinOrder": "{amount}-এর বেশি অর্ডারে",
-    "couponEnds": "{date} তারিখে শেষ"
   }
 }

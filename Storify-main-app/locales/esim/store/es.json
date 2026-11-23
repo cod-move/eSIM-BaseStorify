@@ -1,0 +1,28 @@
+{
+  "home": {
+    "couponOfferPercent": "{value} % de descuento",
+    "couponOfferFixed": "{amount} de descuento",
+    "couponMinOrder": "En pedidos de más de {amount}",
+    "couponEnds": "Vence el {date}"
+  },
+  "coupon": {
+    "upTo": "Hasta {amount} de descuento",
+    "selectedProductsOnly": "Solo productos seleccionados",
+    "sellerOnly": "Solo en productos de {seller}",
+    "oncePerCustomer": "Una vez por cliente",
+    "usesPerCustomer": "{count} usos por cliente",
+    "refusedNotFound": "Este código no existe",
+    "refusedNotActive": "Este código no está activo",
+    "refusedNotStartedYet": "Este código aún no está activo",
+    "refusedNotStarted": "Disponible desde el {date}",
+    "refusedExpired": "Este código ha caducado",
+    "refusedUsedUp": "Este código ya se ha agotado",
+    "refusedAlreadyUsed": "Ya has usado este código",
+    "refusedSpendMore": "Añade {amount} más para usar este código",
+    "refusedMinimum": "Tu pedido no alcanza el mínimo de este código",
+    "refusedNotForCart": "No válido para los artículos de tu carrito",
+    "refusedQuoted": "No se pueden usar códigos en un precio cotizado",
+    "refusedShippingFree": "El envío ya es gratis en este pedido",
+    "refusedNoSellerDelivery": "Este código cubre el envío de un vendedor que no está en este pedido"
+  }
+}

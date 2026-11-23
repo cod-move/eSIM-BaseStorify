@@ -1,0 +1,9 @@
+{
+  "home": {
+    "couponOfferPercent": "{value}% afslag",
+    "couponOfferFixed": "{amount} afslag",
+    "couponOfferFreeShipping": "Gratis aflewering",
+    "couponMinOrder": "Op bestellings bo {amount}",
+    "couponEnds": "Eindig {date}"
+  }
+}

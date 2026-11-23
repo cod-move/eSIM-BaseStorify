@@ -1893,11 +1893,5 @@
       "opening_balance_equity": "حقوق ملكية الرصيد الافتتاحي",
       "esim_supplier_prepaid": "رصيد مورّدي eSIM (مدفوع مسبقًا)"
     }
-  },
-  "home": {
-    "couponOfferPercent": "خصم {value}%",
-    "couponOfferFixed": "خصم {amount}",
-    "couponMinOrder": "للطلبات التي تزيد عن {amount}",
-    "couponEnds": "ينتهي في {date}"
   }
 }

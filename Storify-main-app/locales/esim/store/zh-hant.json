@@ -140,7 +140,25 @@
     "enterCode": "請輸入優惠碼",
     "freeShippingApplied": "已享受免運費",
     "removed": "已移除優惠碼",
-    "placeholder": "輸入優惠碼"
+    "placeholder": "輸入優惠碼",
+    "upTo": "最多優惠 {amount}",
+    "selectedProductsOnly": "僅限指定商品",
+    "sellerOnly": "僅限 {seller} 的商品",
+    "oncePerCustomer": "每人限用 1 次",
+    "usesPerCustomer": "每人限用 {count} 次",
+    "refusedNotFound": "優惠碼不存在",
+    "refusedNotActive": "優惠碼未啟用",
+    "refusedNotStartedYet": "優惠碼尚未生效",
+    "refusedNotStarted": "{date} 起可用",
+    "refusedExpired": "優惠碼已過期",
+    "refusedUsedUp": "優惠碼已領完",
+    "refusedAlreadyUsed": "你已經用過這個優惠碼",
+    "refusedSpendMore": "再買 {amount} 即可使用",
+    "refusedMinimum": "訂單金額未達使用門檻",
+    "refusedNotForCart": "不適用於購物車中的商品",
+    "refusedQuoted": "報價訂單不能使用優惠碼",
+    "refusedShippingFree": "這筆訂單已經免運費",
+    "refusedNoSellerDelivery": "此優惠碼只抵扣某個商家的運費，這筆訂單裡沒有該商家的配送"
   },
   "common": {
     "or": "或"
@@ -148,5 +166,11 @@
   "cart": {
     "finalSale": "最終銷售，不支持退貨",
     "viewCart": "查看購物車"
+  },
+  "home": {
+    "couponOfferPercent": "{value}% 折扣",
+    "couponOfferFixed": "立減 {amount}",
+    "couponMinOrder": "訂單滿 {amount} 可用",
+    "couponEnds": "{date} 到期"
   }
 }

@@ -1893,31 +1893,5 @@
       "opening_balance_equity": "Eröffnungsbilanz-Eigenkapital",
       "esim_supplier_prepaid": "eSIM-Anbieterguthaben (vorausbezahlt)"
     }
-  },
-  "home": {
-    "couponOfferPercent": "{value} % Rabatt",
-    "couponOfferFixed": "{amount} Rabatt",
-    "couponMinOrder": "Ab einem Bestellwert von {amount}",
-    "couponEnds": "Gültig bis {date}"
-  },
-  "coupon": {
-    "upTo": "Bis zu {amount} Rabatt",
-    "selectedProductsOnly": "Nur für ausgewählte Produkte",
-    "sellerOnly": "Nur für Produkte von {seller}",
-    "oncePerCustomer": "Einmal pro Kunde",
-    "usesPerCustomer": "{count}-mal pro Kunde",
-    "refusedNotFound": "Diesen Code gibt es nicht",
-    "refusedNotActive": "Dieser Code ist nicht aktiv",
-    "refusedNotStartedYet": "Dieser Code ist noch nicht aktiv",
-    "refusedNotStarted": "Gültig ab {date}",
-    "refusedExpired": "Dieser Code ist abgelaufen",
-    "refusedUsedUp": "Dieser Code ist bereits vollständig eingelöst",
-    "refusedAlreadyUsed": "Du hast diesen Code bereits verwendet",
-    "refusedSpendMore": "Noch {amount} bis dieser Code gilt",
-    "refusedMinimum": "Deine Bestellung liegt unter dem Mindestwert",
-    "refusedNotForCart": "Nicht für die Artikel in deinem Warenkorb",
-    "refusedQuoted": "Codes gelten nicht für Angebotspreise",
-    "refusedShippingFree": "Der Versand ist für diese Bestellung bereits kostenlos",
-    "refusedNoSellerDelivery": "Dieser Code gilt für den Versand eines Verkäufers, der in dieser Bestellung nicht enthalten ist"
   }
 }

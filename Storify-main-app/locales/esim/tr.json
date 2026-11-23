@@ -1893,11 +1893,5 @@
       "opening_balance_equity": "Açılış bakiyesi özkaynağı",
       "esim_supplier_prepaid": "eSIM tedarikçi bakiyesi (ön ödemeli)"
     }
-  },
-  "home": {
-    "couponOfferPercent": "%{value} indirim",
-    "couponOfferFixed": "{amount} indirim",
-    "couponMinOrder": "{amount} üzeri siparişlerde",
-    "couponEnds": "Son gün {date}"
   }
 }

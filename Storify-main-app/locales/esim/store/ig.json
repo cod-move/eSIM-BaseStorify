@@ -1,0 +1,9 @@
+{
+  "home": {
+    "couponOfferPercent": "Mbelata {value}%",
+    "couponOfferFixed": "Mbelata {amount}",
+    "couponOfferFreeShipping": "Mbupu n'efu",
+    "couponMinOrder": "Maka ịtụnye karịrị {amount}",
+    "couponEnds": "Ọ ga-agwụ na {date}"
+  }
+}
