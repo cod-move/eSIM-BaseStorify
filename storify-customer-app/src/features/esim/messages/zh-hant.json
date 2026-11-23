@@ -527,6 +527,10 @@
     "welcomeUse": "結帳時輸入即可使用。",
     "welcomeDone": "已使用或已過期。",
     "friendsMore": "查看更多（還有 {count} 位）",
-    "referralShareText": "邀請好友註冊，雙方各得免費流量；每天簽到還能領取流量："
+    "referralShareText": "邀請好友註冊，雙方各得免費流量；每天簽到還能領取流量：",
+    "pushTitle": "接收 eSIM 提醒",
+    "pushBody": "開啟通知後，eSIM 開通成功、流量快用完、套餐快到期時會第一時間提醒你。隨時可以在設定裡關閉。",
+    "pushAllow": "開啟通知",
+    "pushLater": "以後再說"
   }
 }

@@ -6,6 +6,7 @@ import { EmptyState, ErrorState, LoadingState } from '@/components/ui/state-view
 import { useSession } from '@/features/auth/use-session';
 
 import { DESTINATIONS_TAB } from './destination-path';
+import { EsimPushMoment } from './esim-push-moment';
 import { EsimList } from './esim-list';
 import { useEsims } from './use-esims';
 import { useEsimNumbers } from './use-numbers';
@@ -31,7 +32,12 @@ export function MyEsimsView() {
       />
     );
   }
-  return <EsimList esims={esims.data} numbers={mine} />;
+  return (
+    <>
+      <EsimList esims={esims.data} numbers={mine} />
+      <EsimPushMoment />
+    </>
+  );
 }
 
 /** The My eSIMs tab: a guest is asked to sign in first. */
