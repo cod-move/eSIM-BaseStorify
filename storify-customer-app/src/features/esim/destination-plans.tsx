@@ -6,6 +6,7 @@ import { useTranslations } from 'use-intl';
 import { useTabBarHeight } from '@/components/shell/tab-bar';
 import { Button } from '@/components/ui/button';
 import { Chip } from '@/components/ui/chip';
+import { Icon, type IconName } from '@/components/ui/icon';
 import { Price } from '@/components/ui/price';
 import { Stepper } from '@/components/ui/stepper';
 import { Text } from '@/components/ui/text';
@@ -27,6 +28,16 @@ const COLLAPSED = 6;
 const PAGE = 20;
 /** Filters the app does not offer (the website does): too many values to be of use on a phone. */
 const HIDDEN_FILTERS = new Set(['operator']);
+/** Each filter's icon, as on the website's plan list (components/esim/plan-browser.tsx). */
+const FILTER_ICONS: Record<string, IconName> = {
+  coverage: 'pin',
+  kind: 'tag',
+  days: 'calendar',
+  data: 'sim',
+  topup: 'return',
+  breakout: 'globe',
+  operator: 'phone',
+};
 /** Filters that list only the values the other choices leave, not the rest dimmed: too many otherwise. */
 const ONLY_OPEN = new Set(['data', 'operator']);
 /** Where the list starts: a single country's total-data plans, when there are such and others. */
@@ -147,7 +158,14 @@ export function DestinationPlans({ destination }: { destination: EsimDestination
                   : offered;
               return (
                 <View key={filter.key} className="gap-2">
-                  <Text variant="subheading">{filter.title}</Text>
+                  <View className="flex-row items-center gap-1.5">
+                    <Icon
+                      name={FILTER_ICONS[filter.key] ?? 'filter'}
+                      size={16}
+                      colorClassName="accent-primary"
+                    />
+                    <Text variant="subheading">{filter.title}</Text>
+                  </View>
                   <View className="flex-row flex-wrap gap-2">
                     <Chip
                       label={t('filterAll')}

@@ -247,7 +247,7 @@ export function PlanBrowser({ productId, destinationName, variants, countryCodes
           return (
             <fieldset key={key} className="min-w-0 space-y-2">
               <legend className="flex items-center gap-1.5 text-sm font-semibold">
-                <Icon className="h-4 w-4 text-muted-foreground" />
+                <Icon className="h-4 w-4 text-primary" />
                 {titles[key]}
               </legend>
               <div className="flex flex-wrap gap-2">
