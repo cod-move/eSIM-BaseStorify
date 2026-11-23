@@ -7,6 +7,7 @@
 1. **功能清单（需求的唯一来源）**：https://claude.ai/artifact/AnG4WgYJif8bkzzPWksNyu
    这是一个 Claude Docs 文档，要用 docs 工具读取（不要用网页抓取）。各功能有编号（PRV/CAT/WEB/ORD/USR/TOP/NUM/WAL/PAY/REF/KYC/NTF/ADM/APP/MIG）和阶段（P1/P2/P3）。文档里还有「数据模型」一节（套餐表、eSIM 表、Top-up 规则、页面显示状态），以及每个问题下的「已确认」结论。
 2. **改官方文件的规则与插入点清单**：`UPSTREAM-PATCHES.md`。
+   - 顾客 App 打包、签名密钥、推送通知配置与排查：`docs/app-release.md`。
 3. **参考代码**（只读，不在本仓库）：
    - `C:\Users\Administrator\Documents\esim_php`：旧的线上 Laravel 版，功能齐全但性能差，业务细节以它为准。
    - `C:\Users\Administrator\Documents\eSIM-Platform`：中途停止的 TS 重写版。`docs/domain-model.md`、`docs/product/requirements.md` 可作参考；`apps/api/src/provider-adapters/` 和 `number-lines/topconnect-xml-client.ts` 是纯 TS、不依赖数据库，可直接迁移。
