@@ -11,16 +11,18 @@ import { usePathname, useRouter } from "@/hooks/use-locale-navigation";
 import { useFallbackTranslator } from "@/hooks/use-fallback-translator";
 import type { Figures } from "@/lib/esim/reports/build";
 import type { EsimReportPage } from "@/lib/esim/reports/service";
+import { STORE_TIME_ZONE, storeDayString } from "@/lib/esim/time/store-zone";
 
 /**
  * eSIM sales, gross margin by supplier, destination and period, and how
- * reliably and quickly eSIMs are issued (ADM-17). Amounts are USD; days UTC.
+ * reliably and quickly eSIMs are issued (ADM-17). Amounts are USD; days are the store's.
  */
 
 const money = (minor: number) => `${(minor / 100).toFixed(2)} USD`;
 const percent = (value: number | null) => (value === null ? "—" : `${value}%`);
 
-const isoDay = (date: Date) => date.toISOString().slice(0, 10);
+/** The store's date, as the report cuts its days. */
+const isoDay = (date: Date) => storeDayString(date);
 
 export function EsimReportsAdmin({ report }: { report: EsimReportPage }) {
   const t = useFallbackTranslator(useTranslations());
@@ -143,7 +145,7 @@ export function EsimReportsAdmin({ report }: { report: EsimReportPage }) {
       <div>
         <h1 className="text-2xl font-bold tracking-tight">{t("admin.sidebar.esimReports", "Reports")}</h1>
         <p className="text-sm text-muted-foreground">
-          {t("admin.esim.reportsHint", "eSIM sales and gross margin at the prices and supplier costs recorded when each eSIM was bought. Amounts in USD; days in UTC.")}
+          {t("admin.esim.reportsHint", "eSIM sales and gross margin at the prices and supplier costs recorded when each eSIM was bought. Amounts in USD; days in {zone}.", { zone: STORE_TIME_ZONE })}
         </p>
       </div>
 

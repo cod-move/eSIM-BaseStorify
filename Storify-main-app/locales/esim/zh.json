@@ -1031,7 +1031,8 @@
       "description": "结账时输入优惠码即可使用。",
       "none": "你目前没有优惠券。",
       "personal": "专属",
-      "code": "优惠码"
+      "code": "优惠码",
+      "referralWelcome": "邀请好友欢迎券"
     }
   },
   "admin": {
@@ -1568,7 +1569,7 @@
       "cancelRefundTo": "退款到",
       "cancelToBalance": "顾客余额",
       "cancelToOriginal": "原支付方式（手动）",
-      "reportsHint": "按每张 eSIM 购买时记录的售价和供应商成本统计销售额与毛利。金额为 USD，日期按 UTC。",
+      "reportsHint": "按每张 eSIM 购买时记录的售价和供应商成本统计销售额与毛利。金额为 USD，日期按 {zone}。",
       "reportSales": "销售额",
       "reportUnits": "{esims} 张 eSIM · {topups} 笔充值",
       "reportMargin": "毛利",
@@ -1953,7 +1954,10 @@
       "numbersPutOn": "已上架 {count} 个号码",
       "numbersTakenOff": "已下架 {count} 个号码",
       "numbersAlreadyOn": "所选号码都已上架",
-      "numbersAlreadyOff": "所选号码都已下架"
+      "numbersAlreadyOff": "所选号码都已下架",
+      "signInAccount": "账户",
+      "searchSignIns": "邮箱、姓名或 IP 地址",
+      "signInsSameIp": "查看这个 IP 的所有登录"
     },
     "sidebar": {
       "esim": "eSIM",
@@ -1976,7 +1980,8 @@
       "esimCampaigns": "活动",
       "esimNumbers": "号码卡",
       "esimNumberPackages": "号码流量包",
-      "esimTelegram": "Telegram 签到"
+      "esimTelegram": "Telegram 签到",
+      "esimSignIns": "登录日志"
     },
     "phrases": {
       "email_unverified": "邮箱未验证"
@@ -1987,5 +1992,31 @@
       "opening_balance_equity": "期初余额权益",
       "esim_supplier_prepaid": "eSIM 供应商预付余额"
     }
+  },
+  "home": {
+    "couponOfferPercent": "{value}% 折扣",
+    "couponOfferFixed": "立减 {amount}",
+    "couponMinOrder": "订单满 {amount} 可用",
+    "couponEnds": "{date} 到期"
+  },
+  "coupon": {
+    "upTo": "最多优惠 {amount}",
+    "selectedProductsOnly": "仅限指定商品",
+    "sellerOnly": "仅限 {seller} 的商品",
+    "oncePerCustomer": "每人限用 1 次",
+    "usesPerCustomer": "每人限用 {count} 次",
+    "refusedNotFound": "优惠码不存在",
+    "refusedNotActive": "优惠码未启用",
+    "refusedNotStartedYet": "优惠码尚未生效",
+    "refusedNotStarted": "{date} 起可用",
+    "refusedExpired": "优惠码已过期",
+    "refusedUsedUp": "优惠码已领完",
+    "refusedAlreadyUsed": "你已经用过这个优惠码",
+    "refusedSpendMore": "再买 {amount} 即可使用",
+    "refusedMinimum": "订单金额未达到使用门槛",
+    "refusedNotForCart": "不适用于购物车中的商品",
+    "refusedQuoted": "报价订单不能使用优惠码",
+    "refusedShippingFree": "这笔订单已经免运费",
+    "refusedNoSellerDelivery": "此优惠码只抵扣某个商家的运费，这笔订单里没有该商家的配送"
   }
 }

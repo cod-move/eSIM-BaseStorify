@@ -1020,7 +1020,8 @@
       "description": "Tik die kode by die betaalpunt in om dit te gebruik.",
       "none": "Jy het tans geen koepons nie.",
       "personal": "Net vir jou",
-      "code": "Kode"
+      "code": "Kode",
+      "referralWelcome": "Verwysing-welkomskoepon"
     }
   },
   "admin": {
@@ -1557,7 +1558,7 @@
       "cancelRefundTo": "Betaal terug na",
       "cancelToBalance": "Die koper se saldo",
       "cancelToOriginal": "Die oorspronklike betaling (met die hand)",
-      "reportsHint": "eSIM-verkope en bruto marge teen die pryse en verskafferkoste wat aangeteken is toe elke eSIM gekoop is. Bedrae in USD; dae in UTC.",
+      "reportsHint": "eSIM-verkope en bruto marge teen die pryse en verskafferkoste wat aangeteken is toe elke eSIM gekoop is. Bedrae in USD; dae in {zone}.",
       "reportSales": "Verkope",
       "reportUnits": "{esims} eSIM's · {topups} oplaaie",
       "reportMargin": "Bruto marge",
@@ -1880,7 +1881,8 @@
       "esimCampaigns": "Veldtogte",
       "esimNumbers": "Nommers",
       "esimNumberPackages": "Nommer-datapakkette",
-      "esimTelegram": "Telegram check-in"
+      "esimTelegram": "Telegram check-in",
+      "esimSignIns": "Aanmeldlog"
     },
     "phrases": {
       "email_unverified": "E-pos nie bevestig nie"
@@ -1891,5 +1893,12 @@
       "opening_balance_equity": "Openingsaldo-ekwiteit",
       "esim_supplier_prepaid": "eSIM-verskaffersaldo (vooruitbetaal)"
     }
+  },
+  "home": {
+    "couponOfferPercent": "{value}% afslag",
+    "couponOfferFixed": "{amount} afslag",
+    "couponOfferFreeShipping": "Gratis aflewering",
+    "couponMinOrder": "Op bestellings bo {amount}",
+    "couponEnds": "Eindig {date}"
   }
 }

@@ -1020,7 +1020,8 @@
       "description": "इस्तेमाल करने के लिए चेकआउट पर कोड डालें।",
       "none": "अभी आपके पास कोई कूपन नहीं है।",
       "personal": "सिर्फ़ आपके लिए",
-      "code": "कोड"
+      "code": "कोड",
+      "referralWelcome": "रेफ़रल स्वागत कूपन"
     }
   },
   "admin": {
@@ -1557,7 +1558,7 @@
       "cancelRefundTo": "रिफ़ंड कहाँ",
       "cancelToBalance": "ग्राहक का बैलेंस",
       "cancelToOriginal": "मूल भुगतान (हाथ से)",
-      "reportsHint": "हर eSIM खरीदे जाने पर दर्ज कीमतों और सप्लायर लागत के आधार पर eSIM बिक्री और सकल मार्जिन। राशियाँ USD में; दिन UTC में।",
+      "reportsHint": "हर eSIM खरीदे जाने पर दर्ज कीमतों और सप्लायर लागत के आधार पर eSIM बिक्री और सकल मार्जिन। राशियाँ USD में; दिन {zone} में।",
       "reportSales": "बिक्री",
       "reportUnits": "{esims} eSIM · {topups} टॉप-अप",
       "reportMargin": "सकल मार्जिन",
@@ -1880,7 +1881,8 @@
       "esimCampaigns": "कैंपेन",
       "esimNumbers": "नंबर",
       "esimNumberPackages": "नंबर डेटा पैकेज",
-      "esimTelegram": "Telegram चेक-इन"
+      "esimTelegram": "Telegram चेक-इन",
+      "esimSignIns": "साइन-इन लॉग"
     },
     "phrases": {
       "email_unverified": "ईमेल सत्यापित नहीं"
@@ -1891,5 +1893,31 @@
       "opening_balance_equity": "ओपनिंग बैलेंस इक्विटी",
       "esim_supplier_prepaid": "eSIM सप्लायर बैलेंस (प्रीपेड)"
     }
+  },
+  "home": {
+    "couponOfferPercent": "{value}% की छूट",
+    "couponOfferFixed": "{amount} की छूट",
+    "couponMinOrder": "{amount} से अधिक के ऑर्डर पर",
+    "couponEnds": "{date} को समाप्त"
+  },
+  "coupon": {
+    "upTo": "अधिकतम {amount} की छूट",
+    "selectedProductsOnly": "केवल चुनिंदा उत्पाद",
+    "sellerOnly": "केवल {seller} के उत्पादों पर",
+    "oncePerCustomer": "प्रति ग्राहक एक बार",
+    "usesPerCustomer": "प्रति ग्राहक {count} बार",
+    "refusedNotFound": "यह कोड मौजूद नहीं है",
+    "refusedNotActive": "यह कोड सक्रिय नहीं है",
+    "refusedNotStartedYet": "यह कोड अभी सक्रिय नहीं है",
+    "refusedNotStarted": "{date} से शुरू",
+    "refusedExpired": "यह कोड समाप्त हो गया है",
+    "refusedUsedUp": "यह कोड पूरा उपयोग हो चुका है",
+    "refusedAlreadyUsed": "आप यह कोड पहले ही उपयोग कर चुके हैं",
+    "refusedSpendMore": "यह कोड उपयोग करने के लिए {amount} और जोड़ें",
+    "refusedMinimum": "आपका ऑर्डर इस कोड की न्यूनतम राशि से कम है",
+    "refusedNotForCart": "आपकी कार्ट के आइटम पर लागू नहीं",
+    "refusedQuoted": "कोटेड मूल्य पर कोड लागू नहीं होते",
+    "refusedShippingFree": "इस ऑर्डर पर शिपिंग पहले से मुफ़्त है",
+    "refusedNoSellerDelivery": "यह कोड एक विक्रेता की डिलीवरी के लिए है, जो इस ऑर्डर में नहीं है"
   }
 }

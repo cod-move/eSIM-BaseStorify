@@ -1020,7 +1020,8 @@
       "description": "Tinye koodu ahụ mgbe ị na-akwụ ụgwọ iji jiri ya.",
       "none": "Ị nweghị kupọn ugbu a.",
       "personal": "Maka gị naanị",
-      "code": "Koodu"
+      "code": "Koodu",
+      "referralWelcome": "Kupọn nnabata maka ọkpụkpọ"
     }
   },
   "admin": {
@@ -1557,7 +1558,7 @@
       "cancelRefundTo": "Weghachite na",
       "cancelToBalance": "Nguzozi onye zụrụ",
       "cancelToOriginal": "Ịkwụ ụgwọ mbụ (n'aka)",
-      "reportsHint": "Ire eSIM na uru zuru oke n'ọnụahịa na ego ọzụzụ onye na-eweta e dekọrọ mgbe a zụtara eSIM ọ bụla. Ego na USD; ụbọchị na UTC.",
+      "reportsHint": "Ire eSIM na uru zuru oke n'ọnụahịa na ego ọzụzụ onye na-eweta e dekọrọ mgbe a zụtara eSIM ọ bụla. Ego na USD; ụbọchị na {zone}.",
       "reportSales": "Ire",
       "reportUnits": "eSIM {esims} · itinye ego {topups}",
       "reportMargin": "Uru zuru oke",
@@ -1880,7 +1881,8 @@
       "esimCampaigns": "Mkpọsa",
       "esimNumbers": "Nọmba",
       "esimNumberPackages": "Ngwugwu data nọmba",
-      "esimTelegram": "Telegram check-in"
+      "esimTelegram": "Telegram check-in",
+      "esimSignIns": "Ndekọ nbanye"
     },
     "phrases": {
       "email_unverified": "Akwadoghị email"
@@ -1891,5 +1893,12 @@
       "opening_balance_equity": "Ego isi nguzozi mmeghe",
       "esim_supplier_prepaid": "Nguzozi ndị na-eweta eSIM (akwụrụ tupu)"
     }
+  },
+  "home": {
+    "couponOfferPercent": "Mbelata {value}%",
+    "couponOfferFixed": "Mbelata {amount}",
+    "couponOfferFreeShipping": "Mbupu n'efu",
+    "couponMinOrder": "Maka ịtụnye karịrị {amount}",
+    "couponEnds": "Ọ ga-agwụ na {date}"
   }
 }

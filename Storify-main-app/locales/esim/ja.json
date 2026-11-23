@@ -1020,7 +1020,8 @@
       "description": "お会計時にコードを入力すると使えます。",
       "none": "現在使えるクーポンはありません。",
       "personal": "あなた専用",
-      "code": "コード"
+      "code": "コード",
+      "referralWelcome": "招待ウェルカムクーポン"
     }
   },
   "admin": {
@@ -1557,7 +1558,7 @@
       "cancelRefundTo": "返金先",
       "cancelToBalance": "購入者の残高",
       "cancelToOriginal": "元の支払い方法（手動）",
-      "reportsHint": "各eSIMの購入時に記録された価格とサプライヤー原価に基づくeSIMの売上と粗利。金額はUSD、日付はUTC。",
+      "reportsHint": "各eSIMの購入時に記録された価格とサプライヤー原価に基づくeSIMの売上と粗利。金額はUSD、日付は{zone}。",
       "reportSales": "売上",
       "reportUnits": "eSIM {esims}件 · チャージ{topups}件",
       "reportMargin": "粗利",
@@ -1880,7 +1881,8 @@
       "esimCampaigns": "キャンペーン",
       "esimNumbers": "番号",
       "esimNumberPackages": "番号のデータパッケージ",
-      "esimTelegram": "Telegram チェックイン"
+      "esimTelegram": "Telegram チェックイン",
+      "esimSignIns": "ログイン履歴"
     },
     "phrases": {
       "email_unverified": "メール未確認"
@@ -1891,5 +1893,31 @@
       "opening_balance_equity": "期首残高の純資産",
       "esim_supplier_prepaid": "eSIMサプライヤー残高（前払い）"
     }
+  },
+  "home": {
+    "couponOfferPercent": "{value}% オフ",
+    "couponOfferFixed": "{amount} オフ",
+    "couponMinOrder": "{amount} 以上のご注文で利用可",
+    "couponEnds": "{date} まで"
+  },
+  "coupon": {
+    "upTo": "最大 {amount} オフ",
+    "selectedProductsOnly": "対象商品のみ",
+    "sellerOnly": "{seller} の商品のみ",
+    "oncePerCustomer": "お一人様 1 回まで",
+    "usesPerCustomer": "お一人様 {count} 回まで",
+    "refusedNotFound": "このコードは存在しません",
+    "refusedNotActive": "このコードは無効です",
+    "refusedNotStartedYet": "このコードはまだ使えません",
+    "refusedNotStarted": "{date} から利用可",
+    "refusedExpired": "このコードは期限切れです",
+    "refusedUsedUp": "このコードは上限に達しました",
+    "refusedAlreadyUsed": "このコードは使用済みです",
+    "refusedSpendMore": "あと {amount} のお買い物で利用できます",
+    "refusedMinimum": "ご注文金額が最低利用額に達していません",
+    "refusedNotForCart": "カート内の商品には使えません",
+    "refusedQuoted": "見積価格にはコードを使えません",
+    "refusedShippingFree": "このご注文はすでに送料無料です",
+    "refusedNoSellerDelivery": "このコードは特定の販売者の送料用ですが、このご注文には含まれていません"
   }
 }

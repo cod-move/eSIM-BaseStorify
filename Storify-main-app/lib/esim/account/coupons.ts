@@ -18,6 +18,8 @@ import { getStoreCurrency } from "@/lib/intl/server-currency";
 export interface MyCoupon {
   code: string;
   title: string | null;
+  /** A referral welcome coupon (REF-06): its title is worded per language, not the stored label. */
+  referralWelcome: boolean;
   /** "15% off", "$5.00 off", "Free shipping". */
   benefit: string;
   /** Each already worded: minimum spend, cap, seller, once per customer, end date. */
@@ -31,6 +33,9 @@ export interface MyCoupon {
 }
 
 const MAX = 50;
+
+/** The label lib/esim/referral/service.ts gives a welcome coupon. */
+const REFERRAL_WELCOME_LABEL = "Referral welcome";
 
 export async function myCoupons(userId: string, locale: string): Promise<MyCoupon[]> {
   const user = await User.findById(userId).select({ email: 1 }).lean<{ email?: string } | null>();
@@ -84,6 +89,7 @@ export async function myCoupons(userId: string, locale: string): Promise<MyCoupo
       return {
         code: coupon.code,
         title: coupon.label?.trim() || null,
+        referralWelcome: coupon.label === REFERRAL_WELCOME_LABEL,
         benefit:
           coupon.type === CouponType.FREE_SHIPPING
             ? copy.offerFreeShipping()

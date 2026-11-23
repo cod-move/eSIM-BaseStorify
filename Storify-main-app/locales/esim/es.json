@@ -1020,7 +1020,8 @@
       "description": "Introduce el código al pagar para usarlo.",
       "none": "No tienes cupones en este momento.",
       "personal": "Solo para ti",
-      "code": "Código"
+      "code": "Código",
+      "referralWelcome": "Cupón de bienvenida por invitación"
     }
   },
   "admin": {
@@ -1557,7 +1558,7 @@
       "cancelRefundTo": "Reembolsar a",
       "cancelToBalance": "El saldo del cliente",
       "cancelToOriginal": "El pago original (a mano)",
-      "reportsHint": "Ventas de eSIM y margen bruto con los precios y costes de proveedor registrados al comprar cada eSIM. Importes en USD; días en UTC.",
+      "reportsHint": "Ventas de eSIM y margen bruto con los precios y costes de proveedor registrados al comprar cada eSIM. Importes en USD; días en {zone}.",
       "reportSales": "Ventas",
       "reportUnits": "{esims} eSIM · {topups} recargas",
       "reportMargin": "Margen bruto",
@@ -1880,7 +1881,8 @@
       "esimCampaigns": "Campañas",
       "esimNumbers": "Números",
       "esimNumberPackages": "Paquetes de datos de números",
-      "esimTelegram": "Check-in de Telegram"
+      "esimTelegram": "Check-in de Telegram",
+      "esimSignIns": "Registro de inicios de sesión"
     },
     "phrases": {
       "email_unverified": "Correo sin verificar"
@@ -1891,5 +1893,31 @@
       "opening_balance_equity": "Patrimonio de saldo inicial",
       "esim_supplier_prepaid": "Saldo de proveedores de eSIM (prepago)"
     }
+  },
+  "home": {
+    "couponOfferPercent": "{value} % de descuento",
+    "couponOfferFixed": "{amount} de descuento",
+    "couponMinOrder": "En pedidos de más de {amount}",
+    "couponEnds": "Vence el {date}"
+  },
+  "coupon": {
+    "upTo": "Hasta {amount} de descuento",
+    "selectedProductsOnly": "Solo productos seleccionados",
+    "sellerOnly": "Solo en productos de {seller}",
+    "oncePerCustomer": "Una vez por cliente",
+    "usesPerCustomer": "{count} usos por cliente",
+    "refusedNotFound": "Este código no existe",
+    "refusedNotActive": "Este código no está activo",
+    "refusedNotStartedYet": "Este código aún no está activo",
+    "refusedNotStarted": "Disponible desde el {date}",
+    "refusedExpired": "Este código ha caducado",
+    "refusedUsedUp": "Este código ya se ha agotado",
+    "refusedAlreadyUsed": "Ya has usado este código",
+    "refusedSpendMore": "Añade {amount} más para usar este código",
+    "refusedMinimum": "Tu pedido no alcanza el mínimo de este código",
+    "refusedNotForCart": "No válido para los artículos de tu carrito",
+    "refusedQuoted": "No se pueden usar códigos en un precio cotizado",
+    "refusedShippingFree": "El envío ya es gratis en este pedido",
+    "refusedNoSellerDelivery": "Este código cubre el envío de un vendedor que no está en este pedido"
   }
 }

@@ -1020,7 +1020,8 @@
       "description": "ব্যবহার করতে চেকআউটে কোডটি লিখুন।",
       "none": "এই মুহূর্তে আপনার কোনো কুপন নেই।",
       "personal": "শুধু আপনার জন্য",
-      "code": "কোড"
+      "code": "কোড",
+      "referralWelcome": "রেফারেল স্বাগত কুপন"
     }
   },
   "admin": {
@@ -1557,7 +1558,7 @@
       "cancelRefundTo": "রিফান্ড যাবে",
       "cancelToBalance": "ক্রেতার ব্যালেন্সে",
       "cancelToOriginal": "মূল পেমেন্টে (হাতে)",
-      "reportsHint": "প্রতিটি eSIM কেনার সময় লিপিবদ্ধ দাম ও সরবরাহকারীর খরচ অনুযায়ী eSIM বিক্রি ও মোট মার্জিন। পরিমাণ USD-তে; দিন UTC-তে।",
+      "reportsHint": "প্রতিটি eSIM কেনার সময় লিপিবদ্ধ দাম ও সরবরাহকারীর খরচ অনুযায়ী eSIM বিক্রি ও মোট মার্জিন। পরিমাণ USD-তে; দিন {zone}-তে।",
       "reportSales": "বিক্রি",
       "reportUnits": "{esims}টি eSIM · {topups}টি টপ-আপ",
       "reportMargin": "মোট মার্জিন",
@@ -1880,7 +1881,8 @@
       "esimCampaigns": "ক্যাম্পেইন",
       "esimNumbers": "নম্বর",
       "esimNumberPackages": "নম্বরের ডেটা প্যাকেজ",
-      "esimTelegram": "Telegram চেক-ইন"
+      "esimTelegram": "Telegram চেক-ইন",
+      "esimSignIns": "সাইন-ইন লগ"
     },
     "phrases": {
       "email_unverified": "ইমেইল যাচাই হয়নি"
@@ -1891,5 +1893,11 @@
       "opening_balance_equity": "প্রারম্ভিক ব্যালেন্স ইক্যুইটি",
       "esim_supplier_prepaid": "eSIM সরবরাহকারী ব্যালেন্স (প্রিপেইড)"
     }
+  },
+  "home": {
+    "couponOfferPercent": "{value}% ছাড়",
+    "couponOfferFixed": "{amount} ছাড়",
+    "couponMinOrder": "{amount}-এর বেশি অর্ডারে",
+    "couponEnds": "{date} তারিখে শেষ"
   }
 }

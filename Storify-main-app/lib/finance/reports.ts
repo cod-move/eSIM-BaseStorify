@@ -34,6 +34,7 @@ import {
 } from "@/lib/finance/accounts";
 import { roundMoney } from "@/lib/intl/money";
 import { placedOrderMatch } from "@/lib/orders/order-payment-status";
+import { fromStoreWall, storeDay, storeDayEnd, toStoreWall } from "@/lib/esim/time/store-zone"; // [esim-patch] P82
 
 /**
  * The part of the refunds account that is not money handed back: a cancelled
@@ -1546,9 +1547,8 @@ export function resolveRequestedPeriod(
 
 /** "2026-08-27" at 00:00 UTC, or null. */
 function parseDayStart(value?: string): Date | null {
-  if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
-  const date = new Date(`${value}T00:00:00.000Z`);
-  return Number.isNaN(date.getTime()) || date.toISOString().slice(0, 10) !== value ? null : date;
+  if (!value) return null;
+  return storeDay(value); // [esim-patch] P82 the store's day
 }
 
 /**
@@ -1559,7 +1559,7 @@ function parseDayStart(value?: string): Date | null {
 function parseDayEnd(value?: string): Date | null {
   const start = parseDayStart(value);
   if (!start) return null;
-  return new Date(start.getTime() + 24 * 60 * 60 * 1000 - 1);
+  return storeDayEnd(start); // [esim-patch] P82
 }
 
 /** Named periods the overview offers, resolved against a clock. */
@@ -1577,8 +1577,8 @@ export function resolvePeriod(
       start.setDate(start.getDate() - 90);
       break;
     case "ytd":
-      start.setMonth(0, 1);
-      start.setHours(0, 0, 0, 0);
+      // [esim-patch] P82 1 January in the store, not in the server's zone.
+      start.setTime(fromStoreWall(Date.UTC(toStoreWall(now).getUTCFullYear(), 0, 1)).getTime());
       break;
     case "all":
       // The epoch, not a year somebody guessed. This was 2000-01-01, which is

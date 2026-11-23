@@ -7,6 +7,7 @@ import type { DataTableColumn } from "@/components/ui/data-table/types";
 import { useFallbackTranslator } from "@/hooks/use-fallback-translator";
 import { apiClient } from "@/lib/api/client";
 import type { SignInRow } from "@/lib/esim/account/sign-ins";
+import { deviceOf } from "@/lib/esim/account/device-name";
 
 interface Page {
   rows: SignInRow[];
@@ -16,36 +17,6 @@ interface Page {
     total: number;
     totalPages: number;
   };
-}
-
-/** A short device name from a user agent: browser and system, or the app. */
-function deviceOf(agent: string | null): string {
-  if (!agent) return "—";
-  const os = /iPhone|iPad/.test(agent)
-    ? "iOS"
-    : /Android/.test(agent)
-      ? "Android"
-      : /Windows/.test(agent)
-        ? "Windows"
-        : /Mac OS X|Macintosh/.test(agent)
-          ? "macOS"
-          : /Linux/.test(agent)
-            ? "Linux"
-            : null;
-  const browser = /Edg\//.test(agent)
-    ? "Edge"
-    : /OPR\//.test(agent)
-      ? "Opera"
-      : /Chrome\//.test(agent)
-        ? "Chrome"
-        : /Firefox\//.test(agent)
-          ? "Firefox"
-          : /Safari\//.test(agent)
-            ? "Safari"
-            : /okhttp|Expo|CFNetwork|Dalvik/i.test(agent)
-              ? "App"
-              : null;
-  return [browser, os].filter(Boolean).join(" · ") || agent.slice(0, 40);
 }
 
 /**

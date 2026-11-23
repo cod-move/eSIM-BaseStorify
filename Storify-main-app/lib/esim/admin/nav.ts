@@ -26,6 +26,7 @@ export const ESIM_ADMIN_NAV = {
     { label: "admin.sidebar.esimNavigation", href: "/admin/esim/navigation", icon: "LayoutGrid" },
     { label: "admin.sidebar.esimJobs", href: "/admin/esim/jobs", icon: "CalendarClock" },
     { label: "admin.sidebar.esimLogs", href: "/admin/esim/logs", icon: "History" },
+    { label: "admin.sidebar.esimSignIns", href: "/admin/esim/sign-ins", icon: "ShieldCheck" },
     { label: "admin.sidebar.esimMigration", href: "/admin/esim/migration", icon: "ArrowLeftRight" },
   ],
 };

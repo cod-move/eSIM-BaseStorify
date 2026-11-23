@@ -39,7 +39,8 @@ describe("sale snapshot money", () => {
 });
 
 describe("buildReport", () => {
-  const range = { from: new Date("2026-10-01T00:00:00Z"), to: new Date("2026-10-04T00:00:00Z"), bucket: "day" as const };
+  // 1 to 3 October in the store (Singapore, UTC+8).
+  const range = { from: new Date("2026-09-30T16:00:00Z"), to: new Date("2026-10-03T16:00:00Z"), bucket: "day" as const };
 
   it("adds up sales and margin by supplier, destination and day", () => {
     const report = buildReport(
@@ -96,7 +97,8 @@ describe("report range", () => {
   it("defaults to the last 30 days, today included", () => {
     const range = reportRange({}, now);
     assert.equal(range.toKey, "2026-10-29");
-    assert.equal(range.to.toISOString(), "2026-10-30T00:00:00.000Z");
+    // The end of the 29th in Singapore.
+    assert.equal(range.to.toISOString(), "2026-10-29T16:00:00.000Z");
     assert.equal(range.fromKey, "2026-09-30");
     assert.equal(range.bucket, "day");
   });

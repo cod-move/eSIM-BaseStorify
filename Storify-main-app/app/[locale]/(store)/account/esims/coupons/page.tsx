@@ -43,7 +43,11 @@ export default async function AccountCouponsPage({ params }: PageProps) {
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <div className="text-2xl font-bold text-primary">{coupon.benefit}</div>
-                    {coupon.title ? <div className="text-sm font-medium">{coupon.title}</div> : null}
+                    {coupon.referralWelcome ? (
+                      <div className="text-sm font-medium">{tr("esim.coupons.referralWelcome", "Referral welcome")}</div>
+                    ) : coupon.title ? (
+                      <div className="text-sm font-medium">{coupon.title}</div>
+                    ) : null}
                   </div>
                   {coupon.personal ? <Badge variant="secondary">{tr("esim.coupons.personal", "Just for you")}</Badge> : null}
                 </div>

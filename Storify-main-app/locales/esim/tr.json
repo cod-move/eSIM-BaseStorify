@@ -1020,7 +1020,8 @@
       "description": "Kullanmak için ödeme sırasında kodu girin.",
       "none": "Şu anda kuponunuz yok.",
       "personal": "Size özel",
-      "code": "Kod"
+      "code": "Kod",
+      "referralWelcome": "Davet hoş geldin kuponu"
     }
   },
   "admin": {
@@ -1557,7 +1558,7 @@
       "cancelRefundTo": "İade yeri",
       "cancelToBalance": "Müşterinin bakiyesi",
       "cancelToOriginal": "Orijinal ödeme (elle)",
-      "reportsHint": "Her eSIM satın alındığında kaydedilen fiyat ve tedarikçi maliyetleriyle eSIM satışları ve brüt marj. Tutarlar USD; günler UTC.",
+      "reportsHint": "Her eSIM satın alındığında kaydedilen fiyat ve tedarikçi maliyetleriyle eSIM satışları ve brüt marj. Tutarlar USD; günler {zone}.",
       "reportSales": "Satışlar",
       "reportUnits": "{esims} eSIM · {topups} yükleme",
       "reportMargin": "Brüt marj",
@@ -1880,7 +1881,8 @@
       "esimCampaigns": "Kampanyalar",
       "esimNumbers": "Numaralar",
       "esimNumberPackages": "Numara veri paketleri",
-      "esimTelegram": "Telegram girişi"
+      "esimTelegram": "Telegram girişi",
+      "esimSignIns": "Giriş kayıtları"
     },
     "phrases": {
       "email_unverified": "E-posta doğrulanmadı"
@@ -1891,5 +1893,11 @@
       "opening_balance_equity": "Açılış bakiyesi özkaynağı",
       "esim_supplier_prepaid": "eSIM tedarikçi bakiyesi (ön ödemeli)"
     }
+  },
+  "home": {
+    "couponOfferPercent": "%{value} indirim",
+    "couponOfferFixed": "{amount} indirim",
+    "couponMinOrder": "{amount} üzeri siparişlerde",
+    "couponEnds": "Son gün {date}"
   }
 }

@@ -8,7 +8,12 @@
  *
  * Days are UTC days, the same bucket the dashboard's month aggregation and
  * Finance's `parseDayStart` already use.
+ *
+ * [esim-patch] P82 days are the store's days (Asia/Singapore by default,
+ * lib/esim/time/store-zone.ts), not UTC days.
  */
+
+import { addStoreDays, storeDay, storeDayEnd, storeDayStart, storeDayString, storeMonthStart } from "@/lib/esim/time/store-zone"; // [esim-patch] P82
 
 export const DASHBOARD_PERIODS = [
   "today",
@@ -53,25 +58,22 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 const DAY_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 
 function utcDayStart(date: Date): Date {
-  return new Date(
-    Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()),
-  );
+  return storeDayStart(date); // [esim-patch] P82
 }
 
 /** The same day at its last instant, so a range ending "today" includes today. */
 function utcDayEnd(dayStart: Date): Date {
-  return new Date(dayStart.getTime() + DAY_MS - 1);
+  return storeDayEnd(dayStart); // [esim-patch] P82
 }
 
 function parseDay(value?: string): Date | null {
   if (!value || !DAY_PATTERN.test(value)) return null;
-  const date = new Date(`${value}T00:00:00.000Z`);
-  return Number.isNaN(date.getTime()) ? null : date;
+  return storeDay(value); // [esim-patch] P82
 }
 
 /** "2026-08-27", the form the URL and `parseDay` agree on. */
 export function toDayString(date: Date): string {
-  return date.toISOString().slice(0, 10);
+  return storeDayString(date); // [esim-patch] P82
 }
 
 /** Named spans resolved against a clock. `all` has no range. */
@@ -84,7 +86,7 @@ export function resolveNamedPeriod(
     case "today":
       return { from: today, to: utcDayEnd(today) };
     case "yesterday": {
-      const yesterday = new Date(today.getTime() - DAY_MS);
+      const yesterday = addStoreDays(today, -1); // [esim-patch] P82
       return { from: yesterday, to: utcDayEnd(yesterday) };
     }
     case "week":
@@ -92,14 +94,12 @@ export function resolveNamedPeriod(
       // starts on Monday is only today on a Monday, so the period read as
       // empty one day in seven, and its trend badge compared it with Sunday.
       return {
-        from: new Date(today.getTime() - 6 * DAY_MS),
+        from: addStoreDays(today, -6), // [esim-patch] P82
         to: utcDayEnd(today),
       };
     case "month":
       return {
-        from: new Date(
-          Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), 1),
-        ),
+        from: storeMonthStart(today), // [esim-patch] P82
         to: utcDayEnd(today),
       };
     default:

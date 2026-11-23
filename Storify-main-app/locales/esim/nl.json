@@ -1020,7 +1020,8 @@
       "description": "Vul de code in bij het afrekenen om hem te gebruiken.",
       "none": "Je hebt op dit moment geen kortingscodes.",
       "personal": "Alleen voor jou",
-      "code": "Code"
+      "code": "Code",
+      "referralWelcome": "Welkomstcoupon (uitnodiging)"
     }
   },
   "admin": {
@@ -1557,7 +1558,7 @@
       "cancelRefundTo": "Terugbetalen naar",
       "cancelToBalance": "Het saldo van de klant",
       "cancelToOriginal": "De oorspronkelijke betaling (handmatig)",
-      "reportsHint": "eSIM-verkopen en brutomarge tegen de prijzen en leverancierskosten die bij aankoop van elke eSIM zijn vastgelegd. Bedragen in USD; dagen in UTC.",
+      "reportsHint": "eSIM-verkopen en brutomarge tegen de prijzen en leverancierskosten die bij aankoop van elke eSIM zijn vastgelegd. Bedragen in USD; dagen in {zone}.",
       "reportSales": "Verkopen",
       "reportUnits": "{esims} eSIM's · {topups} opwaarderingen",
       "reportMargin": "Brutomarge",
@@ -1880,7 +1881,8 @@
       "esimCampaigns": "Campagnes",
       "esimNumbers": "Nummers",
       "esimNumberPackages": "Databundels voor nummers",
-      "esimTelegram": "Telegram-check-in"
+      "esimTelegram": "Telegram-check-in",
+      "esimSignIns": "Aanmeldlogboek"
     },
     "phrases": {
       "email_unverified": "E-mail niet bevestigd"
@@ -1891,5 +1893,32 @@
       "opening_balance_equity": "Openingsbalans eigen vermogen",
       "esim_supplier_prepaid": "Saldo eSIM-leveranciers (vooruitbetaald)"
     }
+  },
+  "home": {
+    "couponOfferPercent": "{value}% korting",
+    "couponOfferFixed": "{amount} korting",
+    "couponOfferFreeShipping": "Gratis verzending",
+    "couponMinOrder": "Bij bestellingen boven {amount}",
+    "couponEnds": "Geldig t/m {date}"
+  },
+  "coupon": {
+    "upTo": "Tot {amount} korting",
+    "selectedProductsOnly": "Alleen geselecteerde producten",
+    "sellerOnly": "Alleen op producten van {seller}",
+    "oncePerCustomer": "Eén keer per klant",
+    "usesPerCustomer": "{count} keer per klant",
+    "refusedNotFound": "Deze code bestaat niet",
+    "refusedNotActive": "Deze code is niet actief",
+    "refusedNotStartedYet": "Deze code is nog niet actief",
+    "refusedNotStarted": "Geldig vanaf {date}",
+    "refusedExpired": "Deze code is verlopen",
+    "refusedUsedUp": "Deze code is op",
+    "refusedAlreadyUsed": "Je hebt deze code al gebruikt",
+    "refusedSpendMore": "Nog {amount} om deze code te gebruiken",
+    "refusedMinimum": "Je bestelling haalt het minimum van deze code niet",
+    "refusedNotForCart": "Niet voor de artikelen in je winkelwagen",
+    "refusedQuoted": "Codes gelden niet voor een offerteprijs",
+    "refusedShippingFree": "Verzending is al gratis voor deze bestelling",
+    "refusedNoSellerDelivery": "Deze code dekt de verzending van een verkoper die niet in deze bestelling zit"
   }
 }

@@ -1,4 +1,5 @@
 import type { FinancePeriod } from "@/lib/finance/reports";
+import { STORE_TIME_ZONE } from "@/lib/esim/time/store-zone"; // [esim-patch] P82
 
 /**
  * A picked period's days, read in UTC — the zone `resolveRequestedPeriod`
@@ -10,7 +11,7 @@ function dayFormatter(locale: string): Intl.DateTimeFormat {
     day: "numeric",
     month: "short",
     year: "numeric",
-    timeZone: "UTC",
+    timeZone: STORE_TIME_ZONE, // [esim-patch] P82 the zone periods are built in
   });
 }
 

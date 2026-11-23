@@ -5,6 +5,7 @@ import {
   type DashboardPeriodKey,
   type DashboardRange,
 } from "@/lib/admin/dashboard-period";
+import { storeDay, storeDayEnd } from "@/lib/esim/time/store-zone"; // [esim-patch] P82
 
 /**
  * The value of a list's "date" filter, held in the query string as one param.
@@ -21,16 +22,12 @@ import {
  * "today" on the dashboard are the same orders.
  */
 
-const DAY_MS = 24 * 60 * 60 * 1000;
-
 /** Source of the pattern, so a zod schema can reuse it without a regex copy. */
 export const DAY_RANGE_PATTERN = /^\d{4}-\d{2}-\d{2}_\d{4}-\d{2}-\d{2}$/;
 
 /** A real calendar day: "2026-02-31" would otherwise roll over into March. */
 function parseDay(value: string): Date | null {
-  const date = new Date(`${value}T00:00:00.000Z`);
-  if (Number.isNaN(date.getTime())) return null;
-  return toDayString(date) === value ? date : null;
+  return storeDay(value); // [esim-patch] P82 the store's day, not the UTC one
 }
 
 /** "2026-08-27" in the viewer's own days, which is what they picked. */
@@ -93,7 +90,7 @@ export function resolveDateFilter(
   if (picked) {
     const from = parseDay(picked.from)!;
     const to = parseDay(picked.to)!;
-    return { from, to: new Date(to.getTime() + DAY_MS - 1) };
+    return { from, to: storeDayEnd(to) }; // [esim-patch] P82
   }
 
   const key = DASHBOARD_PERIODS.find(

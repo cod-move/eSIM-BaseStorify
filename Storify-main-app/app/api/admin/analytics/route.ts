@@ -15,6 +15,7 @@ import {
   getExternalVendorFilter,
 } from "@/lib/vendors/multi-vendor";
 import { withApi } from "@/lib/api/handler";
+import { STORE_TIME_ZONE } from "@/lib/esim/time/store-zone"; // [esim-patch] P82
 import {
   COLLECTED_ORDER_MATCH,
   placedOrderMatch,
@@ -109,7 +110,7 @@ export const GET = withApi(
         },
         {
           $group: {
-            _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+            _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt", timezone: STORE_TIME_ZONE } }, // [esim-patch] P82
             revenue: { $sum: "$total" },
             orders: { $sum: 1 },
           },

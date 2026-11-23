@@ -4,11 +4,16 @@ import type {
   OrderChartGranularity,
   OrderChartSeries,
 } from "@/lib/admin/dashboard-types";
+import { fromStoreWall, toStoreWall } from "@/lib/esim/time/store-zone"; // [esim-patch] P82
 
 /**
  * Time buckets for the admin orders chart, which follows the dashboard's one
  * period filter. Runtime-free and UTC throughout, like the rest of the
  * dashboard's day and month boundaries.
+ *
+ * [esim-patch] P82 buckets are cut at the store's midnight: each function
+ * below does its UTC arithmetic on the store's wall clock
+ * (lib/esim/time/store-zone.ts), and the query groups with the same zone.
  */
 
 const HOUR_MS = 60 * 60 * 1000;
@@ -47,12 +52,17 @@ export function parseBucketKey(
   key: string,
   unit: keyof typeof BUCKET_KEY_FORMAT,
 ): Date {
-  if (unit === "hour") return new Date(`${key}:00:00.000Z`);
-  if (unit === "day") return new Date(`${key}T00:00:00.000Z`);
-  return new Date(`${key}-01T00:00:00.000Z`);
+  // [esim-patch] P82 keys are the store's wall clock.
+  if (unit === "hour") return fromStoreWall(new Date(`${key}:00:00.000Z`));
+  if (unit === "day") return fromStoreWall(new Date(`${key}T00:00:00.000Z`));
+  return fromStoreWall(new Date(`${key}-01T00:00:00.000Z`));
 }
 
-export function bucketStart(date: Date, granularity: OrderChartGranularity): Date {
+export function bucketStart(at: Date, granularity: OrderChartGranularity): Date {
+  return fromStoreWall(wallBucketStart(toStoreWall(at), granularity)); // [esim-patch] P82
+}
+
+function wallBucketStart(date: Date, granularity: OrderChartGranularity): Date {
   const y = date.getUTCFullYear();
   const m = date.getUTCMonth();
   const d = date.getUTCDate();
@@ -73,7 +83,11 @@ export function bucketStart(date: Date, granularity: OrderChartGranularity): Dat
   }
 }
 
-function nextBucket(start: Date, granularity: OrderChartGranularity): Date {
+function nextBucket(at: Date, granularity: OrderChartGranularity): Date {
+  return fromStoreWall(wallNextBucket(toStoreWall(at), granularity)); // [esim-patch] P82
+}
+
+function wallNextBucket(start: Date, granularity: OrderChartGranularity): Date {
   switch (granularity) {
     case "hour":
       return new Date(start.getTime() + HOUR_MS);
@@ -160,14 +174,17 @@ export function buildAllTimeChartSeries(
   rows: readonly ChartSourceRow[],
   now: Date,
 ): OrderChartSeries {
-  let from = new Date(
-    Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - (MIN_ALL_TIME_MONTHS - 1), 1),
+  // [esim-patch] P82 months of the store's calendar.
+  const nowWall = toStoreWall(now);
+  let from = fromStoreWall(
+    Date.UTC(nowWall.getUTCFullYear(), nowWall.getUTCMonth() - (MIN_ALL_TIME_MONTHS - 1), 1),
   );
   for (const row of rows) if (row.start < from) from = row.start;
 
+  const fromWall = toStoreWall(from);
   const months =
-    (now.getUTCFullYear() - from.getUTCFullYear()) * 12 +
-    (now.getUTCMonth() - from.getUTCMonth()) +
+    (nowWall.getUTCFullYear() - fromWall.getUTCFullYear()) * 12 +
+    (nowWall.getUTCMonth() - fromWall.getUTCMonth()) +
     1;
 
   return buildChartSeries(

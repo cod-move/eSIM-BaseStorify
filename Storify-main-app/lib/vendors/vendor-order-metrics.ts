@@ -14,6 +14,7 @@ import {
   parseBucketKey,
   queryUnitFor,
 } from "@/lib/admin/order-chart-buckets";
+import { STORE_TIME_ZONE } from "@/lib/esim/time/store-zone"; // [esim-patch] P82
 import type { DashboardRange } from "@/lib/admin/dashboard-period";
 import { SETTLED_PAYMENT_STATUSES } from "@/lib/orders/order-payment-status";
 import { VENDOR_OPEN_ORDER_STATUSES } from "@/lib/vendors/vendor-order-list";
@@ -277,7 +278,7 @@ async function loadVendorOrderMetrics(
             $dateToString: {
               format: BUCKET_KEY_FORMAT[scope.unit ?? "month"],
               date: "$createdAt",
-              timezone: "UTC",
+              timezone: STORE_TIME_ZONE, // [esim-patch] P82
             },
           },
           // null/"online"/legacy values all land in the one non-POS bucket.
@@ -380,7 +381,7 @@ export async function getVendorCollectedByDay(
     new Types.ObjectId(String(vendorId)),
     { from: range.from, to: range.to, unit: "day" },
   );
-  // A day's bucket key is already its UTC date (`BUCKET_KEY_FORMAT.day`).
+  // A day's bucket key is already its store date (`BUCKET_KEY_FORMAT.day`, P82).
   const days = new Map<string, number>();
   for (const row of rows) {
     days.set(row._id.bucket, (days.get(row._id.bucket) ?? 0) + row.revenue);

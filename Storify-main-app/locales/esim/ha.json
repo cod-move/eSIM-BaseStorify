@@ -1020,7 +1020,8 @@
       "description": "Shigar da lambar a lokacin biya don amfani da ita.",
       "none": "Ba ka da kupon a yanzu.",
       "personal": "Domin kai kaɗai",
-      "code": "Lamba"
+      "code": "Lamba",
+      "referralWelcome": "Kuponin maraba na gayyata"
     }
   },
   "admin": {
@@ -1557,7 +1558,7 @@
       "cancelRefundTo": "Mayar da kuɗi zuwa",
       "cancelToBalance": "Ma'aunin mai saye",
       "cancelToOriginal": "Biyan asali (da hannu)",
-      "reportsHint": "Sayar da eSIM da babban riba bisa farashi da kuɗin saye daga mai samarwa da aka rubuta lokacin da aka saya kowace eSIM. Adadi a USD; kwanaki a UTC.",
+      "reportsHint": "Sayar da eSIM da babban riba bisa farashi da kuɗin saye daga mai samarwa da aka rubuta lokacin da aka saya kowace eSIM. Adadi a USD; kwanaki a {zone}.",
       "reportSales": "Tallace-tallace",
       "reportUnits": "eSIM {esims} · caji {topups}",
       "reportMargin": "Babban riba",
@@ -1880,7 +1881,8 @@
       "esimCampaigns": "Kamfe",
       "esimNumbers": "Lambobi",
       "esimNumberPackages": "Fakitin data na lambobi",
-      "esimTelegram": "Telegram check-in"
+      "esimTelegram": "Telegram check-in",
+      "esimSignIns": "Rajistar shiga"
     },
     "phrases": {
       "email_unverified": "Ba a tabbatar da imel ba"
@@ -1891,5 +1893,32 @@
       "opening_balance_equity": "Jari na ma'aunin farko",
       "esim_supplier_prepaid": "Ma'aunin masu samar da eSIM (an biya kafin)"
     }
+  },
+  "home": {
+    "couponOfferPercent": "Ragin {value}%",
+    "couponOfferFixed": "Ragin {amount}",
+    "couponOfferFreeShipping": "Jigila kyauta",
+    "couponMinOrder": "A odar da ta haura {amount}",
+    "couponEnds": "Zai ƙare {date}"
+  },
+  "coupon": {
+    "upTo": "Ragi har zuwa {amount}",
+    "selectedProductsOnly": "Kayayyakin da aka zaɓa kawai",
+    "sellerOnly": "A kayayyakin {seller} kawai",
+    "oncePerCustomer": "Sau ɗaya ga kowane abokin ciniki",
+    "usesPerCustomer": "Sau {count} ga kowane abokin ciniki",
+    "refusedNotFound": "Wannan lambar babu ita",
+    "refusedNotActive": "Wannan lambar ba ta aiki",
+    "refusedNotStartedYet": "Wannan lambar ba ta fara aiki ba tukuna",
+    "refusedNotStarted": "Za ta fara {date}",
+    "refusedExpired": "Wannan lambar ta ƙare",
+    "refusedUsedUp": "An gama amfani da wannan lambar",
+    "refusedAlreadyUsed": "Ka riga ka yi amfani da wannan lambar",
+    "refusedSpendMore": "Ƙara {amount} don amfani da wannan lambar",
+    "refusedMinimum": "Odarka ba ta kai mafi ƙarancin wannan lambar ba",
+    "refusedNotForCart": "Ba ta dace da kayayyakin cikin kwandonka ba",
+    "refusedQuoted": "Ba a amfani da lamba a farashin ƙididdiga",
+    "refusedShippingFree": "Jigila ta riga ta zama kyauta a wannan odar",
+    "refusedNoSellerDelivery": "Wannan lambar ta jigilar mai sayarwa ɗaya ce, wanda babu shi a wannan odar"
   }
 }

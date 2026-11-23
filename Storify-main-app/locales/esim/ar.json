@@ -1020,7 +1020,8 @@
       "description": "أدخل الرمز عند الدفع لاستخدامه.",
       "none": "ليست لديك قسائم حاليًا.",
       "personal": "خاصة بك",
-      "code": "الرمز"
+      "code": "الرمز",
+      "referralWelcome": "قسيمة ترحيب للدعوة"
     }
   },
   "admin": {
@@ -1557,7 +1558,7 @@
       "cancelRefundTo": "الاسترداد إلى",
       "cancelToBalance": "رصيد العميل",
       "cancelToOriginal": "وسيلة الدفع الأصلية (يدويًا)",
-      "reportsHint": "مبيعات eSIM والهامش الإجمالي وفق الأسعار وتكاليف المورّدين المسجّلة عند شراء كل شريحة. المبالغ بالدولار الأمريكي؛ والأيام بتوقيت UTC.",
+      "reportsHint": "مبيعات eSIM والهامش الإجمالي وفق الأسعار وتكاليف المورّدين المسجّلة عند شراء كل شريحة. المبالغ بالدولار الأمريكي؛ والأيام بتوقيت {zone}.",
       "reportSales": "المبيعات",
       "reportUnits": "{esims} شريحة eSIM · {topups} شحنة",
       "reportMargin": "الهامش الإجمالي",
@@ -1880,7 +1881,8 @@
       "esimCampaigns": "الحملات",
       "esimNumbers": "الأرقام",
       "esimNumberPackages": "باقات بيانات الأرقام",
-      "esimTelegram": "تسجيل حضور Telegram"
+      "esimTelegram": "تسجيل حضور Telegram",
+      "esimSignIns": "سجل تسجيل الدخول"
     },
     "phrases": {
       "email_unverified": "البريد غير مُتحقق منه"
@@ -1891,5 +1893,11 @@
       "opening_balance_equity": "حقوق ملكية الرصيد الافتتاحي",
       "esim_supplier_prepaid": "رصيد مورّدي eSIM (مدفوع مسبقًا)"
     }
+  },
+  "home": {
+    "couponOfferPercent": "خصم {value}%",
+    "couponOfferFixed": "خصم {amount}",
+    "couponMinOrder": "للطلبات التي تزيد عن {amount}",
+    "couponEnds": "ينتهي في {date}"
   }
 }

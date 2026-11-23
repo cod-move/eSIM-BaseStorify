@@ -47,6 +47,7 @@ import type {
   OrderChartSeries,
 } from "@/lib/admin/dashboard-types";
 import { useFallbackTranslator } from "@/hooks/use-fallback-translator";
+import { STORE_TIME_ZONE } from "@/lib/esim/time/store-zone"; // [esim-patch] P82
 
 type OrdersChartView = "orders" | "sales";
 
@@ -93,7 +94,7 @@ const AREA_LINKS: Record<"admin" | "vendor", ChartAreaLinks> = {
   },
 };
 
-/** Axis tick and table-row formats per bucket size. Buckets are UTC, so are these. */
+/** Axis tick and table-row formats per bucket size. Buckets are the store's days (P82), so are these. */
 const BUCKET_FORMATS: Record<
   OrderChartGranularity,
   { axis: Intl.DateTimeFormatOptions; row: Intl.DateTimeFormatOptions }
@@ -167,18 +168,18 @@ export function DashboardOrdersChart({
   const { granularity } = series;
   const axisFormatter = new Intl.DateTimeFormat(locale, {
     ...BUCKET_FORMATS[granularity].axis,
-    timeZone: "UTC",
+    timeZone: STORE_TIME_ZONE, // [esim-patch] P82
   });
   const rowFormatter = new Intl.DateTimeFormat(locale, {
     ...BUCKET_FORMATS[granularity].row,
-    timeZone: "UTC",
+    timeZone: STORE_TIME_ZONE, // [esim-patch] P82
   });
 
   const periodLabel = new Intl.DateTimeFormat(locale, {
     day: "numeric",
     month: "short",
     year: "numeric",
-    timeZone: "UTC",
+    timeZone: STORE_TIME_ZONE, // [esim-patch] P82
   }).formatRange(new Date(series.from), new Date(series.to));
 
   const chartData = series.points.map((entry) => ({

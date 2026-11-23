@@ -5,8 +5,11 @@
  * shopper paid (the sale snapshot, ORD-04). Margin counts only the sales
  * whose supplier cost is known in USD; the rest are counted in `costUnknown`
  * so a missing rate never reads as pure profit. An eSIM later cancelled or
- * refunded leaves the sales and is counted as voided. Days are UTC.
+ * refunded leaves the sales and is counted as voided. Days are the store's
+ * days (lib/esim/time/store-zone.ts), as on the admin dashboard.
  */
+
+import { addStoreDays, fromStoreWall, storeDay, storeDayStart, storeDayString, toStoreWall } from "@/lib/esim/time/store-zone";
 
 export interface SaleRow {
   kind: "esim" | "topup";
@@ -80,16 +83,18 @@ function done({ knownSalesMinor, ...figures }: Tally): Figures {
 }
 
 export function bucketKey(at: Date, bucket: Bucket): string {
-  const iso = at.toISOString();
+  const iso = toStoreWall(at).toISOString();
   return bucket === "day" ? iso.slice(0, 10) : iso.slice(0, 7);
 }
 
 /** Every bucket from `from` up to (not including) `to`, so quiet days still show. */
 export function bucketsBetween(from: Date, to: Date, bucket: Bucket): string[] {
   const keys: string[] = [];
-  const cursor = new Date(Date.UTC(from.getUTCFullYear(), from.getUTCMonth(), bucket === "day" ? from.getUTCDate() : 1));
-  while (cursor < to && keys.length < 400) {
-    keys.push(bucketKey(cursor, bucket));
+  // The cursor walks the store's calendar (a wall-clock date).
+  const start = toStoreWall(from);
+  const cursor = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), bucket === "day" ? start.getUTCDate() : 1));
+  while (fromStoreWall(cursor) < to && keys.length < 400) {
+    keys.push(cursor.toISOString().slice(0, bucket === "day" ? 10 : 7));
     if (bucket === "day") cursor.setUTCDate(cursor.getUTCDate() + 1);
     else cursor.setUTCMonth(cursor.getUTCMonth() + 1);
   }
@@ -177,17 +182,13 @@ export function buildReport(
 
 /** The range a request asks for: `from`/`to` as YYYY-MM-DD (to inclusive), the last 30 days by default, at most a year. */
 export function reportRange(input: { from?: string; to?: string }, now = new Date()) {
-  const day = (value: string | undefined) => {
-    if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
-    const parsed = new Date(`${value}T00:00:00.000Z`);
-    return Number.isNaN(parsed.getTime()) ? null : parsed;
-  };
-  const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+  const day = (value: string | undefined) => (value ? storeDay(value) : null);
+  const today = storeDayStart(now);
   const toDay = day(input.to) ?? today;
-  const to = new Date(toDay.getTime() + 86_400_000);
-  let from = day(input.from) ?? new Date(to.getTime() - 30 * 86_400_000);
-  if (from >= to) from = new Date(to.getTime() - 86_400_000);
+  const to = addStoreDays(toDay, 1);
+  let from = day(input.from) ?? addStoreDays(to, -30);
+  if (from >= to) from = addStoreDays(to, -1);
   if (to.getTime() - from.getTime() > 366 * 86_400_000) from = new Date(to.getTime() - 366 * 86_400_000);
   const bucket: Bucket = to.getTime() - from.getTime() > 62 * 86_400_000 ? "month" : "day";
-  return { from, to, bucket, fromKey: from.toISOString().slice(0, 10), toKey: toDay.toISOString().slice(0, 10) };
+  return { from, to, bucket, fromKey: storeDayString(from), toKey: storeDayString(toDay) };
 }

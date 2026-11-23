@@ -12,6 +12,7 @@ import {
   parseBucketKey,
   queryUnitFor,
 } from "@/lib/admin/order-chart-buckets";
+import { STORE_TIME_ZONE, fromStoreWall, storeMonthStart, toStoreWall } from "@/lib/esim/time/store-zone"; // [esim-patch] P82
 import {
   collectedOrderExpr,
   placedOrderMatch,
@@ -95,8 +96,9 @@ const loadOrderMetrics = cache(async (): Promise<MonthlyChannelRow[]> => {
     {
       $group: {
         _id: {
-          year: { $year: "$createdAt" },
-          month: { $month: "$createdAt" },
+          // [esim-patch] P82 the store's months, not UTC ones.
+          year: { $year: { date: "$createdAt", timezone: STORE_TIME_ZONE } },
+          month: { $month: { date: "$createdAt", timezone: STORE_TIME_ZONE } },
           // Collapse null/"online"/legacy values into a single non-POS bucket
           // here so no channel normalization is needed downstream.
           pos: { $eq: ["$channel", "pos"] },
@@ -260,7 +262,7 @@ const loadRangedOrderRowsCached = cache(
               $dateToString: {
                 format: BUCKET_KEY_FORMAT[unit],
                 date: "$createdAt",
-                timezone: "UTC",
+                timezone: STORE_TIME_ZONE, // [esim-patch] P82
               },
             },
             pos: { $eq: ["$channel", "pos"] },
@@ -289,20 +291,19 @@ function loadRangedOrderRows(range: DashboardRange) {
 }
 
 function getMonthBoundaries(now: Date) {
-  const currentMonthStart = new Date(
-    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1),
-  );
-  const previousMonthStart = new Date(
-    Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 1),
-  );
+  // [esim-patch] P82 the store's months.
+  const currentMonthStart = storeMonthStart(now);
+  const previousMonthStart = storeMonthStart(now, -1);
+  const currentWall = toStoreWall(currentMonthStart);
+  const previousWall = toStoreWall(previousMonthStart);
 
   return {
     currentMonthStart,
     previousMonthStart,
     // `$month` is 1-based; the aggregation groups in UTC, so these keys line up
     // with the boundaries above.
-    currentKey: `${currentMonthStart.getUTCFullYear()}-${currentMonthStart.getUTCMonth() + 1}`,
-    previousKey: `${previousMonthStart.getUTCFullYear()}-${previousMonthStart.getUTCMonth() + 1}`,
+    currentKey: `${currentWall.getUTCFullYear()}-${currentWall.getUTCMonth() + 1}`,
+    previousKey: `${previousWall.getUTCFullYear()}-${previousWall.getUTCMonth() + 1}`,
   };
 }
 
@@ -336,7 +337,7 @@ export async function getOrderChartSeries(
   const rows = await loadOrderMetrics();
   return buildAllTimeChartSeries(
     rows.map((row) => ({
-      start: new Date(Date.UTC(row._id.year, row._id.month - 1, 1)),
+      start: fromStoreWall(Date.UTC(row._id.year, row._id.month - 1, 1)), // [esim-patch] P82
       pos: row._id.pos,
       orders: row.orders,
       sales: row.sales,

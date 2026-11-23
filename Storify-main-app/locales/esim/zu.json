@@ -1020,7 +1020,8 @@
       "description": "Faka ikhodi lapho ukhokha ukuze uyisebenzise.",
       "none": "Awunawo amakhuphoni okwamanje.",
       "personal": "Okwakho kuphela",
-      "code": "Ikhodi"
+      "code": "Ikhodi",
+      "referralWelcome": "Ikhuphoni lokwamukela lesimemo"
     }
   },
   "admin": {
@@ -1557,7 +1558,7 @@
       "cancelRefundTo": "Buyisela ku",
       "cancelToBalance": "Ibhalansi yomthengi",
       "cancelToOriginal": "Inkokhelo yokuqala (ngesandla)",
-      "reportsHint": "Ukuthengiswa kwe-eSIM nenzuzo ephelele ngezintengo nezindleko zomhlinzeki ezabhalwa lapho i-eSIM ngayinye ithengwa. Amanani nge-USD; izinsuku nge-UTC.",
+      "reportsHint": "Ukuthengiswa kwe-eSIM nenzuzo ephelele ngezintengo nezindleko zomhlinzeki ezabhalwa lapho i-eSIM ngayinye ithengwa. Amanani nge-USD; izinsuku nge-{zone}.",
       "reportSales": "Ukuthengisa",
       "reportUnits": "Ama-eSIM angu-{esims} · ukugcwalisa okungu-{topups}",
       "reportMargin": "Inzuzo ephelele",
@@ -1880,7 +1881,8 @@
       "esimCampaigns": "Imikhankaso",
       "esimNumbers": "Izinombolo",
       "esimNumberPackages": "Amaphakheji edatha ezinombolo",
-      "esimTelegram": "Telegram check-in"
+      "esimTelegram": "Telegram check-in",
+      "esimSignIns": "Irekhodi lokungena"
     },
     "phrases": {
       "email_unverified": "I-imeyili ayiqinisekisiwe"
@@ -1891,5 +1893,12 @@
       "opening_balance_equity": "Imali yebhalansi yokuvula",
       "esim_supplier_prepaid": "Ibhalansi yabahlinzeki be-eSIM (ekhokhelwe kusengaphambili)"
     }
+  },
+  "home": {
+    "couponOfferPercent": "Isaphulelo esingu-{value}%",
+    "couponOfferFixed": "Isaphulelo esingu-{amount}",
+    "couponOfferFreeShipping": "Ukuthunyelwa mahhala",
+    "couponMinOrder": "Kuma-oda angaphezu kuka-{amount}",
+    "couponEnds": "Iphela ngo-{date}"
   }
 }
