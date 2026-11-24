@@ -1,3 +1,4 @@
+import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { FlatList, Pressable, ScrollView, View } from 'react-native';
 import { useTranslations } from 'use-intl';
@@ -16,6 +17,8 @@ import type {
   EsimNumberShopQuery,
 } from '@/contracts/mobile/shop/v1/esim';
 
+import { useSession } from '@/features/auth/use-session';
+
 import { NumberBuySheet } from './number-buy-sheet';
 import { useEsimNumberShop } from './use-numbers';
 
@@ -32,6 +35,9 @@ export function NumberShopView() {
   const [query, setQuery] = useState<EsimNumberShopQuery>({});
   const [digits, setDigits] = useState('');
   const [chosen, setChosen] = useState<EsimNumberOnSale | null>(null);
+  const { user } = useSession();
+  const router = useRouter();
+  const [signInForMore, setSignInForMore] = useState(false);
   const shop = useEsimNumberShop(query);
   const go = (next: Partial<EsimNumberShopQuery>) =>
     setQuery((current) => ({ ...current, ...next }));
@@ -58,7 +64,14 @@ export function NumberShopView() {
         }
         ListFooterComponent={
           data.pages > 1 ? (
-            <View className="flex-row items-center justify-center gap-3 pt-2">
+            <View className="gap-3 pt-2">
+            {signInForMore && !user ? (
+              <View className="items-center gap-2 rounded-xl bg-surface p-4">
+                <Text variant="caption">{t('signInForMore')}</Text>
+                <Button label={t('signIn')} size="sm" onPress={() => router.push('/login')} />
+              </View>
+            ) : null}
+            <View className="flex-row items-center justify-center gap-3">
               <Button
                 label={t('previous')}
                 variant="outline"
@@ -72,8 +85,9 @@ export function NumberShopView() {
                 variant="outline"
                 size="sm"
                 disabled={data.page >= data.pages || shop.isFetching}
-                onPress={() => go({ page: data.page + 1 })}
+                onPress={() => (user ? go({ page: data.page + 1 }) : setSignInForMore(true))}
               />
+            </View>
             </View>
           ) : null
         }

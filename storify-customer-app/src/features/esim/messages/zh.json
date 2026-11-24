@@ -103,6 +103,7 @@
     "inviteTitle": "邀请好友，赚取余额",
     "inviteOffer": "好友每下一单，你可获得 {you}。",
     "inviteOfferBoth": "好友首单立减 {friend}，你可获得其订单的 {you}。",
+    "inviteOfferNumbers": "号码 eSIM 订单可获得 {you}。",
     "share": "分享",
     "yourCode": "你的邀请码",
     "saveCode": "保存邀请码",
@@ -215,7 +216,9 @@
       "chargedAtRate": "按当前汇率 {amount} = {price}，结账时按 {price} 支付。",
       "notReady": "号码暂时无法购买，请稍后再试或联系客服。",
       "buy": "购买这个号码",
-      "signInToBuy": "登录后购买"
+      "signInToBuy": "登录后购买",
+      "signInForMore": "登录后可查看更多号码。",
+      "signIn": "登录"
     },
     "numberReason": {
       "SIGN_IN": "购买号码需要先登录。",
@@ -531,7 +534,6 @@
     "pushTitle": "接收 eSIM 提醒",
     "pushBody": "开启通知后，eSIM 开通成功、流量快用完、套餐快到期时会第一时间提醒你。随时可以在设置里关闭。",
     "pushAllow": "开启通知",
-    "pushLater": "以后再说",
-    "inviteOfferNumbers": "号码 eSIM 订单可获得 {you}。"
+    "pushLater": "以后再说"
   }
 }

@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
+import { auth } from "@/lib/auth/auth";
 import { setRequestLocale } from "next-intl/server";
 import { StoreBreadcrumb } from "@/components/store/store-breadcrumb";
 import { NumberPicker } from "@/components/esim/number-picker";
@@ -22,7 +24,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return { title, description, openGraph: { title, description } };
 }
 
-/** The numbers page (NUM-03): anyone can browse; buying needs an account. */
+/** The numbers page (NUM-03): anyone sees the first page; more pages and buying need an account. */
 export default async function EsimNumbersPage({ params, searchParams }: PageProps) {
   const { locale } = await params;
   setRequestLocale(locale);
@@ -34,6 +36,8 @@ export default async function EsimNumbersPage({ params, searchParams }: PageProp
     premium: PREMIUM.find((entry) => entry === premium) ?? "all",
     page: Number(one(query.page)) || 1,
   };
+  const signedIn = Boolean(await auth.api.getSession({ headers: await headers() }).catch(() => null));
+  if (!signedIn) filters.page = 1;
   const [tr, { storeDefault }, shop] = await Promise.all([translator(locale), getLocaleRouting(), numberShop(filters)]);
 
   return (

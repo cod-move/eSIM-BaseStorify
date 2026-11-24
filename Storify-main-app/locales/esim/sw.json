@@ -514,7 +514,8 @@
       "risk7": "Some devices and services (including iMessage and FaceTime) may send activation texts automatically when the eSIM is installed or turned on. These are charged as standard outgoing texts; to avoid them, turn off outgoing texts in the line settings before installing.",
       "risk8": "To keep the number, it needs at least one qualifying activity (data, text, call or recharge) every 365 days; otherwise the number may be reclaimed.",
       "riskAgree": "I have read and accept these risks",
-      "riskContinue": "Continue"
+      "riskContinue": "Continue",
+      "signInForMore": "Sign in to see more numbers."
     },
     "number": {
       "blocked": "Imezuiwa",
@@ -923,7 +924,9 @@
       "placeholder": "Type the characters",
       "refresh": "New picture",
       "alt": "Picture code",
-      "invalid": "The picture code is wrong or has run out. Please type the new one."
+      "invalid": "The picture code is wrong or has run out. Please type the new one.",
+      "turnstile": "Quick check that you are not a robot",
+      "turnstileFailed": "The check did not pass. Please complete it again."
     },
     "verifyEmail": {
       "title": "Check your email",

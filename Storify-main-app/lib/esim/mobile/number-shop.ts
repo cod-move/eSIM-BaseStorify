@@ -38,15 +38,17 @@ export const esimNumberShopRoute = defineRoute({
   id: "esim.numbers.shop",
   method: "GET",
   path: "/esim/numbers",
-  auth: "none",
-  cache: { kind: "public", sMaxAge: 30, swr: 60 },
+  auth: "optional",
+  cache: { kind: "private" },
   rateLimit: { bucket: "catalog:esim-numbers", preset: "browse" },
   input: EsimNumberShopQuery,
   output: EsimNumberShop,
-  handler: async ({ input, locale }) => {
+  handler: async ({ input, locale, session }) => {
     await connectDB();
+    // A guest sees the first page; more pages need an account.
+    const page = session ? (input.page ?? 1) : 1;
     const [shop, t] = await Promise.all([
-      numberShop({ dialCode: input.code, digits: input.digits, premium: input.premium ?? "all", page: input.page ?? 1 }),
+      numberShop({ dialCode: input.code, digits: input.digits, premium: input.premium ?? "all", page }),
       translator(locale),
     ]);
     const currency = shop.recharge.currency;

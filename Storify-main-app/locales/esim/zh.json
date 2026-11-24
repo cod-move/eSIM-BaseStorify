@@ -518,7 +518,8 @@
       "risk7": "部分设备和服务（包括 iMessage 和 FaceTime）可能在安装或启用 eSIM 时自动发送激活短信。该短信按标准外发短信费率计费；如不需要，可在安装前于线路设置中关闭外发短信。",
       "risk8": "如需保留号码，每 365 天内必须至少有一次合格活动（流量、短信、通话或充值）；否则号码可能被回收。",
       "riskAgree": "我已阅读并接受以上风险",
-      "riskContinue": "继续"
+      "riskContinue": "继续",
+      "signInForMore": "登录后可查看更多号码。"
     },
     "number": {
       "blocked": "已停用",
@@ -927,7 +928,9 @@
       "placeholder": "输入图中字符",
       "refresh": "换一张",
       "alt": "图形验证码",
-      "invalid": "验证码错误或已过期，请输入新的验证码。"
+      "invalid": "验证码错误或已过期，请输入新的验证码。",
+      "turnstile": "请完成人机验证",
+      "turnstileFailed": "验证未通过，请重新完成验证。"
     },
     "verifyEmail": {
       "title": "请查收邮件",

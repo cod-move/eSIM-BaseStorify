@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
-import { captchaEnabled, issueCaptcha } from "@/lib/esim/captcha/service";
+import { captchaEnabled, issueCaptcha, signInTurnstileKey } from "@/lib/esim/captcha/service";
 
-/** A new picture code for the sign-in and sign-up forms (patch P46). */
+/** The sign-in and sign-up check (patch P46): Cloudflare Turnstile's site key when the store has one, else a new picture code. */
 export async function GET() {
   const headers = { "Cache-Control": "no-store" };
   if (!captchaEnabled()) return NextResponse.json({ enabled: false }, { headers });
+  const siteKey = await signInTurnstileKey();
+  if (siteKey) return NextResponse.json({ enabled: true, turnstile: siteKey }, { headers });
   return NextResponse.json({ enabled: true, ...issueCaptcha() }, { headers });
 }

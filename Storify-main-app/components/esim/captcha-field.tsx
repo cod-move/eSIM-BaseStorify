@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { RefreshCw, ShieldCheck } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useFallbackTranslator } from "@/hooks/use-fallback-translator";
+import { TurnstileCheck } from "@/components/checkout/turnstile-check";
 
 /**
  * The picture code under the email and password on the sign-in and sign-up
@@ -14,28 +15,36 @@ import { useFallbackTranslator } from "@/hooks/use-fallback-translator";
  *
  * The field the shopper typed in last is the one sent, so a sign-in drawer
  * kept mounted behind the sign-in page does not get in the way.
+ *
+ * A store with Cloudflare Turnstile gets that instead of the picture: its
+ * token goes in `x-turnstile`, and a used or refused one draws a new check.
  */
 
 const HEADER = "x-captcha";
 let current: { token: string; answer: string } | null = null;
+let turnstileToken = "";
 let enabled = true;
 const listeners = new Set<(error: boolean) => void>();
 
 /** Headers for `signIn.email` / `signUp.email`. */
 export function captchaHeaders(): Record<string, string> {
-  if (!enabled || !current) return {};
+  if (!enabled) return {};
+  if (turnstileToken) return { "x-turnstile": turnstileToken };
+  if (!current) return {};
   return { [HEADER]: `${current.token}|${current.answer}` };
 }
 
 /** The server said the code was wrong, run out or used: a new picture, and say so. */
 export function captchaRejected() {
   current = null;
+  turnstileToken = "";
   listeners.forEach((listener) => listener(true));
 }
 
 /** After a request that used the code (it is used up either way): a new picture. */
 export function captchaUsed() {
   current = null;
+  turnstileToken = "";
   listeners.forEach((listener) => listener(false));
 }
 
@@ -48,14 +57,23 @@ export function CaptchaField({ disabled }: { disabled?: boolean }) {
   const [show, setShow] = useState(true);
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [siteKey, setSiteKey] = useState<string | null>(null);
+  /** Bumped to draw a fresh Turnstile check after one is used. */
+  const [round, setRound] = useState(0);
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
       const response = await fetch("/api/esim/captcha", { cache: "no-store" });
-      const body = (await response.json()) as { enabled: boolean; token?: string; image?: string };
+      const body = (await response.json()) as { enabled: boolean; token?: string; image?: string; turnstile?: string };
       enabled = body.enabled;
       setShow(body.enabled);
+      if (body.turnstile) {
+        turnstileToken = "";
+        setSiteKey(body.turnstile);
+        setRound((value) => value + 1);
+        return;
+      }
       if (body.enabled && body.token && body.image) {
         setChallenge({ token: body.token, image: body.image });
         current = { token: body.token, answer: "" };
@@ -81,6 +99,22 @@ export function CaptchaField({ disabled }: { disabled?: boolean }) {
   }, [load]);
 
   if (!show) return null;
+  if (siteKey) {
+    return (
+      <div className="space-y-2">
+        <TurnstileCheck
+          key={round}
+          siteKey={siteKey}
+          onToken={(token) => {
+            turnstileToken = token;
+            if (token) setError(false);
+          }}
+          label={t("esim.captcha.turnstile", "Quick check that you are not a robot")}
+        />
+        {error ? <p className="text-sm text-destructive">{t("esim.captcha.turnstileFailed", "The check did not pass. Please complete it again.")}</p> : null}
+      </div>
+    );
+  }
   return (
     <div className="space-y-2">
       <label className="text-sm font-medium" htmlFor="esim-captcha">

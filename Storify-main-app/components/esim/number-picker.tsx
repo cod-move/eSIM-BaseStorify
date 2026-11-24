@@ -40,6 +40,10 @@ export function NumberPicker({ shop, filters, locale }: { shop: NumberShop; filt
   const [isPending, startTransition] = useTransition();
   const [digits, setDigits] = useState(filters.digits ?? "");
   const [chosen, setChosen] = useState<ShopNumber | null>(null);
+  // A guest sees the first page; "Next" asks them to sign in (the server serves page 1 to guests anyway).
+  const { data: viewer, isPending: sessionLoading } = useSession();
+  const guest = !sessionLoading && !viewer;
+  const [signInForMore, setSignInForMore] = useState(false);
 
   function go(next: Partial<ShopNumberFilters>) {
     const merged = { ...filters, ...next };
@@ -141,6 +145,14 @@ export function NumberPicker({ shop, filters, locale }: { shop: NumberShop; filt
         </div>
       )}
 
+      {signInForMore ? (
+        <div className="mt-4 flex flex-wrap items-center justify-center gap-3 rounded-lg border bg-muted/40 p-4 text-sm">
+          <span>{t("esim.numbers.signInForMore", "Sign in to see more numbers.")}</span>
+          <Button size="sm" onClick={() => router.push(buildLoginUrl(locale, currentBrowserPath()))}>
+            {t("esim.numbers.signIn", "Sign in")}
+          </Button>
+        </div>
+      ) : null}
       {shop.pages > 1 ? (
         <div className="flex items-center justify-center gap-2 text-sm">
           <Button size="icon" variant="outline" disabled={shop.page <= 1} onClick={() => go({ page: shop.page - 1 })} aria-label={t("esim.numbers.previous", "Previous")}>
@@ -149,7 +161,7 @@ export function NumberPicker({ shop, filters, locale }: { shop: NumberShop; filt
           <span className="text-muted-foreground">
             {t("esim.numbers.pageOf", "Page {page} of {pages}", { page: shop.page, pages: shop.pages })}
           </span>
-          <Button size="icon" variant="outline" disabled={shop.page >= shop.pages} onClick={() => go({ page: shop.page + 1 })} aria-label={t("esim.numbers.next", "Next")}>
+          <Button size="icon" variant="outline" disabled={shop.page >= shop.pages} onClick={() => (guest ? setSignInForMore(true) : go({ page: shop.page + 1 }))} aria-label={t("esim.numbers.next", "Next")}>
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>

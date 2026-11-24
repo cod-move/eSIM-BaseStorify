@@ -103,6 +103,7 @@
     "inviteTitle": "Invite friends, earn credit",
     "inviteOffer": "You earn {you} of every order your friends place.",
     "inviteOfferBoth": "Your friends get {friend} off their first order, and you earn {you} of their orders.",
+    "inviteOfferNumbers": "For phone number eSIMs you earn {you}.",
     "share": "Share",
     "yourCode": "Your code",
     "saveCode": "Save the code",
@@ -215,7 +216,9 @@
       "chargedAtRate": "At the current exchange rate {amount} = {price}, so you pay {price} at checkout.",
       "notReady": "Numbers cannot be bought right now. Please try again later or contact us.",
       "buy": "Buy this number",
-      "signInToBuy": "Sign in to buy"
+      "signInToBuy": "Sign in to buy",
+      "signInForMore": "Sign in to see more numbers.",
+      "signIn": "Sign in"
     },
     "numberReason": {
       "SIGN_IN": "Sign in to buy a phone number.",
@@ -531,7 +534,6 @@
     "pushTitle": "Get eSIM reminders",
     "pushBody": "Turn on notifications to hear when your eSIM is ready, when data is running low and before your plan expires. You can turn them off in Settings at any time.",
     "pushAllow": "Turn on notifications",
-    "pushLater": "Not now",
-    "inviteOfferNumbers": "For phone number eSIMs you earn {you}."
+    "pushLater": "Not now"
   }
 }
