@@ -71,15 +71,18 @@ export async function InviteSection({
       });
     }
   } else {
-    const reward =
-      centre.offer.commissionType === "percent"
-        ? tr("esim.referral.offerPercent", "{value}% of each order they pay for", { value: centre.offer.commissionValue })
-        : tr("esim.referral.offerFixed", "{value} for each order they pay for", { value: money(centre.offer.commissionValue / 100) });
+    const rewardOf = (rate: { commissionType: "percent" | "fixed"; commissionValue: number }) =>
+      rate.commissionType === "percent"
+        ? tr("esim.referral.offerPercent", "{value}% of each order they pay for", { value: rate.commissionValue })
+        : tr("esim.referral.offerFixed", "{value} for each order they pay for", { value: money(rate.commissionValue / 100) });
+    const reward = rewardOf(centre.offer);
     const limits = [
       centre.offer.orderLimit > 0 ? tr("esim.referral.limitOrders", "their first {count} orders", { count: centre.offer.orderLimit }) : null,
       centre.offer.validityDays > 0 ? tr("esim.referral.limitDays", "within {count} days of joining", { count: centre.offer.validityDays }) : null,
     ].filter(Boolean);
     offer = `${tr("esim.referral.offer", "You get {reward}", { reward })}${limits.length ? ` (${limits.join(", ")})` : ""}.`;
+    // Phone number eSIMs at a rate of their own.
+    if (centre.offer.numbers) offer += ` ${tr("esim.referral.offerNumbers", "For phone number eSIMs: {reward}.", { reward: rewardOf(centre.offer.numbers) })}`;
   }
   if (centre.offer.coupon.enabled) {
     friend = [

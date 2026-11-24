@@ -312,7 +312,8 @@
       "rewardsShowRecent": "過去30日間のみ",
       "rewardsShowAll": "すべて表示",
       "rewardsNoneRecent": "過去30日間の特典はありません。",
-      "dataAdded": "データに追加済み"
+      "dataAdded": "データに追加済み",
+      "offerNumbers": "電話番号 eSIM：{reward}。"
     },
     "kyc": {
       "title": "本人確認",

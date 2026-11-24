@@ -316,7 +316,8 @@
       "rewardsShowRecent": "只看最近 30 天",
       "rewardsShowAll": "查看全部",
       "rewardsNoneRecent": "最近 30 天没有奖励。",
-      "dataAdded": "已加到你的流量"
+      "dataAdded": "已加到你的流量",
+      "offerNumbers": "号码 eSIM：{reward}。"
     },
     "kyc": {
       "title": "身份认证",
@@ -1966,7 +1967,12 @@
       "numbersAlreadyOff": "所选号码都已下架",
       "signInAccount": "账户",
       "searchSignIns": "邮箱、姓名或 IP 地址",
-      "signInsSameIp": "查看这个 IP 的所有登录"
+      "signInsSameIp": "查看这个 IP 的所有登录",
+      "referralNumbers": "号码 eSIM 单独设置返佣",
+      "referralNumbersHint": "开启后，号码 eSIM 按下面的返佣计算，不再用上面的；一个订单里两种都有时，各部分按各自的比例算，固定金额按订单每个部分各算一次。号码充值订单不计返佣。专属规则里可以给单个推荐人单独设置号码返佣。",
+      "referralNumbersReward": "号码 eSIM 返佣",
+      "referralNumbersSame": "与上面的返佣相同",
+      "referralNumbersShort": "号码"
     },
     "sidebar": {
       "esim": "eSIM",

@@ -312,7 +312,8 @@
       "rewardsShowRecent": "Naanị ụbọchị 30 gara aga",
       "rewardsShowAll": "Gosi ha niile",
       "rewardsNoneRecent": "Enweghị ụgwọ ọrụ n’ụbọchị 30 gara aga.",
-      "dataAdded": "Etinyere na data gị"
+      "dataAdded": "Etinyere na data gị",
+      "offerNumbers": "Maka eSIM nọmba ekwentị: {reward}."
     },
     "kyc": {
       "title": "Nkwenye njirimara",

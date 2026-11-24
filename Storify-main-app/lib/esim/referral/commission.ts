@@ -10,7 +10,7 @@ import { createNotification, notifyAdminsPaymentAnomaly } from "@/lib/notificati
 import { sendEmail } from "@/lib/email/email";
 import { escapeHtml } from "@/lib/email/escape-html";
 import { appBaseUrl } from "@/lib/app-url";
-import { commissionAllowed, commissionBase, commissionFor, isDeducted } from "@/lib/esim/referral/rules";
+import { commissionAllowed, commissionRuleOf, isDeducted, orderCommission, type CommissionRule } from "@/lib/esim/referral/rules";
 import { getReferralSettings, getReferrerSettings } from "@/lib/esim/referral/service";
 import { giveReferralData } from "@/lib/esim/referral/data-rewards";
 import { REWARD_PAYMENT_METHOD } from "@/lib/esim/telegram/redeem";
@@ -66,8 +66,8 @@ export async function earnReferralCommission(orderId: unknown): Promise<IEsimRef
   if (!commissionAllowed({ validUntil: referral.validUntil, orderDate: order.createdAt, earnedSoFar }, settings).ok) return null;
   // 扣量: a set share of qualifying orders earns nothing; stable per order, so retries agree.
   if (isDeducted(String(order._id), settings.deductPercent)) return null;
-  const base = commissionBase(order);
-  const amount = commissionFor(base, settings);
+  const rule = commissionRuleOf(settings);
+  const { base, amount } = orderCommission(order, rule);
   if (!(amount > 0)) return null;
   try {
     return await EsimReferralCommission.create({
@@ -78,7 +78,7 @@ export async function earnReferralCommission(orderId: unknown): Promise<IEsimRef
       orderNumber: order.orderNumber,
       base,
       amount,
-      rule: { commissionType: settings.commissionType, commissionValue: settings.commissionValue },
+      rule,
       currency: String(order.currency || "USD").toUpperCase(),
       payableAt: new Date(Date.now() + settings.holdDays * 86_400_000),
     });
@@ -131,14 +131,15 @@ export async function runReferralPayouts(options: { now?: Date; limit?: number }
   const now = options.now ?? new Date();
   const result: PayoutResult = { paid: 0, cancelled: 0, clawbacks: 0 };
   const store = await getReferralSettings();
-  // Recomputed at the rate the reward was earned at (REF-07); older rewards at the store's.
-  const rateOf = (commission: { rule?: IEsimReferralCommission["rule"] }) => commission.rule ?? store;
+  // Recomputed at the rate the reward was earned at (REF-07); older rewards at the store's single rate,
+  // as they were earned (before numbers had a rate of their own).
+  const rateOf = (commission: { rule?: IEsimReferralCommission["rule"] }): CommissionRule => commission.rule ?? { ...commissionRuleOf(store), numbers: null };
 
   const due = await EsimReferralCommission.find({ status: "pending", payableAt: { $lte: now } }).sort({ payableAt: 1 }).limit(options.limit ?? 200);
   for (const commission of due) {
     const order = await Order.findById(commission.order).select(ORDER_FIELDS).lean<OrderView | null>();
     const amount = order && order.status !== ORDER_STATUS.CANCELLED
-      ? Math.min(commission.amount, commissionFor(commissionBase(order), rateOf(commission)))
+      ? Math.min(commission.amount, orderCommission(order, rateOf(commission)).amount)
       : 0;
     if (!(amount > 0)) {
       const moved = await EsimReferralCommission.updateOne({ _id: commission._id, status: "pending" }, { $set: { status: "cancelled", note: "The order was refunded or cancelled before the reward was paid" } });
@@ -173,7 +174,7 @@ export async function runReferralPayouts(options: { now?: Date; limit?: number }
     for (const commission of credited) {
       const order = byId.get(String(commission.order));
       if (!order) continue;
-      const owed = Math.round((commission.amount - commissionFor(commissionBase(order), rateOf(commission))) * 100) / 100;
+      const owed = Math.round((commission.amount - orderCommission(order, rateOf(commission)).amount) * 100) / 100;
       if (!(owed > 0)) continue;
       const marked = await EsimReferralCommission.updateOne({ _id: commission._id, clawback: null }, { $set: { clawback: { amount: owed, at: now, settled: false } } });
       if (!marked.modifiedCount) continue;

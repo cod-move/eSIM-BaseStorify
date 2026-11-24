@@ -30,6 +30,13 @@ export const ReferralSettingsSchema = z.object({
   orderLimit: z.number().int().min(0).max(1000),
   deductPercent: z.number().int().min(0).max(100).default(0),
   holdDays: z.number().int().min(0).max(365),
+  numbers: z
+    .object({
+      enabled: z.boolean(),
+      commissionType: z.enum(["percent", "fixed"]),
+      commissionValue: z.number().min(0).max(100_000),
+    })
+    .default({ enabled: false, commissionType: "percent", commissionValue: 10 }),
   coupon: z.object({
     enabled: z.boolean(),
     type: z.enum(["percentage", "fixed"]),
@@ -38,13 +45,14 @@ export const ReferralSettingsSchema = z.object({
     minOrderMinor: z.number().int().min(0).max(100_000_000),
   }),
 }).refine((value) => value.commissionType !== "percent" || value.commissionValue <= 100, { message: "A percent commission is at most 100", path: ["commissionValue"] })
+  .refine((value) => value.numbers.commissionType !== "percent" || value.numbers.commissionValue <= 100, { message: "A percent commission is at most 100", path: ["numbers", "commissionValue"] })
   .refine((value) => value.coupon.type !== "percentage" || value.coupon.value <= 100, { message: "A percent discount is at most 100", path: ["coupon", "value"] });
 
 export async function saveReferralSettings(next: z.infer<typeof ReferralSettingsSchema>) {
   await connectDB();
   const before = await getReferralSettings();
   const settings = await getEsimSettings();
-  settings.referral = { ...next, data: { ...next.data }, coupon: { ...next.coupon } };
+  settings.referral = { ...next, data: { ...next.data }, numbers: { ...next.numbers }, coupon: { ...next.coupon } };
   await settings.save();
   return { before, after: next };
 }
@@ -155,9 +163,13 @@ export const ReferralOverrideSchema = z.object({
   validityDays: z.number().int().min(0).max(3650).nullable(),
   orderLimit: z.number().int().min(0).max(1000).nullable(),
   deductPercent: z.number().int().min(0).max(100).nullable().default(null),
+  numbersCommissionType: z.enum(["percent", "fixed"]).nullable().default(null),
+  numbersCommissionValue: z.number().min(0).max(100_000).nullable().default(null),
   note: z.string().trim().max(300).nullable().default(null),
 }).refine((value) => value.commissionValue === null || value.commissionType !== "percent" || value.commissionValue <= 100, { message: "A percent commission is at most 100", path: ["commissionValue"] })
-  .refine((value) => value.commissionValue === null || value.commissionType !== null, { message: "Choose the reward type for a value of its own", path: ["commissionType"] });
+  .refine((value) => value.commissionValue === null || value.commissionType !== null, { message: "Choose the reward type for a value of its own", path: ["commissionType"] })
+  .refine((value) => value.numbersCommissionValue === null || value.numbersCommissionType !== "percent" || value.numbersCommissionValue <= 100, { message: "A percent commission is at most 100", path: ["numbersCommissionValue"] })
+  .refine((value) => value.numbersCommissionValue === null || value.numbersCommissionType !== null, { message: "Choose the reward type for a value of its own", path: ["numbersCommissionType"] });
 
 export type ReferralOverrideInput = z.infer<typeof ReferralOverrideSchema>;
 
@@ -175,6 +187,8 @@ export interface ReferralOverrideRow {
   validityDays: number | null;
   orderLimit: number | null;
   deductPercent: number | null;
+  numbersCommissionType: "percent" | "fixed" | null;
+  numbersCommissionValue: number | null;
   note: string | null;
   referrals: number;
   updatedAt: string;
@@ -204,6 +218,8 @@ export async function listReferralOverrides(): Promise<ReferralOverrideRow[]> {
     validityDays: row.validityDays ?? null,
     orderLimit: row.orderLimit ?? null,
     deductPercent: row.deductPercent ?? null,
+    numbersCommissionType: row.numbersCommissionType ?? null,
+    numbersCommissionValue: row.numbersCommissionValue ?? null,
     note: row.note ?? null,
     referrals: count.get(String(row.user)) ?? 0,
     updatedAt: new Date(row.updatedAt).toISOString(),
@@ -212,8 +228,8 @@ export async function listReferralOverrides(): Promise<ReferralOverrideRow[]> {
 
 export class ReferralOverrideError extends Error {}
 
-const overrideFields = (row: { enabled?: unknown; rewardType?: unknown; referrerMb?: unknown; referrerOn?: unknown; inviteeMb?: unknown; inviteeOn?: unknown; commissionType?: unknown; commissionValue?: unknown; validityDays?: unknown; orderLimit?: unknown; deductPercent?: unknown; note?: unknown } | null) =>
-  row ? { enabled: row.enabled ?? null, rewardType: row.rewardType ?? null, referrerMb: row.referrerMb ?? null, referrerOn: row.referrerOn ?? null, inviteeMb: row.inviteeMb ?? null, inviteeOn: row.inviteeOn ?? null, commissionType: row.commissionType ?? null, commissionValue: row.commissionValue ?? null, validityDays: row.validityDays ?? null, orderLimit: row.orderLimit ?? null, deductPercent: row.deductPercent ?? null, note: row.note ?? null } : null;
+const overrideFields = (row: { enabled?: unknown; rewardType?: unknown; referrerMb?: unknown; referrerOn?: unknown; inviteeMb?: unknown; inviteeOn?: unknown; commissionType?: unknown; commissionValue?: unknown; validityDays?: unknown; orderLimit?: unknown; deductPercent?: unknown; numbersCommissionType?: unknown; numbersCommissionValue?: unknown; note?: unknown } | null) =>
+  row ? { enabled: row.enabled ?? null, rewardType: row.rewardType ?? null, referrerMb: row.referrerMb ?? null, referrerOn: row.referrerOn ?? null, inviteeMb: row.inviteeMb ?? null, inviteeOn: row.inviteeOn ?? null, commissionType: row.commissionType ?? null, commissionValue: row.commissionValue ?? null, validityDays: row.validityDays ?? null, orderLimit: row.orderLimit ?? null, deductPercent: row.deductPercent ?? null, numbersCommissionType: row.numbersCommissionType ?? null, numbersCommissionValue: row.numbersCommissionValue ?? null, note: row.note ?? null } : null;
 
 /** Sets a referrer's own rules, found by email; returns what was there before for the audit log. */
 export async function saveReferralOverride(input: ReferralOverrideInput, updatedBy: string | null) {

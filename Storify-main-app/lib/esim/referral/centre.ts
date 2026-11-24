@@ -26,7 +26,7 @@ export interface ReferralCentre {
   enabled: boolean;
   code: string;
   link: string;
-  offer: { rewardType: "credit" | "data"; data: ReferralDataReward; commissionType: "percent" | "fixed"; commissionValue: number; orderLimit: number; validityDays: number; coupon: { enabled: boolean; type: "percentage" | "fixed"; value: number } };
+  offer: { rewardType: "credit" | "data"; data: ReferralDataReward; commissionType: "percent" | "fixed"; commissionValue: number; numbers: { commissionType: "percent" | "fixed"; commissionValue: number } | null; orderLimit: number; validityDays: number; coupon: { enabled: boolean; type: "percentage" | "fixed"; value: number } };
   /** `dataMb`: data this friend earned the shopper (rewardType "data"). */
   invited: FriendRow[];
   /** Everyone who joined with the shopper's link, and the pages `invited` is one of. */
@@ -182,6 +182,7 @@ export async function referralCentre(userId: string, options: { friendsPage?: nu
       data: { ...settings.data },
       commissionType: settings.commissionType,
       commissionValue: settings.commissionValue,
+      numbers: settings.numbers.enabled ? { commissionType: settings.numbers.commissionType, commissionValue: settings.numbers.commissionValue } : null,
       orderLimit: settings.orderLimit,
       validityDays: settings.validityDays,
       coupon: { enabled: settings.coupon.enabled, type: settings.coupon.type, value: settings.coupon.value },

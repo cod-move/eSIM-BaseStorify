@@ -316,7 +316,8 @@
       "rewardsShowRecent": "只看最近 30 天",
       "rewardsShowAll": "查看全部",
       "rewardsNoneRecent": "最近 30 天沒有獎勵。",
-      "dataAdded": "已加到你的流量"
+      "dataAdded": "已加到你的流量",
+      "offerNumbers": "號碼 eSIM：{reward}。"
     },
     "kyc": {
       "title": "身份認證",
@@ -1966,7 +1967,12 @@
       "numbersAlreadyOff": "所選號碼都已下架",
       "signInAccount": "帳戶",
       "searchSignIns": "信箱、姓名或 IP 位址",
-      "signInsSameIp": "查看這個 IP 的所有登入"
+      "signInsSameIp": "查看這個 IP 的所有登入",
+      "referralNumbers": "號碼 eSIM 單獨設定返佣",
+      "referralNumbersHint": "開啟後，號碼 eSIM 按下面的返佣計算，不再用上面的；一張訂單裡兩種都有時，各部分按各自的比例算，固定金額按訂單每個部分各算一次。號碼儲值訂單不計返佣。專屬規則裡可以給單個推薦人單獨設定號碼返佣。",
+      "referralNumbersReward": "號碼 eSIM 返佣",
+      "referralNumbersSame": "與上面的返佣相同",
+      "referralNumbersShort": "號碼"
     },
     "sidebar": {
       "esim": "eSIM",

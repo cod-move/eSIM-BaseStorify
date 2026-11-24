@@ -1,4 +1,4 @@
-import { walletCreditOfOrder } from "@/lib/esim/wallet/booking";
+import { walletAttributesOf, walletCreditOfOrder } from "@/lib/esim/wallet/booking";
 
 /**
  * Referral rules (REF-01/02/04). Pure.
@@ -41,6 +41,11 @@ export interface ReferralSettings {
   deductPercent: number;
   /** Days between an order's delivery and paying its commission. */
   holdDays: number;
+  /**
+   * Phone number eSIMs (and their top-ups) at a rate of their own: when on,
+   * their share of an order earns this instead of the commission above.
+   */
+  numbers: { enabled: boolean; commissionType: "percent" | "fixed"; commissionValue: number };
   coupon: {
     enabled: boolean;
     type: "percentage" | "fixed";
@@ -61,6 +66,7 @@ export const DEFAULT_REFERRAL_SETTINGS: ReferralSettings = {
   orderLimit: 0,
   deductPercent: 0,
   holdDays: 14,
+  numbers: { enabled: false, commissionType: "percent", commissionValue: 10 },
   coupon: { enabled: false, type: "percentage", value: 10, days: 30, minOrderMinor: 0 },
 };
 
@@ -82,6 +88,10 @@ export interface ReferralOverride {
   validityDays: number | null;
   orderLimit: number | null;
   deductPercent: number | null;
+  /** Number eSIMs' own rate for this referrer: set, their numbers earn it even when the store has none. */
+  numbersCommissionType: ReferralSettings["commissionType"] | null;
+  /** Percent, or cents for a fixed commission. */
+  numbersCommissionValue: number | null;
 }
 
 /** The settings a referrer earns by: their own where set, the store's otherwise. */
@@ -105,6 +115,16 @@ export function effectiveReferralRule(settings: ReferralSettings, override?: Par
     validityDays: override.validityDays ?? settings.validityDays,
     orderLimit: override.orderLimit ?? settings.orderLimit,
     deductPercent: override.deductPercent ?? settings.deductPercent,
+    numbers: override.numbersCommissionType
+      ? {
+          enabled: true,
+          commissionType: override.numbersCommissionType,
+          // As above: a type changed without a value of its own has none.
+          commissionValue:
+            override.numbersCommissionValue ??
+            (settings.numbers.enabled && override.numbersCommissionType === settings.numbers.commissionType ? settings.numbers.commissionValue : 0),
+        }
+      : settings.numbers,
   };
 }
 
@@ -141,7 +161,84 @@ export function commissionBase(order: Parameters<typeof walletCreditOfOrder>[0] 
   return Math.max(0, Math.round(paid * 100) / 100);
 }
 
-export type CommissionRefusal = "disabled" | "expired" | "limit";
+/** The rate a reward is earned at, kept on it so a later refund recomputes it alike. */
+export interface CommissionRule {
+  commissionType: "percent" | "fixed";
+  commissionValue: number;
+  /** Number eSIM lines' own rate; null or absent: they earn the rate above. */
+  numbers?: { commissionType: "percent" | "fixed"; commissionValue: number } | null;
+  /** Number top-ups earn nothing; absent on rewards earned before, which counted them. */
+  skipNumberTopups?: boolean;
+}
+
+/** The rule a referrer's settings earn by now. */
+export function commissionRuleOf(settings: Pick<ReferralSettings, "commissionType" | "commissionValue" | "numbers">): CommissionRule {
+  return {
+    commissionType: settings.commissionType,
+    commissionValue: settings.commissionValue,
+    numbers: settings.numbers?.enabled ? { commissionType: settings.numbers.commissionType, commissionValue: settings.numbers.commissionValue } : null,
+    skipNumberTopups: true,
+  };
+}
+
+/** A phone number eSIM line (lib/esim/numbers/cart-line.ts). */
+export function isNumberLine(line: { lineAttributes?: unknown }): boolean {
+  const number = attributeOf(line, "number");
+  return Boolean(number && typeof number === "object");
+}
+
+/** A number top-up line: credit or a data package for a number already bought (lib/esim/numbers/topup.ts). */
+export function isNumberTopupLine(line: { lineAttributes?: unknown }): boolean {
+  const topup = attributeOf(line, "numberTopup");
+  return Boolean(topup && typeof topup === "object");
+}
+
+function attributeOf(line: { lineAttributes?: unknown }, key: string): unknown {
+  const attributes = line.lineAttributes;
+  return attributes && typeof attributes === "object" ? (attributes as Record<string, unknown>)[key] : undefined;
+}
+
+type CommissionOrder = Parameters<typeof commissionBase>[0];
+
+const cents = (value: number) => Math.round(value * 100) / 100;
+
+/**
+ * What a referred order earns under a rule: the base (commissionBase) and
+ * the commission on it, the base shared among the lines by their prices.
+ * - Wallet top-ups earn nothing (commissionBase leaves them out).
+ * - Number top-ups earn nothing either (`skipNumberTopups`): an order of
+ *   top-ups alone earns no commission. Rewards earned before that rule
+ *   recompute as they were earned, top-ups included.
+ * - With a rate of its own for numbers, number eSIMs' share earns that rate
+ *   and the rest the main one; a fixed rate is paid once for each part the
+ *   order has.
+ */
+export function orderCommission(order: CommissionOrder, rule: CommissionRule): { base: number; amount: number } {
+  const paid = commissionBase(order);
+  let numberGross = 0;
+  let topupGross = 0;
+  let otherGross = 0;
+  for (const line of order.items ?? []) {
+    if (walletAttributesOf(line)) continue;
+    const gross = Math.max(0, Number(line.price) || 0) * Math.max(1, Number(line.quantity) || 1);
+    if (isNumberLine(line)) numberGross += gross;
+    else if (isNumberTopupLine(line)) topupGross += gross;
+    else otherGross += gross;
+  }
+  const goods = numberGross + topupGross + otherGross;
+  const shareOf = (gross: number) => (goods > 0 ? cents((paid * gross) / goods) : 0);
+  const skip = rule.skipNumberTopups === true;
+  const base = skip && goods > 0 ? Math.max(0, cents(paid - shareOf(topupGross))) : paid;
+  if (!rule.numbers) return { base, amount: commissionFor(base, rule) };
+  // Before top-ups were left out, they earned the numbers' rate with the numbers.
+  const numberPart = skip ? numberGross : numberGross + topupGross;
+  const numberBase = Math.min(base, shareOf(numberPart));
+  const otherBase = Math.max(0, cents(base - numberBase));
+  const amount = (otherGross > 0 ? commissionFor(otherBase, rule) : 0) + (numberPart > 0 ? commissionFor(numberBase, rule.numbers) : 0);
+  return { base, amount: cents(Math.min(amount, base)) };
+}
+
+export type CommissionRefusal ="disabled" | "expired" | "limit";
 
 /** Whether a referee's order earns commission, given how many already did. */
 export function commissionAllowed(

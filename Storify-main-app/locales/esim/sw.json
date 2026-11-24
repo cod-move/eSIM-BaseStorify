@@ -312,7 +312,8 @@
       "rewardsShowRecent": "Siku 30 zilizopita pekee",
       "rewardsShowAll": "Onyesha zote",
       "rewardsNoneRecent": "Hakuna zawadi katika siku 30 zilizopita.",
-      "dataAdded": "Imeongezwa kwenye data yako"
+      "dataAdded": "Imeongezwa kwenye data yako",
+      "offerNumbers": "Kwa eSIM za namba ya simu: {reward}."
     },
     "kyc": {
       "title": "Uthibitishaji wa utambulisho",

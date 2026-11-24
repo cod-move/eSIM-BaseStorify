@@ -312,7 +312,8 @@
       "rewardsShowRecent": "सिर्फ़ पिछले 30 दिन",
       "rewardsShowAll": "सब दिखाएँ",
       "rewardsNoneRecent": "पिछले 30 दिनों में कोई इनाम नहीं।",
-      "dataAdded": "आपके डेटा में जोड़ा गया"
+      "dataAdded": "आपके डेटा में जोड़ा गया",
+      "offerNumbers": "फ़ोन नंबर eSIM के लिए: {reward}।"
     },
     "kyc": {
       "title": "पहचान सत्यापन",

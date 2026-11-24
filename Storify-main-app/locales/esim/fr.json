@@ -312,7 +312,8 @@
       "rewardsShowRecent": "Seulement les 30 derniers jours",
       "rewardsShowAll": "Tout afficher",
       "rewardsNoneRecent": "Aucune récompense ces 30 derniers jours.",
-      "dataAdded": "Ajouté à vos données"
+      "dataAdded": "Ajouté à vos données",
+      "offerNumbers": "Pour les eSIM avec numéro : {reward}."
     },
     "kyc": {
       "title": "Vérification d'identité",

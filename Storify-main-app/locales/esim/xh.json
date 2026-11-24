@@ -312,7 +312,8 @@
       "rewardsShowRecent": "Iintsuku ezingama-30 ezidlulileyo kuphela",
       "rewardsShowAll": "Bonisa zonke",
       "rewardsNoneRecent": "Akukho mivuzo kwiintsuku ezingama-30 ezidlulileyo.",
-      "dataAdded": "Yongezwe kwidatha yakho"
+      "dataAdded": "Yongezwe kwidatha yakho",
+      "offerNumbers": "Kwii-eSIM zenombolo yefowuni: {reward}."
     },
     "kyc": {
       "title": "Ukuqinisekiswa kwesazisi",

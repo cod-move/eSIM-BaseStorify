@@ -316,7 +316,8 @@
       "rewardsShowRecent": "Last 30 days only",
       "rewardsShowAll": "Show all",
       "rewardsNoneRecent": "No rewards in the last 30 days.",
-      "dataAdded": "Added to your data"
+      "dataAdded": "Added to your data",
+      "offerNumbers": "For phone number eSIMs: {reward}."
     },
     "kyc": {
       "title": "Identity verification",
@@ -1966,7 +1967,12 @@
       "numbersAlreadyOff": "Already off sale",
       "signInAccount": "Account",
       "searchSignIns": "Email, name or IP address",
-      "signInsSameIp": "Show sign-ins from this IP"
+      "signInsSameIp": "Show sign-ins from this IP",
+      "referralNumbers": "Phone number eSIMs at their own rate",
+      "referralNumbersHint": "When on, phone number eSIMs earn the reward below instead of the one above; an order with both earns each part at its own rate, and a fixed amount is paid once per order for each part. Number top-ups never earn a reward. Per-inviter rules can set a number rate of their own.",
+      "referralNumbersReward": "Phone number eSIM reward",
+      "referralNumbersSame": "same as the reward above",
+      "referralNumbersShort": "Numbers"
     },
     "sidebar": {
       "esim": "eSIM",

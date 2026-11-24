@@ -43,10 +43,13 @@ interface Draft {
   validityDays: string;
   orderLimit: string;
   deductPercent: string;
+  numbersCommissionType: "" | "percent" | "fixed";
+  /** As typed: percent, or USD for a fixed reward. */
+  numbersCommissionValue: string;
   note: string;
 }
 
-const EMPTY: Draft = { email: "", enabled: "", rewardType: "", referrerMb: "", referrerOn: "", inviteeMb: "", inviteeOn: "", commissionType: "", commissionValue: "", validityDays: "", orderLimit: "", deductPercent: "", note: "" };
+const EMPTY: Draft = { email: "", enabled: "", rewardType: "", referrerMb: "", referrerOn: "", inviteeMb: "", inviteeOn: "", commissionType: "", commissionValue: "", validityDays: "", orderLimit: "", deductPercent: "", numbersCommissionType: "", numbersCommissionValue: "", note: "" };
 
 function toDraft(row: ReferralOverrideRow): Draft {
   return {
@@ -62,6 +65,9 @@ function toDraft(row: ReferralOverrideRow): Draft {
     validityDays: row.validityDays === null ? "" : String(row.validityDays),
     orderLimit: row.orderLimit === null ? "" : String(row.orderLimit),
     deductPercent: row.deductPercent === null ? "" : String(row.deductPercent),
+    numbersCommissionType: row.numbersCommissionType ?? "",
+    numbersCommissionValue:
+      row.numbersCommissionValue === null ? "" : String(row.numbersCommissionType === "fixed" ? row.numbersCommissionValue / 100 : row.numbersCommissionValue),
     note: row.note ?? "",
   };
 }
@@ -80,6 +86,8 @@ export function EsimReferralOverridesAdmin({ settings, rows, canManage }: Props)
   async function save() {
     const type = draft.commissionType || null;
     const typed = draft.commissionValue.trim() === "" ? null : Math.max(0, Number(draft.commissionValue) || 0);
+    const numbersType = draft.numbersCommissionType || null;
+    const numbersTyped = draft.numbersCommissionValue.trim() === "" ? null : Math.max(0, Number(draft.numbersCommissionValue) || 0);
     setBusy("save");
     try {
       await apiClient.post("/api/esim/admin/referrals/users", {
@@ -95,6 +103,8 @@ export function EsimReferralOverridesAdmin({ settings, rows, canManage }: Props)
         validityDays: int(draft.validityDays),
         orderLimit: int(draft.orderLimit),
         deductPercent: draft.deductPercent.trim() === "" ? null : Math.min(100, int(draft.deductPercent) ?? 0),
+        numbersCommissionType: numbersType,
+        numbersCommissionValue: numbersTyped === null ? null : numbersType === "fixed" ? Math.round(numbersTyped * 100) : numbersTyped,
         note: draft.note.trim() || null,
       });
       toast.success(t("admin.esim.saved", "Saved"));
@@ -120,7 +130,7 @@ export function EsimReferralOverridesAdmin({ settings, rows, canManage }: Props)
     }
   }
 
-  const field = (label: string, key: "commissionValue" | "validityDays" | "orderLimit" | "deductPercent" | "referrerMb" | "inviteeMb", placeholder: string, step = "1") => (
+  const field = (label: string, key: "commissionValue" | "numbersCommissionValue" | "validityDays" | "orderLimit" | "deductPercent" | "referrerMb" | "inviteeMb", placeholder: string, step = "1") => (
     <div className="space-y-1.5">
       <Label>{label}</Label>
       <Input type="number" min={0} step={step} disabled={!canManage} placeholder={placeholder} value={draft[key]} onChange={(event) => setDraft({ ...draft, [key]: event.target.value })} />
@@ -147,7 +157,10 @@ export function EsimReferralOverridesAdmin({ settings, rows, canManage }: Props)
       const invitee = row.inviteeMb ?? settings.data.inviteeMb;
       return `${t("admin.esim.referralTypeData", "Bonus data")}: ${formatMb(referrer)} / ${formatMb(invitee)}${row.rewardType === null && row.referrerMb === null && row.inviteeMb === null ? ` (${storeDefault})` : ""}`;
     }
-    return row.commissionType ? reward(row.commissionType, row.commissionValue ?? 0) : storeDefault;
+    const main = row.commissionType ? reward(row.commissionType, row.commissionValue ?? 0) : storeDefault;
+    return row.numbersCommissionType
+      ? `${main} · ${t("admin.esim.referralNumbersShort", "Numbers")} ${reward(row.numbersCommissionType, row.numbersCommissionValue ?? 0)}`
+      : main;
   };
 
   return (
@@ -206,6 +219,20 @@ export function EsimReferralOverridesAdmin({ settings, rows, canManage }: Props)
               </div>
               {draft.commissionType && effectiveReward === "credit"
                 ? field(`${t("admin.esim.referralValue", "Value")} (${effectiveType === "percent" ? "%" : "USD"})`, "commissionValue", "", effectiveType === "percent" ? "0.1" : "0.01")
+                : <div />}
+              <div />
+              <div className={effectiveReward === "data" ? "hidden" : "space-y-1.5"}>
+                <Label>{t("admin.esim.referralNumbersReward", "Phone number eSIM reward")}</Label>
+                <NativeSelect value={draft.numbersCommissionType} onChange={(event) => setDraft({ ...draft, numbersCommissionType: event.target.value as Draft["numbersCommissionType"], numbersCommissionValue: "" })}>
+                  <option value="">
+                    {storeDefault} ({settings.numbers.enabled ? reward(settings.numbers.commissionType, settings.numbers.commissionValue) : t("admin.esim.referralNumbersSame", "same as the reward above")})
+                  </option>
+                  <option value="percent">{t("admin.esim.referralPercent", "% of each order")}</option>
+                  <option value="fixed">{t("admin.esim.referralFixed", "Fixed amount per order")}</option>
+                </NativeSelect>
+              </div>
+              {draft.numbersCommissionType && effectiveReward === "credit"
+                ? field(`${t("admin.esim.referralValue", "Value")} (${draft.numbersCommissionType === "percent" ? "%" : "USD"})`, "numbersCommissionValue", "", draft.numbersCommissionType === "percent" ? "0.1" : "0.01")
                 : <div />}
               <div />
               {field(t("admin.esim.referralValidity", "Earns for"), "validityDays", `${storeDefault}: ${settings.validityDays}`)}

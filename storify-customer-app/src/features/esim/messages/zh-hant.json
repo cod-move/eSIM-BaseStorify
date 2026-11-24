@@ -531,6 +531,7 @@
     "pushTitle": "接收 eSIM 提醒",
     "pushBody": "開啟通知後，eSIM 開通成功、流量快用完、套餐快到期時會第一時間提醒你。隨時可以在設定裡關閉。",
     "pushAllow": "開啟通知",
-    "pushLater": "以後再說"
+    "pushLater": "以後再說",
+    "inviteOfferNumbers": "號碼 eSIM 訂單可獲得 {you}。"
   }
 }

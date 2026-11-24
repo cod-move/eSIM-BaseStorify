@@ -531,6 +531,7 @@
     "pushTitle": "Get eSIM reminders",
     "pushBody": "Turn on notifications to hear when your eSIM is ready, when data is running low and before your plan expires. You can turn them off in Settings at any time.",
     "pushAllow": "Turn on notifications",
-    "pushLater": "Not now"
+    "pushLater": "Not now",
+    "inviteOfferNumbers": "For phone number eSIMs you earn {you}."
   }
 }

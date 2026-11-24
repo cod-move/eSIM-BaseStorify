@@ -312,7 +312,8 @@
       "rewardsShowRecent": "Ọjọ́ 30 sẹ́yìn nìkan",
       "rewardsShowAll": "Fi gbogbo rẹ̀ hàn",
       "rewardsNoneRecent": "Kò sí èrè ní ọjọ́ 30 sẹ́yìn.",
-      "dataAdded": "A ti fi kún data rẹ"
+      "dataAdded": "A ti fi kún data rẹ",
+      "offerNumbers": "Fún eSIM nọ́mbà fóònù: {reward}."
     },
     "kyc": {
       "title": "Ìjẹ́rìísí ìdánimọ̀",

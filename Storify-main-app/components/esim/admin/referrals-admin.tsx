@@ -170,6 +170,37 @@ export function EsimReferralsAdmin({ settings, list, view, search: initialSearch
               : null}
             {number(t("admin.esim.referralDeduct", "Deduction (扣量)"), value.deductPercent, (next) => setValue({ ...value, deductPercent: Math.min(100, Math.round(next)) }), t("admin.esim.referralDeductHint", "% of qualifying orders earn nothing"))}
           </div>
+          {value.rewardType === "credit" ? (
+            <div className="space-y-3 rounded-lg border p-4">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <div className="font-medium">{t("admin.esim.referralNumbers", "Phone number eSIMs at their own rate")}</div>
+                  <p className="text-xs text-muted-foreground">
+                    {t("admin.esim.referralNumbersHint", "When on, phone number eSIMs earn the reward below instead of the one above; an order with both earns each part at its own rate, and a fixed amount is paid once per order for each part. Number top-ups never earn a reward. Per-inviter rules can set a number rate of their own.")}
+                  </p>
+                </div>
+                <Switch checked={value.numbers.enabled} disabled={!canManage} onCheckedChange={(enabled) => setValue({ ...value, numbers: { ...value.numbers, enabled } })} />
+              </div>
+              {value.numbers.enabled ? (
+                <div className="grid gap-4 sm:grid-cols-3">
+                  <div className="space-y-1.5">
+                    <Label>{t("admin.esim.referralReward", "Reward")}</Label>
+                    <NativeSelect
+                      value={value.numbers.commissionType}
+                      disabled={!canManage}
+                      onChange={(event) => setValue({ ...value, numbers: { ...value.numbers, commissionType: event.target.value as ReferralSettings["numbers"]["commissionType"] } })}
+                    >
+                      <option value="percent">{t("admin.esim.referralPercent", "% of each order")}</option>
+                      <option value="fixed">{t("admin.esim.referralFixed", "Fixed amount per order")}</option>
+                    </NativeSelect>
+                  </div>
+                  {value.numbers.commissionType === "percent"
+                    ? number(t("admin.esim.referralValue", "Value"), value.numbers.commissionValue, (next) => setValue({ ...value, numbers: { ...value.numbers, commissionValue: Math.min(100, next) } }), "%", "0.1")
+                    : number(t("admin.esim.referralValue", "Value"), value.numbers.commissionValue / 100, (next) => setValue({ ...value, numbers: { ...value.numbers, commissionValue: Math.round(next * 100) } }), "USD", "0.01")}
+                </div>
+              ) : null}
+            </div>
+          ) : null}
           <div className="space-y-3 rounded-lg border p-4">
             <div className="flex items-center justify-between gap-4">
               <div>

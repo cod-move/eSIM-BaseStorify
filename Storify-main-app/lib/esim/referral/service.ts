@@ -44,6 +44,11 @@ export async function getReferralSettings(): Promise<ReferralSettings> {
     orderLimit: stored?.orderLimit ?? defaults.orderLimit,
     deductPercent: stored?.deductPercent ?? defaults.deductPercent,
     holdDays: stored?.holdDays ?? defaults.holdDays,
+    numbers: {
+      enabled: stored?.numbers?.enabled ?? defaults.numbers.enabled,
+      commissionType: stored?.numbers?.commissionType ?? defaults.numbers.commissionType,
+      commissionValue: stored?.numbers?.commissionValue ?? defaults.numbers.commissionValue,
+    },
     coupon: {
       enabled: stored?.coupon?.enabled ?? defaults.coupon.enabled,
       type: stored?.coupon?.type ?? defaults.coupon.type,

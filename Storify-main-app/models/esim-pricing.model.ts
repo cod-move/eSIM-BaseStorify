@@ -87,6 +87,8 @@ export interface IEsimSettings extends mongoose.Document {
     /** Percent of qualifying orders that earn nothing (扣量), picked by order id. */
     deductPercent?: number;
     holdDays: number;
+    /** Phone number eSIMs' own commission rate, when enabled. */
+    numbers?: { enabled: boolean; commissionType: "percent" | "fixed"; commissionValue: number };
     coupon: { enabled: boolean; type: "percentage" | "fixed"; value: number; days: number; minOrderMinor: number };
   };
   /** Customer KYC (KYC-03): countries whose plans need it unless a plan says otherwise. */
@@ -185,6 +187,11 @@ const EsimSettingsSchema = new Schema<IEsimSettings>(
       orderLimit: { type: Number, default: 0, min: 0 },
       deductPercent: { type: Number, default: 0, min: 0, max: 100 },
       holdDays: { type: Number, default: 14, min: 0, max: 365 },
+      numbers: {
+        enabled: { type: Boolean, default: false },
+        commissionType: { type: String, enum: ["percent", "fixed"], default: "percent" },
+        commissionValue: { type: Number, default: 10, min: 0 },
+      },
       coupon: {
         enabled: { type: Boolean, default: false },
         type: { type: String, enum: ["percentage", "fixed"], default: "percentage" },

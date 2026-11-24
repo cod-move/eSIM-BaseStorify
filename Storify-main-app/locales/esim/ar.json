@@ -312,7 +312,8 @@
       "rewardsShowRecent": "آخر 30 يومًا فقط",
       "rewardsShowAll": "عرض الكل",
       "rewardsNoneRecent": "لا توجد مكافآت في آخر 30 يومًا.",
-      "dataAdded": "أُضيفت إلى بياناتك"
+      "dataAdded": "أُضيفت إلى بياناتك",
+      "offerNumbers": "لشرائح eSIM برقم هاتف: {reward}."
     },
     "kyc": {
       "title": "التحقق من الهوية",

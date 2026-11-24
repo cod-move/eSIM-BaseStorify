@@ -312,7 +312,8 @@
       "rewardsShowRecent": "Kwanaki 30 da suka gabata kaɗai",
       "rewardsShowAll": "Nuna duka",
       "rewardsNoneRecent": "Babu lada a kwanaki 30 da suka gabata.",
-      "dataAdded": "An ƙara zuwa data ɗinka"
+      "dataAdded": "An ƙara zuwa data ɗinka",
+      "offerNumbers": "Don eSIM masu lambar waya: {reward}."
     },
     "kyc": {
       "title": "Tabbatar da shaida",

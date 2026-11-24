@@ -312,7 +312,8 @@
       "rewardsShowRecent": "Net laaste 30 dae",
       "rewardsShowAll": "Wys alles",
       "rewardsNoneRecent": "Geen belonings in die laaste 30 dae nie.",
-      "dataAdded": "By jou data gevoeg"
+      "dataAdded": "By jou data gevoeg",
+      "offerNumbers": "Vir foonnommer-eSIMs: {reward}."
     },
     "kyc": {
       "title": "Identiteitsverifikasie",

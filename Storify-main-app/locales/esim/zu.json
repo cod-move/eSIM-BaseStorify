@@ -312,7 +312,8 @@
       "rewardsShowRecent": "Izinsuku ezingama-30 ezedlule kuphela",
       "rewardsShowAll": "Bonisa konke",
       "rewardsNoneRecent": "Awukho imivuzo ezinsukwini ezingama-30 ezedlule.",
-      "dataAdded": "Yengezwe kudatha yakho"
+      "dataAdded": "Yengezwe kudatha yakho",
+      "offerNumbers": "Kuma-eSIM enombolo yocingo: {reward}."
     },
     "kyc": {
       "title": "Ukuqinisekiswa komazisi",

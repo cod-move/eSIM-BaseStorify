@@ -312,7 +312,8 @@
       "rewardsShowRecent": "Nur letzte 30 Tage",
       "rewardsShowAll": "Alle anzeigen",
       "rewardsNoneRecent": "Keine Belohnungen in den letzten 30 Tagen.",
-      "dataAdded": "Deinen Daten gutgeschrieben"
+      "dataAdded": "Deinen Daten gutgeschrieben",
+      "offerNumbers": "Für Telefonnummer-eSIMs: {reward}."
     },
     "kyc": {
       "title": "Identitätsprüfung",

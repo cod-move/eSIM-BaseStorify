@@ -312,7 +312,8 @@
       "rewardsShowRecent": "Alleen laatste 30 dagen",
       "rewardsShowAll": "Alles tonen",
       "rewardsNoneRecent": "Geen beloningen in de laatste 30 dagen.",
-      "dataAdded": "Bij je data opgeteld"
+      "dataAdded": "Bij je data opgeteld",
+      "offerNumbers": "Voor eSIMs met telefoonnummer: {reward}."
     },
     "kyc": {
       "title": "Identiteitsverificatie",

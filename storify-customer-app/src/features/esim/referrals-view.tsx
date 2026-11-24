@@ -107,6 +107,9 @@ export function ReferralsContent({ centre }: { centre: EsimReferrals }) {
                   you: rate(centre.offer.commission),
                 })
               : t('inviteOffer', { you: rate(centre.offer.commission) })}
+            {centre.offer.numberCommission
+              ? ` ${t('inviteOfferNumbers', { you: rate(centre.offer.numberCommission) })}`
+              : ''}
           </Text>
         )}
         <Text variant="caption" selectable>

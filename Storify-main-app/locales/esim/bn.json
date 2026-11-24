@@ -312,7 +312,8 @@
       "rewardsShowRecent": "শুধু গত ৩০ দিন",
       "rewardsShowAll": "সব দেখুন",
       "rewardsNoneRecent": "গত ৩০ দিনে কোনো পুরস্কার নেই।",
-      "dataAdded": "আপনার ডেটায় যোগ হয়েছে"
+      "dataAdded": "আপনার ডেটায় যোগ হয়েছে",
+      "offerNumbers": "ফোন নম্বর eSIM-এর জন্য: {reward}।"
     },
     "kyc": {
       "title": "পরিচয় যাচাই",

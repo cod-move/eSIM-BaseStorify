@@ -312,7 +312,8 @@
       "rewardsShowRecent": "Yalnızca son 30 gün",
       "rewardsShowAll": "Tümünü göster",
       "rewardsNoneRecent": "Son 30 günde ödül yok.",
-      "dataAdded": "Verinize eklendi"
+      "dataAdded": "Verinize eklendi",
+      "offerNumbers": "Telefon numaralı eSIM'ler için: {reward}."
     },
     "kyc": {
       "title": "Kimlik doğrulama",

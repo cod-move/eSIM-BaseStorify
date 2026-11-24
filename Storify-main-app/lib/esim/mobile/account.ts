@@ -101,6 +101,7 @@ export const esimReferralsRoute = defineRoute({
       link: centre.link,
       offer: {
         commission: rate(offer.commissionType, offer.commissionValue),
+        ...(offer.numbers ? { numberCommission: rate(offer.numbers.commissionType, offer.numbers.commissionValue) } : {}),
         orderLimit: offer.orderLimit,
         validityDays: offer.validityDays,
         ...(offer.coupon.enabled

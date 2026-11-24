@@ -516,6 +516,8 @@ export const EsimReferrals = z.object({
   offer: z.object({
     /** Earned per order of a friend: a percentage of it, or a fixed amount. */
     commission: EsimRate,
+    /** Phone number eSIMs' own rate, when the store set one (their share of an order earns this instead). */
+    numberCommission: EsimRate.optional(),
     /** Orders per friend that earn; 0 = every one. */
     orderLimit: z.number().int(),
     /** Days after the friend joins that orders earn; 0 = no end. */

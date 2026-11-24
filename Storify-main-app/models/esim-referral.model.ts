@@ -77,6 +77,10 @@ export interface IEsimReferralOverride extends mongoose.Document {
   orderLimit: number | null;
   /** Percent of qualifying orders that earn nothing (扣量). */
   deductPercent: number | null;
+  /** Number eSIMs' own rate for this referrer; null follows the store. */
+  numbersCommissionType: "percent" | "fixed" | null;
+  /** Percent, or cents for a fixed commission. */
+  numbersCommissionValue: number | null;
   note: string | null;
   updatedBy: string | null;
   createdAt: Date;
@@ -97,6 +101,8 @@ const EsimReferralOverrideSchema = new Schema<IEsimReferralOverride>(
     validityDays: { type: Number, default: null, min: 0 },
     orderLimit: { type: Number, default: null, min: 0 },
     deductPercent: { type: Number, default: null, min: 0, max: 100 },
+    numbersCommissionType: { type: String, enum: ["percent", "fixed", null], default: null },
+    numbersCommissionValue: { type: Number, default: null, min: 0 },
     note: { type: String, default: null, maxlength: 300 },
     updatedBy: { type: String, default: null },
   },
@@ -115,7 +121,14 @@ export interface IEsimReferralCommission extends mongoose.Document {
   base: number;
   amount: number;
   /** The rate it was earned at (REF-07), so a later refund recomputes it alike; null on older rewards. */
-  rule?: { commissionType: "percent" | "fixed"; commissionValue: number } | null;
+  rule?: {
+    commissionType: "percent" | "fixed";
+    commissionValue: number;
+    /** Number eSIM lines' own rate, when the store set one; absent on rewards earned before. */
+    numbers?: { commissionType: "percent" | "fixed"; commissionValue: number } | null;
+    /** Number top-ups earned nothing; absent on rewards earned before that rule. */
+    skipNumberTopups?: boolean;
+  } | null;
   currency: string;
   status: CommissionStatus;
   /** Paid out from then, unless refunded first. */
@@ -138,7 +151,18 @@ const EsimReferralCommissionSchema = new Schema<IEsimReferralCommission>(
     base: { type: Number, required: true, min: 0 },
     amount: { type: Number, required: true, min: 0 },
     rule: {
-      type: new Schema({ commissionType: { type: String, enum: ["percent", "fixed"] }, commissionValue: Number }, { _id: false }),
+      type: new Schema(
+        {
+          commissionType: { type: String, enum: ["percent", "fixed"] },
+          commissionValue: Number,
+          numbers: {
+            type: new Schema({ commissionType: { type: String, enum: ["percent", "fixed"] }, commissionValue: Number }, { _id: false }),
+            default: null,
+          },
+          skipNumberTopups: { type: Boolean, default: undefined },
+        },
+        { _id: false },
+      ),
       default: null,
     },
     currency: { type: String, default: "USD" },
