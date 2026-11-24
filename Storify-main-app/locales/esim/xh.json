@@ -1021,7 +1021,16 @@
       "none": "Akunazo iikhuphoni okwangoku.",
       "personal": "Ezakho kuphela",
       "code": "Ikhowudi",
-      "referralWelcome": "Ikhuphoni yokwamkela yesimemo"
+      "referralWelcome": "Ikhuphoni yokwamkela yesimemo",
+      "onlyFor": "Kuphela ze: {items}",
+      "notFor": "Hayi ze: {items}",
+      "more": "ezinye ezi-{count}",
+      "products": {
+        "number": "eSIM yenombolo yefowuni",
+        "numberTopup": "Ukufaka imali kwinombolo",
+        "esimTopup": "Ukufaka imali kwi-eSIM",
+        "walletTopup": "Ukufaka imali kwisipaji"
+      }
     }
   },
   "admin": {

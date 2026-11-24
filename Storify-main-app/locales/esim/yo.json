@@ -1021,7 +1021,16 @@
       "none": "O kò ní kúpọ́nù kankan báyìí.",
       "personal": "Fún ìwọ nìkan",
       "code": "Kóòdù",
-      "referralWelcome": "Kúpọ́ọ̀nù ìkíni fún ìpè"
+      "referralWelcome": "Kúpọ́ọ̀nù ìkíni fún ìpè",
+      "onlyFor": "Fún àwọn wọ̀nyí nìkan: {items}",
+      "notFor": "Kì í ṣe fún: {items}",
+      "more": "{count} mìíràn",
+      "products": {
+        "number": "eSIM nọ́mbà fóònù",
+        "numberTopup": "Fífi owó kún nọ́mbà",
+        "esimTopup": "Fífi owó kún eSIM",
+        "walletTopup": "Fífi owó kún àpamọ́wọ́"
+      }
     }
   },
   "admin": {

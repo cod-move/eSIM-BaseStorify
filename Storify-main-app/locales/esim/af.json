@@ -1021,7 +1021,16 @@
       "none": "Jy het tans geen koepons nie.",
       "personal": "Net vir jou",
       "code": "Kode",
-      "referralWelcome": "Verwysing-welkomskoepon"
+      "referralWelcome": "Verwysing-welkomskoepon",
+      "onlyFor": "Slegs vir: {items}",
+      "notFor": "Nie vir: {items}",
+      "more": "nog {count}",
+      "products": {
+        "number": "Foonnommer-eSIM",
+        "numberTopup": "Nommer herlaai",
+        "esimTopup": "eSIM herlaai",
+        "walletTopup": "Beursie herlaai"
+      }
     }
   },
   "admin": {

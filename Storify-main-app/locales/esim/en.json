@@ -1032,7 +1032,16 @@
       "none": "You have no coupons at the moment.",
       "personal": "Just for you",
       "code": "Code",
-      "referralWelcome": "Referral welcome"
+      "referralWelcome": "Referral welcome",
+      "onlyFor": "Only for: {items}",
+      "notFor": "Not for: {items}",
+      "more": "{count} more",
+      "products": {
+        "number": "Phone number eSIM",
+        "numberTopup": "Number top-up",
+        "esimTopup": "eSIM top-up",
+        "walletTopup": "Wallet top-up"
+      }
     }
   },
   "admin": {

@@ -7,6 +7,8 @@ import { CouponRefusedError, assertCouponOpenToShopper, type CouponDocument } fr
 import { getCouponCopy } from "@/lib/catalog/coupon-copy";
 import { formatCurrency } from "@/lib/intl/money";
 import { getStoreCurrency } from "@/lib/intl/server-currency";
+import { couponScopes } from "@/lib/esim/account/coupon-scope";
+import type { CouponScope } from "@/lib/esim/account/coupon-scope-words";
 
 /**
  * My coupons (account menu): the codes this shopper may use — the ones the
@@ -24,6 +26,8 @@ export interface MyCoupon {
   benefit: string;
   /** Each already worded: minimum spend, cap, seller, once per customer, end date. */
   conditions: string[];
+  /** The products and categories it is for, or never for, by name; null for every product. */
+  scope: CouponScope | null;
   /** Only for this shopper (not shown to everyone). */
   personal: boolean;
   usable: boolean;
@@ -51,7 +55,7 @@ export async function myCoupons(userId: string, locale: string): Promise<MyCoupo
   })
     .sort({ endDate: 1 })
     .limit(MAX);
-  const [copy, currency] = await Promise.all([getCouponCopy(locale), getStoreCurrency()]);
+  const [copy, currency, scopes] = await Promise.all([getCouponCopy(locale), getStoreCurrency(), couponScopes(coupons, locale)]);
   const sellerIds = [...new Set(coupons.map((coupon) => (coupon.vendorId ? String(coupon.vendorId) : "")).filter(Boolean))];
   const sellers = sellerIds.length
     ? new Map(
@@ -83,7 +87,11 @@ export async function myCoupons(userId: string, locale: string): Promise<MyCoupo
       if (minimum > 0) conditions.push(copy.minOrder(say(minimum)));
       if (cap > 0) conditions.push(copy.maxDiscount(say(cap)));
       if (seller) conditions.push(copy.sellerOnly(seller));
-      if (coupon.applicableProducts?.length || coupon.applicableCategories?.length || coupon.excludedProducts?.length) conditions.push(copy.selectedProducts());
+      const scope = scopes.get(String(coupon._id));
+      // Named below the conditions; "Selected products only" when none of them is left to name.
+      if (!scope?.only.length && !scope?.notFor.length && (coupon.applicableProducts?.length || coupon.applicableCategories?.length || coupon.excludedProducts?.length)) {
+        conditions.push(copy.selectedProducts());
+      }
       if (coupon.perUserLimit && coupon.perUserLimit > 0) conditions.push(copy.perCustomer(coupon.perUserLimit));
       if (coupon.endDate) conditions.push(copy.ends(new Date(coupon.endDate)));
       return {
@@ -97,6 +105,7 @@ export async function myCoupons(userId: string, locale: string): Promise<MyCoupo
               ? copy.offerFixed(say(coupon.value))
               : copy.offerPercent(coupon.value),
         conditions,
+        scope: scope?.only.length || scope?.notFor.length ? scope : null,
         personal: Boolean(coupon.restrictedToUserId || coupon.restrictedToEmail),
         usable,
         reason,

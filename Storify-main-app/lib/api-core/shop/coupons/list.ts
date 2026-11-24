@@ -23,6 +23,7 @@ import { Coupon, Vendor } from "@/models";
 import { CouponStatus, CouponType } from "@/models/coupon.model";
 import { getCouponCopy } from "@/lib/catalog/coupon-copy";
 import type { CouponCopy } from "@/lib/catalog/coupon-words";
+import { couponScopeLines } from "@/lib/esim/account/coupon-scope"; // [esim-patch] P83
 
 /**
  * GET /coupons: the shopper's coupon sheet. The codes the store lists
@@ -96,7 +97,7 @@ function kindOf(coupon: CouponDocument): "PERCENTAGE" | "FIXED" | "FREE_SHIPPING
 function toShopperCoupon(
   coupon: CouponDocument,
   verdict: Judgement,
-  ctx: { copy: CouponCopy; currency: Currency; sellerName?: string },
+  ctx: { copy: CouponCopy; currency: Currency; sellerName?: string; scopeLines?: string[] },
 ): ShopperCoupon {
   const { copy, currency } = ctx;
   const money = (amount: number) => toMoney(amount, currency);
@@ -105,11 +106,12 @@ function toShopperCoupon(
   const minimum = Number(coupon.minOrderAmount) || 0;
   const cap = kind === "PERCENTAGE" && Number(coupon.maxDiscount) > 0 ? Number(coupon.maxDiscount) : 0;
 
-  const conditions: string[] = [];
+  // [esim-patch] P83 the products it is for by name ("Only for: Japan eSIM"), first.
+  const conditions: string[] = [...(ctx.scopeLines ?? [])];
   if (minimum > 0) conditions.push(copy.minOrder(say(minimum)));
   if (cap > 0) conditions.push(copy.maxDiscount(say(cap)));
   if (ctx.sellerName) conditions.push(copy.sellerOnly(ctx.sellerName));
-  if (coupon.applicableProducts?.length || coupon.applicableCategories?.length || coupon.excludedProducts?.length) {
+  if (!ctx.scopeLines?.length && (coupon.applicableProducts?.length || coupon.applicableCategories?.length || coupon.excludedProducts?.length)) {
     conditions.push(copy.selectedProducts());
   }
   if (coupon.perUserLimit && coupon.perUserLimit > 0) conditions.push(copy.perCustomer(coupon.perUserLimit));
@@ -195,15 +197,17 @@ async function readCouponList(ctx: {
   const shopper = ctx.session
     ? { userId: ctx.session.user.id, email: ctx.session.user.email }
     : {};
-  const [verdicts, sellers] = await Promise.all([
+  const [verdicts, sellers, scopes] = await Promise.all([
     Promise.all(coupons.map((coupon) => judge(coupon, shopper, cart, currency))),
     sellerNames(coupons),
+    couponScopeLines(coupons, ctx.locale), // [esim-patch] P83
   ]);
   const items = coupons.map((coupon, index) =>
     toShopperCoupon(coupon, verdicts[index], {
       copy,
       currency,
       sellerName: coupon.vendorId ? sellers.get(String(coupon.vendorId)) : undefined,
+      scopeLines: scopes.get(String(coupon._id)), // [esim-patch] P83
     }),
   );
   // Usable first; within each, the soonest end first (the query's order).

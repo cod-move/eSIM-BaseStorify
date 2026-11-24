@@ -1021,7 +1021,16 @@
       "none": "No tienes cupones en este momento.",
       "personal": "Solo para ti",
       "code": "Código",
-      "referralWelcome": "Cupón de bienvenida por invitación"
+      "referralWelcome": "Cupón de bienvenida por invitación",
+      "onlyFor": "Solo para: {items}",
+      "notFor": "No válido para: {items}",
+      "more": "{count} más",
+      "products": {
+        "number": "eSIM con número de teléfono",
+        "numberTopup": "Recarga de número",
+        "esimTopup": "Recarga de eSIM",
+        "walletTopup": "Recarga de saldo"
+      }
     }
   },
   "admin": {

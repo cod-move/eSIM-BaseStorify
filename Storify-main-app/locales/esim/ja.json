@@ -1021,7 +1021,16 @@
       "none": "現在使えるクーポンはありません。",
       "personal": "あなた専用",
       "code": "コード",
-      "referralWelcome": "招待ウェルカムクーポン"
+      "referralWelcome": "招待ウェルカムクーポン",
+      "onlyFor": "対象商品：{items}",
+      "notFor": "対象外：{items}",
+      "more": "ほか {count} 件",
+      "products": {
+        "number": "電話番号 eSIM",
+        "numberTopup": "番号のチャージ",
+        "esimTopup": "eSIM のチャージ",
+        "walletTopup": "残高チャージ"
+      }
     }
   },
   "admin": {

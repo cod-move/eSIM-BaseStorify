@@ -1021,7 +1021,16 @@
       "none": "ليست لديك قسائم حاليًا.",
       "personal": "خاصة بك",
       "code": "الرمز",
-      "referralWelcome": "قسيمة ترحيب للدعوة"
+      "referralWelcome": "قسيمة ترحيب للدعوة",
+      "onlyFor": "فقط لـ: {items}",
+      "notFor": "لا يشمل: {items}",
+      "more": "{count} أخرى",
+      "products": {
+        "number": "شريحة eSIM برقم هاتف",
+        "numberTopup": "شحن الرقم",
+        "esimTopup": "شحن eSIM",
+        "walletTopup": "شحن الرصيد"
+      }
     }
   },
   "admin": {

@@ -1021,7 +1021,16 @@
       "none": "Şu anda kuponunuz yok.",
       "personal": "Size özel",
       "code": "Kod",
-      "referralWelcome": "Davet hoş geldin kuponu"
+      "referralWelcome": "Davet hoş geldin kuponu",
+      "onlyFor": "Yalnızca şunlar için: {items}",
+      "notFor": "Şunlar hariç: {items}",
+      "more": "{count} tane daha",
+      "products": {
+        "number": "Telefon numaralı eSIM",
+        "numberTopup": "Numara yükleme",
+        "esimTopup": "eSIM yükleme",
+        "walletTopup": "Bakiye yükleme"
+      }
     }
   },
   "admin": {

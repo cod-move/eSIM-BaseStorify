@@ -7,6 +7,7 @@ import { connectDB } from "@/lib/db";
 import { getAccountSession } from "@/lib/customers/account-data";
 import { myCoupons } from "@/lib/esim/account/coupons";
 import { CopyValue } from "@/components/esim/esim-actions";
+import { CouponScopeLines } from "@/components/esim/coupon-scope";
 
 interface PageProps {
   params: Promise<{ locale: string }>;
@@ -21,6 +22,7 @@ export default async function AccountCouponsPage({ params }: PageProps) {
   await connectDB();
   const [t, coupons] = await Promise.all([getTranslations(), myCoupons(session.user.id, locale)]);
   const tr = (key: string, fallback: string) => (t.has(key) ? t(key) : fallback);
+  const raw = (key: string, fallback: string) => (t.has(key) ? String(t.raw(key)) : fallback);
 
   return (
     <div className="space-y-6">
@@ -51,8 +53,17 @@ export default async function AccountCouponsPage({ params }: PageProps) {
                   </div>
                   {coupon.personal ? <Badge variant="secondary">{tr("esim.coupons.personal", "Just for you")}</Badge> : null}
                 </div>
-                {coupon.conditions.length ? (
+                {coupon.conditions.length || coupon.scope ? (
                   <ul className="space-y-0.5 text-xs text-muted-foreground">
+                    {coupon.scope ? (
+                      <CouponScopeLines
+                        scope={coupon.scope}
+                        locale={locale}
+                        onlyFor={raw("esim.coupons.onlyFor", "Only for: {items}")}
+                        notFor={raw("esim.coupons.notFor", "Not for: {items}")}
+                        more={(count) => (t.has("esim.coupons.more") ? t("esim.coupons.more", { count }) : `${count} more`)}
+                      />
+                    ) : null}
                     {coupon.conditions.map((line) => (
                       <li key={line}>{line}</li>
                     ))}

@@ -1021,7 +1021,16 @@
       "none": "এই মুহূর্তে আপনার কোনো কুপন নেই।",
       "personal": "শুধু আপনার জন্য",
       "code": "কোড",
-      "referralWelcome": "রেফারেল স্বাগত কুপন"
+      "referralWelcome": "রেফারেল স্বাগত কুপন",
+      "onlyFor": "শুধু এগুলোর জন্য: {items}",
+      "notFor": "এগুলোতে প্রযোজ্য নয়: {items}",
+      "more": "আরও {count}টি",
+      "products": {
+        "number": "ফোন নম্বর eSIM",
+        "numberTopup": "নম্বর টপ-আপ",
+        "esimTopup": "eSIM টপ-আপ",
+        "walletTopup": "ওয়ালেট টপ-আপ"
+      }
     }
   },
   "admin": {

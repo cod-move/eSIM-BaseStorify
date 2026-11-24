@@ -1021,7 +1021,16 @@
       "none": "अभी आपके पास कोई कूपन नहीं है।",
       "personal": "सिर्फ़ आपके लिए",
       "code": "कोड",
-      "referralWelcome": "रेफ़रल स्वागत कूपन"
+      "referralWelcome": "रेफ़रल स्वागत कूपन",
+      "onlyFor": "केवल इनके लिए: {items}",
+      "notFor": "इन पर लागू नहीं: {items}",
+      "more": "{count} और",
+      "products": {
+        "number": "फ़ोन नंबर eSIM",
+        "numberTopup": "नंबर टॉप-अप",
+        "esimTopup": "eSIM टॉप-अप",
+        "walletTopup": "वॉलेट टॉप-अप"
+      }
     }
   },
   "admin": {

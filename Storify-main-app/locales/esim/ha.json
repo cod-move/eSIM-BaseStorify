@@ -1021,7 +1021,16 @@
       "none": "Ba ka da kupon a yanzu.",
       "personal": "Domin kai kaɗai",
       "code": "Lamba",
-      "referralWelcome": "Kuponin maraba na gayyata"
+      "referralWelcome": "Kuponin maraba na gayyata",
+      "onlyFor": "Don waɗannan kawai: {items}",
+      "notFor": "Ba don: {items}",
+      "more": "ƙarin {count}",
+      "products": {
+        "number": "eSIM mai lambar waya",
+        "numberTopup": "Ƙara kuɗin lamba",
+        "esimTopup": "Ƙara kuɗin eSIM",
+        "walletTopup": "Ƙara kuɗin walat"
+      }
     }
   },
   "admin": {

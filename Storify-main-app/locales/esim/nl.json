@@ -1021,7 +1021,16 @@
       "none": "Je hebt op dit moment geen kortingscodes.",
       "personal": "Alleen voor jou",
       "code": "Code",
-      "referralWelcome": "Welkomstcoupon (uitnodiging)"
+      "referralWelcome": "Welkomstcoupon (uitnodiging)",
+      "onlyFor": "Alleen voor: {items}",
+      "notFor": "Niet voor: {items}",
+      "more": "nog {count}",
+      "products": {
+        "number": "eSIM met telefoonnummer",
+        "numberTopup": "Nummer opwaarderen",
+        "esimTopup": "eSIM opwaarderen",
+        "walletTopup": "Tegoed opwaarderen"
+      }
     }
   },
   "admin": {

@@ -1021,7 +1021,16 @@
       "none": "Ị nweghị kupọn ugbu a.",
       "personal": "Maka gị naanị",
       "code": "Koodu",
-      "referralWelcome": "Kupọn nnabata maka ọkpụkpọ"
+      "referralWelcome": "Kupọn nnabata maka ọkpụkpọ",
+      "onlyFor": "Naanị maka: {items}",
+      "notFor": "Ọ bụghị maka: {items}",
+      "more": "{count} ọzọ",
+      "products": {
+        "number": "eSIM nọmba ekwentị",
+        "numberTopup": "Itinye ego na nọmba",
+        "esimTopup": "Itinye ego na eSIM",
+        "walletTopup": "Itinye ego na obere akpa"
+      }
     }
   },
   "admin": {

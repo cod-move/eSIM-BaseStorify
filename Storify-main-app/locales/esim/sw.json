@@ -1021,7 +1021,16 @@
       "none": "Huna kuponi kwa sasa.",
       "personal": "Kwa ajili yako tu",
       "code": "Msimbo",
-      "referralWelcome": "Kuponi ya karibu ya mwaliko"
+      "referralWelcome": "Kuponi ya karibu ya mwaliko",
+      "onlyFor": "Kwa ajili ya: {items} pekee",
+      "notFor": "Haitumiki kwa: {items}",
+      "more": "{count} zaidi",
+      "products": {
+        "number": "eSIM ya namba ya simu",
+        "numberTopup": "Kuongeza salio la namba",
+        "esimTopup": "Kuongeza eSIM",
+        "walletTopup": "Kuongeza salio la pochi"
+      }
     }
   },
   "admin": {

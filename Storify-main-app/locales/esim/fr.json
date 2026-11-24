@@ -1021,7 +1021,16 @@
       "none": "Vous n’avez aucun coupon pour le moment.",
       "personal": "Rien que pour vous",
       "code": "Code",
-      "referralWelcome": "Coupon de bienvenue (parrainage)"
+      "referralWelcome": "Coupon de bienvenue (parrainage)",
+      "onlyFor": "Uniquement pour : {items}",
+      "notFor": "Sauf : {items}",
+      "more": "{count} de plus",
+      "products": {
+        "number": "eSIM avec numéro",
+        "numberTopup": "Recharge de numéro",
+        "esimTopup": "Recharge eSIM",
+        "walletTopup": "Recharge du solde"
+      }
     }
   },
   "admin": {

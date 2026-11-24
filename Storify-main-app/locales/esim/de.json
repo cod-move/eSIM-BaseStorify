@@ -1021,7 +1021,16 @@
       "none": "Du hast im Moment keine Gutscheine.",
       "personal": "Nur für dich",
       "code": "Code",
-      "referralWelcome": "Willkommensgutschein (Empfehlung)"
+      "referralWelcome": "Willkommensgutschein (Empfehlung)",
+      "onlyFor": "Nur für: {items}",
+      "notFor": "Nicht für: {items}",
+      "more": "{count} weitere",
+      "products": {
+        "number": "Telefonnummer-eSIM",
+        "numberTopup": "Nummer aufladen",
+        "esimTopup": "eSIM aufladen",
+        "walletTopup": "Guthaben aufladen"
+      }
     }
   },
   "admin": {

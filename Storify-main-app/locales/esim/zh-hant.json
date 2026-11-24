@@ -1032,7 +1032,16 @@
       "none": "你目前沒有優惠券。",
       "personal": "專屬",
       "code": "優惠碼",
-      "referralWelcome": "邀請好友歡迎券"
+      "referralWelcome": "邀請好友歡迎券",
+      "onlyFor": "適用商品：{items}",
+      "notFor": "不適用：{items}",
+      "more": "另外 {count} 件",
+      "products": {
+        "number": "手機號碼 eSIM",
+        "numberTopup": "號碼儲值",
+        "esimTopup": "eSIM 儲值",
+        "walletTopup": "餘額儲值"
+      }
     }
   },
   "admin": {
