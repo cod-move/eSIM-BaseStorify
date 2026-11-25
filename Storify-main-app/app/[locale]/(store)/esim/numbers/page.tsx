@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth/auth";
 import { setRequestLocale } from "next-intl/server";
+import { Receipt } from "lucide-react";
+import Link from "@/components/language/link";
 import { StoreBreadcrumb } from "@/components/store/store-breadcrumb";
 import { NumberPicker } from "@/components/esim/number-picker";
 import { translator } from "@/lib/esim/i18n/server";
@@ -53,6 +55,10 @@ export default async function EsimNumbersPage({ params, searchParams }: PageProp
         <p className="mt-2 max-w-2xl text-sm text-muted-foreground sm:text-base">
           {tr("esim.numbers.description", "A real mobile number on an eSIM, for calls, texts and data. Pick a number, add credit and a data package if you like.")}
         </p>
+        <Link href="/esim/numbers/rates" className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline">
+          <Receipt className="size-4" />
+          {tr("esim.numberRates.link", "Rates for calls, texts and data by country")}
+        </Link>
       </div>
       <NumberPicker shop={shop} filters={filters} locale={locale} />
     </div>
