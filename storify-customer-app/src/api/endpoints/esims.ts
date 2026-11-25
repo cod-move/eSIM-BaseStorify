@@ -256,9 +256,9 @@ export function deleteEsim(locale: string, id: string) {
 
 const numberPath = (id: string, rest = '') => `/me/esim-numbers/${encodeURIComponent(id)}${rest}`;
 
-/** The numbers on sale, filtered, a page at a time. The same for everybody. */
+/** The numbers on sale, filtered, a page at a time. Sent with the session: a guest only gets the first page. */
 export function getEsimNumberShop(locale: string, query: EsimNumberShopQuery, signal: AbortSignal) {
-  return api.data({ locale, path: '/esim/numbers', query, signal }, EsimNumberShop);
+  return api.data({ locale, path: '/esim/numbers', query, auth: 'optional', signal }, EsimNumberShop);
 }
 
 /** What a choice comes to, in the card currency and as checkout charges it. The same for everybody. */
