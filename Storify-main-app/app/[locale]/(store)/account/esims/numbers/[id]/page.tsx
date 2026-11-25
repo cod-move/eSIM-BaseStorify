@@ -1,7 +1,7 @@
 import QRCode from "qrcode";
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { ChevronLeft, Clock } from "lucide-react";
+import { ChevronLeft, Clock, ExternalLink, Receipt } from "lucide-react";
 import { SupportLink } from "@/components/esim/support-link";
 import Link from "@/components/language/link";
 import { Badge } from "@/components/ui/badge";
@@ -83,7 +83,19 @@ export default async function AccountNumberPage({ params }: PageProps) {
           <ChevronLeft className="h-4 w-4 rtl:rotate-180" />
           {tr("esim.account.back", "My eSIMs")}
         </Link>
-        <SupportLink query={`number=${number.id}`} label={tr("esim.support.title", "Contact support")} />
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+          <Link
+            href="/esim/numbers/rates"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
+          >
+            <Receipt className="h-4 w-4" />
+            {tr("esim.numberRates.title", "Rates")}
+            <ExternalLink className="h-3.5 w-3.5 opacity-70" aria-hidden />
+          </Link>
+          <SupportLink query={`number=${number.id}`} label={tr("esim.support.title", "Contact support")} />
+        </div>
       </div>
 
       <div className="space-y-1">
