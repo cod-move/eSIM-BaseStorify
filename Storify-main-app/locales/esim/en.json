@@ -1975,7 +1975,23 @@
       "referralNumbersHint": "When on, phone number eSIMs earn the reward below instead of the one above; an order with both earns each part at its own rate, and a fixed amount is paid once per order for each part. Number top-ups never earn a reward. Per-inviter rules can set a number rate of their own.",
       "referralNumbersReward": "Phone number eSIM reward",
       "referralNumbersSame": "same as the reward above",
-      "referralNumbersShort": "Numbers"
+      "referralNumbersShort": "Numbers",
+      "cancelEdit": "Cancel",
+      "numbersReprice": "Change prices",
+      "numberSalePriceIn": "Discount price ({currency})",
+      "numberNoDiscount": "No discount",
+      "numberSaleHint": "With a discount price the number sells at it and its price shows struck through. It must be below the price; the premium is not discounted.",
+      "numberSaleNotAmount": "The discount price is not an amount",
+      "numberSaleTooHigh": "The discount price must be below the price",
+      "numbersRepriced": "{count} numbers changed",
+      "numbersRepricedSkipped": "{count} numbers changed; {skipped} left as they were (discount not below the price, or sold meanwhile)",
+      "numbersRepriceTitle": "Change the prices of {count} numbers",
+      "numbersRepriceHint": "Fill in only what should change; an empty field stays as each number has it.",
+      "unchanged": "Unchanged",
+      "numbersClearSale": "Take the discount price away",
+      "numbersSaleSkip": "Numbers whose price is not above the discount price are left as they were.",
+      "packetCardNames": "Names on the card (one per line)",
+      "packetCardNamesHint": "TopConnect may show this package on the card under another name, without its code. A shopper can cancel a package only when its code is known: the card's names are matched here, and learned from purchases."
     },
     "sidebar": {
       "esim": "eSIM",
@@ -2002,7 +2018,8 @@
       "esimSignIns": "Sign-in log"
     },
     "phrases": {
-      "email_unverified": "Email unverified"
+      "email_unverified": "Email unverified",
+      "invited_by": "Invited by"
     }
   },
   "finance": {

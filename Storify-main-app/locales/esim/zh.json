@@ -1975,7 +1975,23 @@
       "referralNumbersHint": "开启后，号码 eSIM 按下面的返佣计算，不再用上面的；一个订单里两种都有时，各部分按各自的比例算，固定金额按订单每个部分各算一次。号码充值订单不计返佣。专属规则里可以给单个推荐人单独设置号码返佣。",
       "referralNumbersReward": "号码 eSIM 返佣",
       "referralNumbersSame": "与上面的返佣相同",
-      "referralNumbersShort": "号码"
+      "referralNumbersShort": "号码",
+      "cancelEdit": "取消",
+      "numbersReprice": "批量改价",
+      "numberSalePriceIn": "折扣价（{currency}）",
+      "numberNoDiscount": "不打折",
+      "numberSaleHint": "设了折扣价，号码就按折扣价卖，原价显示为划线价。折扣价必须低于售价；靓号费不打折。",
+      "numberSaleNotAmount": "折扣价不是有效金额",
+      "numberSaleTooHigh": "折扣价必须低于售价",
+      "numbersRepriced": "已改 {count} 个号码",
+      "numbersRepricedSkipped": "已改 {count} 个号码；{skipped} 个未改（折扣价不低于售价，或期间已售出）",
+      "numbersRepriceTitle": "批量修改 {count} 个号码的价格",
+      "numbersRepriceHint": "只填要改的项；留空的项每个号码保持原样。",
+      "unchanged": "不改",
+      "numbersClearSale": "去掉折扣价",
+      "numbersSaleSkip": "售价不高于这个折扣价的号码会保持原样。",
+      "packetCardNames": "卡上显示的名称（每行一个）",
+      "packetCardNamesHint": "TopConnect 在卡上可能用另一个名称显示这个套餐，而且不带套餐代码。只有知道代码，顾客才能取消套餐：这里的名称用来对应卡上的套餐，购买后也会自动记下。"
     },
     "sidebar": {
       "esim": "eSIM",
@@ -2002,7 +2018,8 @@
       "esimSignIns": "登录日志"
     },
     "phrases": {
-      "email_unverified": "邮箱未验证"
+      "email_unverified": "邮箱未验证",
+      "invited_by": "邀请人"
     }
   },
   "finance": {

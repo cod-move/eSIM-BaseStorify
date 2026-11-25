@@ -133,7 +133,12 @@ export function NumberPicker({ shop, filters, locale }: { shop: NumberShop; filt
                 ) : null}
               </div>
               <div className="font-mono text-lg font-semibold tracking-wide">{groupDigits(row.nationalNumber)}</div>
-              <div className="text-sm font-medium text-primary">{formatAmount(row.priceMinor + row.premiumMinor, shop.recharge.currency)}</div>
+              <div className="flex items-baseline gap-2 text-sm">
+                <span className="font-medium text-primary">{formatAmount(row.priceMinor + row.premiumMinor, shop.recharge.currency)}</span>
+                {row.listPriceMinor !== undefined ? (
+                  <s className="text-xs text-muted-foreground">{formatAmount(row.listPriceMinor + row.premiumMinor, shop.recharge.currency)}</s>
+                ) : null}
+              </div>
             </button>
           ))}
         </div>
@@ -364,7 +369,11 @@ function NumberDialog({ shop, number, locale, onClose }: { shop: NumberShop; num
             ) : null}
 
             <dl className="space-y-1 rounded-lg bg-muted/50 p-3 text-sm">
-              <Row label={t("esim.numbers.numberPrice", "Number")} value={formatAmount(number.priceMinor, currency)} />
+              <Row
+                label={t("esim.numbers.numberPrice", "Number")}
+                value={formatAmount(number.priceMinor, currency)}
+                was={number.listPriceMinor !== undefined ? formatAmount(number.listPriceMinor, currency) : undefined}
+              />
               {number.premiumMinor ? <Row label={t("esim.numbers.premiumFee", "Memorable number")} value={formatAmount(number.premiumMinor, currency)} /> : null}
               {credit ? <Row label={t("esim.numbers.creditLine", "Credit on the number")} value={formatAmount(credit, currency)} /> : null}
               {chosenPacket ? <Row label={chosenPacket.name} value={formatAmount(chosenPacket.priceMinor, currency)} /> : null}
@@ -398,11 +407,14 @@ function NumberDialog({ shop, number, locale, onClose }: { shop: NumberShop; num
   );
 }
 
-function Row({ label, value }: { label: string; value: string }) {
+function Row({ label, value, was }: { label: string; value: string; was?: string }) {
   return (
     <div className="flex justify-between gap-3">
       <dt className="text-muted-foreground">{label}</dt>
-      <dd className="tabular-nums">{value}</dd>
+      <dd className="tabular-nums">
+        {was ? <s className="mr-2 text-xs text-muted-foreground">{was}</s> : null}
+        {value}
+      </dd>
     </div>
   );
 }

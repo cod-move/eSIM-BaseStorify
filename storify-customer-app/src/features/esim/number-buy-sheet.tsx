@@ -155,7 +155,11 @@ export function NumberBuySheet({
             </View>
           ) : null}
           <View className="gap-1.5 rounded-xl bg-surface p-4">
-            <Line label={t('numberPrice')} value={number.numberPrice.formatted} />
+            <Line
+              label={t('numberPrice')}
+              value={number.numberPrice.formatted}
+              was={number.numberListPrice?.formatted}
+            />
             {number.premium ? (
               <Line label={t('premiumFee')} value={number.premium.formatted} />
             ) : null}

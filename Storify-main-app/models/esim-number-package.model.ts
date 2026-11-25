@@ -24,6 +24,8 @@ export interface IEsimNumberPackage extends mongoose.Document {
   providerCode: string;
   packetId: string;
   name: string;
+  /** Names TopConnect shows on the card for it, when not `name` (lib/esim/numbers/card-packets.ts). */
+  cardNames: string[];
   validityDays: number;
   volumeMb: number | null;
   incrementStepKb: number;
@@ -52,6 +54,7 @@ const EsimNumberPackageSchema = new Schema<IEsimNumberPackage>(
     providerCode: { type: String, required: true, default: "topconnect" },
     packetId: { type: String, required: true, match: /^\d{1,9}$/ },
     name: { type: String, required: true, trim: true, maxlength: 120 },
+    cardNames: { type: [String], default: [] },
     validityDays: { type: Number, required: true, min: 0, validate: Number.isInteger },
     volumeMb: { type: Number, default: null, min: 0 },
     incrementStepKb: { type: Number, default: 1, min: 1, validate: Number.isInteger },

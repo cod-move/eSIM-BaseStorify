@@ -1898,7 +1898,8 @@
       "esimSignIns": "Àkọsílẹ̀ ìwọlé"
     },
     "phrases": {
-      "email_unverified": "A kò tíì fi ìmúdájú sí ímeèlì"
+      "email_unverified": "A kò tíì fi ìmúdájú sí ímeèlì",
+      "invited_by": "Ẹni tó pè é"
     }
   },
   "finance": {

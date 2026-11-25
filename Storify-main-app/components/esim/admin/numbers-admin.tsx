@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
-import { ChevronLeft, ChevronRight, Loader2, Pencil, Search, Trash2, Upload, Wallet } from "lucide-react";
+import { ChevronLeft, ChevronRight, Loader2, Pencil, Search, Tags, Trash2, Upload, Wallet } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
@@ -54,7 +54,8 @@ export function EsimNumbersAdmin({ list, filters, canManage }: { list: AdminNumb
   const { confirm } = useConfirmation();
   const [isPending, startTransition] = useTransition();
   const [search, setSearch] = useState(filters.search ?? "");
-  const [editing, setEditing] = useState<{ row: AdminNumber; price: string; premium: string; note: string } | null>(null);
+  const [editing, setEditing] = useState<{ row: AdminNumber; price: string; sale: string; premium: string; note: string } | null>(null);
+  const [repricing, setRepricing] = useState(false);
   const [importing, setImporting] = useState(false);
   const [credit, setCredit] = useState<AdminNumber | null>(null);
   // Numbers ticked for putting on or taking off sale together (unsold ones only).
@@ -93,6 +94,14 @@ export function EsimNumbersAdmin({ list, filters, canManage }: { list: AdminNumb
       setBusy(false);
     }
   }
+
+  const saleProblem = (() => {
+    if (!editing || !editing.sale.trim()) return null;
+    const sale = toCents(editing.sale);
+    const price = toCents(editing.price);
+    if (sale === null) return t("admin.esim.numberSaleNotAmount", "The discount price is not an amount");
+    return price !== null && sale >= price ? t("admin.esim.numberSaleTooHigh", "The discount price must be below the price") : null;
+  })();
 
   const free = (row: AdminNumber) => row.status === "available" || row.status === "retired";
   const pickable = list.rows.filter(free);
@@ -204,6 +213,9 @@ export function EsimNumbersAdmin({ list, filters, canManage }: { list: AdminNumb
           <Button size="sm" variant="outline" disabled={busy} onClick={() => void setStatus("retired")}>
             {t("admin.esim.numbersTakeOffSale", "Take off sale")}
           </Button>
+          <Button size="sm" variant="outline" disabled={busy} onClick={() => setRepricing(true)}>
+            <Tags className="mr-1.5 h-4 w-4" /> {t("admin.esim.numbersReprice", "Change prices")}
+          </Button>
           <Button size="sm" variant="ghost" disabled={busy} onClick={() => setPicked(new Set())}>
             {t("admin.esim.clearSelection", "Clear")}
           </Button>
@@ -253,7 +265,16 @@ export function EsimNumbersAdmin({ list, filters, canManage }: { list: AdminNumb
                       {row.note ? <div className="max-w-56 truncate text-xs font-normal text-muted-foreground">{row.note}</div> : null}
                     </TableCell>
                     <TableCell className="font-mono text-xs">{row.iccid}</TableCell>
-                    <TableCell className="text-right tabular-nums">{dollars(row.priceMinor)}</TableCell>
+                    <TableCell className="text-right tabular-nums">
+                      {row.salePriceMinor !== null ? (
+                        <>
+                          <s className="mr-1.5 text-xs text-muted-foreground">{dollars(row.priceMinor)}</s>
+                          <span className="font-medium text-destructive">{dollars(row.salePriceMinor)}</span>
+                        </>
+                      ) : (
+                        dollars(row.priceMinor)
+                      )}
+                    </TableCell>
                     <TableCell className="text-right tabular-nums">{row.premiumMinor ? dollars(row.premiumMinor) : "—"}</TableCell>
                     <TableCell>
                       <Badge variant={STATUS_VARIANT[row.status]}>{statusLabel(row.status)}</Badge>
@@ -276,7 +297,15 @@ export function EsimNumbersAdmin({ list, filters, canManage }: { list: AdminNumb
                               size="sm"
                               variant="ghost"
                               aria-label={t("admin.esim.edit", "Edit")}
-                              onClick={() => setEditing({ row, price: dollars(row.priceMinor), premium: dollars(row.premiumMinor), note: row.note ?? "" })}
+                              onClick={() =>
+                                setEditing({
+                                  row,
+                                  price: dollars(row.priceMinor),
+                                  sale: row.salePriceMinor === null ? "" : dollars(row.salePriceMinor),
+                                  premium: dollars(row.premiumMinor),
+                                  note: row.note ?? "",
+                                })
+                              }
                             >
                               <Pencil className="h-4 w-4" />
                             </Button>
@@ -325,16 +354,30 @@ export function EsimNumbersAdmin({ list, filters, canManage }: { list: AdminNumb
           </DialogHeader>
           {editing ? (
             <div className="space-y-3">
-              <div className="grid gap-3 sm:grid-cols-2">
+              <div className="grid gap-3 sm:grid-cols-3">
                 <div className="space-y-1.5">
                   <Label htmlFor="number-price">{t("admin.esim.priceIn", "Price ({currency})", { currency: list.currency })}</Label>
                   <Input id="number-price" inputMode="decimal" value={editing.price} onChange={(event) => setEditing({ ...editing, price: event.target.value })} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="number-sale">{t("admin.esim.numberSalePriceIn", "Discount price ({currency})", { currency: list.currency })}</Label>
+                  <Input
+                    id="number-sale"
+                    inputMode="decimal"
+                    placeholder={t("admin.esim.numberNoDiscount", "No discount")}
+                    value={editing.sale}
+                    onChange={(event) => setEditing({ ...editing, sale: event.target.value })}
+                  />
                 </div>
                 <div className="space-y-1.5">
                   <Label htmlFor="number-premium">{t("admin.esim.numberPremiumIn", "Premium for a memorable number ({currency})", { currency: list.currency })}</Label>
                   <Input id="number-premium" inputMode="decimal" value={editing.premium} onChange={(event) => setEditing({ ...editing, premium: event.target.value })} />
                 </div>
               </div>
+              <p className="text-xs text-muted-foreground">
+                {t("admin.esim.numberSaleHint", "With a discount price the number sells at it and its price shows struck through. It must be below the price; the premium is not discounted.")}
+              </p>
+              {saleProblem ? <p className="text-xs text-destructive">{saleProblem}</p> : null}
               <div className="space-y-1.5">
                 <Label htmlFor="number-note">{t("admin.esim.note", "Note")}</Label>
                 <Input id="number-note" maxLength={500} value={editing.note} onChange={(event) => setEditing({ ...editing, note: event.target.value })} />
@@ -356,22 +399,46 @@ export function EsimNumbersAdmin({ list, filters, canManage }: { list: AdminNumb
                 {editing.row.status === "retired" ? t("admin.esim.putOnSale", "Put back on sale") : t("admin.esim.takeOffSale", "Take off sale")}
               </Button>
             ) : null}
-            <Button
-              disabled={busy || !editing || toCents(editing.price) === null || toCents(editing.premium) === null}
-              onClick={() =>
-                editing &&
-                post(
-                  { action: "update", id: editing.row.id, priceMinor: toCents(editing.price), premiumMinor: toCents(editing.premium), note: editing.note || null },
-                  t("admin.esim.saved", "Saved"),
-                )
-              }
-            >
-              {busy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-              {t("admin.esim.save", "Save")}
-            </Button>
+            <div className="flex flex-col-reverse gap-2 sm:flex-row">
+              <Button variant="ghost" disabled={busy} onClick={() => setEditing(null)}>
+                {t("admin.esim.cancelEdit", "Cancel")}
+              </Button>
+              <Button
+                disabled={busy || !editing || toCents(editing.price) === null || toCents(editing.premium) === null || saleProblem !== null}
+                onClick={() =>
+                  editing &&
+                  post(
+                    {
+                      action: "update",
+                      id: editing.row.id,
+                      priceMinor: toCents(editing.price),
+                      salePriceMinor: editing.sale.trim() ? toCents(editing.sale) : null,
+                      premiumMinor: toCents(editing.premium),
+                      note: editing.note || null,
+                    },
+                    t("admin.esim.saved", "Saved"),
+                  )
+                }
+              >
+                {busy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                {t("admin.esim.save", "Save")}
+              </Button>
+            </div>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <RepriceDialog
+        open={repricing}
+        currency={list.currency}
+        ids={pickedRows.map((row) => row.id)}
+        onClose={() => setRepricing(false)}
+        onDone={() => {
+          setRepricing(false);
+          setPicked(new Set());
+          router.refresh();
+        }}
+      />
 
       <NumberCreditDialog
         numberId={credit?.id ?? null}
@@ -518,12 +585,109 @@ function ImportDialog({
           ) : null}
         </div>
         <DialogFooter className="gap-2">
+          <Button variant="ghost" disabled={busy} onClick={onClose}>
+            {t("admin.esim.cancelEdit", "Cancel")}
+          </Button>
           <Button variant="outline" disabled={busy || !ready} onClick={() => run(true)}>
             {t("admin.esim.check", "Check")}
           </Button>
           <Button disabled={busy || !ready} onClick={() => run(false)}>
             {busy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
             {t("admin.esim.import", "Import")}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+/**
+ * Changes the price, discount price or premium of the ticked numbers at once.
+ * A field left empty stays as each number has it; the discount can also be
+ * taken away. Numbers whose price would not stay above the discount are left.
+ */
+function RepriceDialog({ open, currency, ids, onClose, onDone }: { open: boolean; currency: string; ids: string[]; onClose: () => void; onDone: () => void }) {
+  const t = useFallbackTranslator(useTranslations());
+  const [form, setForm] = useState({ price: "", sale: "", clearSale: false, premium: "" });
+  const [busy, setBusy] = useState(false);
+  const parse = (value: string) => (value.trim() ? toCents(value) : undefined);
+  const price = parse(form.price);
+  const sale = form.clearSale ? null : parse(form.sale);
+  const premium = parse(form.premium);
+  const invalid = price === null || (!form.clearSale && sale === null) || premium === null;
+  const empty = price === undefined && sale === undefined && premium === undefined;
+  const saleTooHigh = typeof sale === "number" && typeof price === "number" && sale >= price;
+
+  async function run() {
+    setBusy(true);
+    try {
+      const result = await apiClient.post<{ changed: number; discountTooHigh: number; unavailable: number }>("/api/esim/admin/numbers", {
+        action: "reprice",
+        ids,
+        ...(price !== undefined ? { priceMinor: price } : {}),
+        ...(sale !== undefined ? { salePriceMinor: sale } : {}),
+        ...(premium !== undefined ? { premiumMinor: premium } : {}),
+      });
+      const skipped = result.discountTooHigh + result.unavailable;
+      toast.success(
+        skipped
+          ? t("admin.esim.numbersRepricedSkipped", "{count} numbers changed; {skipped} left as they were (discount not below the price, or sold meanwhile)", { count: result.changed, skipped })
+          : t("admin.esim.numbersRepriced", "{count} numbers changed", { count: result.changed }),
+      );
+      setForm({ price: "", sale: "", clearSale: false, premium: "" });
+      onDone();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : String(error));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={(next) => !next && onClose()}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{t("admin.esim.numbersRepriceTitle", "Change the prices of {count} numbers", { count: ids.length })}</DialogTitle>
+          <DialogDescription>{t("admin.esim.numbersRepriceHint", "Fill in only what should change; an empty field stays as each number has it.")}</DialogDescription>
+        </DialogHeader>
+        <div className="space-y-3">
+          <div className="grid gap-3 sm:grid-cols-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="reprice-price">{t("admin.esim.priceIn", "Price ({currency})", { currency })}</Label>
+              <Input id="reprice-price" inputMode="decimal" placeholder={t("admin.esim.unchanged", "Unchanged")} value={form.price} onChange={(event) => setForm({ ...form, price: event.target.value })} />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="reprice-sale">{t("admin.esim.numberSalePriceIn", "Discount price ({currency})", { currency })}</Label>
+              <Input
+                id="reprice-sale"
+                inputMode="decimal"
+                disabled={form.clearSale}
+                placeholder={t("admin.esim.unchanged", "Unchanged")}
+                value={form.clearSale ? "" : form.sale}
+                onChange={(event) => setForm({ ...form, sale: event.target.value })}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="reprice-premium">{t("admin.esim.numberPremiumShortIn", "Premium ({currency})", { currency })}</Label>
+              <Input id="reprice-premium" inputMode="decimal" placeholder={t("admin.esim.unchanged", "Unchanged")} value={form.premium} onChange={(event) => setForm({ ...form, premium: event.target.value })} />
+            </div>
+          </div>
+          <label className="flex items-center gap-2 text-sm">
+            <Checkbox checked={form.clearSale} onCheckedChange={(on) => setForm({ ...form, clearSale: on === true })} />
+            {t("admin.esim.numbersClearSale", "Take the discount price away")}
+          </label>
+          {saleTooHigh ? <p className="text-xs text-destructive">{t("admin.esim.numberSaleTooHigh", "The discount price must be below the price")}</p> : null}
+          {!form.clearSale && typeof sale === "number" && price === undefined ? (
+            <p className="text-xs text-muted-foreground">{t("admin.esim.numbersSaleSkip", "Numbers whose price is not above the discount price are left as they were.")}</p>
+          ) : null}
+        </div>
+        <DialogFooter className="gap-2">
+          <Button variant="ghost" disabled={busy} onClick={onClose}>
+            {t("admin.esim.cancelEdit", "Cancel")}
+          </Button>
+          <Button disabled={busy || invalid || empty || saleTooHigh || !ids.length} onClick={() => void run()}>
+            {busy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+            {t("admin.esim.apply", "Apply")}
           </Button>
         </DialogFooter>
       </DialogContent>

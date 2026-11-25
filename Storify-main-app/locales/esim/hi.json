@@ -1898,7 +1898,8 @@
       "esimSignIns": "साइन-इन लॉग"
     },
     "phrases": {
-      "email_unverified": "ईमेल सत्यापित नहीं"
+      "email_unverified": "ईमेल सत्यापित नहीं",
+      "invited_by": "आमंत्रित करने वाले"
     }
   },
   "finance": {

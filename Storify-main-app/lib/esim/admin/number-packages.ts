@@ -32,6 +32,8 @@ export interface AdminNumberPackage {
   /** The cost in USD cents at today's rate (no buffer); null without a rate. */
   costUsdMinor: number | null;
   countryCodes: string[];
+  /** Names TopConnect shows on the card for it (lib/esim/numbers/card-packets.ts). */
+  cardNames: string[];
   retailPriceMinor: number;
   retailPriceManual: boolean;
   status: EsimNumberPackageStatus;
@@ -71,6 +73,7 @@ export async function listNumberPackagesAdmin(): Promise<AdminNumberPackageList>
       currency: row.cost.currency,
       costUsdMinor: rates.has(row.cost.currency) ? Math.round(row.cost.amountMinor * rates.get(row.cost.currency)!.usdPerUnit) : null,
       countryCodes: row.countryCodes,
+      cardNames: row.cardNames ?? [],
       retailPriceMinor: row.retailPriceMinor,
       retailPriceManual: row.retailPriceManual,
       status: row.status,
@@ -92,13 +95,15 @@ export interface NumberPackageInput {
   costMinor: number;
   currency: string;
   countryCodes: string[];
+  /** Left out: the names it has stay (some are learned from purchases). */
+  cardNames?: string[];
   /** null: priced by the rules. */
   retailPriceMinor: number | null;
   status: EsimNumberPackageStatus;
   sortOrder: number;
 }
 
-const snapshot = (row: { packetId: string; name: string; cost: unknown; retailPriceMinor: number; retailPriceManual: boolean; status: string; countryCodes: string[] }) => ({
+const snapshot = (row: { packetId: string; name: string; cost: unknown; retailPriceMinor: number; retailPriceManual: boolean; status: string; countryCodes: string[]; cardNames?: string[] }) => ({
   packetId: row.packetId,
   name: row.name,
   cost: row.cost,
@@ -106,6 +111,7 @@ const snapshot = (row: { packetId: string; name: string; cost: unknown; retailPr
   retailPriceManual: row.retailPriceManual,
   status: row.status,
   countryCodes: row.countryCodes,
+  cardNames: row.cardNames ?? [],
 });
 
 /** Adds a packet (no id) or changes one; returns what it was and is, for the audit log. */
@@ -125,6 +131,7 @@ export async function saveNumberPackage(id: string | null, input: NumberPackageI
     incrementStepKb: input.incrementStepKb,
     cost: { amountMinor: input.costMinor, currency: input.currency.toUpperCase() },
     countryCodes: [...new Set(input.countryCodes.map((code) => code.trim().toUpperCase()).filter((code) => /^[A-Z]{2}$/.test(code)))],
+    ...(input.cardNames ? { cardNames: [...new Set(input.cardNames.map((name) => name.trim()).filter(Boolean))] } : {}),
     retailPriceManual: input.retailPriceMinor !== null,
     ...(input.retailPriceMinor !== null ? { retailPriceMinor: input.retailPriceMinor, pricing: null } : {}),
     status: input.status,

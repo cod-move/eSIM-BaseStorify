@@ -30,10 +30,16 @@ export function Panel({
 }
 
 /** A label and its value on one line. */
-export function Line({ label, value }: { label: string; value: string }) {
+/** A label and its amount; `was` is the amount before a discount, struck through beside it. */
+export function Line({ label, value, was }: { label: string; value: string; was?: string }) {
   return (
     <View className="flex-row justify-between gap-3">
       <Text className="flex-1 text-muted">{label}</Text>
+      {was ? (
+        <Text variant="caption" className="text-muted line-through">
+          {was}
+        </Text>
+      ) : null}
       <Text className="shrink text-end" selectable>
         {value}
       </Text>

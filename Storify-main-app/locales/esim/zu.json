@@ -1898,7 +1898,8 @@
       "esimSignIns": "Irekhodi lokungena"
     },
     "phrases": {
-      "email_unverified": "I-imeyili ayiqinisekisiwe"
+      "email_unverified": "I-imeyili ayiqinisekisiwe",
+      "invited_by": "Umemi"
     }
   },
   "finance": {

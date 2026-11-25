@@ -5,6 +5,8 @@ import { EsimNumber, type IEsimNumber, type NumberCardPackage } from "@/models/e
 import { EsimNumberOrder } from "@/models/esim-number-order.model";
 import { EsimNumberOp } from "@/models/esim-number-op.model";
 import { EsimNumberTransfer } from "@/models/esim-number-transfer.model";
+import { EsimNumberPackage } from "@/models/esim-number-package.model";
+import { resolveCardPacketIds, type CardPackageRef } from "@/lib/esim/numbers/card-packets";
 import { formatAmount } from "@/lib/esim/numbers/line";
 import { credentialsOf, findProvider } from "@/lib/esim/provider-service";
 import { withProviderLog } from "@/lib/esim/provider-log";
@@ -117,7 +119,11 @@ export async function refreshNumberCard(numberId: string, options: { force?: boo
     const detailed = await withProviderLog({ ...context, operation: "numbers.packages" }, () => client.activePackages(row.msisdn), (result) => ({ packages: result.length }))
       .catch(() => stated);
     // An empty detailed list does not hide packages card_stat did name.
-    const packages = detailed.some((entry) => entry.kind === "gprs") ? detailed : stated;
+    const packages = (detailed.some((entry) => entry.kind === "gprs") ? detailed : stated).filter((entry) => entry.kind === "gprs");
+    const packetIds = await cardPacketIds(
+      row._id as mongoose.Types.ObjectId,
+      packages.map((entry) => ({ packetId: entry.packetId, name: entry.name, expiresAt: date(entry.expiresAt) })),
+    );
     await EsimNumber.updateOne(
       { _id: row._id },
       {
@@ -129,10 +135,9 @@ export async function refreshNumberCard(numberId: string, options: { force?: boo
             blocked: card.blocked,
             lastUsedAt: date(card.lastUsedAt),
             packages: packages
-              .filter((entry) => entry.kind === "gprs")
-              .map((entry) => ({
+              .map((entry, index) => ({
                 kind: entry.kind,
-                packetId: entry.packetId,
+                packetId: packetIds[index],
                 name: entry.name,
                 activatedAt: date(entry.activatedAt),
                 expiresAt: date(entry.expiresAt),
@@ -191,6 +196,34 @@ export async function getCustomerNumber(userId: string, numberId: string): Promi
     ],
     refreshFailed: !refreshed,
   };
+}
+
+/**
+ * Each card package's packet code: the card's own, else ours
+ * (lib/esim/numbers/card-packets.ts). A card name learned from a purchase is
+ * kept on the package, so other cards showing it get the code too. Never
+ * fails the card read: without a code a package just cannot be cancelled.
+ */
+async function cardPacketIds(numberId: mongoose.Types.ObjectId, entries: CardPackageRef[]): Promise<Array<string | null>> {
+  if (entries.every((entry) => entry.packetId)) return entries.map((entry) => entry.packetId);
+  try {
+    const [catalog, purchases] = await Promise.all([
+      EsimNumberPackage.find({ providerCode: "topconnect" }).select({ packetId: 1, name: 1, cardNames: 1, validityDays: 1 }).lean(),
+      EsimNumberOp.find({ number: numberId, kind: "packet", state: "completed" }).sort({ updatedAt: -1 }).limit(20).select({ packet: 1, updatedAt: 1 }).lean(),
+    ]);
+    const { packetIds, learned } = resolveCardPacketIds(
+      entries,
+      catalog,
+      purchases.flatMap((op) => (op.packet?.packetId ? [{ packetId: op.packet.packetId, at: new Date(op.updatedAt) }] : [])),
+    );
+    for (const entry of learned) {
+      await EsimNumberPackage.updateOne({ providerCode: "topconnect", packetId: entry.packetId }, { $addToSet: { cardNames: entry.cardName } });
+    }
+    return packetIds;
+  } catch (error) {
+    console.error("[esim] number card packet codes could not be matched:", error instanceof Error ? error.message : error);
+    return entries.map((entry) => entry.packetId);
+  }
 }
 
 /** The refresh button (NUM-06): the shopper's own number only; null when it is not theirs. */

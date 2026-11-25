@@ -13,6 +13,7 @@ import { NON_CUSTOMER_ACCOUNT_FILTER } from "@/lib/access/customer-account";
 import { isLoyaltyEnabled } from "@/lib/customers/loyalty";
 import { emailConsentStateFilter } from "@/lib/customers/marketing-consent";
 import { placedOrderMatch } from "@/lib/orders/order-payment-status";
+import { withCustomerReferrers } from "@/lib/esim/admin/customer-referrers"; // [esim-patch] P84
 import { POS_WALK_IN_EXPR } from "@/lib/orders/pos-walk-in";
 import { MARKETING_CONSENT_STATE } from "@/config/app.config";
 import type { MarketingConsentState } from "@/config/app.config";
@@ -412,7 +413,7 @@ export async function fetchAdminCustomerList(
   ]);
 
   return listResult(
-    customers as unknown[],
+    await withCustomerReferrers(customers as unknown[]), // [esim-patch] P84 each account's inviter, for the "Invited by" column
     page,
     limit,
     countResult[0]?.total || 0,

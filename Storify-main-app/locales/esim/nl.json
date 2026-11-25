@@ -1898,7 +1898,8 @@
       "esimSignIns": "Aanmeldlogboek"
     },
     "phrases": {
-      "email_unverified": "E-mail niet bevestigd"
+      "email_unverified": "E-mail niet bevestigd",
+      "invited_by": "Uitgenodigd door"
     }
   },
   "finance": {

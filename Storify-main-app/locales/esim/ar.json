@@ -1898,7 +1898,8 @@
       "esimSignIns": "سجل تسجيل الدخول"
     },
     "phrases": {
-      "email_unverified": "البريد غير مُتحقق منه"
+      "email_unverified": "البريد غير مُتحقق منه",
+      "invited_by": "دعاه"
     }
   },
   "finance": {

@@ -1898,7 +1898,8 @@
       "esimSignIns": "Rajistar shiga"
     },
     "phrases": {
-      "email_unverified": "Ba a tabbatar da imel ba"
+      "email_unverified": "Ba a tabbatar da imel ba",
+      "invited_by": "Wanda ya gayyata"
     }
   },
   "finance": {

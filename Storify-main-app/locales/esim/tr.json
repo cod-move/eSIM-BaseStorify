@@ -1898,7 +1898,8 @@
       "esimSignIns": "Giriş kayıtları"
     },
     "phrases": {
-      "email_unverified": "E-posta doğrulanmadı"
+      "email_unverified": "E-posta doğrulanmadı",
+      "invited_by": "Davet eden"
     }
   },
   "finance": {

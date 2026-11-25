@@ -786,10 +786,15 @@ export const EsimNumberOnSale = z.object({
   /** "+372 5550 1234". */
   display: z.string(),
   country: z.string().optional(),
+  /** What the number itself sells for: its discount price when it has one. */
   numberPrice: Money,
+  /** The number's price before its discount, shown struck through; only when discounted. */
+  numberListPrice: Money.optional(),
   /** The memorable-number premium, when there is one. */
   premium: Money.optional(),
   price: Money,
+  /** `price` before the discount (struck through); only when discounted. */
+  listPrice: Money.optional(),
 });
 export type EsimNumberOnSale = z.infer<typeof EsimNumberOnSale>;
 

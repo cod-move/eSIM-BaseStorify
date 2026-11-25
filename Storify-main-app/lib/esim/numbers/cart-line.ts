@@ -1,5 +1,6 @@
 import "server-only";
 
+import { numberSellingMinor } from "@/lib/esim/numbers/price";
 import { mongoose } from "@/lib/db";
 import { EsimNumber } from "@/models/esim-number.model";
 import { EsimNumberPackage } from "@/models/esim-number-package.model";
@@ -100,9 +101,9 @@ export async function numberCartLine(choice: NumberLineChoice | undefined, userI
   const snapshot: NumberLineSnapshot = {
     id: String(number._id),
     msisdn: number.msisdn,
-    numberMinor: number.priceMinor,
+    numberMinor: numberSellingMinor(number),
     premiumMinor: number.premiumMinor,
-    numberUsdMinor: cardUsdMinor(number.priceMinor + number.premiumMinor, chargeRate),
+    numberUsdMinor: cardUsdMinor(numberSellingMinor(number) + number.premiumMinor, chargeRate),
     recharge,
     rechargeCurrency: currency,
     rechargeUsdMinor: cardUsdMinor(recharge, chargeRate),

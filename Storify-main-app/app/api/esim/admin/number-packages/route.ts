@@ -19,6 +19,7 @@ const PackageSchema = z.object({
   costMinor: cents,
   currency: z.string().trim().regex(/^[A-Za-z]{3}$/),
   countryCodes: z.array(z.string().trim().regex(/^[A-Za-z]{2}$/)).max(300).default([]),
+  cardNames: z.array(z.string().trim().min(1).max(120)).max(20).optional(),
   retailPriceMinor: cents.nullable(),
   status: z.enum(["active", "hidden"]),
   sortOrder: z.number().int().min(0).max(1_000_000).default(0),

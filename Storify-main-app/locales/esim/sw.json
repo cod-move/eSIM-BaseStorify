@@ -1898,7 +1898,8 @@
       "esimSignIns": "Kumbukumbu za kuingia"
     },
     "phrases": {
-      "email_unverified": "Barua pepe haijathibitishwa"
+      "email_unverified": "Barua pepe haijathibitishwa",
+      "invited_by": "Amealikwa na"
     }
   },
   "finance": {

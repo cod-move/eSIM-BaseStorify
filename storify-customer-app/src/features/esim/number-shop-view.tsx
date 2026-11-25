@@ -181,9 +181,16 @@ function NumberCard({ number, onPress }: { number: EsimNumberOnSale; onPress: ()
       <Text variant="label" className="font-mono" numberOfLines={1} adjustsFontSizeToFit>
         {number.display.replace(/^\+\d+\s/, '')}
       </Text>
-      <Text variant="price" className="text-link">
-        {number.price.formatted}
-      </Text>
+      <View className="flex-row flex-wrap items-baseline gap-x-2">
+        <Text variant="price" className="text-link">
+          {number.price.formatted}
+        </Text>
+        {number.listPrice ? (
+          <Text variant="caption" className="text-muted line-through">
+            {number.listPrice.formatted}
+          </Text>
+        ) : null}
+      </View>
       {number.premium ? (
         <Text variant="caption" className="text-rating">
           {t('premium')}

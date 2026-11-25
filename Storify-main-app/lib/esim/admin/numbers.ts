@@ -5,6 +5,7 @@ import { User } from "@/models";
 import { EsimNumber, type EsimNumberStatus } from "@/models/esim-number.model";
 import { EsimProvider } from "@/models/esim-provider.model";
 import { ensureNumberProduct, ensureNumberTopupProduct } from "@/lib/esim/numbers/product";
+import { applyNumberPriceChange, type NumberPriceChange } from "@/lib/esim/numbers/price";
 import { parseNumberImport, type NumberImportOptions, type NumberImportProblem } from "@/lib/esim/numbers/import";
 
 /**
@@ -33,6 +34,8 @@ export interface AdminNumber {
   country: string | null;
   iccid: string;
   priceMinor: number;
+  /** The discount price, below `priceMinor`; null without one. */
+  salePriceMinor: number | null;
   premiumMinor: number;
   status: EsimNumberStatus;
   customer: string | null;
@@ -128,6 +131,7 @@ export async function listNumbersAdmin(filters: AdminNumberFilters): Promise<Adm
         country: row.country,
         iccid: row.iccid,
         priceMinor: row.priceMinor,
+        salePriceMinor: row.salePriceMinor ?? null,
         premiumMinor: row.premiumMinor,
         status: row.status,
         customer: holder ? (emailById.get(String(holder)) ?? null) : null,
@@ -211,6 +215,8 @@ export async function importNumbers(
 
 export interface NumberUpdate {
   priceMinor?: number;
+  /** null takes the discount away. */
+  salePriceMinor?: number | null;
   premiumMinor?: number;
   note?: string | null;
   /** Off sale and back. */
@@ -221,17 +227,70 @@ export interface NumberUpdate {
 export async function updateNumber(id: string, update: NumberUpdate) {
   await connectDB();
   if (!mongoose.isValidObjectId(id)) throw new Error("Unknown number");
-  const set: Record<string, unknown> = {};
-  if (update.priceMinor !== undefined) set.priceMinor = update.priceMinor;
-  if (update.premiumMinor !== undefined) set.premiumMinor = update.premiumMinor;
+  const current = await EsimNumber.findOne({ _id: id, status: { $in: ["available", "retired"] } }).select({ priceMinor: 1, salePriceMinor: 1 }).lean();
+  if (!current) throw new Error("Only a number that is not sold or held can be changed");
+  const priced = applyNumberPriceChange(current, { priceMinor: update.priceMinor, salePriceMinor: update.salePriceMinor, premiumMinor: update.premiumMinor });
+  if ("problem" in priced) throw new Error("The discount price must be below the price");
+  const set: Record<string, unknown> = { ...priced.set };
   if (update.note !== undefined) set.note = update.note?.trim() || null;
   if (update.status !== undefined) set.status = update.status;
-  const before = await EsimNumber.findOneAndUpdate({ _id: id, status: { $in: ["available", "retired"] } }, { $set: set }).lean();
+  // The price it was checked against, so a change made meanwhile is not overwritten with a discount above it.
+  const before = await EsimNumber.findOneAndUpdate(
+    { _id: id, status: { $in: ["available", "retired"] }, priceMinor: current.priceMinor, salePriceMinor: current.salePriceMinor ?? null },
+    { $set: set },
+  ).lean();
   if (!before) throw new Error("Only a number that is not sold or held can be changed");
   return {
     msisdn: before.msisdn,
-    before: { priceMinor: before.priceMinor, premiumMinor: before.premiumMinor, note: before.note, status: before.status },
+    before: { priceMinor: before.priceMinor, salePriceMinor: before.salePriceMinor ?? null, premiumMinor: before.premiumMinor, note: before.note, status: before.status },
     after: set,
+  };
+}
+
+export interface NumberRepriceReport {
+  /** The numbers changed, for the audit log. */
+  changed: string[];
+  /** Left as they were: the discount asked for is not below their price. */
+  discountTooHigh: string[];
+  /** Held or sold meanwhile, so not changed. */
+  unavailable: number;
+}
+
+/**
+ * Changes the price, discount price or premium of many unsold numbers at
+ * once (Admin → eSIM → Numbers, ticked rows). Fields left out stay as each
+ * number has them. A number whose price would end at or below the discount
+ * asked for keeps all it had.
+ */
+export async function repriceNumbers(ids: string[], change: NumberPriceChange): Promise<NumberRepriceReport> {
+  await connectDB();
+  const valid = ids.filter((id) => mongoose.isValidObjectId(id));
+  const free = { status: { $in: ["available", "retired"] as EsimNumberStatus[] }, customer: null };
+  const rows = await EsimNumber.find({ _id: { $in: valid }, ...free }).select({ msisdn: 1, priceMinor: 1, salePriceMinor: 1 }).lean();
+  const writes: Array<{ updateOne: { filter: Record<string, unknown>; update: { $set: Record<string, unknown> } } }> = [];
+  const discountTooHigh: string[] = [];
+  const planned: string[] = [];
+  for (const row of rows) {
+    const priced = applyNumberPriceChange(row, change);
+    if ("problem" in priced) {
+      discountTooHigh.push(row.msisdn);
+      continue;
+    }
+    if (!Object.keys(priced.set).length) continue;
+    planned.push(row.msisdn);
+    writes.push({
+      updateOne: {
+        filter: { _id: row._id, ...free, priceMinor: row.priceMinor, salePriceMinor: row.salePriceMinor ?? null },
+        update: { $set: priced.set },
+      },
+    });
+  }
+  const result = writes.length ? await EsimNumber.bulkWrite(writes, { ordered: false }) : null;
+  const modified = result ? result.matchedCount : 0;
+  return {
+    changed: modified === planned.length ? planned : planned.slice(0, modified),
+    discountTooHigh,
+    unavailable: valid.length - rows.length + (planned.length - modified),
   };
 }
 

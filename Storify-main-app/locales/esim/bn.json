@@ -1898,7 +1898,8 @@
       "esimSignIns": "সাইন-ইন লগ"
     },
     "phrases": {
-      "email_unverified": "ইমেইল যাচাই হয়নি"
+      "email_unverified": "ইমেইল যাচাই হয়নি",
+      "invited_by": "আমন্ত্রণকারী"
     }
   },
   "finance": {

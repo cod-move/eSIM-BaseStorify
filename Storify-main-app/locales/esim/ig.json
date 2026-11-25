@@ -1898,7 +1898,8 @@
       "esimSignIns": "Ndekọ nbanye"
     },
     "phrases": {
-      "email_unverified": "Akwadoghị email"
+      "email_unverified": "Akwadoghị email",
+      "invited_by": "Onye kpọrọ ya"
     }
   },
   "finance": {

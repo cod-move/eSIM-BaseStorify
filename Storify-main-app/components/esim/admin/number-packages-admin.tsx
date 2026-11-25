@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "@/components/ui/toast-notification";
 import { useConfirmation } from "@/components/ui/confirmation-dialog";
@@ -38,6 +39,8 @@ interface Draft {
   cost: string;
   currency: string;
   countries: string;
+  /** One per line. */
+  cardNames: string;
   manualPrice: boolean;
   price: string;
   active: boolean;
@@ -56,12 +59,13 @@ const draftOf = (row: AdminNumberPackage | null, nextSort: number): Draft =>
         cost: money(row.costMinor),
         currency: row.currency,
         countries: row.countryCodes.join(", "),
+        cardNames: row.cardNames.join("\n"),
         manualPrice: row.retailPriceManual,
         price: money(row.retailPriceMinor),
         active: row.status === "active",
         sortOrder: String(row.sortOrder),
       }
-    : { id: null, packetId: "", name: "", validityDays: "7", volumeMb: "", incrementStepKb: "1", cost: "", currency: "EUR", countries: "", manualPrice: false, price: "", active: false, sortOrder: String(nextSort) };
+    : { id: null, packetId: "", name: "", validityDays: "7", volumeMb: "", incrementStepKb: "1", cost: "", currency: "EUR", countries: "", cardNames: "", manualPrice: false, price: "", active: false, sortOrder: String(nextSort) };
 
 export function EsimNumberPackagesAdmin({ list, canManage }: { list: AdminNumberPackageList; canManage: boolean }) {
   const t = useFallbackTranslator(useTranslations());
@@ -102,6 +106,7 @@ export function EsimNumberPackagesAdmin({ list, canManage }: { list: AdminNumber
         costMinor: toCents(draft.cost),
         currency: draft.currency.trim().toUpperCase(),
         countryCodes: draft.countries.split(/[\s,;]+/).map((code) => code.trim().toUpperCase()).filter(Boolean),
+        cardNames: draft.cardNames.split("\n").map((name) => name.trim()).filter(Boolean),
         retailPriceMinor: draft.manualPrice ? toCents(draft.price) : null,
         status: draft.active ? "active" : "hidden",
         sortOrder: wholeNumber(draft.sortOrder) ?? 0,
@@ -280,7 +285,10 @@ export function EsimNumberPackagesAdmin({ list, canManage }: { list: AdminNumber
               </div>
             </div>
           ) : null}
-          <DialogFooter>
+          <DialogFooter className="gap-2">
+            <Button variant="ghost" disabled={busy} onClick={() => setLoading(null)}>
+              {t("admin.esim.cancelEdit", "Cancel")}
+            </Button>
             <Button
               disabled={busy || !loadValid}
               onClick={async () => {
@@ -359,6 +367,20 @@ export function EsimNumberPackagesAdmin({ list, canManage }: { list: AdminNumber
               <Field id="packet-countries" label={t("admin.esim.packetCountriesHint", "Countries where it works (codes, e.g. FR, DE, IT)")}>
                 <Input id="packet-countries" value={draft.countries} onChange={(event) => setDraft({ ...draft, countries: event.target.value })} />
               </Field>
+              <Field id="packet-card-names" label={t("admin.esim.packetCardNames", "Names on the card (one per line)")}>
+                <Textarea
+                  id="packet-card-names"
+                  rows={2}
+                  value={draft.cardNames}
+                  onChange={(event) => setDraft({ ...draft, cardNames: event.target.value })}
+                />
+                <p className="text-xs text-muted-foreground">
+                  {t(
+                    "admin.esim.packetCardNamesHint",
+                    "TopConnect may show this package on the card under another name, without its code. A shopper can cancel a package only when its code is known: the card's names are matched here, and learned from purchases.",
+                  )}
+                </p>
+              </Field>
               <div className="grid items-end gap-3 sm:grid-cols-2">
                 <Field id="packet-sort" label={t("admin.esim.sortOrder", "Sort order")}>
                   <Input id="packet-sort" inputMode="numeric" value={draft.sortOrder} onChange={(event) => setDraft({ ...draft, sortOrder: event.target.value })} />
@@ -370,7 +392,10 @@ export function EsimNumberPackagesAdmin({ list, canManage }: { list: AdminNumber
               </div>
             </div>
           ) : null}
-          <DialogFooter>
+          <DialogFooter className="gap-2">
+            <Button variant="ghost" disabled={busy} onClick={() => setDraft(null)}>
+              {t("admin.esim.cancelEdit", "Cancel")}
+            </Button>
             <Button disabled={busy || !valid} onClick={() => draft && values && post({ action: "save", id: draft.id, values }, t("admin.esim.saved", "Saved"))}>
               {busy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
               {t("admin.esim.save", "Save")}

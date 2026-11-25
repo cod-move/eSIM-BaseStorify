@@ -1898,7 +1898,8 @@
       "esimSignIns": "Aanmeldlog"
     },
     "phrases": {
-      "email_unverified": "E-pos nie bevestig nie"
+      "email_unverified": "E-pos nie bevestig nie",
+      "invited_by": "Genooi deur"
     }
   },
   "finance": {

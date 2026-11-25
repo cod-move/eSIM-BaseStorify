@@ -1898,7 +1898,8 @@
       "esimSignIns": "Irekhodi yokungena"
     },
     "phrases": {
-      "email_unverified": "I-imeyile ayiqinisekiswanga"
+      "email_unverified": "I-imeyile ayiqinisekiswanga",
+      "invited_by": "Umemi"
     }
   },
   "finance": {

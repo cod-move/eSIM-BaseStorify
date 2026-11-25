@@ -6,6 +6,7 @@ import {
   EsimNumberShop,
   EsimNumberShopQuery,
 } from "@/contracts/mobile/shop/v1/esim";
+import { numberSellingMinor } from "@/lib/esim/numbers/price";
 import { MobileApiError } from "@/lib/api-core/errors";
 import { defineRoute } from "@/lib/api-core/registry";
 import { toMoney } from "@/lib/api-core/shop/money";
@@ -123,7 +124,7 @@ export const esimNumberPriceRoute = defineRoute({
   handler: async ({ input }) => {
     await connectDB();
     const [number, packet, provider, settings, storeCurrency] = await Promise.all([
-      input.id ? EsimNumber.findOne({ _id: input.id, customer: null }).select({ priceMinor: 1, premiumMinor: 1 }).lean() : null,
+      input.id ? EsimNumber.findOne({ _id: input.id, customer: null }).select({ priceMinor: 1, salePriceMinor: 1, premiumMinor: 1 }).lean() : null,
       input.packet ? EsimNumberPackage.findOne({ _id: input.packet, status: "active" }).select({ retailPriceMinor: 1 }).lean() : null,
       EsimProvider.findOne({ code: "topconnect" }).select({ settlementCurrency: 1 }).lean(),
       getEsimSettings(),
@@ -132,7 +133,7 @@ export const esimNumberPriceRoute = defineRoute({
     if (input.id && !number) throw new MobileApiError(404, "NOT_FOUND", "Number not found.");
     if (input.packet && !packet) throw new MobileApiError(404, "NOT_FOUND", "Data package not found.");
     const currency = provider?.settlementCurrency ?? "EUR";
-    const parts = [number ? number.priceMinor + number.premiumMinor : 0, input.recharge ?? 0, packet?.retailPriceMinor ?? 0];
+    const parts = [number ? numberSellingMinor(number) + number.premiumMinor : 0, input.recharge ?? 0, packet?.retailPriceMinor ?? 0];
     const rate = (await currentRates([currency])).get(currency);
     const chargeRate = rate ? cardChargeRate(rate.usdPerUnit, settings.fxBufferPercent) : null;
     return {

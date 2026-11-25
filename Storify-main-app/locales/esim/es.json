@@ -1898,7 +1898,8 @@
       "esimSignIns": "Registro de inicios de sesión"
     },
     "phrases": {
-      "email_unverified": "Correo sin verificar"
+      "email_unverified": "Correo sin verificar",
+      "invited_by": "Invitado por"
     }
   },
   "finance": {

@@ -8,6 +8,7 @@ import { getEsimSettings } from "@/models/esim-pricing.model";
 import { currentRates } from "@/lib/esim/pricing/fx-service";
 import { findNumberProduct, findNumberTopupProduct } from "@/lib/esim/numbers/product";
 import { RECHARGE_MAX_MINOR, rechargePreset, rechargeSuggestions } from "@/lib/esim/numbers/line";
+import { numberDiscountMinor, numberSellingMinor } from "@/lib/esim/numbers/price";
 import { rechargeMinOf } from "@/lib/esim/numbers/settings";
 
 /**
@@ -34,7 +35,10 @@ export interface ShopNumber {
   dialCode: string;
   nationalNumber: string;
   country: string | null;
+  /** What the number sells for: its discount price when it has one. */
   priceMinor: number;
+  /** Its price before the discount, shown struck through; only when discounted. */
+  listPriceMinor?: number;
   premiumMinor: number;
 }
 
@@ -108,7 +112,7 @@ export async function numberShop(filters: ShopNumberFilters): Promise<NumberShop
   const page = Math.max(1, Math.floor(filters.page ?? 1));
   const [rows, total, codes, packets, provider, product, settings] = await Promise.all([
     EsimNumber.find(match)
-      .select({ dialCode: 1, nationalNumber: 1, country: 1, priceMinor: 1, premiumMinor: 1 })
+      .select({ dialCode: 1, nationalNumber: 1, country: 1, priceMinor: 1, salePriceMinor: 1, premiumMinor: 1 })
       // "All" mixes standard and memorable numbers in number order (by price, every standard one came first);
       // a standard-only or memorable-only list stays cheapest first.
       .sort(filters.premium === "premium" || filters.premium === "standard" ? { premiumMinor: 1, priceMinor: 1, msisdn: 1 } : { msisdn: 1 })
@@ -134,7 +138,8 @@ export async function numberShop(filters: ShopNumberFilters): Promise<NumberShop
       dialCode: row.dialCode,
       nationalNumber: row.nationalNumber,
       country: row.country,
-      priceMinor: row.priceMinor,
+      priceMinor: numberSellingMinor(row),
+      ...(numberDiscountMinor(row) !== null ? { listPriceMinor: row.priceMinor } : {}),
       premiumMinor: row.premiumMinor,
     })),
     total,

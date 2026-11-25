@@ -1898,7 +1898,8 @@
       "esimSignIns": "Anmeldeprotokoll"
     },
     "phrases": {
-      "email_unverified": "E-Mail nicht bestätigt"
+      "email_unverified": "E-Mail nicht bestätigt",
+      "invited_by": "Eingeladen von"
     }
   },
   "finance": {

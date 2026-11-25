@@ -1898,7 +1898,8 @@
       "esimSignIns": "Journal des connexions"
     },
     "phrases": {
-      "email_unverified": "E-mail non vérifié"
+      "email_unverified": "E-mail non vérifié",
+      "invited_by": "Invité par"
     }
   },
   "finance": {

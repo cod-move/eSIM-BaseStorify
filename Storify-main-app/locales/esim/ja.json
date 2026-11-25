@@ -1898,7 +1898,8 @@
       "esimSignIns": "ログイン履歴"
     },
     "phrases": {
-      "email_unverified": "メール未確認"
+      "email_unverified": "メール未確認",
+      "invited_by": "招待者"
     }
   },
   "finance": {

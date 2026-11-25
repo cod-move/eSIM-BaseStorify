@@ -45,6 +45,8 @@ export interface IEsimNumber extends mongoose.Document {
     puk2: string | null;
   };
   priceMinor: number;
+  /** A discount price below `priceMinor`: the number sells at it and its price shows struck through. */
+  salePriceMinor?: number | null;
   premiumMinor: number;
   status: EsimNumberStatus;
   /** Who it is held for while they pay (NUM-04). */
@@ -95,6 +97,7 @@ const EsimNumberSchema = new Schema<IEsimNumber>(
       select: false,
     },
     priceMinor: { type: Number, required: true, min: 0, validate: Number.isInteger },
+    salePriceMinor: { type: Number, default: null, min: 0, validate: (value: number | null) => value === null || Number.isInteger(value) },
     premiumMinor: { type: Number, default: 0, min: 0, validate: Number.isInteger },
     status: { type: String, enum: ["available", "reserved", "sold", "retired"], default: "available", index: true },
     reservation: {

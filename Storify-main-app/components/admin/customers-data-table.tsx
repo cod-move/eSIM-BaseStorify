@@ -100,6 +100,8 @@ interface CustomerListItem {
     emailVerified?: boolean; // [esim-patch] P81
     createdAt: string;
   };
+  /** [esim-patch] P84 who the account signed up through (lib/esim/admin/customer-referrers.ts). */
+  esimReferrer?: { userId: string; name: string | null; email: string | null };
 }
 
 interface CustomersDataTableProps {
@@ -561,6 +563,28 @@ export function CustomersDataTable({
         },
         className: "w-[120px]",
       },
+      // [esim-patch] P84 the inviter, linked to their own customer page (the page opens a user id, P63).
+      {
+        id: "esimReferrer",
+        header: tr("Invited by", "আমন্ত্রণকারী"),
+        cell: (row) => {
+          const referrer = row.esimReferrer;
+          if (!referrer) return <span className="text-muted-foreground">-</span>;
+          const label = (
+            <div className="min-w-0">
+              <p className="truncate text-sm">{referrer.name || referrer.email || tr("Unknown", "অজানা")}</p>
+              {referrer.name && referrer.email ? <p className="truncate text-xs text-muted-foreground">{referrer.email}</p> : null}
+            </div>
+          );
+          return isVendorArea ? label : (
+            <Link href={`${basePath}/customers/${referrer.userId}`} className="block hover:underline">
+              {label}
+            </Link>
+          );
+        },
+        className: "w-[180px] hidden md:table-cell",
+        headerClassName: "hidden md:table-cell",
+      },
       {
         // Consent as a state, not a tick: "unsubscribed" (they left) and
         // "not subscribed" (never asked) are different facts about a shopper,
@@ -673,7 +697,7 @@ export function CustomersDataTable({
   // for everyone else too.
   const visibleColumns = useMemo(() => {
     const hidden = isVendorArea
-      ? ["tier", "points", "tags"]
+      ? ["tier", "points", "tags", "esimReferrer"] // [esim-patch] P84 the vendor list has no inviters
       : loyaltyEnabled
         ? []
         : ["tier", "points"];
