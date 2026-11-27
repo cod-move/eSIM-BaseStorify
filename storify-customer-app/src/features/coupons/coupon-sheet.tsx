@@ -98,62 +98,61 @@ export function CouponSheet({
       ? (refusal.reasonMessage ?? t('invalid'))
       : undefined;
 
-  return (
-    <Sheet
-      visible={visible}
-      title={t('title')}
-      onClose={onClose}
-      footer={
-        <View className="gap-2">
-          <View className="flex-row items-center gap-3">
-            <View
-              className={cn(
-                'min-h-12 flex-1 flex-row items-center gap-2.5 rounded-full border-[1.5px] ps-4 pe-2',
-                error ? 'border-danger' : 'border-border'
-              )}>
-              <Icon name="ticket" size={20} colorClassName="accent-muted" />
-              <TextInput
-                value={code}
-                onChangeText={(value) => {
-                  setCode(value);
-                  setTooShort(false);
-                }}
-                onSubmitEditing={() => send(code)}
-                placeholder={t('fieldPlaceholder')}
-                placeholderTextColorClassName="accent-muted"
-                accessibilityLabel={t('fieldLabel')}
-                accessibilityHint={error}
-                autoCapitalize="characters"
-                autoCorrect={false}
-                autoComplete="off"
-                maxLength={MAX_CODE_LENGTH}
-                returnKeyType="done"
-                className={cn(
-                  'min-h-11 flex-1 bg-transparent text-[15px] text-foreground',
-                  Platform.OS === 'web' && 'outline-none'
-                )}
-              />
-            </View>
-            <Button
-              label={t('apply')}
-              loading={pending && sent !== undefined && code.trim() === sent}
-              disabled={pending}
-              onPress={() => send(code)}
-            />
-          </View>
-          {error ? (
-            <View
-              accessibilityRole="alert"
-              accessibilityLiveRegion="polite"
-              className="gap-0.5 px-2">
-              <Text variant="caption" className="text-danger">
-                {error}
-              </Text>
-            </View>
-          ) : null}
+  // [esim-patch] P86 the code field heads the body of a tall sheet, not its footer: in the
+  // sheet's window the keyboard covered a footer on Android, and the top of a tall sheet is
+  // always above it.
+  const codeField = (
+    <View className="gap-2">
+      <View className="flex-row items-center gap-3">
+        <View
+          className={cn(
+            'min-h-12 flex-1 flex-row items-center gap-2.5 rounded-full border-[1.5px] ps-4 pe-2',
+            error ? 'border-danger' : 'border-border'
+          )}>
+          <Icon name="ticket" size={20} colorClassName="accent-muted" />
+          <TextInput
+            value={code}
+            onChangeText={(value) => {
+              setCode(value);
+              setTooShort(false);
+            }}
+            onSubmitEditing={() => send(code)}
+            placeholder={t('fieldPlaceholder')}
+            placeholderTextColorClassName="accent-muted"
+            accessibilityLabel={t('fieldLabel')}
+            accessibilityHint={error}
+            autoCapitalize="characters"
+            autoCorrect={false}
+            autoComplete="off"
+            maxLength={MAX_CODE_LENGTH}
+            returnKeyType="done"
+            className={cn(
+              'min-h-11 flex-1 bg-transparent text-[15px] text-foreground',
+              Platform.OS === 'web' && 'outline-none'
+            )}
+          />
         </View>
-      }>
+        <Button
+          label={t('apply')}
+          loading={pending && sent !== undefined && code.trim() === sent}
+          disabled={pending}
+          onPress={() => send(code)}
+        />
+      </View>
+      {error ? (
+        <View accessibilityRole="alert" accessibilityLiveRegion="polite" className="gap-0.5 px-2">
+          <Text variant="caption" className="text-danger">
+            {error}
+          </Text>
+        </View>
+      ) : null}
+    </View>
+  );
+
+  return (
+    <Sheet visible={visible} title={t('title')} onClose={onClose} size="tall">
       <View className="gap-3">
+        {codeField}
         {applied ? (
           <View className="flex-row items-center gap-3 rounded-lg bg-surface-alt px-4 py-2">
             <Icon name="check-circle" size={22} colorClassName="accent-success" />
