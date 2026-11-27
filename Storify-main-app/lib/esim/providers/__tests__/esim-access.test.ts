@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { EsimAccessAdapter, mapPlan, mapProfile, topupOrderOf, topupPlanIdOf } from "../esim-access";
+import { DAILY_TOPUP_DAYS, EsimAccessAdapter, mapPlan, mapProfile, topupOrderOf, topupPlanIdOf, topupPlansOf } from "../esim-access";
 import type { JsonObject } from "../types";
 import { fakeFetch } from "./helpers";
 
@@ -70,6 +70,23 @@ describe("eSIM Access plan mapping", () => {
     assert.equal(topupPlanIdOf({ packageCode: "TOPUP_JC172", supportTopUpType: 2 }), "TOPUP_JC172");
     assert.deepEqual(topupOrderOf("TOPUP_JC172"), { packageCode: "TOPUP_JC172" });
     assert.deepEqual(topupOrderOf("TOPUP_D1|5"), { packageCode: "TOPUP_D1", periodNum: "5" });
+  });
+
+  it("offers a daily top-up for a choice of days, priced per day, on one card", () => {
+    // As the live list answers for a CN_1_Daily_1Mbps_nonhkip eSIM.
+    const daily = { packageCode: "TOPUP_P9LD7ZDVR", slug: "CN_1_Daily_nonhkip", name: "China 1GB/Day (nonhkip)", price: 9600, currencyCode: "USD", volume: 1024 ** 3, dataType: 2, duration: 1, durationUnit: "DAY", supportTopUpType: 1 };
+    const offers = topupPlansOf(daily);
+    assert.deepEqual(offers.map((offer) => offer.validityDays), [...DAILY_TOPUP_DAYS]);
+    assert.ok(offers.every((offer) => offer.dayGroup === "daily:TOPUP_P9LD7ZDVR" && offer.megabytes === 1024));
+    const week = offers.find((offer) => offer.validityDays === 7)!;
+    assert.equal(week.cost.amountMinor, 672);
+    assert.equal(week.name, "China 1GB/Day (nonhkip) × 7 days");
+    assert.deepEqual(topupOrderOf(week.topupPlanId), { packageCode: "TOPUP_P9LD7ZDVR", periodNum: "7" });
+
+    const fixed = topupPlansOf({ ...JAPAN_3GB, packageCode: "TOPUP_CKH491" });
+    assert.equal(fixed.length, 1);
+    assert.equal(fixed[0].topupPlanId, "TOPUP_CKH491");
+    assert.equal(fixed[0].dayGroup, undefined);
   });
 
   it("sells _Daily packages as fixed one-day plans", () => {

@@ -171,14 +171,7 @@ export class EsimAccessAdapter implements EsimProviderAdapter {
 
   async listTopupPlans(ref: EsimRef): Promise<ProviderTopupPlan[]> {
     if (!ref.iccid) throw new ProviderError("not_found", "eSIM Access lists top-ups by ICCID");
-    return (await this.packages({ type: "TOPUP", iccid: ref.iccid })).map((row) => ({
-      topupPlanId: topupPlanIdOf(row),
-      name: str(row.name),
-      megabytes: Math.round((int(row.volume) ?? 0) / BYTES_PER_MB),
-      validityDays: validityDays(row),
-      cost: { currency: currency(row.currencyCode, "USD"), amountMinor: cents(row.price) },
-      raw: row,
-    }));
+    return (await this.packages({ type: "TOPUP", iccid: ref.iccid })).flatMap(topupPlansOf);
   }
 
   async topup(input: TopupInput): Promise<TopupResult> {
@@ -371,6 +364,43 @@ function coverageOf(row: JsonObject, names: Map<string, string>) {
 export function topupPlanIdOf(row: JsonObject): string {
   const code = str(row.packageCode);
   return int(row.supportTopUpType) === 3 ? `${code}|${Math.max(1, validityDays(row))}` : code;
+}
+
+/** The day counts a day-pass top-up is offered for (eSIM Access takes 1–365 as `periodNum`). */
+export const DAILY_TOPUP_DAYS = [1, 3, 5, 7, 10, 15, 30] as const;
+
+/**
+ * A day-pass top-up: a one-day package of a daily plan (dataType 2–4 or a
+ * "_Daily" slug), or one that extends days (supportTopUpType 3). Since
+ * 2026-04-01 eSIM Access tops these up for `periodNum` days.
+ */
+function isDailyTopup(row: JsonObject) {
+  if (validityDays(row) !== 1) return false;
+  return int(row.supportTopUpType) === 3 || /_daily(_|$)/i.test(str(row.slug)) || [2, 3, 4].includes(int(row.dataType) ?? 0);
+}
+
+/**
+ * The offers of one row of the top-up list: the package as it is, or, for a
+ * day pass, one offer per day count — one card in the picker (`dayGroup`) —
+ * at the package's price per day, the days sent back as `periodNum`.
+ */
+export function topupPlansOf(row: JsonObject): ProviderTopupPlan[] {
+  const name = str(row.name);
+  const megabytes = Math.round((int(row.volume) ?? 0) / BYTES_PER_MB);
+  const currencyCode = currency(row.currencyCode, "USD");
+  if (!isDailyTopup(row)) {
+    return [{ topupPlanId: topupPlanIdOf(row), name, megabytes, validityDays: validityDays(row), cost: { currency: currencyCode, amountMinor: cents(row.price) }, raw: row }];
+  }
+  const code = str(row.packageCode);
+  return DAILY_TOPUP_DAYS.map((days) => ({
+    topupPlanId: `${code}|${days}`,
+    name: `${name} × ${days} ${days === 1 ? "day" : "days"}`,
+    dayGroup: `daily:${code}`,
+    megabytes,
+    validityDays: days,
+    cost: { currency: currencyCode, amountMinor: cents((num(row.price) ?? 0) * days) },
+    raw: { ...row, periodNum: days },
+  }));
 }
 
 /** The top-up request's package fields for a top-up offer id (topupPlanIdOf). */

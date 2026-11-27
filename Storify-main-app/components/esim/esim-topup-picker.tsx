@@ -37,7 +37,7 @@ function cardsOf(offers: TopupPickerOffer[]): TopupCard[] {
     const key = offer.dayGroup || offer.topupPlanId;
     const card = cards.get(key);
     if (card) card.options.push(offer);
-    else cards.set(key, { key, name: offer.dayGroup ? offer.name.replace(/s*×s*d+s*days?$/i, "") : offer.name, area: offer.area ?? null, options: [offer] });
+    else cards.set(key, { key, name: offer.dayGroup ? offer.name.replace(/\s*×\s*\d+\s*days?$/i, "") : offer.name, area: offer.area ?? null, options: [offer] });
   }
   for (const card of cards.values()) card.options.sort((a, b) => a.validityDays - b.validityDays);
   return [...cards.values()];
