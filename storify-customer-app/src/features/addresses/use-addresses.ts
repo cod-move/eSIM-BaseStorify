@@ -100,10 +100,12 @@ export function toForm(address?: Address): AddressForm {
 
 /** What checkout would refuse, by field. Empty when the form may be sent. */
 export function checkForm(
-  form: AddressForm
+  form: AddressForm,
+  // [esim-patch] P86 the fields the store's checkout requires too (Settings → Checkout).
+  alsoRequired: readonly AddressFormField[] = []
 ): Partial<Record<AddressFormField, AddressFormProblem>> {
   const problems: Partial<Record<AddressFormField, AddressFormProblem>> = {};
-  for (const field of ['firstName', 'street', 'city', 'country'] as const) {
+  for (const field of ['firstName', 'street', 'city', 'country', ...alsoRequired] as const) {
     if (!form[field].trim()) problems[field] = 'required';
   }
   if (!problems.street && form.street.trim().length < MIN_STREET)

@@ -1204,3 +1204,12 @@ export const EsimSheetPayment = z.object({
   testMode: z.boolean().optional(),
 });
 export type EsimSheetPayment = z.infer<typeof EsimSheetPayment>;
+
+/** GET /esim/address-fields: firstName, lastName, apartment, postalCode, state, phone as the store's checkout asks for them. */
+export const EsimAddressFields = z.object({
+  fields: z.record(
+    z.string(),
+    z.object({ visibility: z.enum(["required", "optional", "hidden"]), label: z.string().optional() }),
+  ),
+});
+export type EsimAddressFields = z.infer<typeof EsimAddressFields>;

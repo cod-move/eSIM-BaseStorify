@@ -21,6 +21,7 @@ import {
   type AddressForm as FormValues,
   type AddressFormField,
 } from './use-addresses';
+import { useStoreAddressFields } from '@/features/esim/address-fields'; // [esim-patch] P86
 
 const FIELDS: { field: AddressFormField; required?: boolean; keyboard?: 'phone-pad' }[] = [
   { field: 'firstName', required: true },
@@ -54,8 +55,16 @@ export function AddressForm({ address, onSaved }: AddressFormProps) {
   const [form, setForm] = useState<FormValues>(() => toForm(address));
   const [isDefault, setIsDefault] = useState(address?.isDefault ?? false);
   const [tried, setTried] = useState(false);
+  // [esim-patch] P86 required, optional or hidden as the store's checkout asks; street, city and country always required.
+  const storeFields = useStoreAddressFields();
+  const fields = FIELDS.filter(({ field }) => storeFields?.[field] !== 'hidden').map((entry) =>
+    storeFields?.[entry.field]
+      ? { ...entry, required: entry.required || storeFields[entry.field] === 'required' }
+      : entry
+  );
+  const alsoRequired = fields.filter((entry) => entry.required).map((entry) => entry.field);
 
-  const problems = tried ? checkForm(form) : {};
+  const problems = tried ? checkForm(form, alsoRequired) : {};
   const refused = isApiError(change.error) ? change.error.errors : undefined;
   const fieldError = (field: AddressFormField) => {
     const problem = problems[field];
@@ -66,7 +75,7 @@ export function AddressForm({ address, onSaved }: AddressFormProps) {
 
   const save = () => {
     setTried(true);
-    if (Object.keys(checkForm(form)).length > 0) return;
+    if (Object.keys(checkForm(form, alsoRequired)).length > 0) return; // [esim-patch] P86
     const request = { ...toRequest(form), ...(isDefault ? { isDefault: true } : {}) };
     change.mutate(
       address
@@ -97,7 +106,7 @@ export function AddressForm({ address, onSaved }: AddressFormProps) {
           ))}
         </View>
       </View>
-      {FIELDS.map(({ field, required, keyboard }) => (
+      {fields.map(({ field, required, keyboard }) => (
         <TextField
           key={field}
           label={t(`fields.${field}`)}

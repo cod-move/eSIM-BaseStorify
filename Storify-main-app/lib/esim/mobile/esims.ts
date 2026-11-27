@@ -17,6 +17,7 @@ import { esimCoverage } from "@/lib/esim/account/coverage";
 import { esimTopupQuoteRoute, esimTopupsRoute } from "./topups";
 import { esimNumberPriceRoute, esimNumberQuoteRoute, esimNumberShopRoute } from "./number-shop";
 import { cancelMyNumberPacketRoute, myNumberRemarkRoute, myNumberRoute, myNumbersRoute, myNumberTopupQuoteRoute, refreshMyNumberRoute } from "./numbers";
+import { esimAddressFieldsRoute } from "./address-fields";
 import {
   forwardMyNumberRoute,
   myNumberDataLimitRoute,
@@ -193,4 +194,4 @@ const ESIM_NUMBER_ROUTES: readonly RouteEntry[] = [
 ];
 
 /** The eSIM module's shopper endpoints, for the API's route list (patch P22). */
-export const esimShopRoutes: readonly RouteEntry[] = [myEsimsRoute, myEsimRoute, refreshMyEsimRoute, esimDestinationsRoute, esimDestinationRoute, esimPlanDetailsRoute, esimTopupsRoute, esimTopupQuoteRoute, esimDevicesRoute, esimWalletRoute, esimReferralsRoute, esimReferralFriendsRoute, esimReferralCodeRoute, esimKycRoute, esimKycFileRoute, esimKycSubmitRoute, cancelMyEsimRoute, deleteMyEsimRoute, ...esimRewardsRoutes, ...ESIM_NUMBER_ROUTES];
+export const esimShopRoutes: readonly RouteEntry[] = [esimAddressFieldsRoute, myEsimsRoute, myEsimRoute, refreshMyEsimRoute, esimDestinationsRoute, esimDestinationRoute, esimPlanDetailsRoute, esimTopupsRoute, esimTopupQuoteRoute, esimDevicesRoute, esimWalletRoute, esimReferralsRoute, esimReferralFriendsRoute, esimReferralCodeRoute, esimKycRoute, esimKycFileRoute, esimKycSubmitRoute, cancelMyEsimRoute, deleteMyEsimRoute, ...esimRewardsRoutes, ...ESIM_NUMBER_ROUTES];
