@@ -285,7 +285,6 @@ export function toBrowserDestination(destination: Destination & { englishName?: 
     countryCodes: destination.countries.map((country) => country.code),
     path: destinationPath(destination),
     fromPriceMinor: destination.fromPriceMinor,
-    image: destination.scope === "local" ? null : destination.image,
   };
 }
 

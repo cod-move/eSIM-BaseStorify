@@ -89,7 +89,6 @@ export function toEsimDestination(destination: Destination, currency: Currency):
     pathScope: destination.scope === "local" ? "local" : "multi",
     name: destination.name,
     ...(destination.emoji ? { emoji: destination.emoji } : {}),
-    ...(destination.image ? { image: destination.image } : {}),
     scope: destination.scope,
     ...(destination.continent ? { continent: destination.continent } : {}),
     countries: destination.countries.map((country) => country.code),
