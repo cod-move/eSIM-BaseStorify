@@ -561,7 +561,12 @@
       "expired": "這個收款地址已過期",
       "ended": "這筆付款已結束",
       "endedText": "如果你已經轉帳，請帶上交易雜湊聯絡客服；否則請回到結帳頁重新付款。",
-      "backToCheckout": "回到結帳頁"
+      "backToCheckout": "回到結帳頁",
+      "chooseCurrency": "選擇幣種",
+      "chooseNetwork": "選擇 {currency} 的轉帳網路",
+      "chooseNetworkHint": "請選擇你的錢包或交易所轉出時使用的網路，網路選錯資金會遺失。",
+      "otherCoin": "換個幣種",
+      "networkCount": "{count} 個網路"
     },
     "payCancel": "取消付款",
     "payCancelNote": "沒有付款時再取消。如果之後仍有款項到帳，訂單會照常完成。",

@@ -561,7 +561,12 @@
       "expired": "这个收款地址已过期",
       "ended": "这笔付款已结束",
       "endedText": "如果你已经转账，请带上交易哈希联系客服；否则请回到结账页重新付款。",
-      "backToCheckout": "回到结账页"
+      "backToCheckout": "回到结账页",
+      "chooseCurrency": "选择币种",
+      "chooseNetwork": "选择 {currency} 的转账网络",
+      "chooseNetworkHint": "请选择你的钱包或交易所转出时用的网络，网络选错资金会丢失。",
+      "otherCoin": "换个币种",
+      "networkCount": "{count} 个网络"
     },
     "payCancel": "取消付款",
     "payCancelNote": "没有付款时再取消。如果之后仍有款项到账，订单会照常完成。",

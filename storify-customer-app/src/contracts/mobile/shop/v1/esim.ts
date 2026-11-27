@@ -1146,6 +1146,9 @@ export const EsimCryptoOption = z.object({
   network: z.string(),
   networkName: z.string(),
   amount: z.string(),
+  /** Pictures of the coin and of its network (absolute URLs), when the gateway has them. */
+  currencyIcon: z.string().optional(),
+  networkIcon: z.string().optional(),
 });
 export type EsimCryptoOption = z.infer<typeof EsimCryptoOption>;
 

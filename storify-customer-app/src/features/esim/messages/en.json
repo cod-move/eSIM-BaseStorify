@@ -561,7 +561,12 @@
       "expired": "This payment address has expired",
       "ended": "This payment has ended",
       "endedText": "If you have already sent the money, contact support with your transfer ID. Otherwise go back to checkout to pay again.",
-      "backToCheckout": "Back to checkout"
+      "backToCheckout": "Back to checkout",
+      "chooseCurrency": "Choose a coin",
+      "chooseNetwork": "Choose the network for {currency}",
+      "chooseNetworkHint": "Send on the network your wallet or exchange uses. Sending on another network loses the money.",
+      "otherCoin": "Choose another coin",
+      "networkCount": "{count} networks"
     },
     "payCancel": "Cancel payment",
     "payCancelNote": "Only cancel if you have not paid. A payment that still arrives completes your order.",

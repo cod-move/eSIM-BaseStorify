@@ -93,8 +93,8 @@ describe("BEpusdt", () => {
       }),
     });
     assert.deepEqual(await crypto.options("T1", credentials, fetch), [
-      { currency: "USDT", network: "tron", networkName: "TRC20", amount: "10.53" },
-      { currency: "USDT", network: "bsc", networkName: "BSC", amount: "10.52" },
+      { currency: "USDT", network: "tron", networkName: "TRC20", amount: "10.53", currencyIcon: "https://pay.example.test/checkout/langge/assets/web3icons/token/USDT.svg", networkIcon: "https://pay.example.test/checkout/langge/assets/web3icons/network/tron.svg" },
+      { currency: "USDT", network: "bsc", networkName: "BSC", amount: "10.52", currencyIcon: "https://pay.example.test/checkout/langge/assets/web3icons/token/USDT.svg", networkIcon: "https://pay.example.test/checkout/langge/assets/web3icons/network/bsc.svg" },
     ]);
     assert.deepEqual(JSON.parse(sent[0].body!), { trade_id: "T1" });
 
@@ -108,7 +108,7 @@ describe("BEpusdt", () => {
     assert.ok(Math.abs(new Date(chosen.expiresAt!).getTime() - (before + 600_000)) < 5_000, "seconds left, from now");
 
     const current = await crypto.current("T1", credentials, fetch);
-    assert.deepEqual(current, { currency: "USDT", network: "tron", networkName: "TRC20", address: "TAddr", amount: "10.53", expiresAt: new Date(1_800_000_000_000).toISOString(), state: "confirming" });
+    assert.deepEqual(current, { currency: "USDT", network: "tron", networkName: "TRC20", address: "TAddr", amount: "10.53", expiresAt: new Date(1_800_000_000_000).toISOString(), state: "confirming", currencyIcon: "https://pay.example.test/checkout/langge/assets/web3icons/token/USDT.svg", networkIcon: "https://pay.example.test/checkout/langge/assets/web3icons/network/tron.svg" });
   });
 
   it("has no invoice before a coin is chosen, and refuses a failed cashier answer", async () => {

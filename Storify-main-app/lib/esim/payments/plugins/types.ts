@@ -83,6 +83,9 @@ export interface CryptoOption {
   networkName: string;
   /** In the coin, as the gateway gives it ("14.3200"): exactly what is to be sent. */
   amount: string;
+  /** Pictures of the coin and of its network (absolute URLs), when the gateway has them. */
+  currencyIcon?: string;
+  networkIcon?: string;
 }
 
 /** Where to send what, once a coin is chosen. */

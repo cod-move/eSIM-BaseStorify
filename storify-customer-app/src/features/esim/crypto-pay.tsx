@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { setStringAsync } from 'expo-clipboard';
 import { useRouter } from 'expo-router';
-import { useEffect, useRef, useState } from 'react';
+import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, View } from 'react-native';
 import { useTranslations } from 'use-intl';
 
@@ -317,6 +317,7 @@ function waitingOn(view: EsimCryptoPayment) {
   return !view.invoice || view.invoice.state === 'waiting' || view.invoice.state === 'confirming';
 }
 
+/** The coins, one row each with its networks named; one with several networks asks which next. */
 function CoinList({
   options,
   busy,
@@ -329,33 +330,187 @@ function CoinList({
   onCancel?: () => void;
 }) {
   const t = useTranslations('esim.cryptoPay');
-  return (
-    <View className="gap-3">
-      <Text variant="heading">{t('chooseCoin')}</Text>
-      {options.length ? (
+  const coins = groupByCoin(options);
+  const [coin, setCoin] = useState<string | null>(null);
+  const picked = coins.find((entry) => entry.currency === coin) ?? null;
+  const isBusy = (option: EsimCryptoOption) =>
+    busy !== null && busy.currency === option.currency && busy.network === option.network;
+
+  if (picked) {
+    return (
+      <View className="gap-3">
+        <View className="flex-row items-center gap-3">
+          <CoinBadge label={picked.currency} icon={picked.icon} />
+          <Text variant="heading" className="flex-1">
+            {t('chooseNetwork', { currency: picked.currency })}
+          </Text>
+        </View>
         <RowGroup>
-          {options.map((option) => (
-            <NavRow
-              key={`${option.currency}.${option.network}`}
-              icon="wallet"
-              title={`${option.currency} · ${option.networkName}`}
-              value={
-                busy && busy.currency === option.currency && busy.network === option.network ? (
-                  <ActivityIndicator />
-                ) : (
-                  `${option.amount} ${option.currency}`
-                )
-              }
+          {picked.options.map((option) => (
+            <PickRow
+              key={option.network}
+              label={option.networkName}
+              icon={option.networkIcon}
+              title={option.networkName}
+              value={isBusy(option) ? <ActivityIndicator /> : `${option.amount} ${option.currency}`}
               disabled={busy !== null}
               onPress={() => onChoose(option)}
             />
           ))}
+        </RowGroup>
+        <Text variant="caption">{t('chooseNetworkHint')}</Text>
+        <Button
+          variant="ghost"
+          label={t('otherCoin')}
+          disabled={busy !== null}
+          onPress={() => setCoin(null)}
+        />
+      </View>
+    );
+  }
+
+  return (
+    <View className="gap-3">
+      <Text variant="heading">{t('chooseCurrency')}</Text>
+      {coins.length ? (
+        <RowGroup>
+          {coins.map((entry) => {
+            const single = entry.options.length === 1 ? entry.options[0] : null;
+            return (
+              <PickRow
+                key={entry.currency}
+                label={entry.currency}
+                icon={entry.icon}
+                title={entry.currency}
+                description={entry.options.map((option) => option.networkName).join(' · ')}
+                value={
+                  single && isBusy(single) ? (
+                    <ActivityIndicator />
+                  ) : single ? (
+                    `${single.amount} ${single.currency}`
+                  ) : (
+                    t('networkCount', { count: entry.options.length })
+                  )
+                }
+                disabled={busy !== null}
+                onPress={() => (single ? onChoose(single) : setCoin(entry.currency))}
+              />
+            );
+          })}
         </RowGroup>
       ) : (
         <Text className="text-muted">{t('noCoins')}</Text>
       )}
       <Text variant="caption">{t('chooseCoinHint')}</Text>
       {onCancel ? <Button variant="ghost" label={t('keepCoin')} onPress={onCancel} /> : null}
+    </View>
+  );
+}
+
+interface CoinGroup {
+  currency: string;
+  icon?: string;
+  options: EsimCryptoOption[];
+}
+
+/** The options by coin, in the gateway's order. */
+function groupByCoin(options: EsimCryptoOption[]): CoinGroup[] {
+  const groups = new Map<string, CoinGroup>();
+  for (const option of options) {
+    const group = groups.get(option.currency) ?? { currency: option.currency, options: [] };
+    group.icon ??= option.currencyIcon;
+    group.options.push(option);
+    groups.set(option.currency, group);
+  }
+  return [...groups.values()];
+}
+
+/** A row like `NavRow`, led by a coin's or a network's picture. */
+function PickRow({
+  label,
+  icon,
+  title,
+  description,
+  value,
+  disabled,
+  onPress,
+}: {
+  label: string;
+  icon?: string;
+  title: string;
+  description?: string;
+  value: ReactNode;
+  disabled: boolean;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={[title, typeof value === 'string' ? value : null]
+        .filter(Boolean)
+        .join(', ')}
+      accessibilityHint={description}
+      accessibilityState={{ disabled }}
+      disabled={disabled}
+      onPress={onPress}
+      className={`min-h-[56px] flex-row items-center gap-3 py-3 active:opacity-70 ${disabled ? 'opacity-50' : ''}`}>
+      <CoinBadge label={label} icon={icon} />
+      <View className="flex-1 gap-0.5">
+        <Text variant="subheading">{title}</Text>
+        {description ? (
+          <Text variant="caption" numberOfLines={1}>
+            {description}
+          </Text>
+        ) : null}
+      </View>
+      {typeof value === 'string' ? (
+        <Text numberOfLines={1} className="max-w-[45%] text-muted">
+          {value}
+        </Text>
+      ) : (
+        value
+      )}
+      <Icon name="chevron-right" size={20} directional />
+    </Pressable>
+  );
+}
+
+/** A coin's or a network's picture (the network's small at its corner); its first letters when there is none. */
+function CoinBadge({
+  label,
+  icon,
+  networkIcon,
+}: {
+  label: string;
+  icon?: string;
+  networkIcon?: string;
+}) {
+  return (
+    <View className="size-9" importantForAccessibility="no-hide-descendants">
+      {icon ? (
+        <AppImage
+          image={icon}
+          size="full"
+          className="size-9 bg-transparent"
+          contentFit="contain"
+          decorative
+        />
+      ) : (
+        <View className="size-9 items-center justify-center rounded-full bg-surface">
+          <Text variant="label">{label.slice(0, 2).toUpperCase()}</Text>
+        </View>
+      )}
+      {networkIcon ? (
+        <View className="absolute -bottom-1 -end-1 rounded-full bg-background p-px">
+          <AppImage
+            image={networkIcon}
+            size="full"
+            className="size-4 rounded-full bg-transparent"
+            contentFit="contain"
+            decorative
+          />
+        </View>
+      ) : null}
     </View>
   );
 }
@@ -381,6 +536,11 @@ function Invoice({
     <View className="gap-4">
       <View className="gap-3 rounded-xl bg-surface p-4">
         <View className="flex-row items-center justify-between gap-3">
+          <CoinBadge
+            label={invoice.currency}
+            icon={invoice.currencyIcon}
+            networkIcon={invoice.networkIcon}
+          />
           <Text variant="subheading" className="flex-1">
             {t('sendTitle', { currency: invoice.currency, network: invoice.networkName })}
           </Text>

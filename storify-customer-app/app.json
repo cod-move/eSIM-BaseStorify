@@ -2,7 +2,7 @@
   "expo": {
     "name": "CodSIM",
     "slug": "storify-shop",
-    "version": "1.0.3",
+    "version": "1.0.4",
     "scheme": "codsim",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -15,7 +15,7 @@
     },
     "android": {
       "package": "cc.codsim.app",
-      "versionCode": 4,
+      "versionCode": 5,
       "backgroundColor": "#F6F6F6",
       "adaptiveIcon": {
         "backgroundColor": "#FFFFFF",

@@ -1,6 +1,6 @@
 import { createHash, timingSafeEqual } from "node:crypto";
 import { requestJson, type FetchLike } from "@/lib/esim/providers/http";
-import { PaymentPluginError, type Credentials, type CryptoCapability, type CryptoInvoice, type PayNotice, type PayRequest, type PayStart, type PaymentPlugin } from "./types";
+import { PaymentPluginError, type Credentials, type CryptoCapability, type CryptoInvoice, type CryptoOption, type PayNotice, type PayRequest, type PayStart, type PaymentPlugin } from "./types";
 
 /**
  * BEpusdt (crypto: USDT, USDC), as the old store called it
@@ -94,6 +94,41 @@ export function bepusdtInvoice(data: Record<string, unknown>, now = Date.now()):
   };
 }
 
+/** The cashier page's own pictures (assets/web3icons), by coin and by network. */
+const ICONS = "/checkout/langge/assets/web3icons";
+const TOKEN_ICONS = new Set(["USDT", "USDC", "TRX", "BNB", "ETH", "GRAM"]);
+const NETWORK_KEYS: Array<[RegExp, string]> = [
+  [/trc20|tron/, "tron"],
+  [/bep20|bsc|binance/, "bsc"],
+  [/erc20|ethereum/, "ethereum"],
+  [/solana/, "solana"],
+  [/polygon/, "polygon"],
+  [/arbitrum/, "arbitrum"],
+  [/base/, "base"],
+  [/aptos/, "aptos"],
+  [/plasma/, "plasma"],
+  [/xlayer/, "xlayer"],
+  [/ton/, "ton"],
+];
+
+/** The coin's and the network's pictures on the gateway, as its cashier page finds them. */
+export function bepusdtIcons(apiUrl: string | undefined, currency: string, network: string, networkName = "") {
+  const base = (apiUrl ?? "").trim().replace(/\/+$/, "");
+  if (!/^https?:\/\//i.test(base)) return {};
+  const icons: { currencyIcon?: string; networkIcon?: string } = {};
+  const coin = currency.toUpperCase();
+  if (TOKEN_ICONS.has(coin)) icons.currencyIcon = `${base}${ICONS}/token/${coin}.svg`;
+  const key = `${network} ${networkName}`.toLowerCase().replace(/[\s_-]+/g, "");
+  const found = NETWORK_KEYS.find(([pattern]) => pattern.test(key));
+  if (found) icons.networkIcon = `${base}${ICONS}/network/${found[1]}.svg`;
+  return icons;
+}
+
+const withIcons = <T extends CryptoOption | CryptoInvoice>(entry: T, credentials: Credentials): T => ({
+  ...entry,
+  ...bepusdtIcons(credentials.apiUrl, entry.currency, entry.network, entry.networkName),
+});
+
 const bepusdtCrypto: CryptoCapability = {
   async options(id, credentials, fetcher) {
     const data = await cashier("methods", { trade_id: id }, credentials, fetcher);
@@ -105,7 +140,8 @@ const bepusdtCrypto: CryptoCapability = {
         networkName: text(method.token_net_name) || text(method.network).toUpperCase(),
         amount: text(method.actual_amount),
       }))
-      .filter((option) => option.currency && option.network && option.amount);
+      .filter((option) => option.currency && option.network && option.amount)
+      .map((option) => withIcons(option, credentials));
   },
   async choose(id, choice, credentials, fetcher) {
     const data = await cashier("update-order", { trade_id: id, currency: choice.currency, network: choice.network }, credentials, fetcher);
@@ -114,10 +150,11 @@ const bepusdtCrypto: CryptoCapability = {
     // update-order names the coin by its trade type only: keep the choice's own words.
     const options = await bepusdtCrypto.options(id, credentials, fetcher).catch(() => []);
     const option = options.find((entry) => entry.currency === choice.currency.toUpperCase() && entry.network === choice.network);
-    return { ...invoice, currency: choice.currency.toUpperCase(), network: choice.network, networkName: option?.networkName || invoice.networkName };
+    return withIcons({ ...invoice, currency: choice.currency.toUpperCase(), network: choice.network, networkName: option?.networkName || invoice.networkName }, credentials);
   },
   async current(id, credentials, fetcher) {
-    return bepusdtInvoice(await cashier("info", { trade_id: id }, credentials, fetcher));
+    const invoice = bepusdtInvoice(await cashier("info", { trade_id: id }, credentials, fetcher));
+    return invoice && withIcons(invoice, credentials);
   },
 };
 
