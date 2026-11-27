@@ -30,4 +30,9 @@ export const esimsKeys = {
   /** How a payment on a gateway's page stands (APP-09). */
   redirectOutcome: (locale: string, reference: string) =>
     ['private', locale, 'esims', 'redirect-outcome', reference] as const,
+  /** The eSIM payment page's methods, and a crypto payment paid in the app (APP-09). */
+  esimPayChoices: (locale: string, checkoutRef: string) =>
+    ['private', locale, 'esims', 'pay', checkoutRef] as const,
+  esimCrypto: (locale: string, checkoutRef: string, payment: string) =>
+    ['private', locale, 'esims', 'pay', checkoutRef, 'crypto', payment] as const,
 };

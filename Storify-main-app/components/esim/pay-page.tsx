@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { CheckCircle2, Loader2, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -20,7 +20,16 @@ const POLL_MS = 4000;
  * the gateway's confirmation the page asks again every few seconds; once the
  * order exists it moves on to Storify's order confirmation.
  */
-export function EsimPayPage({ initial, appReturn }: { initial: PaymentPageView; appReturn: { done: string; cancel: string } | null }) {
+export function EsimPayPage({
+  initial,
+  appReturn,
+  autoMethod,
+}: {
+  initial: PaymentPageView;
+  appReturn: { done: string; cancel: string } | null;
+  /** Chosen already, in the shopper app's own list: started at once, as a tap would. */
+  autoMethod?: string;
+}) {
   const t = useFallbackTranslator(useTranslations());
   const locale = useLocale();
   const router = useRouter();
@@ -76,6 +85,17 @@ export function EsimPayPage({ initial, appReturn }: { initial: PaymentPageView; 
       setBusy(null);
     }
   }
+
+  const autoStarted = useRef(false);
+  useEffect(() => {
+    if (autoStarted.current || !autoMethod || initial.state !== "open") return;
+    if (initial.latest?.state === "pending" || initial.latest?.state === "paid") return;
+    if (!initial.methods.some((method) => method.code === autoMethod)) return;
+    autoStarted.current = true;
+    // After this render, as a tap would be.
+    window.setTimeout(() => void choose(autoMethod), 0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- once, on arrival
+  }, [autoMethod, initial]);
 
   if (view.state === "paid") {
     return (

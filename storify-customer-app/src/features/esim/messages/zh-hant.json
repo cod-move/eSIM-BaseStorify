@@ -534,6 +534,34 @@
     "pushTitle": "接收 eSIM 提醒",
     "pushBody": "開啟通知後，eSIM 開通成功、流量快用完、套餐快到期時會第一時間提醒你。隨時可以在設定裡關閉。",
     "pushAllow": "開啟通知",
-    "pushLater": "以後再說"
+    "pushLater": "以後再說",
+    "cryptoPay": {
+      "title": "付款",
+      "total": "應付",
+      "chooseMethod": "選擇付款方式",
+      "inApp": "在 App 內付款",
+      "onPage": "打開付款頁面",
+      "closed": "這次結帳已無法付款，請回到結帳頁重新下單。",
+      "chooseCoin": "選擇幣種和網路",
+      "chooseCoinHint": "請選擇你的錢包或交易所要轉出的網路。金額已按匯率換算。",
+      "noCoins": "暫時沒有可用的幣種，請稍後再試。",
+      "keepCoin": "繼續用目前幣種",
+      "sendTitle": "透過 {network} 轉 {currency}",
+      "amount": "金額（請轉這個精確數額）",
+      "address": "收款地址",
+      "qrLabel": "收款地址 QR 碼",
+      "scanHint": "用錢包掃碼後，填入上面的精確金額。",
+      "warning": "請在 {network} 網路上一次性轉入正好這個數額的 {currency}。金額、幣種或網路不對，都無法對應到你的訂單。",
+      "watching": "正在等待你的轉帳…",
+      "confirming": "已看到轉帳，正在等待區塊確認…",
+      "changeCoin": "換個幣種付款",
+      "copied": "已複製",
+      "copy": "複製",
+      "received": "已收到付款，正在建立訂單…",
+      "expired": "這個收款地址已過期",
+      "ended": "這筆付款已結束",
+      "endedText": "如果你已經轉帳，請帶上交易雜湊聯絡客服；否則請回到結帳頁重新付款。",
+      "backToCheckout": "回到結帳頁"
+    }
   }
 }

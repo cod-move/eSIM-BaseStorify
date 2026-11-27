@@ -69,6 +69,57 @@ describe("BEpusdt", () => {
     expired.signature = bepusdtSignature(expired, "tok");
     assert.equal(stateOf(bepusdtPlugin.readNotice(expired, credentials)), "expired");
   });
+
+  it("lists the coins, gives the address of the one chosen, and reads it back (the app's own screen)", async () => {
+    const crypto = bepusdtPlugin.crypto!;
+    const { fetch, sent } = fakeFetch({
+      "POST /api/v1/pay/methods": () => ({
+        body: {
+          status_code: 200,
+          data: {
+            methods: [
+              { currency: "USDT", network: "tron", token_net_name: "TRC20", actual_amount: "10.53", amount: "10.50" },
+              { currency: "usdt", network: "bsc", token_net_name: "", actual_amount: "10.52" },
+              { currency: "USDC", network: "", actual_amount: "10.5" },
+            ],
+          },
+        },
+      }),
+      "POST /api/v1/pay/update-order": () => ({
+        body: { status_code: 200, data: { trade_type: "usdt.trc20", token: "TAddr", actual_amount: "10.53", status: 1, expiration_time: 600 } },
+      }),
+      "POST /api/v1/pay/info": () => ({
+        body: { status_code: 200, data: { trade_type: "usdt.trc20", token: "TAddr", actual_amount: "10.53", status: 5, expired_at: 1_800_000_000, network: { crypto: "USDT", network: "tron", name: "TRC20" } } },
+      }),
+    });
+    assert.deepEqual(await crypto.options("T1", credentials, fetch), [
+      { currency: "USDT", network: "tron", networkName: "TRC20", amount: "10.53" },
+      { currency: "USDT", network: "bsc", networkName: "BSC", amount: "10.52" },
+    ]);
+    assert.deepEqual(JSON.parse(sent[0].body!), { trade_id: "T1" });
+
+    const before = Date.now();
+    const chosen = await crypto.choose("T1", { currency: "USDT", network: "tron" }, credentials, fetch);
+    assert.deepEqual(JSON.parse(sent[1].body!), { trade_id: "T1", currency: "USDT", network: "tron" });
+    assert.equal(chosen.address, "TAddr");
+    assert.equal(chosen.amount, "10.53");
+    assert.equal(chosen.networkName, "TRC20");
+    assert.equal(chosen.state, "waiting");
+    assert.ok(Math.abs(new Date(chosen.expiresAt!).getTime() - (before + 600_000)) < 5_000, "seconds left, from now");
+
+    const current = await crypto.current("T1", credentials, fetch);
+    assert.deepEqual(current, { currency: "USDT", network: "tron", networkName: "TRC20", address: "TAddr", amount: "10.53", expiresAt: new Date(1_800_000_000_000).toISOString(), state: "confirming" });
+  });
+
+  it("has no invoice before a coin is chosen, and refuses a failed cashier answer", async () => {
+    const crypto = bepusdtPlugin.crypto!;
+    const { fetch } = fakeFetch({
+      "POST /api/v1/pay/info": () => ({ body: { status_code: 200, data: { trade_type: "", token: "", status: 1 } } }),
+      "POST /api/v1/pay/update-order": () => ({ body: { status_code: 400, message: "order not found" } }),
+    });
+    assert.equal(await crypto.current("T1", credentials, fetch), null);
+    await assert.rejects(crypto.choose("T1", { currency: "USDT", network: "tron" }, credentials, fetch), /BEpusdt: order not found/);
+  });
 });
 
 describe("RedeePay", () => {

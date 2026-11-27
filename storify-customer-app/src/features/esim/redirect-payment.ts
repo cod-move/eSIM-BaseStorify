@@ -2,6 +2,7 @@ import * as Crypto from 'expo-crypto';
 import { openAuthSessionAsync } from 'expo-web-browser';
 import { Linking } from 'react-native';
 
+import { getEsimPayChoices } from '@/api/endpoints/esim-pay';
 import { startRedirectPayment, verifyRedirectPayment } from '@/api/endpoints/redirect-payments';
 import {
   REDIRECT_PAYMENT_METHODS,
@@ -11,6 +12,7 @@ import {
 } from '@/contracts/mobile/shop/v1';
 import type { PaymentResult } from '@/features/payments/success-params';
 
+import { checkoutRefOf, payInApp } from './crypto-pay-session';
 import { redirectPending } from './redirect-pending';
 import { redirectStarted } from './redirect-return';
 
@@ -135,11 +137,35 @@ export async function payByRedirect(
   const body = { ...request, paymentMethod: method };
   const payment = await startRedirectPayment(locale, body, keyFor(JSON.stringify(body)));
   current = null;
+  // The eSIM payment page's methods are listed in the app; a crypto one is paid there too.
+  let pageUrl = payment.url;
+  const checkoutRef = method === 'extension' ? checkoutRefOf(payment.url) : null;
+  if (checkoutRef) {
+    const choices = await getEsimPayChoices(locale, checkoutRef).catch(() => null);
+    if (choices?.state === 'open' && choices.methods.some((entry) => entry.native)) {
+      const end = await payInApp(checkoutRef);
+      if (end.kind === 'page') {
+        pageUrl = `${payment.url}${payment.url.includes('?') ? '&' : '?'}method=${encodeURIComponent(end.method)}`;
+      } else {
+        if (!end.paying) return null;
+        const verification = await verifyRedirectPayment(locale, {
+          paymentMethod: method,
+          reference: payment.reference,
+        });
+        const result = resultOf(verification, { method, reference: payment.reference });
+        // An address was shown: the money may be on its way, so checkout asks about it next time.
+        if (result?.outcome === 'redirect-pending') {
+          redirectPending.write({ method, reference: payment.reference });
+        }
+        return result;
+      }
+    }
+  }
   // [esim-patch] P58 remembered while the page is open: Android may close the app meanwhile.
   redirectStarted.write({ method, reference: payment.reference });
   let link: string | null;
   try {
-    link = await openPage(payment.url, payment.returnUrl);
+    link = await openPage(pageUrl, payment.returnUrl);
   } finally {
     redirectStarted.clear();
   }

@@ -20,7 +20,10 @@ export const metadata: Metadata = { title: "Payment", robots: { index: false, fo
 export default async function EsimPaymentPage({ params, searchParams }: PageProps) {
   const { locale, reference } = await params;
   // Opened by the shopper app (APP-09): done or given up, back through the store's return bridge.
-  const inApp = (await searchParams).app === "1";
+  const query = await searchParams;
+  const inApp = query.app === "1";
+  // The method the shopper app's own list chose (APP-09): started at once.
+  const autoMethod = inApp && typeof query.method === "string" && /^[a-z0-9-]{1,40}$/.test(query.method) ? query.method : undefined;
   const appReturn = inApp
     ? { done: await appPaymentReturnUrl(locale, "extension", "return"), cancel: await appPaymentReturnUrl(locale, "extension", "cancel") }
     : null;
@@ -29,7 +32,7 @@ export default async function EsimPaymentPage({ params, searchParams }: PageProp
   if (!view) notFound();
   return (
     <div className="container mx-auto max-w-lg px-4 py-10">
-      <EsimPayPage initial={view} appReturn={appReturn} />
+      <EsimPayPage initial={view} appReturn={appReturn} autoMethod={autoMethod} />
     </div>
   );
 }

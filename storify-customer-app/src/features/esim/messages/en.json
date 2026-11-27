@@ -534,6 +534,34 @@
     "pushTitle": "Get eSIM reminders",
     "pushBody": "Turn on notifications to hear when your eSIM is ready, when data is running low and before your plan expires. You can turn them off in Settings at any time.",
     "pushAllow": "Turn on notifications",
-    "pushLater": "Not now"
+    "pushLater": "Not now",
+    "cryptoPay": {
+      "title": "Payment",
+      "total": "To pay",
+      "chooseMethod": "How would you like to pay?",
+      "inApp": "Pay here in the app",
+      "onPage": "Opens the payment page",
+      "closed": "This checkout can no longer be paid. Go back to checkout and try again.",
+      "chooseCoin": "Choose a coin and network",
+      "chooseCoinHint": "Pick the network your wallet or exchange will send on. The amount includes the exchange rate.",
+      "noCoins": "No coin is available right now. Please try again later.",
+      "keepCoin": "Keep the current coin",
+      "sendTitle": "Send {currency} on {network}",
+      "amount": "Amount (send exactly this)",
+      "address": "Address",
+      "qrLabel": "QR code of the address",
+      "scanHint": "Scan with your wallet, then enter the exact amount above.",
+      "warning": "Send exactly this amount of {currency} on the {network} network, in one transfer. Another amount, coin or network cannot be matched to your order.",
+      "watching": "Waiting for your transfer…",
+      "confirming": "Transfer seen, waiting for confirmations…",
+      "changeCoin": "Pay with another coin",
+      "copied": "Copied",
+      "copy": "Copies it",
+      "received": "Payment received, placing your order…",
+      "expired": "This payment address has expired",
+      "ended": "This payment has ended",
+      "endedText": "If you have already sent the money, contact support with your transfer ID. Otherwise go back to checkout to pay again.",
+      "backToCheckout": "Back to checkout"
+    }
   }
 }

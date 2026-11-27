@@ -1123,3 +1123,64 @@ export const EsimNumberStatementQuery = z.object({
 });
 export const EsimNumberStatement = z.object({ fileName: z.string(), pdfBase64: z.string() });
 export type EsimNumberStatement = z.infer<typeof EsimNumberStatement>;
+
+/* ------------------------------------------------------------------ */
+/* Paying on the eSIM payment page's methods in the app (APP-09)        */
+/* ------------------------------------------------------------------ */
+
+/** GET /esim/pay/{checkoutRef}: the methods the checkout can be paid with. `native`: paid in the app's own screen. */
+export const EsimPayChoices = z.object({
+  checkoutRef: z.string(),
+  total: Money,
+  /** open: can be paid; paid: the order exists; closed: expired or replaced. */
+  state: z.enum(["open", "paid", "closed"]),
+  orderNumber: z.string().nullable(),
+  methods: z.array(z.object({ code: z.string(), name: z.string(), native: z.boolean() })),
+});
+export type EsimPayChoices = z.infer<typeof EsimPayChoices>;
+
+/** A coin on a network, and exactly how much of it is to be sent. */
+export const EsimCryptoOption = z.object({
+  currency: z.string(),
+  network: z.string(),
+  networkName: z.string(),
+  amount: z.string(),
+});
+export type EsimCryptoOption = z.infer<typeof EsimCryptoOption>;
+
+export const EsimCryptoInvoice = EsimCryptoOption.extend({
+  address: z.string(),
+  /** ISO time the address stops waiting. */
+  expiresAt: z.string().nullable(),
+  state: z.enum(["waiting", "confirming", "paid", "expired", "cancelled", "failed"]),
+  /** The address as a QR code (a data URL). */
+  qr: z.string(),
+});
+export type EsimCryptoInvoice = z.infer<typeof EsimCryptoInvoice>;
+
+/** A crypto try as the app's screen shows it. */
+export const EsimCryptoPayment = z.object({
+  reference: z.string(),
+  method: z.string(),
+  /** Ours: pending while it can be paid, paid once the gateway said so. */
+  state: z.string(),
+  total: Money,
+  /** The coins it can be paid in (or changed to); empty once it cannot be. */
+  options: z.array(EsimCryptoOption),
+  invoice: EsimCryptoInvoice.nullable(),
+});
+export type EsimCryptoPayment = z.infer<typeof EsimCryptoPayment>;
+
+/** POST /esim/pay/{checkoutRef}/crypto: starts (or takes up again) a try with this method. */
+export const EsimCryptoStartRequest = z.object({ method: z.string().trim().min(1).max(40) }).strict();
+export type EsimCryptoStartRequest = z.infer<typeof EsimCryptoStartRequest>;
+
+/** GET /esim/pay/{checkoutRef}/crypto?payment=: the try as it stands. */
+export const EsimCryptoQuery = z.object({ payment: z.string().trim().min(1).max(60) });
+export type EsimCryptoQuery = z.infer<typeof EsimCryptoQuery>;
+
+/** POST /esim/pay/{checkoutRef}/crypto/choose: pays in this coin. */
+export const EsimCryptoChooseRequest = z
+  .object({ payment: z.string().trim().min(1).max(60), currency: z.string().trim().min(1).max(20), network: z.string().trim().min(1).max(40) })
+  .strict();
+export type EsimCryptoChooseRequest = z.infer<typeof EsimCryptoChooseRequest>;

@@ -74,8 +74,45 @@ export interface NoticeContext {
 /** An authentic notification about nothing to act on (another kind of event): answered "accepted". */
 export const IGNORED_NOTICE = "ignore" as const;
 
+/** A coin on a network the gateway can take a payment in, and what it comes to. */
+export interface CryptoOption {
+  /** As the gateway names them: "USDT", "tron". */
+  currency: string;
+  network: string;
+  /** The network as wallets name it ("TRC20"); the network itself when the gateway gives none. */
+  networkName: string;
+  /** In the coin, as the gateway gives it ("14.3200"): exactly what is to be sent. */
+  amount: string;
+}
+
+/** Where to send what, once a coin is chosen. */
+export interface CryptoInvoice {
+  currency: string;
+  network: string;
+  networkName: string;
+  address: string;
+  amount: string;
+  /** ISO time the address stops waiting; null when the gateway did not say. */
+  expiresAt: string | null;
+  state: "waiting" | "confirming" | "paid" | "expired" | "cancelled" | "failed";
+}
+
+/**
+ * A gateway whose page only shows an address and an amount: the shopper app
+ * shows them itself (BEpusdt). `id` is the gateway's own payment id
+ * (`gatewayPaymentId`) of a try already started.
+ */
+export interface CryptoCapability {
+  options(id: string, credentials: Credentials, fetcher: FetchLike): Promise<CryptoOption[]>;
+  choose(id: string, choice: { currency: string; network: string }, credentials: Credentials, fetcher: FetchLike): Promise<CryptoInvoice>;
+  /** The coin chosen so far; null while none is. */
+  current(id: string, credentials: Credentials, fetcher: FetchLike): Promise<CryptoInvoice | null>;
+}
+
 export interface PaymentPlugin {
   readonly code: string;
+  /** Paid in the shopper app's own screen, not on the gateway's page. */
+  readonly crypto?: CryptoCapability;
   readonly credentialKeys: readonly string[];
   readonly secretKeys: readonly string[];
   /** Settlement currencies the plugin can be asked to charge. */
