@@ -1,5 +1,5 @@
 import { LinearGradient } from 'expo-linear-gradient';
-import { Children, useEffect, useRef, useState, type ReactNode } from 'react';
+import { Children, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import {
   Animated,
   Easing,
@@ -10,7 +10,8 @@ import {
   View,
   useWindowDimensions,
 } from 'react-native';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
+import { KeyboardAwareScrollView, KeyboardStickyView } from 'react-native-keyboard-controller';
+import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 import { useCSSVariable } from 'uniwind';
 import { useTranslations } from 'use-intl';
 
@@ -34,6 +35,8 @@ import { FieldSurfaceProvider } from './text-field';
  *
  * The keyboard floats over the bottom of the sheet: the sheet never moves for
  * it, and the body scrolls a covered field up above the keyboard.
+ * [esim-patch] P86 the footer (a coupon's code field, a Send button) rides up
+ * on the keyboard, and the body keeps a focused field above the footer too.
  */
 
 /** Share of the screen a sheet may fill, and the one a tall sheet does. */
@@ -80,6 +83,9 @@ export function SheetPanel({
   const screen = useWindowDimensions().height;
   const height = frameHeight ?? screen;
   const tall = size === 'tall';
+  // [esim-patch] P86 the footer rides on the keyboard; its home-indicator space goes under it.
+  const bottom = useContext(SafeAreaInsetsContext)?.bottom ?? 0;
+  const [footerHeight, setFooterHeight] = useState(0);
 
   // The panel is `surface`, so a field on it steps down to `surface-alt` to show.
   return (
@@ -108,7 +114,7 @@ export function SheetPanel({
 
         <View className={tall ? 'flex-1' : 'shrink'}>
           <KeyboardAwareScrollView
-            bottomOffset={KEYBOARD_GAP}
+            bottomOffset={KEYBOARD_GAP + (footer ? Math.max(0, footerHeight - bottom) : 0)}
             keyboardShouldPersistTaps="handled"
             className={tall ? 'grow' : 'grow-0'}
             contentContainerClassName="px-4 pt-4 pb-6">
@@ -118,7 +124,11 @@ export function SheetPanel({
         </View>
 
         {footer ? (
-          <View className="px-4 pt-3 pb-safe-offset-4">{footer}</View>
+          <KeyboardStickyView
+            offset={{ opened: bottom }}
+            onLayout={(event) => setFooterHeight(event.nativeEvent.layout.height)}>
+            <View className="bg-surface px-4 pt-3 pb-safe-offset-4">{footer}</View>
+          </KeyboardStickyView>
         ) : (
           <View className="pb-safe" />
         )}

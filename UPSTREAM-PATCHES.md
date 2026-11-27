@@ -117,6 +117,7 @@
 
 > 新增插入点时按编号往后加；某项最终没改，就把状态改为 `取消` 并保留记录。
 | P85 | 已改 | `Storify-main-app/components/account/customer-dashboard.tsx`（最近订单为空时的按钮）、`Storify-main-app/components/cart/cart-drawer.tsx`（空购物车的按钮） | 「开始购物」从 `/products` 改为跳到目的地页 `/esim` | 商城主要卖 eSIM，商品列表页不是顾客要找的 | 合并官方新版时保留两处 `[esim-patch] P85` |
+| P86 | 已改 | `storify-customer-app/src/components/ui/sheet.tsx`（`SheetPanel` 的页脚与正文 `bottomOffset`）、`storify-customer-app/src/app/(tabs)/(1-home,2-search,3-categories,4-cart,5-account,6-destinations,7-esims)/account/inbox/[id].tsx`（`ConversationScreen` 的键盘避让） | 底部弹层的页脚用 `KeyboardStickyView` 随键盘上移（抵掉底部安全区），正文聚焦输入框时多留出页脚的高度；客服对话页去掉 `KeyboardAvoidingView automaticOffset`，改在页底放一块随键盘高度变化的空白 | Android 上键盘挡住结算页优惠券输入框（在弹层页脚里）和客服消息输入框 | 合并官方新版时保留两处 `[esim-patch] P86`；官方若自己修了键盘遮挡，改用官方的并删掉本条 |
 
 ### P10 明细
 

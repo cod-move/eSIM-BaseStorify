@@ -1,6 +1,7 @@
 import { Stack, useIsFocused, useLocalSearchParams } from 'expo-router';
 import { View } from 'react-native';
-import { KeyboardAvoidingView, useKeyboardState } from 'react-native-keyboard-controller';
+import { useKeyboardState, useReanimatedKeyboardAnimation } from 'react-native-keyboard-controller';
+import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslations } from 'use-intl';
 
@@ -18,6 +19,9 @@ import { useMarkRead, useSendMessage, useThread } from '@/features/chat/use-thre
  * then, and when it fails, the navigator's stands. The tab bar steps aside
  * while it is open (`FloatingTabBar`), and the field rises with the keyboard:
  * the view measures itself on the screen, so the header above is counted.
+ * [esim-patch] P86 the field rises by the keyboard's own height: the page ends
+ * at the screen's bottom edge, and measuring it (the header leaves once the
+ * conversation loads) left the field under the keyboard on Android.
  */
 export default function ConversationScreen() {
   const t = useTranslations('chat');
@@ -29,6 +33,9 @@ export default function ConversationScreen() {
   const parties = useChatParties();
   const { send, pending, error } = useSendMessage(id);
   useMarkRead(id, thread.data?.conversation.unreadCount, focused);
+  // [esim-patch] P86 the space the keyboard takes at the bottom of the screen.
+  const { height: keyboardHeight } = useReanimatedKeyboardAnimation();
+  const keyboardSpace = useAnimatedStyle(() => ({ height: Math.max(0, -keyboardHeight.value) }));
 
   const body = () => {
     if (thread.isPending) return <LoadingState />;
@@ -50,11 +57,12 @@ export default function ConversationScreen() {
   };
 
   return (
-    <KeyboardAvoidingView behavior="padding" automaticOffset style={{ flex: 1 }}>
+    <View className="flex-1 bg-background">
       <Stack.Screen options={{ title: t('title'), headerShown: thread.data === undefined }} />
-      <View className="flex-1 bg-background" style={{ paddingBottom: (keyboard ? 0 : bottom) + 8 }}>
+      <View className="flex-1" style={{ paddingBottom: (keyboard ? 0 : bottom) + 8 }}>
         {body()}
       </View>
-    </KeyboardAvoidingView>
+      <Animated.View style={keyboardSpace} />
+    </View>
   );
 }
