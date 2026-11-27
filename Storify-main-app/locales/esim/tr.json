@@ -1102,6 +1102,9 @@
       "toTravelSim": "Diğer numaralarımıza ve sesli mesaja: {price}",
       "whereHint": "Fiyatlar numaranın nereden olduğuna değil, bulunduğunuz ülkeye göre değişir.",
       "whereTitle": "Numarayı nerede kullanacaksınız?"
+    },
+    "address": {
+      "fillRequired": "Lütfen tüm zorunlu alanları (*) doldurun."
     }
   },
   "admin": {

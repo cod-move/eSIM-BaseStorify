@@ -1102,6 +1102,9 @@
       "toTravelSim": "Kwa namba zetu nyingine na ujumbe wa sauti: {price}",
       "whereHint": "Bei hutegemea nchi uliyopo, si mahali namba inapotoka.",
       "whereTitle": "Utatumia namba wapi?"
+    },
+    "address": {
+      "fillRequired": "Tafadhali jaza sehemu zote zinazohitajika (*)."
     }
   },
   "admin": {

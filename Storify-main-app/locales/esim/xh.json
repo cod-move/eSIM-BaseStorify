@@ -1102,6 +1102,9 @@
       "toTravelSim": "Kwezinye iinombolo zethu nakwi-voicemail: {price}",
       "whereHint": "Amaxabiso axhomekeke kwilizwe okulo, hayi apho inombolo ivela khona.",
       "whereTitle": "Uya kuyisebenzisa phi inombolo?"
+    },
+    "address": {
+      "fillRequired": "Nceda ugcwalise zonke iindawo ezifunekayo (*)."
     }
   },
   "admin": {

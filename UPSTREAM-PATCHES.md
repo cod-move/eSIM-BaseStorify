@@ -119,6 +119,7 @@
 | P85 | 已改 | `Storify-main-app/components/account/customer-dashboard.tsx`（最近订单为空时的按钮）、`Storify-main-app/components/cart/cart-drawer.tsx`（空购物车的按钮） | 「开始购物」从 `/products` 改为跳到目的地页 `/esim` | 商城主要卖 eSIM，商品列表页不是顾客要找的 | 合并官方新版时保留两处 `[esim-patch] P85` |
 | P86 | 已改 | `storify-customer-app/src/components/ui/sheet.tsx`（`SheetPanel` 的页脚与正文 `bottomOffset`）、`storify-customer-app/src/app/(tabs)/(1-home,2-search,3-categories,4-cart,5-account,6-destinations,7-esims)/account/inbox/[id].tsx`（`ConversationScreen` 的键盘避让） | 底部弹层的页脚用 `KeyboardStickyView` 随键盘上移（抵掉底部安全区），正文聚焦输入框时多留出页脚的高度；客服对话页去掉 `KeyboardAvoidingView automaticOffset`，改在页底放一块随键盘高度变化的空白 | Android 上键盘挡住结算页优惠券输入框（在弹层页脚里）和客服消息输入框 | 合并官方新版时保留两处 `[esim-patch] P86`；官方若自己修了键盘遮挡，改用官方的并删掉本条 |
 | P86 | 已改 | `storify-customer-app/src/features/addresses/address-form.tsx`（导入区；`tried` 之后；`save`；字段列表）、`storify-customer-app/src/features/addresses/use-addresses.ts`（`checkForm` 的 `alsoRequired` 参数） | App 地址簿的姓、门牌、州省、邮编、电话按后台「结账」设置显示为必填、选填或隐藏（新接口 `GET /esim/address-fields`，`lib/esim/mobile/address-fields.ts`），保存前按同样的必填项检查 | 后台设电话必填，App 地址簿仍是选填，存下的地址到结算又说不完整 | 合并官方新版时保留这几处 `[esim-patch] P86`；官方若让地址簿自己读结账设置，改用官方的并删掉本条 |
+| P87 | 已改 | `Storify-main-app/components/account/address-manager.tsx`（导入区；`formData` 之后；`handleSave` 开头；8 个字段的外层 div、Input 和 label） | 网站「我的账户 → 地址」按后台「结账」设置给字段标星号（必填）或隐藏，保存前检查必填项（`components/esim/use-address-fields.ts`，接口 `GET /api/esim/address-fields`，与 App 的 P86 共用 `lib/esim/checkout/address-fields.ts`） | 后台设电话必填，网站地址簿仍可不填就保存，到结算又说地址不完整 | 合并官方新版时保留这些改动；官方若让地址簿读结账设置，改用官方的并删掉本条 |
 
 ### P10 明细
 

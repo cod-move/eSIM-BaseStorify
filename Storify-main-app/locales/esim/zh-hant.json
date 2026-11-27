@@ -1113,6 +1113,9 @@
       "toTravelSim": "撥打我們的其他號碼和語音信箱：{price}",
       "whereHint": "價格取決於你身處哪個國家，與號碼所屬地無關。",
       "whereTitle": "你會在哪裡使用這個號碼？"
+    },
+    "address": {
+      "fillRequired": "請填寫所有必填項（*）。"
     }
   },
   "admin": {

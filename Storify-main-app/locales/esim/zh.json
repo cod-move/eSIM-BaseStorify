@@ -1113,6 +1113,9 @@
       "toTravelSim": "拨打我们的其他号码和语音信箱：{price}",
       "whereHint": "价格取决于你身处哪个国家，与号码归属地无关。",
       "whereTitle": "你会在哪里使用这个号码？"
+    },
+    "address": {
+      "fillRequired": "请填写所有必填项（*）。"
     }
   },
   "admin": {

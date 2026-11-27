@@ -1102,6 +1102,9 @@
       "toTravelSim": "Gaa na nọmba anyị ndị ọzọ na igbe ozi olu: {price}",
       "whereHint": "Ọnụahịa dabere n'obodo ị nọ, ọ bụghị ebe nọmba ahụ si.",
       "whereTitle": "Ebee ka ị ga-eji nọmba ahụ?"
+    },
+    "address": {
+      "fillRequired": "Biko dejupụta mpaghara niile achọrọ (*)."
     }
   },
   "admin": {

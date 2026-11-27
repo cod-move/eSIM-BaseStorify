@@ -46,6 +46,7 @@ import {
 } from "@/lib/constants";
 import { apiClient, ApiClientError } from "@/lib/api/client";
 import { toast } from "@/components/ui/toast-notification";
+import { missingAddressFields, useStoreAddressFields } from "@/components/esim/use-address-fields"; // [esim-patch] P87
 import { useSuspenseResource } from "@/hooks/use-suspense-resource";
 
 type AddressLabel = "home" | "work" | "other";
@@ -122,6 +123,13 @@ export function AddressManager() {
     { id: string } | { index: number } | null
   >(null);
   const [formData, setFormData] = useState<Omit<Address, "_id">>(emptyAddress);
+  // [esim-patch] P87 each field required, optional or hidden as the checkout settings say.
+  const storeFields = useStoreAddressFields();
+  const [tried, setTried] = useState(false);
+  const shown = (field: string) => storeFields?.[field] !== "hidden";
+  const mark = (field: string) => (["street", "city", "country"].includes(field) || storeFields?.[field] === "required" ? " *" : "");
+  const missingNow = tried ? missingAddressFields(formData as unknown as Record<string, unknown>, storeFields) : [];
+  const invalid = (field: string) => (missingNow.includes(field) ? { "aria-invalid": true as const } : {});
   /**
    * The country this address was opened with. A store that has since narrowed
    * where it delivers locks the country picker to the one country left, which
@@ -149,6 +157,13 @@ export function AddressManager() {
   };
 
   const handleSave = async () => {
+    // [esim-patch] P87 what the store's checkout requires (Settings → Checkout), before saving.
+    const missing = missingAddressFields(formData as unknown as Record<string, unknown>, storeFields);
+    if (missing.length) {
+      setTried(true);
+      toast.error(t("esim.address.fillRequired"));
+      return;
+    }
     setIsSaving(true);
     try {
       const method = editingAddress ? "PUT" : "POST";
@@ -412,9 +427,9 @@ export function AddressManager() {
 
             {/* First name + Last name */}
             <div className="grid grid-cols-2 gap-3">
-              <div className="relative">
+              <div className="relative" hidden={!shown("firstName")}>
                 <Input
-                  id="firstName"
+                  id="firstName" {...invalid("firstName")}
                   value={formData.firstName || ""}
                   onChange={(e) =>
                     setFormData({ ...formData, firstName: e.target.value })
@@ -423,12 +438,12 @@ export function AddressManager() {
                   className={FLOATING_INPUT_CLASS}
                 />
                 <label htmlFor="firstName" className={FLOATING_LABEL_CLASS}>
-                  {t("checkout.firstName")}
+                  {t("checkout.firstName")}{mark("firstName")}
                 </label>
               </div>
-              <div className="relative">
+              <div className="relative" hidden={!shown("lastName")}>
                 <Input
-                  id="lastName"
+                  id="lastName" {...invalid("lastName")}
                   value={formData.lastName || ""}
                   onChange={(e) =>
                     setFormData({ ...formData, lastName: e.target.value })
@@ -437,15 +452,15 @@ export function AddressManager() {
                   className={FLOATING_INPUT_CLASS}
                 />
                 <label htmlFor="lastName" className={FLOATING_LABEL_CLASS}>
-                  {t("checkout.lastName")}
+                  {t("checkout.lastName")}{mark("lastName")}
                 </label>
               </div>
             </div>
 
             {/* Street */}
-            <div className="relative">
+            <div className="relative" hidden={!shown("street")}>
               <Input
-                id="street"
+                id="street" {...invalid("street")}
                 value={formData.street}
                 onChange={(e) =>
                   setFormData({ ...formData, street: e.target.value })
@@ -454,14 +469,14 @@ export function AddressManager() {
                 className={FLOATING_INPUT_CLASS}
               />
               <label htmlFor="street" className={FLOATING_LABEL_CLASS}>
-                {t("checkout.address")}
+                {t("checkout.address")}{mark("street")}
               </label>
             </div>
 
             {/* Apartment */}
-            <div className="relative">
+            <div className="relative" hidden={!shown("apartment")}>
               <Input
-                id="apartment"
+                id="apartment" {...invalid("apartment")}
                 value={formData.apartment || ""}
                 onChange={(e) =>
                   setFormData({ ...formData, apartment: e.target.value })
@@ -470,15 +485,15 @@ export function AddressManager() {
                 className={FLOATING_INPUT_CLASS}
               />
               <label htmlFor="apartment" className={FLOATING_LABEL_CLASS}>
-                {t("checkout.apartment")}
+                {t("checkout.apartment")}{mark("apartment")}
               </label>
             </div>
 
             {/* City + Postal code */}
             <div className="grid grid-cols-2 gap-3">
-              <div className="relative">
+              <div className="relative" hidden={!shown("city")}>
                 <Input
-                  id="city"
+                  id="city" {...invalid("city")}
                   value={formData.city}
                   onChange={(e) =>
                     setFormData({ ...formData, city: e.target.value })
@@ -487,12 +502,12 @@ export function AddressManager() {
                   className={FLOATING_INPUT_CLASS}
                 />
                 <label htmlFor="city" className={FLOATING_LABEL_CLASS}>
-                  {t("checkout.city")}
+                  {t("checkout.city")}{mark("city")}
                 </label>
               </div>
-              <div className="relative">
+              <div className="relative" hidden={!shown("postalCode")}>
                 <Input
-                  id="postalCode"
+                  id="postalCode" {...invalid("postalCode")}
                   value={formData.postalCode}
                   onChange={(e) =>
                     setFormData({ ...formData, postalCode: e.target.value })
@@ -501,15 +516,15 @@ export function AddressManager() {
                   className={FLOATING_INPUT_CLASS}
                 />
                 <label htmlFor="postalCode" className={FLOATING_LABEL_CLASS}>
-                  {t("checkout.postalCode")}
+                  {t("checkout.postalCode")}{mark("postalCode")}
                 </label>
               </div>
             </div>
 
             {/* State */}
-            <div className="relative">
+            <div className="relative" hidden={!shown("state")}>
               <Input
-                id="state"
+                id="state" {...invalid("state")}
                 value={formData.state || ""}
                 onChange={(e) =>
                   setFormData({ ...formData, state: e.target.value })
@@ -518,14 +533,14 @@ export function AddressManager() {
                 className={FLOATING_INPUT_CLASS}
               />
               <label htmlFor="state" className={FLOATING_LABEL_CLASS}>
-                {t("checkout.state")}
+                {t("checkout.state")}{mark("state")}
               </label>
             </div>
 
             {/* Phone */}
-            <div className="relative">
+            <div className="relative" hidden={!shown("phone")}>
               <Input
-                id="phone"
+                id="phone" {...invalid("phone")}
                 type="tel"
                 value={formData.phone}
                 onChange={(e) =>
@@ -535,7 +550,7 @@ export function AddressManager() {
                 className={FLOATING_INPUT_CLASS}
               />
               <label htmlFor="phone" className={FLOATING_LABEL_CLASS}>
-                {t("checkout.phone")}
+                {t("checkout.phone")}{mark("phone")}
               </label>
             </div>
 

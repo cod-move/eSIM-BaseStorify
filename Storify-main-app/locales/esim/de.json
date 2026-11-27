@@ -1102,6 +1102,9 @@
       "toTravelSim": "An unsere anderen Nummern und die Mailbox: {price}",
       "whereHint": "Die Preise hängen vom Land ab, in dem Sie sind, nicht von der Herkunft der Nummer.",
       "whereTitle": "Wo nutzen Sie die Nummer?"
+    },
+    "address": {
+      "fillRequired": "Bitte füllen Sie alle Pflichtfelder (*) aus."
     }
   },
   "admin": {

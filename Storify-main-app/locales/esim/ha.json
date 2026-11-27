@@ -1102,6 +1102,9 @@
       "toTravelSim": "Zuwa sauran lambobinmu da saƙon murya: {price}",
       "whereHint": "Farashi ya dogara da ƙasar da kuke ciki, ba inda lambar ta fito ba.",
       "whereTitle": "A ina za ku yi amfani da lambar?"
+    },
+    "address": {
+      "fillRequired": "Da fatan za a cika duk filayen da ake bukata (*)."
     }
   },
   "admin": {

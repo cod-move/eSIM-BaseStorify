@@ -1102,6 +1102,9 @@
       "toTravelSim": "Na ons ander nommers en stempos: {price}",
       "whereHint": "Pryse hang af van die land waar jy is, nie waar die nommer vandaan kom nie.",
       "whereTitle": "Waar gaan jy die nommer gebruik?"
+    },
+    "address": {
+      "fillRequired": "Vul asseblief al die verpligte velde (*) in."
     }
   },
   "admin": {

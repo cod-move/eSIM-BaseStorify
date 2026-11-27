@@ -1102,6 +1102,9 @@
       "toTravelSim": "Naar onze andere nummers en voicemail: {price}",
       "whereHint": "De prijs hangt af van het land waar je bent, niet van waar het nummer vandaan komt.",
       "whereTitle": "Waar gebruik je het nummer?"
+    },
+    "address": {
+      "fillRequired": "Vul alle verplichte velden (*) in."
     }
   },
   "admin": {

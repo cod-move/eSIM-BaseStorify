@@ -1102,6 +1102,9 @@
       "toTravelSim": "当社の他の番号・留守番電話へ：{price}",
       "whereHint": "料金は番号の国ではなく、滞在している国で決まります。",
       "whereTitle": "どこで番号を使いますか？"
+    },
+    "address": {
+      "fillRequired": "必須項目（*）をすべて入力してください。"
     }
   },
   "admin": {

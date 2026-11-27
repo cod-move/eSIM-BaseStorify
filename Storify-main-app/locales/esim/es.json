@@ -1102,6 +1102,9 @@
       "toTravelSim": "A nuestros otros números y al buzón de voz: {price}",
       "whereHint": "Los precios dependen del país en el que estés, no del origen del número.",
       "whereTitle": "¿Dónde usarás el número?"
+    },
+    "address": {
+      "fillRequired": "Completa todos los campos obligatorios (*)."
     }
   },
   "admin": {

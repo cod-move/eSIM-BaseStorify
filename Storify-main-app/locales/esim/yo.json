@@ -1102,6 +1102,9 @@
       "toTravelSim": "Sí àwọn nọ́mbà wa mìíràn àti ohùn ìfiránṣẹ́: {price}",
       "whereHint": "Iye owó dá lórí orílẹ̀-èdè tí o wà, kì í ṣe ibi tí nọ́mbà náà ti wá.",
       "whereTitle": "Níbo ni o ti máa lo nọ́mbà náà?"
+    },
+    "address": {
+      "fillRequired": "Jọ̀wọ́ kún gbogbo àyè tí a nílò (*)."
     }
   },
   "admin": {

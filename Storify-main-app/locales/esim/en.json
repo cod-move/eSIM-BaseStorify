@@ -1113,6 +1113,9 @@
       "toTravelSim": "To our other numbers and voicemail: {price}",
       "whereHint": "Prices depend on the country you are in, not on where the number is from.",
       "whereTitle": "Where will you use the number?"
+    },
+    "address": {
+      "fillRequired": "Please fill in all required fields (*)."
     }
   },
   "admin": {
