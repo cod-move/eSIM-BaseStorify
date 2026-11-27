@@ -562,6 +562,10 @@
       "ended": "This payment has ended",
       "endedText": "If you have already sent the money, contact support with your transfer ID. Otherwise go back to checkout to pay again.",
       "backToCheckout": "Back to checkout"
-    }
+    },
+    "payCancel": "Cancel payment",
+    "payCancelNote": "Only cancel if you have not paid. A payment that still arrives completes your order.",
+    "payInAppNote": "You will pay here in the app: choose a coin, then send it to the address shown.",
+    "paySheetNote": "Pay by card, Apple Pay or Google Pay right here in the app."
   }
 }

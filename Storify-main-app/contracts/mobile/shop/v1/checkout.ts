@@ -348,6 +348,8 @@ export const CheckoutPaymentMethod = z.object({
    */
   reason: z.string().optional(),
   message: z.string().optional(),
+  /** "extension": the eSIM payment methods it stands for, one row each; `native` ones are paid in the app's own screen. */
+  options: z.array(z.object({ code: z.string(), name: z.string(), native: z.boolean(), nativeKind: z.enum(["crypto", "sheet"]).optional(), icon: z.string().optional() })).optional(), // [esim-patch] P15
 });
 export type CheckoutPaymentMethod = z.infer<typeof CheckoutPaymentMethod>;
 

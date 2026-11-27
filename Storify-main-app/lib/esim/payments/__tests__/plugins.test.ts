@@ -285,4 +285,35 @@ describe("Stripe Checkout", () => {
     assert.equal(read(event("checkout.session.completed", { payment_status: "paid", client_reference_id: "cs_storify_card" })), IGNORED_NOTICE, "Storify's own Stripe checkout");
     assert.equal(read(JSON.stringify({ type: "payment_intent.succeeded", data: { object: { object: "payment_intent" } } })), IGNORED_NOTICE);
   });
+
+  it("makes a PaymentIntent for the app's sheet, with the account's country", async () => {
+    const sheet = stripePlugin.sheet!;
+    assert.equal(sheet.ready(credentials), false, "no publishable key");
+    const withKey = { ...credentials, publishableKey: "pk_test_abc" };
+    assert.equal(sheet.ready(withKey), true);
+    const { fetch, sent } = fakeFetch({
+      "POST /v1/payment_intents": () => ({ body: { id: "pi_9", client_secret: "pi_9_secret_x" } }),
+      "GET /v1/account": () => ({ body: { country: "hk" } }),
+    });
+    const started = await sheet.start(request, withKey, fetch);
+    assert.deepEqual(started, { intentId: "pi_9", clientSecret: "pi_9_secret_x", publishableKey: "pk_test_abc", testMode: true, merchantCountryCode: "HK" });
+    const form = new URLSearchParams(sent[0].body!);
+    assert.equal(form.get("amount"), "1050");
+    assert.equal(form.get("currency"), "usd");
+    assert.equal(form.get("metadata[reference]"), request.reference);
+    assert.equal(form.get("metadata[esim_sheet]"), "1");
+    assert.equal(form.get("automatic_payment_methods[enabled]"), "true");
+    assert.equal(form.get("payment_method_options[card][request_three_d_secure]"), "any");
+    assert.equal(sent[0].headers["Idempotency-Key"], `esim-sheet-${request.reference}`);
+  });
+
+  it("reads the sheet's PaymentIntent events, and not a Checkout Session's own", () => {
+    const intent = (type: string, extra: Record<string, unknown> = {}) =>
+      JSON.stringify({ type, data: { object: { object: "payment_intent", id: "pi_9", amount: 1050, amount_received: 1050, currency: "usd", metadata: { reference: request.reference, esim_sheet: "1" }, ...extra } } });
+    assert.deepEqual(read(intent("payment_intent.succeeded")), { reference: request.reference, state: "paid", gatewayPaymentId: "pi_9", amountMinor: 1050, currency: "USD" });
+    assert.equal(stateOf(read(intent("payment_intent.processing"))), "pending");
+    assert.equal(stateOf(read(intent("payment_intent.canceled"))), "failed");
+    assert.equal(read(intent("payment_intent.payment_failed")), IGNORED_NOTICE, "another card may still be tried");
+    assert.equal(read(intent("payment_intent.succeeded", { metadata: { reference: request.reference } })), IGNORED_NOTICE, "a Checkout Session's own intent");
+  });
 });

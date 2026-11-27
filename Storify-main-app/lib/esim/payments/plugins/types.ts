@@ -109,10 +109,29 @@ export interface CryptoCapability {
   current(id: string, credentials: Credentials, fetcher: FetchLike): Promise<CryptoInvoice | null>;
 }
 
+/** A payment the shopper app takes in the gateway's own native sheet (Stripe's Payment Sheet). */
+export interface SheetStart {
+  /** The gateway's payment id, kept as the try's `gatewayPaymentId`. */
+  intentId: string;
+  clientSecret: string;
+  publishableKey: string;
+  /** The gateway account's country, for Apple Pay / Google Pay; left out when it could not be asked. */
+  merchantCountryCode?: string;
+  testMode: boolean;
+}
+
+export interface SheetCapability {
+  /** Whether the settings let the app take it in the sheet (its public key is in). */
+  ready(credentials: Credentials): boolean;
+  start(request: PayRequest, credentials: Credentials, fetcher: FetchLike): Promise<SheetStart>;
+}
+
 export interface PaymentPlugin {
   readonly code: string;
   /** Paid in the shopper app's own screen, not on the gateway's page. */
   readonly crypto?: CryptoCapability;
+  /** Paid in the gateway's native sheet in the shopper app. */
+  readonly sheet?: SheetCapability;
   readonly credentialKeys: readonly string[];
   readonly secretKeys: readonly string[];
   /** Settlement currencies the plugin can be asked to charge. */

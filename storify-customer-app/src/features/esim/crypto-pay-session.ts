@@ -7,10 +7,14 @@ import { router } from 'expo-router';
  *
  * - `page`: a method the app does not pay itself was chosen; it is paid on the
  *   eSIM payment page, started at once there (`?method=`).
+ * - `sheet`: a method paid in the gateway's native sheet (Stripe) was chosen.
  * - `done`: the screen is left, by the shopper or because the payment is in.
  *   `paying`: an address was shown, so money may be on its way.
  */
-export type NativePayEnd = { kind: 'page'; method: string } | { kind: 'done'; paying: boolean };
+export type NativePayEnd =
+  | { kind: 'page'; method: string }
+  | { kind: 'sheet'; method: string }
+  | { kind: 'done'; paying: boolean };
 
 let waiting: ((end: NativePayEnd) => void) | null = null;
 
@@ -19,12 +23,15 @@ export function checkoutRefOf(pageUrl: string): string | null {
   return /\/esim\/pay\/(ext[0-9a-f]{24})(?:[/?#]|$)/.exec(pageUrl)?.[1] ?? null;
 }
 
-/** Opens the screen and waits until it is left. */
-export function payInApp(checkoutRef: string): Promise<NativePayEnd> {
+/** Opens the screen and waits until it is left; `method`: chosen in checkout already, started at once. */
+export function payInApp(checkoutRef: string, method?: string): Promise<NativePayEnd> {
   waiting?.({ kind: 'done', paying: false });
   return new Promise((resolve) => {
     waiting = resolve;
-    router.push({ pathname: '/checkout/esim-pay', params: { ref: checkoutRef } });
+    router.push({
+      pathname: '/checkout/esim-pay',
+      params: method ? { ref: checkoutRef, method } : { ref: checkoutRef },
+    });
   });
 }
 

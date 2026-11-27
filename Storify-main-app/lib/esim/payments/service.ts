@@ -61,6 +61,8 @@ export function missingCredentials(definition: PaymentMethodDefinition, credenti
 export interface OfferedMethod {
   code: string;
   name: string;
+  /** How the shopper app pays it itself: its own crypto screen, or the gateway's native sheet; else on the page. */
+  inApp?: "crypto" | "sheet";
 }
 
 /** The methods a shopper can pay with now, in order: switched on, set up, settling USD. */
@@ -76,7 +78,8 @@ export async function offeredMethods(currency = "USD"): Promise<OfferedMethod[]>
     for (const [key, value] of row.credentials ?? []) if (value) filled[key] = value;
     for (const key of row.secretCredentials?.keys() ?? []) filled[key] = "set";
     if (missingCredentials(definition, filled).length) continue;
-    offered.push({ code: row.code, name: row.name || definition.displayName });
+    const inApp = definition.plugin.crypto ? "crypto" : definition.plugin.sheet?.ready(filled) ? "sheet" : undefined;
+    offered.push({ code: row.code, name: row.name || definition.displayName, ...(inApp ? { inApp } : {}) });
   }
   return offered;
 }
@@ -134,13 +137,14 @@ const attemptOpen = (attempt: AttemptView, now = new Date()) =>
   attempt.status === CHECKOUT_ATTEMPT_STATUS.OPEN && (!attempt.expiresAt || new Date(attempt.expiresAt) > now);
 
 export interface ShopperPay {
-  kind: "redirect" | "qr";
+  /** "sheet": the shopper app's native sheet; `data` is the gateway's payment id. */
+  kind: "redirect" | "qr" | "sheet";
   data: string;
   /** For QR data: the code as an image (a data URL). */
   image?: string;
 }
 
-async function forShopper(pay: { kind: "redirect" | "qr"; data: string }): Promise<ShopperPay> {
+async function forShopper(pay: { kind: "redirect" | "qr" | "sheet"; data: string }): Promise<ShopperPay> {
   if (pay.kind !== "qr") return { kind: pay.kind, data: pay.data };
   const QRCode = (await import("qrcode")).default;
   return { kind: "qr", data: pay.data, image: await QRCode.toDataURL(pay.data, { width: 280, margin: 2, errorCorrectionLevel: "M" }) };
@@ -183,7 +187,7 @@ export async function paymentPage(checkoutRef: string): Promise<PaymentPageView 
     methods,
     chosen,
     latest: latest
-      ? { reference: latest.reference, method: latest.method, state: latest.state, pay: latest.state === "pending" && latest.pay ? await forShopper(latest.pay) : null }
+      ? { reference: latest.reference, method: latest.method, state: latest.state, pay: latest.state === "pending" && latest.pay && latest.pay.kind !== "sheet" ? await forShopper(latest.pay) : null }
       : null,
   };
 }
@@ -195,6 +199,8 @@ export interface StartContext {
   locale: string;
   /** Opened by the shopper app: the gateway sends the payer back to the page in app mode. */
   app?: boolean;
+  /** Paid in the gateway's native sheet in the shopper app (Stripe's Payment Sheet), not on its page. */
+  sheet?: boolean;
 }
 
 /** A try with one method: the plugin is asked for a page or QR data. */
@@ -222,11 +228,14 @@ export async function startPayment(checkoutRef: string, methodCode: string, cont
   if (missingCredentials(definition, credentials).length || !definition.plugin.currencies.includes(currency)) {
     throw new ValidationError("This payment method is not available");
   }
+  const sheet = context.sheet ? definition.plugin.sheet : undefined;
+  if (context.sheet && !sheet?.ready(credentials)) throw new ValidationError("This payment method is not available");
   const amountMinor = toMinor(amountDueNow(attempt.snapshot ?? {}));
   if (amountMinor <= 0) throw new ValidationError("Nothing is due on this order");
 
   // A second tap, or the same method chosen again soon after: the try already made, not another gateway order.
-  const recent = await EsimPayment.findOne({
+  // (A sheet's try is made anew each time: the sheet needs a secret that is not kept.)
+  const recent = sheet ? null : await EsimPayment.findOne({
     checkoutRef,
     method: methodCode,
     state: "pending",
@@ -284,6 +293,20 @@ export async function startPayment(checkoutRef: string, methodCode: string, cont
       postalCode: String(billing.postalCode || ""),
     },
   };
+
+  if (sheet) {
+    try {
+      const started = await sheet.start(request, credentials, fetch);
+      const pay = { kind: "sheet" as const, data: started.intentId };
+      await EsimPayment.updateOne({ _id: payment._id, state: "started" }, { $set: { state: "pending", pay, gatewayPaymentId: started.intentId } });
+      return { reference: payment.reference, pay: pay as ShopperPay, sheet: started };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      await EsimPayment.updateOne({ _id: payment._id }, { $set: { error: message.slice(0, 500), ...(error instanceof PaymentPluginError ? { state: "failed" } : {}) } });
+      console.error(`Starting a ${methodCode} sheet payment failed:`, message);
+      throw new ValidationError("The payment could not be started. Please try again or choose another method.");
+    }
+  }
 
   try {
     const started = await definition.plugin.start(request, credentials, fetch);

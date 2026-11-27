@@ -562,6 +562,10 @@
       "ended": "这笔付款已结束",
       "endedText": "如果你已经转账，请带上交易哈希联系客服；否则请回到结账页重新付款。",
       "backToCheckout": "回到结账页"
-    }
+    },
+    "payCancel": "取消付款",
+    "payCancelNote": "没有付款时再取消。如果之后仍有款项到账，订单会照常完成。",
+    "payInAppNote": "在 App 内付款：选择币种后，转账到显示的地址。",
+    "paySheetNote": "在 App 内用银行卡、Apple Pay 或 Google Pay 付款。"
   }
 }

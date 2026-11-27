@@ -89,7 +89,8 @@ export function EsimPayPage({
   const autoStarted = useRef(false);
   useEffect(() => {
     if (autoStarted.current || !autoMethod || initial.state !== "open") return;
-    if (initial.latest?.state === "pending" || initial.latest?.state === "paid") return;
+    // A try already paid is waited for; one still open with another method gives way to this one.
+    if (initial.latest?.state === "paid") return;
     if (!initial.methods.some((method) => method.code === autoMethod)) return;
     autoStarted.current = true;
     // After this render, as a tap would be.

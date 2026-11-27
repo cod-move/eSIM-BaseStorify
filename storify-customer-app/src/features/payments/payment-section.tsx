@@ -1,6 +1,7 @@
 import { Pressable, View } from 'react-native';
 import { useTranslations } from 'use-intl';
 
+import { AppImage } from '@/components/ui/app-image'; // [esim-patch] P24
 import { Icon, type IconName } from '@/components/ui/icon';
 import { Radio, RowGroup } from '@/components/ui/rows';
 import { Text } from '@/components/ui/text';
@@ -9,6 +10,7 @@ import { cn } from '@/lib/cn';
 
 import { useResumePayment } from './use-place-order';
 import { useResumeRedirectPayment } from '@/features/esim/redirect-pending'; // [esim-patch] P24
+import { esimMethodRows, useEsimMethodChoice, useInAppNotes } from '@/features/esim/extension-rows'; // [esim-patch] P24 one row per eSIM method
 
 export type PaymentSectionProps = {
   /** The quote's payment methods, each saying whether it can take this order. */
@@ -44,8 +46,11 @@ function unavailableText(method: CheckoutPaymentMethod, t: Translate): string | 
   return method.message ?? t('unavailable');
 }
 
-type MethodRowProps = {
+export type MethodRowProps = {
   method: CheckoutPaymentMethod;
+  /** [esim-patch] P24 an eSIM method's own icon (an image URL) and note. */
+  image?: string;
+  noteText?: string;
   selected: boolean;
   locked: boolean;
   onSelect: () => void;
@@ -53,16 +58,26 @@ type MethodRowProps = {
 };
 
 /** One method: its logo, its name and a radio; chosen, it opens to say what happens next. */
-function MethodRow({ method, selected, locked, onSelect, t }: MethodRowProps) {
+export function MethodRow({
+  method,
+  selected,
+  locked,
+  onSelect,
+  t,
+  image,
+  noteText,
+}: MethodRowProps) {
   const name = method.name;
   const reason = unavailableText(method, t);
   // [esim-patch] P24 a gateway's own page has its own note.
   const esim = useTranslations('esim');
   const note =
     selected && method.available
-      ? method.flow === 'redirect'
-        ? esim('redirectNote')
-        : t(method.id === 'cod' ? 'codNote' : 'cardNote')
+      ? noteText
+        ? noteText
+        : method.flow === 'redirect'
+          ? esim('redirectNote')
+          : t(method.id === 'cod' ? 'codNote' : 'cardNote')
       : null;
 
   return (
@@ -79,7 +94,11 @@ function MethodRow({ method, selected, locked, onSelect, t }: MethodRowProps) {
           !method.available && 'opacity-50'
         )}>
         <View className="size-[38px] items-center justify-center rounded-md border border-border">
-          <Icon name={ICONS[method.flow]} size={22} />
+          {image ? (
+            <AppImage image={image} size="thumb" className="size-[30px]" contentFit="contain" />
+          ) : (
+            <Icon name={ICONS[method.flow]} size={22} />
+          )}
         </View>
         <View className="flex-1 gap-1">
           <Text variant="subheading">{name}</Text>
@@ -112,21 +131,35 @@ export function PaymentSection({ methods, value, onChange, busy }: PaymentSectio
   useResumePayment();
   // [esim-patch] P24 and one on a gateway's page left being confirmed.
   useResumeRedirectPayment();
+  const esimChoice = useEsimMethodChoice(methods, value);
+  const inAppNotes = useInAppNotes();
 
   if (methods.length === 0) return null;
 
   return (
     <RowGroup accessibilityRole="radiogroup" accessibilityLabel={t('title')}>
-      {methods.map((method) => (
-        <MethodRow
-          key={method.id}
-          method={method}
-          selected={method.id === value}
-          locked={busy}
-          onSelect={() => onChange(method.id)}
-          t={t}
-        />
-      ))}
+      {methods.map((method) =>
+        // [esim-patch] P24 the eSIM methods, one row each.
+        method.id === 'extension' && method.options?.length ? (
+          esimMethodRows(method, {
+            selected: method.id === value,
+            chosen: esimChoice,
+            locked: busy,
+            onSelect: () => onChange(method.id),
+            ...inAppNotes,
+            t,
+          })
+        ) : (
+          <MethodRow
+            key={method.id}
+            method={method}
+            selected={method.id === value}
+            locked={busy}
+            onSelect={() => onChange(method.id)}
+            t={t}
+          />
+        )
+      )}
     </RowGroup>
   );
 }

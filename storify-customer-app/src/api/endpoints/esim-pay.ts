@@ -2,6 +2,7 @@
 import {
   EsimCryptoPayment,
   EsimPayChoices,
+  EsimSheetPayment,
   type EsimCryptoChooseRequest,
 } from '@/contracts/mobile/shop/v1/esim';
 
@@ -42,7 +43,11 @@ export function getEsimCrypto(
 }
 
 /** Pays in this coin on this network: the answer carries the address. */
-export function chooseEsimCrypto(locale: string, checkoutRef: string, body: EsimCryptoChooseRequest) {
+export function chooseEsimCrypto(
+  locale: string,
+  checkoutRef: string,
+  body: EsimCryptoChooseRequest
+) {
   return api.data(
     {
       locale,
@@ -52,5 +57,19 @@ export function chooseEsimCrypto(locale: string, checkoutRef: string, body: Esim
       auth: 'optional',
     },
     EsimCryptoPayment
+  );
+}
+
+/** Starts a try paid in the gateway's native sheet (Stripe's Payment Sheet). */
+export function startEsimSheet(locale: string, checkoutRef: string, method: string) {
+  return api.data(
+    {
+      locale,
+      path: `${base(checkoutRef)}/sheet`,
+      method: 'POST',
+      body: { method },
+      auth: 'optional',
+    },
+    EsimSheetPayment
   );
 }

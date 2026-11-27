@@ -41,7 +41,7 @@ const POLL_MS = 5000;
  * on the page, started at once there. Leaving the screen ends the step of
  * `payByRedirect` that opened it (./crypto-pay-session.ts).
  */
-export function EsimPayScreen({ checkoutRef }: { checkoutRef: string }) {
+export function EsimPayScreen({ checkoutRef, method }: { checkoutRef: string; method?: string }) {
   const locale = useLocale();
   const router = useRouter();
   const [payment, setPayment] = useState<string | null>(null);
@@ -100,9 +100,14 @@ export function EsimPayScreen({ checkoutRef }: { checkoutRef: string }) {
     <MethodList
       checkoutRef={checkoutRef}
       choices={choices.data}
+      preferred={method}
       onCrypto={setPayment}
       onPage={(method) => {
         finish({ kind: 'page', method });
+        router.back();
+      }}
+      onSheet={(method) => {
+        finish({ kind: 'sheet', method });
         router.back();
       }}
     />
@@ -112,13 +117,18 @@ export function EsimPayScreen({ checkoutRef }: { checkoutRef: string }) {
 function MethodList({
   checkoutRef,
   choices,
+  preferred,
   onCrypto,
   onPage,
+  onSheet,
 }: {
   checkoutRef: string;
   choices: EsimPayChoices;
+  /** Chosen in checkout's list already. */
+  preferred?: string;
   onCrypto: (payment: string) => void;
   onPage: (method: string) => void;
+  onSheet: (method: string) => void;
 }) {
   const t = useTranslations('esim.cryptoPay');
   const locale = useLocale();
@@ -136,8 +146,12 @@ function MethodList({
     onError: (error) => toast.show({ message: describe(error) }),
   });
 
-  // One method, paid here: no list to choose from.
-  const only = choices.methods.length === 1 && choices.methods[0]?.native ? choices.methods[0] : null;
+  // Chosen in checkout's list, or the only method, paid here: no list to choose from.
+  const only =
+    choices.methods.find((entry) => entry.nativeKind === 'crypto' && entry.code === preferred) ??
+    (choices.methods.length === 1 && choices.methods[0]?.nativeKind === 'crypto'
+      ? choices.methods[0]
+      : null);
   const started = useRef(false);
   useEffect(() => {
     if (!only || started.current || choices.state !== 'open') return;
@@ -165,12 +179,22 @@ function MethodList({
             {choices.methods.map((method) => (
               <NavRow
                 key={method.code}
-                icon={method.native ? 'wallet' : 'globe'}
+                icon={method.nativeKind === 'sheet' ? 'card' : method.native ? 'wallet' : 'globe'}
                 title={method.name}
                 description={method.native ? t('inApp') : t('onPage')}
                 disabled={start.isPending}
-                value={start.isPending && start.variables === method.code ? <ActivityIndicator /> : undefined}
-                onPress={() => (method.native ? start.mutate(method.code) : onPage(method.code))}
+                value={
+                  start.isPending && start.variables === method.code ? (
+                    <ActivityIndicator />
+                  ) : undefined
+                }
+                onPress={() =>
+                  method.nativeKind === 'sheet'
+                    ? onSheet(method.code)
+                    : method.native
+                      ? start.mutate(method.code)
+                      : onPage(method.code)
+                }
               />
             ))}
           </RowGroup>
@@ -205,7 +229,8 @@ function CryptoPayment({
   const query = useQuery({
     queryKey: key,
     queryFn: ({ signal }) => getEsimCrypto(locale, checkoutRef, payment, signal),
-    refetchInterval: (current) => (current.state.data && waitingOn(current.state.data) ? POLL_MS : false),
+    refetchInterval: (current) =>
+      current.state.data && waitingOn(current.state.data) ? POLL_MS : false,
   });
   const choose = useMutation({
     mutationFn: (option: EsimCryptoOption) =>
@@ -237,7 +262,9 @@ function CryptoPayment({
 
   const invoice = view.invoice;
   const choosing = !invoice || changing;
-  const over = view.state !== 'pending' || (invoice && ['expired', 'cancelled', 'failed'].includes(invoice.state));
+  const over =
+    view.state !== 'pending' ||
+    (invoice && ['expired', 'cancelled', 'failed'].includes(invoice.state));
 
   return (
     <ScrollView
@@ -255,7 +282,9 @@ function CryptoPayment({
         </View>
       ) : over ? (
         <View className="gap-3 rounded-xl bg-surface p-4">
-          <Text variant="subheading">{t(invoice?.state === 'expired' || view.state === 'expired' ? 'expired' : 'ended')}</Text>
+          <Text variant="subheading">
+            {t(invoice?.state === 'expired' || view.state === 'expired' ? 'expired' : 'ended')}
+          </Text>
           <Text className="text-muted">{t('endedText')}</Text>
           <Button label={t('backToCheckout')} onPress={onBack} />
         </View>

@@ -562,6 +562,10 @@
       "ended": "這筆付款已結束",
       "endedText": "如果你已經轉帳，請帶上交易雜湊聯絡客服；否則請回到結帳頁重新付款。",
       "backToCheckout": "回到結帳頁"
-    }
+    },
+    "payCancel": "取消付款",
+    "payCancelNote": "沒有付款時再取消。如果之後仍有款項到帳，訂單會照常完成。",
+    "payInAppNote": "在 App 內付款：選擇幣種後，轉帳到顯示的地址。",
+    "paySheetNote": "在 App 內用銀行卡、Apple Pay 或 Google Pay 付款。"
   }
 }

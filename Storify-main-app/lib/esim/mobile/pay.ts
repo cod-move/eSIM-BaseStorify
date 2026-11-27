@@ -1,10 +1,12 @@
-import { EsimCryptoChooseRequest, EsimCryptoPayment, EsimCryptoQuery, EsimCryptoStartRequest, EsimPayChoices } from "@/contracts/mobile/shop/v1/esim";
+import { EsimCryptoChooseRequest, EsimCryptoPayment, EsimCryptoQuery, EsimCryptoStartRequest, EsimPayChoices, EsimSheetPayment, EsimSheetStartRequest } from "@/contracts/mobile/shop/v1/esim";
 import { MobileApiError } from "@/lib/api-core/errors";
 import { defineRoute } from "@/lib/api-core/registry";
 import { toMoney } from "@/lib/api-core/shop/money";
 import { ValidationError } from "@/lib/api/errors";
 import { appBaseUrl } from "@/lib/app-url";
 import { appPaymentChoices, chooseCrypto, cryptoPayment, startCryptoPayment, type CryptoPaymentView } from "@/lib/esim/payments/crypto";
+import { startPayment } from "@/lib/esim/payments/service";
+import { getSettings } from "@/models/settings.model";
 
 /**
  * The eSIM payment page's methods in the shopper app (APP-09): the app lists
@@ -106,5 +108,41 @@ export const esimCryptoChooseRoute = defineRoute({
       const view = await chooseCrypto(params.reference, input.payment, { currency: input.currency, network: input.network });
       if (!view) throw notFound();
       return dto(view);
+    }),
+});
+
+/** POST /esim/pay/{reference}/sheet: a try paid in the gateway's native sheet; the sheet's secret, not kept. */
+export const esimSheetStartRoute = defineRoute({
+  id: "esim.pay.sheet.start",
+  method: "POST",
+  path: "/esim/pay/{reference}/sheet",
+  auth: "optional",
+  cache: { kind: "private" },
+  rateLimit: { bucket: "esim:pay:start", preset: "strict" },
+  demo: "block-mutations",
+  input: EsimSheetStartRequest,
+  output: EsimSheetPayment,
+  handler: ({ params, input, client, locale }) =>
+    refusing(async () => {
+      const started = await startPayment(params.reference, input.method, {
+        origin: appBaseUrl(),
+        clientIp: client.ip || "",
+        userAgent: [client.platform, client.appVersion].filter(Boolean).join(" ") || "app",
+        locale,
+        app: true,
+        sheet: true,
+      });
+      if (!("sheet" in started) || !started.sheet) throw new ValidationError("This payment method is not available");
+      const settings = await getSettings();
+      const { intentId, clientSecret, publishableKey, merchantCountryCode, testMode } = started.sheet;
+      return {
+        reference: started.reference,
+        paymentIntentId: intentId,
+        clientSecret,
+        publishableKey,
+        merchantDisplayName: settings.general?.storeName?.trim() || "Store",
+        ...(merchantCountryCode ? { merchantCountryCode } : {}),
+        testMode,
+      };
     }),
 });

@@ -1135,7 +1135,8 @@ export const EsimPayChoices = z.object({
   /** open: can be paid; paid: the order exists; closed: expired or replaced. */
   state: z.enum(["open", "paid", "closed"]),
   orderNumber: z.string().nullable(),
-  methods: z.array(z.object({ code: z.string(), name: z.string(), native: z.boolean() })),
+  /** `nativeKind`: "crypto", the app's own screen; "sheet", the gateway's native sheet (Stripe's Payment Sheet). */
+  methods: z.array(z.object({ code: z.string(), name: z.string(), native: z.boolean(), nativeKind: z.enum(["crypto", "sheet"]).optional() })),
 });
 export type EsimPayChoices = z.infer<typeof EsimPayChoices>;
 
@@ -1184,3 +1185,19 @@ export const EsimCryptoChooseRequest = z
   .object({ payment: z.string().trim().min(1).max(60), currency: z.string().trim().min(1).max(20), network: z.string().trim().min(1).max(40) })
   .strict();
 export type EsimCryptoChooseRequest = z.infer<typeof EsimCryptoChooseRequest>;
+
+/** POST /esim/pay/{checkoutRef}/sheet: a try paid in the gateway's native sheet (Stripe's Payment Sheet). */
+export const EsimSheetStartRequest = z.object({ method: z.string().trim().min(1).max(40) }).strict();
+export type EsimSheetStartRequest = z.infer<typeof EsimSheetStartRequest>;
+
+/** What the sheet is opened with, as StripeIntent has it; `reference` is our try's, to ask about. */
+export const EsimSheetPayment = z.object({
+  reference: z.string(),
+  paymentIntentId: z.string(),
+  clientSecret: z.string(),
+  publishableKey: z.string(),
+  merchantDisplayName: z.string(),
+  merchantCountryCode: z.string().optional(),
+  testMode: z.boolean().optional(),
+});
+export type EsimSheetPayment = z.infer<typeof EsimSheetPayment>;

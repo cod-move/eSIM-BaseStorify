@@ -12,7 +12,7 @@ import { payInAppWaiting } from '@/features/esim/crypto-pay-session';
  */
 export default function EsimPayRoute() {
   const t = useTranslations('esim.cryptoPay');
-  const { ref } = useLocalSearchParams<{ ref?: string }>();
+  const { ref, method } = useLocalSearchParams<{ ref?: string; method?: string }>();
   // Asked once: the screen goes on showing after the payment it was opened for is told how it ended.
   const [awaited] = useState(payInAppWaiting);
   if (typeof ref !== 'string' || !/^ext[0-9a-f]{24}$/.test(ref) || !awaited) {
@@ -21,7 +21,10 @@ export default function EsimPayRoute() {
   return (
     <>
       <Stack.Screen options={{ title: t('title') }} />
-      <EsimPayScreen checkoutRef={ref} />
+      <EsimPayScreen
+        checkoutRef={ref}
+        method={typeof method === 'string' && /^[a-z0-9-]{1,40}$/.test(method) ? method : undefined}
+      />
     </>
   );
 }

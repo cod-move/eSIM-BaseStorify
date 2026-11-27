@@ -66,6 +66,11 @@ export function RedirectPending({
   }, [final, result, locale, queryClient, router]);
 
   const stuck = !final && (query.isError || asked >= MAX_ASKS);
+  const cancel = () => {
+    redirectPending.clear();
+    void queryClient.cancelQueries({ queryKey: queryKeys.redirectOutcome(locale, reference) });
+    router.replace('/checkout');
+  };
   // Given up asking on its own: checkout is no longer sent here; the order still arrives if it is paid.
   useEffect(() => {
     if (stuck) redirectPending.clear();
@@ -77,11 +82,15 @@ export function RedirectPending({
         {t('payWaitingTitle')}
       </Text>
       <Text className="text-center text-muted">{t('payWaitingText')}</Text>
-      {stuck ? (
-        <View className="mt-5 self-stretch">
-          <Button label={t('payCheckAgain')} onPress={() => void query.refetch()} />
-        </View>
-      ) : null}
+      <View className="mt-5 gap-3 self-stretch">
+        {stuck ? <Button label={t('payCheckAgain')} onPress={() => void query.refetch()} /> : null}
+        {/* Not paying after all: back to checkout, and checkout stops asking. A payment that
+            does arrive still becomes the order. */}
+        <Button variant="outline" label={t('payCancel')} onPress={cancel} />
+      </View>
+      <Text variant="caption" className="mt-3 text-center">
+        {t('payCancelNote')}
+      </Text>
     </View>
   );
 }

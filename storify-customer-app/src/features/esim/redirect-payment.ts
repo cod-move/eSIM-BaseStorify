@@ -13,6 +13,8 @@ import {
 import type { PaymentResult } from '@/features/payments/success-params';
 
 import { checkoutRefOf, payInApp } from './crypto-pay-session';
+import { chosenExtension } from './extension-choice';
+import { payBySheet } from './sheet-payment';
 import { redirectPending } from './redirect-pending';
 import { redirectStarted } from './redirect-return';
 
@@ -128,6 +130,11 @@ async function openPage(url: string, returnUrl: string): Promise<string | null> 
   }
 }
 
+/** The eSIM payment page, told to start this method at once. */
+function withMethod(url: string, method: string) {
+  return `${url}${url.includes('?') ? '&' : '?'}method=${encodeURIComponent(method)}`;
+}
+
 /** Pays on the gateway's page; `null` when the shopper gave up there. */
 export async function payByRedirect(
   locale: string,
@@ -140,24 +147,53 @@ export async function payByRedirect(
   // The eSIM payment page's methods are listed in the app; a crypto one is paid there too.
   let pageUrl = payment.url;
   const checkoutRef = method === 'extension' ? checkoutRefOf(payment.url) : null;
-  if (checkoutRef) {
+  const pick = chosenExtension();
+  // Paid in the app (a crypto address shown, or the sheet taken): the store is asked how it stands.
+  // Not finished yet, checkout asks about it again next time.
+  const settled = async () => {
+    const verification = await verifyRedirectPayment(locale, {
+      paymentMethod: method,
+      reference: payment.reference,
+    });
+    const result = resultOf(verification, { method, reference: payment.reference });
+    if (result?.outcome === 'redirect-pending') {
+      redirectPending.write({ method, reference: payment.reference });
+    }
+    return result;
+  };
+  // The gateway's native sheet: paid, closed, failed, or (no sheet on this device) its page.
+  const sheet = async (code: string): Promise<PaymentResult | null | undefined> => {
+    const shown = await payBySheet(locale, checkoutRef!, code, request);
+    if (shown.kind === 'paid') return settled();
+    if (shown.kind === 'cancelled') return null;
+    if (shown.kind === 'failed') {
+      return {
+        outcome: 'failed',
+        reason: 'sheet',
+        message: shown.message.slice(0, 200) || undefined,
+      };
+    }
+    pageUrl = withMethod(payment.url, code);
+    return undefined;
+  };
+  if (checkoutRef && pick?.kind === 'sheet') {
+    const result = await sheet(pick.code);
+    if (result !== undefined) return result;
+  } else if (checkoutRef && pick && !pick.native) {
+    // A method paid on its page, chosen in checkout's list: the page starts it at once.
+    pageUrl = withMethod(payment.url, pick.code);
+  } else if (checkoutRef) {
     const choices = await getEsimPayChoices(locale, checkoutRef).catch(() => null);
     if (choices?.state === 'open' && choices.methods.some((entry) => entry.native)) {
-      const end = await payInApp(checkoutRef);
+      const end = await payInApp(checkoutRef, pick?.kind === 'crypto' ? pick.code : undefined);
       if (end.kind === 'page') {
-        pageUrl = `${payment.url}${payment.url.includes('?') ? '&' : '?'}method=${encodeURIComponent(end.method)}`;
+        pageUrl = withMethod(payment.url, end.method);
+      } else if (end.kind === 'sheet') {
+        const result = await sheet(end.method);
+        if (result !== undefined) return result;
       } else {
         if (!end.paying) return null;
-        const verification = await verifyRedirectPayment(locale, {
-          paymentMethod: method,
-          reference: payment.reference,
-        });
-        const result = resultOf(verification, { method, reference: payment.reference });
-        // An address was shown: the money may be on its way, so checkout asks about it next time.
-        if (result?.outcome === 'redirect-pending') {
-          redirectPending.write({ method, reference: payment.reference });
-        }
-        return result;
+        return settled();
       }
     }
   }

@@ -11,9 +11,9 @@ import { isValidAppScheme } from "@/lib/settings/mobile-app";
 import { CheckoutAttempt, CHECKOUT_ATTEMPT_STATUS, Order } from "@/models";
 import { EsimPayment } from "@/models/esim-payment.model";
 import { startExtensionCheckout } from "./checkout";
-import { extensionMethodNames, settlePayment } from "./service";
+import { extensionMethodOptions, settlePayment } from "./service";
 import { publicCheckoutDisplay } from "@/lib/esim/admin/checkout-display";
-import { appDisplayRank } from "./checkout-display";
+import { appDisplayRank, displayRank } from "./checkout-display";
 
 /**
  * Extension payments in the shopper app (APP-09, patch P15): the "redirect"
@@ -38,18 +38,37 @@ export async function withExtensionMethod(
       .map((method, index) => ({ method, index, rank: appDisplayRank(display, method.id) }))
       .sort((a, b) => a.rank - b.rank || a.index - b.index)
       .map((entry) => entry.method);
-  if (options.hasPreorder) return { ...quote, paymentMethods: ordered(quote.paymentMethods) };
-  const names = await extensionMethodNames(options.currency);
-  if (!names.length) return { ...quote, paymentMethods: ordered(quote.paymentMethods) };
+  // A method the store has not switched on (or set up) is not offered at all, rather than shown greyed.
+  const own = quote.paymentMethods.filter((method) => !isSwitchedOff(method));
+  if (options.hasPreorder) return { ...quote, paymentMethods: ordered(own) };
+  const offered = await extensionMethodOptions(options.currency);
+  if (!offered.length || !isValidAppScheme(options.appScheme)) return { ...quote, paymentMethods: ordered(own) };
+  // One row per eSIM method, in the order set for checkout (older apps show the joined name).
+  const rows = offered
+    .map((method, index) => ({ method, index, rank: displayRank(display, `extension:${method.code}`) }))
+    .sort((a, b) => a.rank - b.rank || a.index - b.index)
+    .map(({ method }) => {
+      const icon = display.icons[`extension:${method.code}`];
+      return {
+        code: method.code,
+        name: method.name,
+        native: Boolean(method.inApp),
+        ...(method.inApp ? { nativeKind: method.inApp } : {}),
+        ...(icon ? { icon: icon.startsWith("/") ? `${appBaseUrl()}${icon}` : icon } : {}),
+      };
+    });
   return {
     ...quote,
     paymentMethods: ordered([
-      ...quote.paymentMethods,
-      isValidAppScheme(options.appScheme)
-        ? { id: "extension", flow: "redirect", name: names.join(" · "), available: true }
-        : { id: "extension", flow: "redirect", name: names.join(" · "), available: false, reason: "NOT_CONFIGURED", message: "This payment method is not available" },
+      ...own,
+      { id: "extension", flow: "redirect", name: rows.map((row) => row.name).join(" · "), available: true, options: rows },
     ]),
   };
+}
+
+/** Switched off in the store's settings, or not set up: not for shoppers to see. */
+export function isSwitchedOff(method: CheckoutQuote["paymentMethods"][number]): boolean {
+  return !method.available && (method.reason === "DISABLED" || method.reason === "NOT_CONFIGURED");
 }
 
 /** The redirect start: an attempt and the eSIM payment page, in app mode, in the shopper's language. */

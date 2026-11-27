@@ -16,7 +16,10 @@ describe('the app’s own payment screen', () => {
 
   it('opens the screen and waits until it ends; only the first end counts', async () => {
     const waiting = payInApp(REF);
-    expect(router.push).toHaveBeenCalledWith({ pathname: '/checkout/esim-pay', params: { ref: REF } });
+    expect(router.push).toHaveBeenCalledWith({
+      pathname: '/checkout/esim-pay',
+      params: { ref: REF },
+    });
     expect(payInAppWaiting()).toBe(true);
     endPayInApp({ kind: 'page', method: 'stripe' });
     endPayInApp({ kind: 'done', paying: true });

@@ -44,7 +44,12 @@ export async function appPaymentChoices(checkoutRef: string) {
     currency: view.currency,
     state: view.state,
     orderNumber: view.orderNumber,
-    methods: view.methods.map((method) => ({ code: method.code, name: method.name, native: isCryptoMethod(method.code) })),
+    methods: view.methods.map((method) => ({
+      code: method.code,
+      name: method.name,
+      native: Boolean(method.inApp),
+      ...(method.inApp ? { nativeKind: method.inApp } : {}),
+    })),
   };
 }
 
