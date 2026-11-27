@@ -70,7 +70,8 @@
       "global": "グローバル",
       "countries": "{count}か国",
       "viewAll": "すべての渡航先を見る",
-      "empty": "販売中の渡航先はまだありません。"
+      "empty": "販売中の渡航先はまだありません。",
+      "numbers": "電話番号eSIM"
     },
     "continent": {
       "europe": "ヨーロッパ",

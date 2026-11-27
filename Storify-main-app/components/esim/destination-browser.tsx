@@ -128,6 +128,13 @@ export function DestinationBrowser({
                   {search ? <span className="ms-1 text-xs opacity-70">({entry.count})</span> : null}
                 </button>
               ))}
+              {/* Not a tab: the number eSIMs have a page of their own. */}
+              <Link
+                href="/esim/numbers"
+                className="shrink-0 rounded-full px-5 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:min-w-32 sm:px-8 sm:text-base"
+              >
+                {t("esim.browse.numbers", "Number eSIM")}
+              </Link>
             </div>
           </div>
           {active === "local" && grouped ? (

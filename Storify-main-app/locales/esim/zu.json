@@ -70,7 +70,8 @@
       "global": "Emhlabeni wonke",
       "countries": "Amazwe angu-{count}",
       "viewAll": "Bona zonke izindawo",
-      "empty": "Azikho izindawo ezidayiswayo okwamanje."
+      "empty": "Azikho izindawo ezidayiswayo okwamanje.",
+      "numbers": "I-eSIM yenombolo"
     },
     "continent": {
       "europe": "IYurophu",

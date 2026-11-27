@@ -74,7 +74,8 @@
       "global": "全球",
       "countries": "{count} 個國家",
       "viewAll": "查看全部目的地",
-      "empty": "目前還沒有在售的目的地。"
+      "empty": "目前還沒有在售的目的地。",
+      "numbers": "號碼 eSIM"
     },
     "continent": {
       "europe": "歐洲",

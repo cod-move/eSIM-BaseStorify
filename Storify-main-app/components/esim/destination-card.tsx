@@ -23,6 +23,8 @@ export interface BrowserDestination {
   countryCodes: string[];
   path: string;
   fromPriceMinor: number | null;
+  /** Product picture, shown for a region or the world. */
+  image?: string | null;
 }
 
 /**

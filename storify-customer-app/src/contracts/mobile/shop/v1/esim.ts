@@ -191,6 +191,8 @@ export const EsimDestination = z.object({
   /** The cheapest plan, "from". Left out when every plan is day-priced. */
   fromPrice: Money.optional(),
   planCount: z.number().int(),
+  /** The product picture, shown for a region or the world. */
+  image: z.string().optional(),
 });
 export type EsimDestination = z.infer<typeof EsimDestination>;
 
@@ -244,7 +246,6 @@ export const EsimDestinationDetail = EsimDestination.extend({
   productId: z.string(),
   /** The product's own page (`/products/{slug}`), with the full description. */
   productSlug: z.string(),
-  image: z.string().optional(),
   countryNames: z.array(z.object({ code: z.string(), name: z.string() })),
   networks: z.array(z.object({ countryCode: z.string(), operator: z.string(), network: z.string().optional() })),
   plans: z.array(EsimPlanOption),

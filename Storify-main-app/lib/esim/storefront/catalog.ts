@@ -41,6 +41,8 @@ export interface Destination {
   productHandle: string;
   fromPriceMinor: number | null;
   variantCount: number;
+  /** The product's first picture: what a region or the world shows in a list. */
+  image: string | null;
 }
 
 export interface DestinationDetail extends Destination {
@@ -53,7 +55,6 @@ export interface DestinationDetail extends Destination {
    * shows its own plan's coverage, not the whole destination's.
    */
   coverageSets: CoverageSet[];
-  image: string | null;
   updatedAt: string;
 }
 
@@ -210,7 +211,7 @@ const cachedCatalog = unstable_cache(readCatalog, ["esim-storefront-catalog"], {
 
 /** Every listed destination, without its variants. */
 export async function listDestinations(): Promise<Destination[]> {
-  return (await cachedCatalog()).map(({ variants: _variants, networks: _networks, coverageSets: _coverageSets, image: _image, updatedAt: _updatedAt, ...destination }) => destination);
+  return (await cachedCatalog()).map(({ variants: _variants, networks: _networks, coverageSets: _coverageSets, updatedAt: _updatedAt, ...destination }) => destination);
 }
 
 /** One destination with its variants; `scope` keeps a country page from serving a region and back. */
@@ -284,6 +285,7 @@ export function toBrowserDestination(destination: Destination & { englishName?: 
     countryCodes: destination.countries.map((country) => country.code),
     path: destinationPath(destination),
     fromPriceMinor: destination.fromPriceMinor,
+    image: destination.scope === "local" ? null : destination.image,
   };
 }
 

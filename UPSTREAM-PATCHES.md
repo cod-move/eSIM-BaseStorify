@@ -116,6 +116,7 @@
 | P84 | 已改 | `Storify-main-app/lib/customers/customer-list.ts`（导入区；`fetchAdminCustomerList` 的 `listResult`）；`components/admin/customers-data-table.tsx`（`CustomerListItem`；「账户」列之后；`visibleColumns` 的商户隐藏列表） | 管理后台顾客列表每页的行补上邀请人（`lib/esim/admin/customer-referrers.ts`：按 `EsimReferral.referee` 查 `referrer` 的名字和邮箱），表格在「账户」后加「邀请人」列，点击打开邀请人的顾客页（用户 id，P63 会换成顾客档案 id）；商户区不显示 | 顾客列表看不出谁是谁邀请来的 | 合并官方新版时保留这三处；`admin.phrases.invited_by` 的译文在 `locales/esim/*.json` |
 
 > 新增插入点时按编号往后加；某项最终没改，就把状态改为 `取消` 并保留记录。
+| P85 | 已改 | `Storify-main-app/components/account/customer-dashboard.tsx`（最近订单为空时的按钮）、`Storify-main-app/components/cart/cart-drawer.tsx`（空购物车的按钮） | 「开始购物」从 `/products` 改为跳到目的地页 `/esim` | 商城主要卖 eSIM，商品列表页不是顾客要找的 | 合并官方新版时保留两处 `[esim-patch] P85` |
 
 ### P10 明细
 

@@ -95,7 +95,7 @@ export async function DestinationPage({
       <div className="space-y-8">
         <header className="space-y-3">
           <div className="flex items-center gap-3">
-            <DestinationIcon destination={{ scope: destination.scope, countryCodes, emoji: destination.emoji }} className="text-5xl leading-none" />
+            <DestinationIcon destination={{ scope: destination.scope, countryCodes, emoji: destination.emoji, image: destination.image }} className="text-5xl leading-none" />
             <div>
               <h1 className="text-3xl font-bold tracking-tight">
                 {tr("esim.page.title", "{name} eSIM", { name: destination.name })}

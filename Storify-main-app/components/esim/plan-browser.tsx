@@ -68,6 +68,19 @@ interface PlanBrowserProps {
   image?: string | null;
 }
 
+/** The page numbers to show: first, last, the current one and its neighbours; null = a gap. Keeps the bar within a phone's width. */
+function pageWindow(page: number, pages: number): Array<number | null> {
+  const keep = new Set([1, pages, page - 1, page, page + 1].filter((n) => n >= 1 && n <= pages));
+  const out: Array<number | null> = [];
+  let last = 0;
+  for (const n of [...keep].sort((a, b) => a - b)) {
+    if (n - last === 2) out.push(n - 1);
+    else if (n - last > 2) out.push(null);
+    out.push(n);
+    last = n;
+  }
+  return out;
+}
 export function PlanBrowser({ productId, destinationName, variants, countryCodes, regionNames, coverage, planCoverage, local: _local, image }: PlanBrowserProps) {
   const t = useFallbackTranslator(useTranslations());
   const { formatPrice } = useCurrency();
@@ -397,11 +410,14 @@ export function PlanBrowser({ productId, destinationName, variants, countryCodes
       )}
 
       {shown.pages > 1 ? (
-        <nav className="flex items-center justify-center gap-1" aria-label={t("esim.plans.pages", "Pages")}>
+        <nav className="flex flex-wrap items-center justify-center gap-1" aria-label={t("esim.plans.pages", "Pages")}>
           <Button variant="outline" size="icon" className="h-8 w-8" disabled={shown.page <= 1} onClick={() => setPage(shown.page - 1)} aria-label={t("esim.plans.previous", "Previous page")}>
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          {Array.from({ length: shown.pages }, (_, index) => index + 1).map((number) => (
+          {pageWindow(shown.page, shown.pages).map((number, index) =>
+            number === null ? (
+              <span key={`gap-${index}`} className="px-1 text-sm text-muted-foreground" aria-hidden="true">…</span>
+            ) : (
             <Button
               key={number}
               variant={number === shown.page ? "default" : "outline"}
@@ -412,7 +428,8 @@ export function PlanBrowser({ productId, destinationName, variants, countryCodes
             >
               {number}
             </Button>
-          ))}
+            ),
+          )}
           <Button variant="outline" size="icon" className="h-8 w-8" disabled={shown.page >= shown.pages} onClick={() => setPage(shown.page + 1)} aria-label={t("esim.plans.next", "Next page")}>
             <ChevronRight className="h-4 w-4" />
           </Button>

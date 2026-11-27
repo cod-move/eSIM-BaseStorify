@@ -325,7 +325,8 @@ export function CustomerDashboard({
               <Package className="h-12 w-12 mx-auto mb-3 opacity-50" />
               <p>{t("account.noOrders")}</p>
               <Button variant="outline" className="mt-4" asChild>
-                <Link href="/products">{t("account.startShopping")}</Link>
+                {/* [esim-patch] P85 to the destinations */}
+                <Link href="/esim">{t("account.startShopping")}</Link>
               </Button>
             </div>
           ) : (

@@ -74,7 +74,8 @@
       "global": "Global",
       "countries": "{count} countries",
       "viewAll": "View all destinations",
-      "empty": "No destinations are on sale yet."
+      "empty": "No destinations are on sale yet.",
+      "numbers": "Number eSIM"
     },
     "continent": {
       "europe": "Europe",

@@ -70,7 +70,8 @@
       "global": "Kimataifa",
       "countries": "Nchi {count}",
       "viewAll": "Tazama maeneo yote",
-      "empty": "Bado hakuna maeneo yanayouzwa."
+      "empty": "Bado hakuna maeneo yanayouzwa.",
+      "numbers": "eSIM ya namba"
     },
     "continent": {
       "europe": "Ulaya",

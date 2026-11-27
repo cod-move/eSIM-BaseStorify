@@ -70,7 +70,8 @@
       "global": "Wereldwijd",
       "countries": "{count} landen",
       "viewAll": "Alle bestemmingen bekijken",
-      "empty": "Er zijn nog geen bestemmingen te koop."
+      "empty": "Er zijn nog geen bestemmingen te koop.",
+      "numbers": "Nummer-eSIM"
     },
     "continent": {
       "europe": "Europa",

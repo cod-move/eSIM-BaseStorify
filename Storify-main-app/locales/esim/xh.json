@@ -70,7 +70,8 @@
       "global": "Kwihlabathi lonke",
       "countries": "Amazwe ali-{count}",
       "viewAll": "Jonga zonke iindawo",
-      "empty": "Akukabikho ndawo ithengiswayo okwangoku."
+      "empty": "Akukabikho ndawo ithengiswayo okwangoku.",
+      "numbers": "I-eSIM yenombolo"
     },
     "continent": {
       "europe": "EYurophu",

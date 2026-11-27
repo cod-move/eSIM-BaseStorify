@@ -1,3 +1,4 @@
+import { Globe2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { destinationFlag, flagSrc } from "@/lib/esim/storefront/flags";
 
@@ -29,21 +30,35 @@ export function Flag({ code, className }: { code: string | null | undefined; cla
 }
 
 /**
- * A destination's picture: its flag (a country's, or a region's when its emoji
- * is a flag, like the EU), else its emoji or a globe.
+ * A destination's picture: a country's own flag; every region and the world the
+ * product picture (the same globe when it has none). The emoji an admin or
+ * supplier stored (🇪🇺, 🌍, 🌏…) is not drawn, so the lists look alike.
  */
 export function DestinationIcon({
   destination,
   className,
 }: {
-  destination: { scope: string; countryCodes: string[]; emoji: string | null };
+  destination: { scope: string; countryCodes: string[]; emoji: string | null; image?: string | null };
   className?: string;
 }) {
+  if (destination.scope !== "local") {
+    if (destination.image) {
+      return (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={destination.image} alt="" aria-hidden="true" loading="lazy" decoding="async" className={cn("inline-block h-[1.5em] w-[1.5em] shrink-0 rounded-full object-cover ring-1 ring-black/10 dark:ring-white/15", className)} />
+      );
+    }
+    return (
+      <span className={cn("inline-flex items-center justify-center", className)} aria-hidden="true">
+        <Globe2 className="h-[1em] w-[1em] text-primary" strokeWidth={1.75} />
+      </span>
+    );
+  }
   const src = destinationFlag(destination);
   if (src) return <FlagImage src={src} className={className} />;
   return (
     <span className={className} aria-hidden="true">
-      {destination.emoji || (destination.scope === "local" ? "📍" : "🌐")}
+      {destination.emoji || "📍"}
     </span>
   );
 }

@@ -70,7 +70,8 @@
       "global": "Global",
       "countries": "{count} ülke",
       "viewAll": "Tüm destinasyonları gör",
-      "empty": "Henüz satışta destinasyon yok."
+      "empty": "Henüz satışta destinasyon yok.",
+      "numbers": "Numaralı eSIM"
     },
     "continent": {
       "europe": "Avrupa",

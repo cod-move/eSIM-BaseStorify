@@ -308,7 +308,7 @@ export function CartDrawer({ open, onOpenChange }: CartDrawerProps) {
                 {t("cart.emptyDescription")}
               </p>
               <Button asChild onClick={() => onOpenChange(false)}>
-                <Link href="/products">
+                <Link href="/esim">{/* [esim-patch] P85 to the destinations */}
                   {t("cart.startShopping")}
                 </Link>
               </Button>

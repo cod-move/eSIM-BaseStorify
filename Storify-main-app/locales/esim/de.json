@@ -70,7 +70,8 @@
       "global": "Weltweit",
       "countries": "{count} Länder",
       "viewAll": "Alle Reiseziele anzeigen",
-      "empty": "Noch keine Reiseziele im Angebot."
+      "empty": "Noch keine Reiseziele im Angebot.",
+      "numbers": "Nummer-eSIM"
     },
     "continent": {
       "europe": "Europa",

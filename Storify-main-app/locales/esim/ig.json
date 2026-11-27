@@ -70,7 +70,8 @@
       "global": "Ụwa niile",
       "countries": "Mba {count}",
       "viewAll": "Hụ ebe niile",
-      "empty": "Enweghị ebe a na-ere ugbu a."
+      "empty": "Enweghị ebe a na-ere ugbu a.",
+      "numbers": "eSIM nọmba"
     },
     "continent": {
       "europe": "Yurop",
