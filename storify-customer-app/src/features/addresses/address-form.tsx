@@ -70,8 +70,11 @@ export function AddressForm({ address, onSaved }: AddressFormProps) {
     const problem = problems[field];
     if (problem === 'streetTooShort') return t('problem.streetTooShort', { min: MIN_STREET });
     if (problem) return t('problem.required');
-    return refused?.[field]?.[0];
+    return refused?.[field]?.[0] ?? refused?.[`address.${field}`]?.[0];
   };
+  // [esim-patch] P86 a refusal no field on screen can show (a hidden field, a key the form does not know) shows above Save, not nowhere.
+  const placed = new Set(fields.flatMap(({ field }) => [field, `address.${field}`]));
+  const unplaced = refused ? Object.entries(refused).find(([key]) => !placed.has(key))?.[1]?.[0] : undefined;
 
   const save = () => {
     setTried(true);
@@ -122,7 +125,9 @@ export function AddressForm({ address, onSaved }: AddressFormProps) {
       {address?.isDefault ? null : (
         <SwitchRow title={t('makeDefault')} value={isDefault} onValueChange={setIsDefault} />
       )}
-      {change.isError && !refused ? <FieldMessage error={errorMessage(change.error)} /> : null}
+      {change.isError && (!refused || unplaced) ? (
+        <FieldMessage error={unplaced ?? errorMessage(change.error)} />
+      ) : null}
       <Button label={t('save')} loading={change.isPending} onPress={save} />
     </ScrollView>
   );
