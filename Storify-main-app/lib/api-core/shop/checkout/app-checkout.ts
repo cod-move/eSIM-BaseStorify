@@ -179,7 +179,8 @@ function webBodyOf(
     turnstileToken: body.turnstileToken,
     // `CheckoutSchema` takes a two-letter language for the emails it sends.
     locale: locale.length === 2 ? locale : undefined,
-    useStoreCredit: false,
+    useStoreCredit: paymentMethod === "store_credit", // [esim-patch] P27 the balance, when it is the method
+    extensionMethod: body.extensionMethod, // [esim-patch] P15 the eSIM method chosen, for its fee
   };
 }
 

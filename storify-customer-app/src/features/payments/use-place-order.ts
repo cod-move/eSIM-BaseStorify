@@ -6,7 +6,7 @@ import { placeCodOrder } from '@/api/endpoints/payments';
 import { queryKeys } from '@/api/query-keys';
 import type { CheckoutPaymentMethod, PlaceOrderRequest } from '@/contracts/mobile/shop/v1';
 import { rememberGuestContact } from '@/features/orders/guest-contact';
-import { isRedirectMethod, payByRedirect } from '@/features/esim/redirect-payment'; // [esim-patch] P24
+import { isRedirectMethod, paidFromBalance, payByRedirect } from '@/features/esim/redirect-payment'; // [esim-patch] P24 P27
 import { useLocale } from '@/i18n/locale-store';
 
 import { attemptFor, isFinal, withRetries, type Attempt, type Sleep } from './attempt';
@@ -123,9 +123,12 @@ export function usePlaceOrder() {
         const result =
           method === 'cod'
             ? await placeCashOrder(locale, request)
-            : isRedirectMethod(method)
-              ? await payByRedirect(locale, request, method)
-              : await payCard(locale, request);
+            : // [esim-patch] P27 the account balance: placed like cash on delivery, written paid.
+              method === 'store_credit'
+              ? paidFromBalance(await placeCashOrder(locale, { ...request, payWithBalance: true }))
+              : isRedirectMethod(method)
+                ? await payByRedirect(locale, request, method)
+                : await payCard(locale, request);
         if (!result) return;
         // A guest's contact goes with the order (a signed-in shopper sends none): their receipt needs it.
         const contact = request.email ?? request.phone;

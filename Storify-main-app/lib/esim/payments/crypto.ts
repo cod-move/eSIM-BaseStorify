@@ -4,6 +4,8 @@ import { connectDB } from "@/lib/db";
 import { ValidationError } from "@/lib/api/errors";
 import { EsimPayment, EsimPaymentMethod, type IEsimPayment } from "@/models/esim-payment.model";
 import { paymentMethodDefinition } from "./registry";
+import { shownOn } from "./checkout-display";
+import { publicCheckoutDisplay } from "@/lib/esim/admin/checkout-display";
 import { CHECKOUT_REF, methodCredentials, paymentPage, startPayment, type StartContext } from "./service";
 import { PaymentPluginError, type CryptoInvoice, type CryptoOption } from "./plugins/types";
 
@@ -36,7 +38,7 @@ export function isCryptoMethod(code: string): boolean {
 
 /** The checkout's methods as the app's screen lists them. */
 export async function appPaymentChoices(checkoutRef: string) {
-  const view = await paymentPage(checkoutRef);
+  const [view, display] = await Promise.all([paymentPage(checkoutRef), publicCheckoutDisplay()]);
   if (!view) return null;
   return {
     checkoutRef: view.checkoutRef,
@@ -44,7 +46,7 @@ export async function appPaymentChoices(checkoutRef: string) {
     currency: view.currency,
     state: view.state,
     orderNumber: view.orderNumber,
-    methods: view.methods.map((method) => ({
+    methods: view.methods.filter((method) => shownOn(display, "app", `extension:${method.code}`)).map((method) => ({
       code: method.code,
       name: method.name,
       native: Boolean(method.inApp),

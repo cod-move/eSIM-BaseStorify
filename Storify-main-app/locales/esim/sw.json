@@ -1588,6 +1588,8 @@
       "checkoutDisplayTitle": "Njia za malipo wakati wa kulipia",
       "checkoutDisplayHint": "Mpangilio ambao wateja wanaona njia za malipo, njia inayochaguliwa ukurasa wa kulipia unapofunguka, na ikoni ya kila moja. Njia zilizowashwa tu ndizo huonyeshwa. Salio la akaunti huja kwanza kila mara linapotosha kulipia oda.",
       "checkoutDefault": "Chaguo-msingi",
+      "checkoutOnWeb": "Tovuti",
+      "checkoutOnApp": "Programu",
       "checkoutNoDefault": "Hakuna chaguo-msingi: ya kwanza inayoweza kulipia oda",
       "iconDefault": "Chaguo-msingi",
       "iconUpload": "Pakia ikoni",

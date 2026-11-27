@@ -566,6 +566,12 @@
     "payCancel": "取消付款",
     "payCancelNote": "没有付款时再取消。如果之后仍有款项到账，订单会照常完成。",
     "payInAppNote": "在 App 内付款：选择币种后，转账到显示的地址。",
-    "paySheetNote": "在 App 内用银行卡、Apple Pay 或 Google Pay 付款。"
+    "paySheetNote": "在 App 内用银行卡、Apple Pay 或 Google Pay 付款。",
+    "payBalanceNote": "用账户余额付清这笔订单，无需再付其他款项。",
+    "menuEsim": "eSIM",
+    "menuWallet": "钱包与福利",
+    "menuAccount": "账户与安全",
+    "menuApp": "App 设置",
+    "menuPolicies": "条款与政策"
   }
 }

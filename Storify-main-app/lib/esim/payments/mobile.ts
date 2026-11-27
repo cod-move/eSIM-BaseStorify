@@ -13,7 +13,8 @@ import { EsimPayment } from "@/models/esim-payment.model";
 import { startExtensionCheckout } from "./checkout";
 import { extensionMethodOptions, settlePayment } from "./service";
 import { publicCheckoutDisplay } from "@/lib/esim/admin/checkout-display";
-import { appDisplayRank, displayRank } from "./checkout-display";
+import { appDisplayRank, displayRank, shownOn } from "./checkout-display";
+import { appBalanceMethod } from "./app-balance";
 
 /**
  * Extension payments in the shopper app (APP-09, patch P15): the "redirect"
@@ -30,18 +31,31 @@ import { appDisplayRank, displayRank } from "./checkout-display";
  */
 export async function withExtensionMethod(
   quote: CheckoutQuote,
-  options: { appScheme: string; currency: string; hasPreorder: boolean },
+  options: {
+    appScheme: string;
+    currency: string;
+    hasPreorder: boolean;
+    /** The priced cart and its shopper: the account balance's row (patch P27). */
+    balance?: { priced: Parameters<typeof appBalanceMethod>[0]; customerId: string | null; locale: string };
+  },
 ): Promise<CheckoutQuote> {
   const display = await publicCheckoutDisplay();
+  // The balance comes first, as on the website, when the admin shows it in the app.
+  const balanceRow =
+    options.balance && !options.hasPreorder && shownOn(display, "app", "store_credit")
+      ? await appBalanceMethod(options.balance.priced, { customerId: options.balance.customerId, currency: options.currency, locale: options.balance.locale })
+      : null;
+  quote = balanceRow ? { ...quote, paymentMethods: [balanceRow, ...quote.paymentMethods] } : quote;
   const ordered = (methods: CheckoutQuote["paymentMethods"]) =>
     methods
       .map((method, index) => ({ method, index, rank: appDisplayRank(display, method.id) }))
       .sort((a, b) => a.rank - b.rank || a.index - b.index)
       .map((entry) => entry.method);
-  // A method the store has not switched on (or set up) is not offered at all, rather than shown greyed.
-  const own = quote.paymentMethods.filter((method) => !isSwitchedOff(method));
+  // A method the store has not switched on (or set up) is not offered at all, rather than shown greyed;
+  // nor one the admin shows on the website only.
+  const own = quote.paymentMethods.filter((method) => !isSwitchedOff(method) && shownOn(display, "app", method.id));
   if (options.hasPreorder) return { ...quote, paymentMethods: ordered(own) };
-  const offered = await extensionMethodOptions(options.currency);
+  const offered = (await extensionMethodOptions(options.currency)).filter((method) => shownOn(display, "app", `extension:${method.code}`));
   if (!offered.length || !isValidAppScheme(options.appScheme)) return { ...quote, paymentMethods: ordered(own) };
   // One row per eSIM method, in the order set for checkout (older apps show the joined name).
   const rows = offered
@@ -74,12 +88,15 @@ export function isSwitchedOff(method: CheckoutQuote["paymentMethods"][number]): 
 /** The redirect start: an attempt and the eSIM payment page, in app mode, in the shopper's language. */
 export async function startExtensionRedirect(
   draft: CheckoutDraft,
-  ctx: { locale: string; request: GatewayStartRequest },
+  ctx: { locale: string; request: GatewayStartRequest; extensionMethod?: string },
 ): Promise<{ record: GatewayCheckoutRecord; gatewayUrl: string; resumed: boolean }> {
   const { storeDefault } = await getLocaleRouting();
+  // The method chosen in the app's list holds the checkout to it (its fee is in the order), without
+  // starting it: the app pays it in its own screen or sheet, or opens the page, which starts it.
   const start = await startExtensionCheckout(draft, {
     pageUrl: (reference) => `${appBaseUrl()}${buildLocalePath(ctx.locale, `/esim/pay/${reference}`, storeDefault)}?app=1`,
     request: ctx.request,
+    ...(ctx.extensionMethod ? { method: ctx.extensionMethod } : {}),
   });
   return { record: start.record, gatewayUrl: start.redirectUrl, resumed: start.resumed };
 }

@@ -566,6 +566,12 @@
     "payCancel": "Cancel payment",
     "payCancelNote": "Only cancel if you have not paid. A payment that still arrives completes your order.",
     "payInAppNote": "You will pay here in the app: choose a coin, then send it to the address shown.",
-    "paySheetNote": "Pay by card, Apple Pay or Google Pay right here in the app."
+    "paySheetNote": "Pay by card, Apple Pay or Google Pay right here in the app.",
+    "payBalanceNote": "Your balance pays for this order — nothing else to pay.",
+    "menuEsim": "eSIM",
+    "menuWallet": "Wallet & rewards",
+    "menuAccount": "Account & security",
+    "menuApp": "App",
+    "menuPolicies": "Policies"
   }
 }

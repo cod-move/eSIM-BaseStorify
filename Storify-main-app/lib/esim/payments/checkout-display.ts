@@ -16,9 +16,21 @@ export interface CheckoutDisplay {
   defaultMethod: string | null;
   /** Method value → image URL. */
   icons: Record<string, string>;
+  /** Methods not shown on the website's checkout, though switched on. */
+  webHidden: string[];
+  /** Methods not shown in the shopper app's checkout, though switched on. */
+  appHidden: string[];
 }
 
-export const EMPTY_CHECKOUT_DISPLAY: CheckoutDisplay = { order: [], defaultMethod: null, icons: {} };
+export const EMPTY_CHECKOUT_DISPLAY: CheckoutDisplay = { order: [], defaultMethod: null, icons: {}, webHidden: [], appHidden: [] };
+
+export type CheckoutChannel = "web" | "app";
+
+/** Whether a method is shown at this checkout (the balance always is). */
+export function shownOn(display: CheckoutDisplay | null | undefined, channel: CheckoutChannel, method: string): boolean {
+  if (method === PINNED_FIRST || !display) return true;
+  return !(channel === "web" ? display.webHidden : display.appHidden)?.includes(method);
+}
 
 const PINNED_FIRST = "store_credit";
 

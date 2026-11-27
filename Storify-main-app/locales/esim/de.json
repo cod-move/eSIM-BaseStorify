@@ -1588,6 +1588,8 @@
       "checkoutDisplayTitle": "Zahlungsarten an der Kasse",
       "checkoutDisplayHint": "Die Reihenfolge, in der Kunden die Zahlungsarten sehen, die beim Öffnen der Kasse gewählte und das Symbol jeder Zahlungsart. Nur aktivierte Zahlungsarten werden angezeigt. Das Kontoguthaben steht immer zuerst, wenn es die Bestellung deckt.",
       "checkoutDefault": "Standard",
+      "checkoutOnWeb": "Website",
+      "checkoutOnApp": "App",
       "checkoutNoDefault": "Kein Standard: die erste, die die Bestellung annehmen kann",
       "iconDefault": "Standard",
       "iconUpload": "Symbol hochladen",

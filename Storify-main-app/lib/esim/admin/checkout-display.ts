@@ -55,12 +55,16 @@ async function knownMethods(): Promise<CheckoutMethodRow[]> {
   return [...store, ...esim];
 }
 
-function stored(raw: { order?: string[]; defaultMethod?: string | null; icons?: Array<{ method: string; url: string }> } | null | undefined): CheckoutDisplay {
+function stored(
+  raw: { order?: string[]; defaultMethod?: string | null; icons?: Array<{ method: string; url: string }>; webHidden?: string[]; appHidden?: string[] } | null | undefined,
+): CheckoutDisplay {
   if (!raw) return EMPTY_CHECKOUT_DISPLAY;
   return {
     order: [...(raw.order ?? [])],
     defaultMethod: raw.defaultMethod || null,
     icons: Object.fromEntries((raw.icons ?? []).filter((icon) => isIconUrl(icon.url)).map((icon) => [icon.method, icon.url])),
+    webHidden: [...(raw.webHidden ?? [])],
+    appHidden: [...(raw.appHidden ?? [])],
   };
 }
 
@@ -96,6 +100,8 @@ export const CheckoutDisplaySchema = z.object({
   order: z.array(METHOD).max(60),
   defaultMethod: METHOD.nullable(),
   icons: z.record(METHOD, z.string().trim().max(1000)),
+  webHidden: z.array(METHOD).max(60).default([]),
+  appHidden: z.array(METHOD).max(60).default([]),
 });
 
 /** Saves what the admin set, keeping only methods checkout knows; an empty icon is no icon. */
@@ -108,10 +114,13 @@ export async function saveCheckoutDisplay(input: z.infer<typeof CheckoutDisplayS
   const bad = icons.find(([, url]) => !isIconUrl(url));
   if (bad) throw new Error(`The icon of ${bad[0]} must be an uploaded image or an https address`);
   const settings = await getEsimSettings();
+  const hidden = (list: string[]) => [...new Set(list)].filter((method) => known.has(method));
   settings.set("checkoutDisplay", {
     order,
     defaultMethod: input.defaultMethod || null,
     icons: icons.map(([method, url]) => ({ method, url })),
+    webHidden: hidden(input.webHidden),
+    appHidden: hidden(input.appHidden),
   });
   await settings.save();
   return { before, after: await getCheckoutDisplayAdmin() };

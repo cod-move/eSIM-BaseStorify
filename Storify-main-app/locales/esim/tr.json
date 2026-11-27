@@ -1588,6 +1588,8 @@
       "checkoutDisplayTitle": "Ödeme adımındaki ödeme yöntemleri",
       "checkoutDisplayHint": "Müşterilerin ödeme yöntemlerini gördüğü sıra, ödeme adımı açıldığında seçili olan yöntem ve her birinin simgesi. Yalnızca açık yöntemler gösterilir. Hesap bakiyesi siparişi karşıladığında her zaman en üstte yer alır.",
       "checkoutDefault": "Varsayılan",
+      "checkoutOnWeb": "Web sitesi",
+      "checkoutOnApp": "Uygulama",
       "checkoutNoDefault": "Varsayılan yok: siparişi ödeyebilen ilk yöntem",
       "iconDefault": "Varsayılan",
       "iconUpload": "Simge yükle",

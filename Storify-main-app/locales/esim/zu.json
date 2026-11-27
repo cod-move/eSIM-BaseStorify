@@ -1588,6 +1588,8 @@
       "checkoutDisplayTitle": "Izindlela zokukhokha endaweni yokukhokha",
       "checkoutDisplayHint": "Uhlelo amakhasimende azibona ngalo izindlela zokukhokha, eyodwa ekhethiwe uma kuvulwa indawo yokukhokha, kanye nesithonjana sendlela ngayinye. Kuboniswa kuphela izindlela ezivuliwe. Ibhalansi ye-akhawunti ihlala iza kuqala uma yanele ukukhokhela i-oda.",
       "checkoutDefault": "Okuzenzakalelayo",
+      "checkoutOnWeb": "Iwebhusayithi",
+      "checkoutOnApp": "Uhlelo lokusebenza",
       "checkoutNoDefault": "Akukho okuzenzakalelayo: eyokuqala engakhokhela i-oda",
       "iconDefault": "Okuzenzakalelayo",
       "iconUpload": "Layisha isithonjana",

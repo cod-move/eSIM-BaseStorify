@@ -18,7 +18,7 @@ import { MessagesTile } from './tiles/messages-tile';
 import { usePreferencesRow } from './tiles/preferences-row';
 import { ReturnsTile } from './tiles/returns-tile';
 import { ReviewsTile } from './tiles/reviews-tile';
-import { EsimAccountRow } from '@/features/esim/account-row'; // [esim-patch] P23
+import { MenuGroup, useEsimAccountRows, useMenuGroupTitles } from '@/features/esim/account-row'; // [esim-patch] P23
 
 const WISHLIST = '/account/wishlist';
 const ORDERS = '/account/orders';
@@ -35,6 +35,9 @@ export function ShopperAccount({ shopper }: { shopper: Shopper }) {
   const router = useRouter();
   const go = (href: Href) => () => router.push(href);
   const preferencesRow = usePreferencesRow();
+  // [esim-patch] P23 the menus in titled groups, the eSIM module's among them.
+  const esimRows = useEsimAccountRows();
+  const groups = useMenuGroupTitles();
 
   return (
     <View className="gap-5">
@@ -88,19 +91,27 @@ export function ShopperAccount({ shopper }: { shopper: Shopper }) {
           </Text>
           <Icon name="chevron-right" size={20} directional />
         </Pressable>
-        {/* [esim-patch] P23 My eSIMs. */}
-        <EsimAccountRow />
       </View>
 
-      <RowGroup>
+      {/* [esim-patch] P23 eSIM; wallet & rewards; account & security; the app; the policies. */}
+      <MenuGroup title={groups.esim}>{esimRows.esims}</MenuGroup>
+      <MenuGroup title={groups.wallet}>
+        {esimRows.balance}
+        {esimRows.rewards}
+        {esimRows.invite}
+      </MenuGroup>
+      <MenuGroup title={groups.account}>
         <NavRow icon="user" title={t('profile')} onPress={go('/account/profile')} />
-        {preferencesRow}
+        {esimRows.verification}
         <NavRow icon="pin" title={t('addresses')} onPress={go(ADDRESSES)} />
         <NavRow icon="shield" title={t('security')} onPress={go('/account/security')} />
+      </MenuGroup>
+      <MenuGroup title={groups.app}>
+        {preferencesRow}
         <NavRow icon="appearance" title={t('settings')} onPress={go('/account/settings')} />
-      </RowGroup>
+      </MenuGroup>
 
-      <PolicyRows />
+      <PolicyRows title={groups.policies} />
 
       <SignOutGroup />
     </View>

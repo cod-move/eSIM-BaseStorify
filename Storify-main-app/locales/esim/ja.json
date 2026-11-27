@@ -1588,6 +1588,8 @@
       "checkoutDisplayTitle": "チェックアウトの支払い方法",
       "checkoutDisplayHint": "お客様に表示する支払い方法の順序、チェックアウトを開いたときに選択されている方法、各方法のアイコンを設定します。有効な方法のみ表示されます。残高で注文を支払える場合は、アカウント残高が常に先頭になります。",
       "checkoutDefault": "デフォルト",
+      "checkoutOnWeb": "ウェブサイト",
+      "checkoutOnApp": "アプリ",
       "checkoutNoDefault": "デフォルトなし：注文を支払える最初の方法",
       "iconDefault": "デフォルト",
       "iconUpload": "アイコンをアップロード",

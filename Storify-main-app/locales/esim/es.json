@@ -1588,6 +1588,8 @@
       "checkoutDisplayTitle": "Métodos de pago en el checkout",
       "checkoutDisplayHint": "El orden en que los clientes ven los métodos de pago, el que aparece elegido al abrir el checkout y el icono de cada uno. Solo se muestran los métodos activados. El saldo de la cuenta va siempre primero cuando cubre el pedido.",
       "checkoutDefault": "Predeterminado",
+      "checkoutOnWeb": "Web",
+      "checkoutOnApp": "App",
       "checkoutNoDefault": "Sin predeterminado: el primero que pueda cobrar el pedido",
       "iconDefault": "Predeterminado",
       "iconUpload": "Subir icono",

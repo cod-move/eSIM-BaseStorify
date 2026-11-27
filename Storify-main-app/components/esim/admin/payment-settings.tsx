@@ -83,6 +83,8 @@ export function EsimCheckoutDisplayCard() {
   const [order, setOrder] = useState<string[]>([]);
   const [defaultMethod, setDefaultMethod] = useState<string | null>(null);
   const [icons, setIcons] = useState<Record<string, string>>({});
+  const [webHidden, setWebHidden] = useState<string[]>([]);
+  const [appHidden, setAppHidden] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
 
   const load = useCallback(async () => {
@@ -92,6 +94,8 @@ export function EsimCheckoutDisplayCard() {
       setOrder(data.methods.map((row) => row.method));
       setDefaultMethod(data.defaultMethod);
       setIcons(data.icons);
+      setWebHidden(data.webHidden);
+      setAppHidden(data.appHidden);
     } catch {
       setView(null);
     }
@@ -105,7 +109,11 @@ export function EsimCheckoutDisplayCard() {
   const changed =
     JSON.stringify(order) !== JSON.stringify(view.methods.map((row) => row.method)) ||
     defaultMethod !== view.defaultMethod ||
-    JSON.stringify(icons) !== JSON.stringify(view.icons);
+    JSON.stringify(icons) !== JSON.stringify(view.icons) ||
+    JSON.stringify([...webHidden].sort()) !== JSON.stringify([...view.webHidden].sort()) ||
+    JSON.stringify([...appHidden].sort()) !== JSON.stringify([...view.appHidden].sort());
+  const toggle = (set: (update: (current: string[]) => string[]) => void, method: string, shown: boolean) =>
+    set((current) => (shown ? current.filter((entry) => entry !== method) : [...current, method]));
   const move = (index: number, by: number) =>
     setOrder((current) => {
       const next = [...current];
@@ -117,7 +125,7 @@ export function EsimCheckoutDisplayCard() {
   async function save() {
     setSaving(true);
     try {
-      await apiClient.put("/api/esim/admin/checkout-display", { order, defaultMethod, icons });
+      await apiClient.put("/api/esim/admin/checkout-display", { order, defaultMethod, icons, webHidden, appHidden });
       toast.success(t("admin.esim.saved", "Saved"));
       await load();
     } catch (error) {
@@ -134,7 +142,7 @@ export function EsimCheckoutDisplayCard() {
         <p className="text-sm text-muted-foreground">
           {t(
             "admin.esim.checkoutDisplayHint",
-            "The order shoppers see the payment methods in, the one chosen when checkout opens, and each one's icon. Only methods switched on are shown. The account balance always comes first when it covers the order.",
+            "The order shoppers see the payment methods in, the one chosen when checkout opens, each one's icon, and whether it is shown on the website, in the app or both. Only methods switched on are shown. The account balance always comes first when it covers the order.",
           )}
         </p>
       </CardHeader>
@@ -163,6 +171,15 @@ export function EsimCheckoutDisplayCard() {
                   {!row.on ? <Badge variant="secondary" className="text-[10px]">{t("admin.esim.disabled", "Off")}</Badge> : null}
                 </div>
               </div>
+              {/* Where it is shown: the website's checkout, the shopper app's, or both. */}
+              <label className="flex items-center gap-1.5 text-sm">
+                <input type="checkbox" checked={!webHidden.includes(row.method)} disabled={!view.canManage} onChange={(event) => toggle(setWebHidden, row.method, event.target.checked)} />
+                {t("admin.esim.checkoutOnWeb", "Website")}
+              </label>
+              <label className="flex items-center gap-1.5 text-sm">
+                <input type="checkbox" checked={!appHidden.includes(row.method)} disabled={!view.canManage} onChange={(event) => toggle(setAppHidden, row.method, event.target.checked)} />
+                {t("admin.esim.checkoutOnApp", "App")}
+              </label>
               <label className="flex items-center gap-1.5 text-sm">
                 <input
                   type="radio"

@@ -1588,6 +1588,8 @@
       "checkoutDisplayTitle": "Betaalmethoden bij het afrekenen",
       "checkoutDisplayHint": "De volgorde waarin klanten de betaalmethoden zien, de methode die gekozen is als het afrekenen opent, en het pictogram van elke methode. Alleen ingeschakelde methoden worden getoond. Het accounttegoed staat altijd bovenaan als het de bestelling dekt.",
       "checkoutDefault": "Standaard",
+      "checkoutOnWeb": "Website",
+      "checkoutOnApp": "App",
       "checkoutNoDefault": "Geen standaard: de eerste die de bestelling kan betalen",
       "iconDefault": "Standaard",
       "iconUpload": "Pictogram uploaden",

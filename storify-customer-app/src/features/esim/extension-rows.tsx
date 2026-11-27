@@ -60,5 +60,11 @@ export function esimMethodRows(
 /** The notes under a row paid in the app: the crypto screen's, the sheet's. */
 export function useInAppNotes() {
   const t = useTranslations('esim');
-  return { inAppNote: t('payInAppNote'), sheetNote: t('paySheetNote') };
+  return {
+    inAppNote: t('payInAppNote'),
+    sheetNote: t('paySheetNote'),
+    /** The balance row's note: what is there, and that it pays the whole order. */
+    balanceNote: (available?: string) =>
+      [available, t('payBalanceNote')].filter(Boolean).join(' · '),
+  };
 }

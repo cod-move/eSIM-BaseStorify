@@ -26,6 +26,7 @@ import {
   toPlaceInput,
 } from "./app-checkout";
 import { pricesChanged } from "./quote";
+import { placeAppBalanceOrder } from "@/lib/esim/payments/app-balance"; // [esim-patch] P27
 
 /**
  * The answer for the order a key already placed, or null when it placed none.
@@ -38,13 +39,13 @@ import { pricesChanged } from "./quote";
  */
 async function orderPlacedWith(idempotencyKey: string): Promise<PlacedOrder | null> {
   const order = await Order.findOne({ idempotencyKey })
-    .select("_id orderNumber total currency")
-    .lean<{ _id: unknown; orderNumber: string; total: number; currency?: string } | null>();
+    .select("_id orderNumber total currency paymentMethod")
+    .lean<{ _id: unknown; orderNumber: string; total: number; currency?: string; paymentMethod?: string } | null>();
   return order
     ? {
         orderId: String(order._id),
         orderNumber: order.orderNumber,
-        paymentMethod: "cod",
+        paymentMethod: order.paymentMethod === "store_credit" ? "store_credit" : "cod", // [esim-patch] P27
         total: toMoney(order.total, order.currency || "USD"),
       }
     : null;
@@ -125,7 +126,9 @@ export const placeOrderRoute = defineRoute({
       if (placed) return placed;
 
       assertFulfillmentSelection(input);
-      const body = toPlaceInput(input, "cod", locale);
+      // [esim-patch] P27 paid from the account balance instead of on delivery.
+      const balance = input.payWithBalance === true;
+      const body = toPlaceInput(input, balance ? "store_credit" : "cod", locale);
       const identity = appCheckoutIdentity(session, client, appBaseUrl());
       try {
         const draft = await prepareCheckout(body, identity, {
@@ -133,6 +136,8 @@ export const placeOrderRoute = defineRoute({
           admitCart: admitAppCart(mobileApp),
           acceptedQuote: input.quoteHash,
         });
+        // [esim-patch] P27 written paid, as the website's checkout writes it (lib/esim/payments/app-balance.ts).
+        if (balance) return await placeAppBalanceOrder(draft, { idempotencyKey: orderKey, audit: placedBy({ session, client, requestId, locale }) });
         const { order } = await placeCodOrder(draft, {
           idempotencyKey: orderKey,
           audit: placedBy({ session, client, requestId, locale }),
@@ -146,7 +151,7 @@ export const placeOrderRoute = defineRoute({
       } catch (error) {
         if (error instanceof CheckoutQuoteChangedError) {
           throw await pricesChanged({
-            input: { ...input, paymentMethod: "cod" },
+            input: { ...input, paymentMethod: balance ? "store_credit" : "cod" }, // [esim-patch] P27
             session,
             client,
             mobileApp,

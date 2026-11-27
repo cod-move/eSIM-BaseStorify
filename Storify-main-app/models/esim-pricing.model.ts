@@ -71,7 +71,7 @@ export interface IEsimSettings extends mongoose.Document {
   /** Payment fees per checkout method (lib/esim/payments/fee-rules.ts): cents and percent. */
   paymentFees: Array<{ method: string; fixedMinor: number; percent: number }>;
   /** How checkout lists its payment methods (lib/esim/payments/checkout-display.ts): order, default and icons. */
-  checkoutDisplay: { order: string[]; defaultMethod: string | null; icons: Array<{ method: string; url: string }> };
+  checkoutDisplay: { order: string[]; defaultMethod: string | null; icons: Array<{ method: string; url: string }>; webHidden: string[]; appHidden: string[] };
   /** Wallet top-ups (WAL-01): on/off, the amounts allowed and the fee, in cents and percent. */
   wallet: { enabled: boolean; minMinor: number; maxMinor: number; feeFixedMinor: number; feePercent: number };
   /** Referrals (REF-02/06): see lib/esim/referral/rules.ts for what each setting means. */
@@ -164,6 +164,9 @@ const EsimSettingsSchema = new Schema<IEsimSettings>(
         type: [{ _id: false, method: { type: String, required: true, maxlength: 60 }, url: { type: String, required: true, maxlength: 1000 } }],
         default: [],
       },
+      /** Switched on but not shown at the website's / the app's checkout. */
+      webHidden: { type: [{ type: String, maxlength: 60 }], default: [] },
+      appHidden: { type: [{ type: String, maxlength: 60 }], default: [] },
     },
     wallet: {
       enabled: { type: Boolean, default: true },

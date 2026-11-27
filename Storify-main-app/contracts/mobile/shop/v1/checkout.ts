@@ -147,7 +147,11 @@ export const CheckoutQuoteRequest = z.object({
     .record(z.string().max(50), z.union([z.string().max(2000), z.boolean(), z.number()]))
     .optional(),
   /** Lets the form ask for what this method needs; leave out until chosen. */
-  paymentMethod: z.enum(["cod", "card", "paypal", "razorpay", "paystack", "pesapal", "orange_money", "mtn_momo", "iotec", "extension"]).optional(), // [esim-patch] P15
+  paymentMethod: z.enum(["cod", "card", "paypal", "razorpay", "paystack", "pesapal", "orange_money", "mtn_momo", "iotec", "extension", "store_credit"]).optional(), // [esim-patch] P15 P27
+  /** [esim-patch] P15 with "extension": the eSIM payment method chosen (its `options[].code`), whose fee the order carries. */
+  extensionMethod: z.string().trim().regex(/^[a-z0-9][a-z0-9-]{0,39}$/).optional(),
+  /** [esim-patch] P27 POST /checkout/orders: paid in full from the account balance ("store_credit") instead of on delivery. */
+  payWithBalance: z.boolean().optional(),
   /** The "email me with news and offers" box, when `CheckoutMarketing.email.offered`. */
   buyerAcceptsMarketing: z.boolean().optional(),
   /** The "text me with news and offers" box, when `CheckoutMarketing.sms.offered`. */
@@ -319,6 +323,7 @@ export const CHECKOUT_PAYMENT_METHODS = [
   "mtn_momo",
   "iotec",
   "extension", // [esim-patch] P15 the eSIM payment page (redirect)
+  "store_credit", // [esim-patch] P27 the account balance: flow "cod", placed with `payWithBalance`
 ] as const;
 
 /**
@@ -470,7 +475,7 @@ export type PricesChangedDetails = z.infer<typeof PricesChangedDetails>;
 export const PlacedOrder = z.object({
   orderId: z.string(),
   orderNumber: z.string(),
-  paymentMethod: z.literal("cod"),
+  paymentMethod: z.enum(["cod", "store_credit"]), // [esim-patch] P27
   /** What the courier collects. */
   total: Money,
 });

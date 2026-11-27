@@ -1588,6 +1588,8 @@
       "checkoutDisplayTitle": "Iindlela zokuhlawula kwindawo yokuhlawula",
       "checkoutDisplayHint": "Ulandelelwano abathengi abazibona ngalo iindlela zokuhlawula, eyona ikhethiweyo xa kuvulwa indawo yokuhlawula, kunye nomfanekiso ngamnye. Kuboniswa kuphela iindlela ezivuliweyo. Ibhalansi ye-akhawunti ihlala iza kuqala xa yanele ukuhlawula i-odolo.",
       "checkoutDefault": "Okungagqibekanga",
+      "checkoutOnWeb": "Iwebhusayithi",
+      "checkoutOnApp": "Usetyenziso",
       "checkoutNoDefault": "Akukho okungagqibekanga: eyokuqala enokuhlawula i-odolo",
       "iconDefault": "Okungagqibekanga",
       "iconUpload": "Layisha umfanekiso",

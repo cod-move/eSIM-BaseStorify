@@ -60,7 +60,13 @@ async function quoteCheckout(ctx: QuoteRequestContext): Promise<CheckoutQuote> {
       schemaErrors,
       couponCode: input.couponCode,
       appScheme: ctx.mobileApp.scheme,
-    }), { appScheme: ctx.mobileApp.scheme, currency: String(priced.settings.general?.defaultCurrency || "USD"), hasPreorder: Boolean(priced.hasPreorder) });
+    }), {
+      appScheme: ctx.mobileApp.scheme,
+      currency: String(priced.settings.general?.defaultCurrency || "USD"),
+      hasPreorder: Boolean(priced.hasPreorder),
+      // [esim-patch] P27 the account balance, for a signed-in shopper.
+      balance: { priced, customerId: ctx.session?.user.id ?? null, locale: ctx.locale },
+    });
   } catch (error) {
     throw toCheckoutError(error, ctx.input.fulfillmentMethod);
   }

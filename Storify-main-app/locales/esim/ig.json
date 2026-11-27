@@ -1588,6 +1588,8 @@
       "checkoutDisplayTitle": "Ụzọ ịkwụ ụgwọ ebe a na-akwụ ụgwọ",
       "checkoutDisplayHint": "Usoro ndị ahịa ga-ahụ ụzọ ịkwụ ụgwọ, nke a họpụtara mgbe ebe ịkwụ ụgwọ mepere, na akara ngosi nke ọ bụla. Naanị ụzọ agbanyere ka a na-egosi. Ego dị n'akaụntụ na-abụ nke mbụ mgbe niile ma ọ zuru ịkwụ ụgwọ maka ịtụ ahịa.",
       "checkoutDefault": "Ndabara",
+      "checkoutOnWeb": "Weebụsaịtị",
+      "checkoutOnApp": "Ngwa",
       "checkoutNoDefault": "Enweghị ndabara: nke mbụ nwere ike ịnara ịtụ ahịa",
       "iconDefault": "Ndabara",
       "iconUpload": "Bulite akara ngosi",

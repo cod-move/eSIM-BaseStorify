@@ -94,6 +94,7 @@ export const redirectPaymentRoute = defineRoute({
         const start = await startRedirectPayment(draft, method, {
           locale,
           request: { clientIp: identity.clientIp, userAgent: appUserAgent(client) },
+          extensionMethod: input.extensionMethod, // [esim-patch] P15 the eSIM method chosen in the app
         });
         const reference = mintAppPaymentReference({
           method,

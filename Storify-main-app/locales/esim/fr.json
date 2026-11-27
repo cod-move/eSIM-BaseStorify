@@ -1588,6 +1588,8 @@
       "checkoutDisplayTitle": "Moyens de paiement à la commande",
       "checkoutDisplayHint": "L'ordre dans lequel les clients voient les moyens de paiement, celui choisi à l'ouverture de la commande et l'icône de chacun. Seuls les moyens activés sont affichés. Le solde du compte passe toujours en premier lorsqu'il couvre la commande.",
       "checkoutDefault": "Par défaut",
+      "checkoutOnWeb": "Site web",
+      "checkoutOnApp": "App",
       "checkoutNoDefault": "Aucun par défaut : le premier qui peut régler la commande",
       "iconDefault": "Par défaut",
       "iconUpload": "Téléverser une icône",

@@ -51,6 +51,8 @@ export type MethodRowProps = {
   /** [esim-patch] P24 an eSIM method's own icon (an image URL) and note. */
   image?: string;
   noteText?: string;
+  /** [esim-patch] P27 the account balance's wallet instead of its flow's icon. */
+  iconName?: IconName;
   selected: boolean;
   locked: boolean;
   onSelect: () => void;
@@ -66,6 +68,7 @@ export function MethodRow({
   t,
   image,
   noteText,
+  iconName,
 }: MethodRowProps) {
   const name = method.name;
   const reason = unavailableText(method, t);
@@ -97,7 +100,7 @@ export function MethodRow({
           {image ? (
             <AppImage image={image} size="thumb" className="size-[30px]" contentFit="contain" />
           ) : (
-            <Icon name={ICONS[method.flow]} size={22} />
+            <Icon name={iconName ?? ICONS[method.flow]} size={22} />
           )}
         </View>
         <View className="flex-1 gap-1">
@@ -146,12 +149,17 @@ export function PaymentSection({ methods, value, onChange, busy }: PaymentSectio
             chosen: esimChoice,
             locked: busy,
             onSelect: () => onChange(method.id),
-            ...inAppNotes,
+            inAppNote: inAppNotes.inAppNote,
+            sheetNote: inAppNotes.sheetNote,
             t,
           })
         ) : (
           <MethodRow
             key={method.id}
+            // [esim-patch] P27 the account balance: its own icon and note.
+            {...(method.id === 'store_credit'
+              ? { iconName: 'wallet' as const, noteText: inAppNotes.balanceNote(method.message) }
+              : {})}
             method={method}
             selected={method.id === value}
             locked={busy}

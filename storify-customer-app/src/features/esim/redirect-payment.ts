@@ -130,6 +130,11 @@ async function openPage(url: string, returnUrl: string): Promise<string | null> 
   }
 }
 
+/** An order the account balance paid (patch P27): placed as cash on delivery is, but paid. */
+export function paidFromBalance(result: PaymentResult): PaymentResult {
+  return result.outcome === 'placed' ? { ...result, outcome: 'paid' } : result;
+}
+
 /** The eSIM payment page, told to start this method at once. */
 function withMethod(url: string, method: string) {
   return `${url}${url.includes('?') ? '&' : '?'}method=${encodeURIComponent(method)}`;

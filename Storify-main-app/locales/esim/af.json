@@ -1588,6 +1588,8 @@
       "checkoutDisplayTitle": "Betaalmetodes by die betaalpunt",
       "checkoutDisplayHint": "Die volgorde waarin kliënte die betaalmetodes sien, die een wat gekies is wanneer die betaalpunt oopmaak, en elkeen se ikoon. Slegs aangeskakelde metodes word gewys. Die rekeningsaldo kom altyd eerste wanneer dit die bestelling dek.",
       "checkoutDefault": "Verstek",
+      "checkoutOnWeb": "Webwerf",
+      "checkoutOnApp": "App",
       "checkoutNoDefault": "Geen verstek nie: die eerste een wat die bestelling kan neem",
       "iconDefault": "Verstek",
       "iconUpload": "Laai ikoon op",

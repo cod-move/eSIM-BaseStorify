@@ -1,7 +1,7 @@
 import { createElement, useEffect, useRef } from "react";
 import { Coins, CreditCard, Wallet, type LucideIcon } from "lucide-react";
 import { EXTENSION, extensionChoice, isExtensionChoice, splitPaymentChoice, type ExtensionChoice } from "@/lib/esim/payments/method-names";
-import { arrangeMethods, isIconUrl, type CheckoutDisplay } from "@/lib/esim/payments/checkout-display";
+import { arrangeMethods, isIconUrl, shownOn, type CheckoutDisplay } from "@/lib/esim/payments/checkout-display";
 
 /**
  * The eSIM payment methods on Storify's checkout (patch P15): one row each,
@@ -59,7 +59,8 @@ function imageIcon(url: string): LucideIcon {
  */
 export function esimArrangeMethods<T extends { value: string; icon: LucideIcon }>(rows: T[], display: CheckoutDisplay | undefined): T[] {
   if (!display) return rows;
-  return arrangeMethods(rows, display).map((row) => {
+  // Shown in the app only: not on the website's checkout.
+  return arrangeMethods(rows.filter((row) => shownOn(display, "web", row.value)), display).map((row) => {
     const url = display.icons[row.value];
     return isIconUrl(url) ? { ...row, icon: imageIcon(url) } : row;
   });

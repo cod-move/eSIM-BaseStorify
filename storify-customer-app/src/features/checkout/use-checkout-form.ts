@@ -11,6 +11,7 @@ import { useAddresses } from '@/features/addresses/use-addresses';
 import { useSession } from '@/features/auth/use-session';
 import { useConfig } from '@/features/config/use-config';
 import { usePlaceOrder } from '@/features/payments/use-place-order';
+import { useChosenExtension } from '@/features/esim/extension-choice'; // [esim-patch] P56
 
 import {
   canPlace,
@@ -61,6 +62,8 @@ export function useCheckoutForm() {
   const [optionId, setOptionId] = useState<string>();
   const [sellerOptions, setSellerOptions] = useState<Record<string, string>>({});
   const [picked, setMethod] = useState<PaymentMethodId>();
+  // [esim-patch] P56 the eSIM payment method's row, picked in the list: its fee is in the quote and the order.
+  const esimChoice = useChosenExtension();
   // Filled by the human check when the quote asks for one.
   const [captchaToken, setCaptchaToken] = useState<string>();
   // The code the shopper chose; the quote says whether the store takes it.
@@ -81,10 +84,10 @@ export function useCheckoutForm() {
   const shippingAddress = addressless
     ? undefined
     : guest
-    ? guestQuoteAddress(guestAddress, contactPhone)
-    : address
-      ? toQuoteAddress(address, me.data?.name)
-      : undefined;
+      ? guestQuoteAddress(guestAddress, contactPhone)
+      : address
+        ? toQuoteAddress(address, me.data?.name)
+        : undefined;
   const request: CheckoutQuoteRequest = {
     shippingAddress,
     email: guest ? email.trim() || undefined : undefined,
@@ -94,6 +97,7 @@ export function useCheckoutForm() {
     customerNote: note.trim() || undefined,
     customFields: answered(customFields),
     paymentMethod: picked,
+    extensionMethod: picked === 'extension' ? esimChoice?.code : undefined, // [esim-patch] P56
     couponCode,
   };
   const { query, quote, refusal, repricing } = useCheckoutQuote(
@@ -106,6 +110,9 @@ export function useCheckoutForm() {
   if (quote && nothingShips !== addressless) setAddressless(nothingShips);
   const methods = quote ? payableMethods(quote.paymentMethods) : [];
   const method = picked ?? startingMethod(methods);
+  // [esim-patch] P56 the method checkout starts on is asked for in the quote too: its fee (an eSIM
+  // method's), or the balance, is then in the quote the order is placed at.
+  if (!picked && method) setMethod(method);
   const placing = usePlaceOrder();
   useNewQuoteOn(placing.error);
   // A quote kept through a refusal is for another form: it places nothing.
@@ -134,6 +141,7 @@ export function useCheckoutForm() {
         couponCode: couponCodeToPlace(couponCode, quote.coupon),
         quoteHash: quote.quoteHash,
         turnstileToken: captchaToken,
+        extensionMethod: method === 'extension' ? request.extensionMethod : undefined, // [esim-patch] P56
       },
       method
     );

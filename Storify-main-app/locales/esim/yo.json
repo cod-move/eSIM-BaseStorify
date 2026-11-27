@@ -1588,6 +1588,8 @@
       "checkoutDisplayTitle": "Àwọn ọ̀nà ìsanwó níbi ìsanwó",
       "checkoutDisplayHint": "Ètò tí àwọn oníbàárà fi ń rí àwọn ọ̀nà ìsanwó, èyí tí a yàn nígbà tí ojú-ìwé ìsanwó bá ṣí, àti àmì ọ̀kọ̀ọ̀kan. Àwọn ọ̀nà tí a tàn nìkan ni a ń fi hàn. Owó inú àkọọ́lẹ̀ máa ń wà ní àkọ́kọ́ nígbà gbogbo tí ó bá tó láti san fún àṣẹ.",
       "checkoutDefault": "Àkọ́kọ́",
+      "checkoutOnWeb": "Ojú-òpó wẹ́ẹ̀bù",
+      "checkoutOnApp": "Ìṣàfilọ́lẹ̀",
       "checkoutNoDefault": "Kò sí àkọ́kọ́: èyí àkọ́kọ́ tí ó lè gba àṣẹ náà",
       "iconDefault": "Àkọ́kọ́",
       "iconUpload": "Gbé àmì sókè",

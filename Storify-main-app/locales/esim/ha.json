@@ -1588,6 +1588,8 @@
       "checkoutDisplayTitle": "Hanyoyin biya a wurin biya",
       "checkoutDisplayHint": "Tsarin da abokan ciniki ke ganin hanyoyin biya, wanda aka zaɓa idan shafin biya ya buɗe, da alamar kowanne. Hanyoyin da aka kunna kawai ake nunawa. Ma'aunin asusu koyaushe yana farko idan ya isa biyan odar.",
       "checkoutDefault": "Tsoho",
+      "checkoutOnWeb": "Shafin yanar gizo",
+      "checkoutOnApp": "Manhaja",
       "checkoutNoDefault": "Babu tsoho: na farko da zai iya biyan odar",
       "iconDefault": "Tsoho",
       "iconUpload": "Ɗora alama",

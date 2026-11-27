@@ -64,7 +64,7 @@ export interface RedirectStart {
 export async function startRedirectPayment(
   draft: CheckoutDraft,
   method: RedirectPaymentMethod,
-  ctx: { locale: string; request: GatewayStartRequest },
+  ctx: { locale: string; request: GatewayStartRequest; extensionMethod?: string }, // [esim-patch] P15
 ): Promise<RedirectStart> {
   const back = (status: AppPaymentReturnStatus) => appPaymentReturnUrl(ctx.locale, method, status);
   const { request } = ctx;
