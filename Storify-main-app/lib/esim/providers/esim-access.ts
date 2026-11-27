@@ -50,9 +50,11 @@ import {
 const DEFAULT_BASE_URL = "https://api.esimaccess.com/api/v1/open";
 const PROFILE_PENDING_ERROR = "200010";
 const BYTES_PER_MB = 1024 * 1024;
-// "_Daily" packages (e.g. "JP_1_Daily") are sold as fixed one-day plans, as
-// the live esim_php system does — not as a chosen number of days (decided
-// 2026-10-25).
+// Daily packages ("JP_1_Daily": a daily allowance, one day long) are sold
+// for the number of days the shopper picks, priced per day and ordered with
+// `periodNum` (1–365); their top-ups likewise (decided 2026-11-28, replacing
+// the fixed one-day sale of 2026-10-25).
+const DAILY_MAX_DAYS = 365;
 
 export interface EsimAccessOptions {
   accessCode: string;
@@ -111,7 +113,10 @@ export class EsimAccessAdapter implements EsimProviderAdapter {
   async purchase(input: PurchaseInput): Promise<PurchaseResult> {
     const result = await this.call("/esim/order", {
       transactionId: transactionId(input.idempotencyKey),
-      packageInfoList: [{ packageCode: input.providerPlanId, count: 1 }],
+      // A daily plan is ordered for the days the line was bought for.
+      packageInfoList: [
+        { packageCode: input.providerPlanId, count: 1, ...(input.durationDays ? { periodNum: input.durationDays } : {}) },
+      ],
     });
     const orderNo = str(result.orderNo);
     if (!orderNo) throw new ProviderError("invalid_response", "eSIM Access order returned no order number");
@@ -171,7 +176,7 @@ export class EsimAccessAdapter implements EsimProviderAdapter {
 
   async listTopupPlans(ref: EsimRef): Promise<ProviderTopupPlan[]> {
     if (!ref.iccid) throw new ProviderError("not_found", "eSIM Access lists top-ups by ICCID");
-    return (await this.packages({ type: "TOPUP", iccid: ref.iccid })).flatMap(topupPlansOf);
+    return (await this.packages({ type: "TOPUP", iccid: ref.iccid })).map(topupPlanOf);
   }
 
   async topup(input: TopupInput): Promise<TopupResult> {
@@ -366,41 +371,33 @@ export function topupPlanIdOf(row: JsonObject): string {
   return int(row.supportTopUpType) === 3 ? `${code}|${Math.max(1, validityDays(row))}` : code;
 }
 
-/** The day counts a day-pass top-up is offered for (eSIM Access takes 1–365 as `periodNum`). */
-export const DAILY_TOPUP_DAYS = [1, 3, 5, 7, 10, 15, 30] as const;
-
 /**
- * A day-pass top-up: a one-day package of a daily plan (dataType 2–4 or a
- * "_Daily" slug), or one that extends days (supportTopUpType 3). Since
- * 2026-04-01 eSIM Access tops these up for `periodNum` days.
+ * A daily package: a daily allowance (dataType 2–4, or a "_Daily" slug) one
+ * day long. Ordered and topped up for `periodNum` days (top-ups since the
+ * supplier's 2026-04-01 day-pass update).
  */
-function isDailyTopup(row: JsonObject) {
+export function isDailyPackage(row: JsonObject) {
   if (validityDays(row) !== 1) return false;
-  return int(row.supportTopUpType) === 3 || /_daily(_|$)/i.test(str(row.slug)) || [2, 3, 4].includes(int(row.dataType) ?? 0);
+  return /_daily(_|$)/i.test(str(row.slug)) || [2, 3, 4].includes(int(row.dataType) ?? 0);
 }
 
 /**
- * The offers of one row of the top-up list: the package as it is, or, for a
- * day pass, one offer per day count — one card in the picker (`dayGroup`) —
- * at the package's price per day, the days sent back as `periodNum`.
+ * The offer of one row of the top-up list. A daily one is taken for the days
+ * the shopper picks (`perDay`): its cost is per day, and the days go back as
+ * `periodNum` (topupPlanIdForDays → topupOrderOf).
  */
-export function topupPlansOf(row: JsonObject): ProviderTopupPlan[] {
-  const name = str(row.name);
-  const megabytes = Math.round((int(row.volume) ?? 0) / BYTES_PER_MB);
-  const currencyCode = currency(row.currencyCode, "USD");
-  if (!isDailyTopup(row)) {
-    return [{ topupPlanId: topupPlanIdOf(row), name, megabytes, validityDays: validityDays(row), cost: { currency: currencyCode, amountMinor: cents(row.price) }, raw: row }];
-  }
-  const code = str(row.packageCode);
-  return DAILY_TOPUP_DAYS.map((days) => ({
-    topupPlanId: `${code}|${days}`,
-    name: `${name} × ${days} ${days === 1 ? "day" : "days"}`,
-    dayGroup: `daily:${code}`,
-    megabytes,
-    validityDays: days,
-    cost: { currency: currencyCode, amountMinor: cents((num(row.price) ?? 0) * days) },
-    raw: { ...row, periodNum: days },
-  }));
+export function topupPlanOf(row: JsonObject): ProviderTopupPlan {
+  const plan = {
+    topupPlanId: topupPlanIdOf(row),
+    name: str(row.name),
+    megabytes: Math.round((int(row.volume) ?? 0) / BYTES_PER_MB),
+    validityDays: validityDays(row),
+    cost: { currency: currency(row.currencyCode, "USD"), amountMinor: cents(row.price) },
+    raw: row,
+  };
+  return isDailyPackage(row)
+    ? { ...plan, topupPlanId: str(row.packageCode), perDay: { minDays: 1, maxDays: DAILY_MAX_DAYS, defaultDays: 1 } }
+    : plan;
 }
 
 /** The top-up request's package fields for a top-up offer id (topupPlanIdOf). */
@@ -425,6 +422,7 @@ export function mapPlan(row: JsonObject, names: Map<string, string>): ProviderPl
   const reloadable = [2, 3].includes(int(row.supportTopUpType) ?? 0);
   const smsCount = int(row.smsStatus) === 1 ? (int(row.smsCount) ?? 0) : 0;
   const activeType = int(row.activeType);
+  const daily = isDailyPackage(row);
 
   return {
     providerPlanId: id,
@@ -441,7 +439,9 @@ export function mapPlan(row: JsonObject, names: Map<string, string>): ProviderPl
     data: { megabytes, label: megabytesLabel(megabytes), type: dataType(row) },
     fairUse: fairUse(row, megabytes),
     validityDays: days,
-    duration: { configurable: false, defaultDays: days, minDays: days, maxDays: days },
+    duration: daily
+      ? { configurable: true, defaultDays: 1, minDays: 1, maxDays: DAILY_MAX_DAYS }
+      : { configurable: false, defaultDays: days, minDays: days, maxDays: days },
     speed: [...new Set(objArray(row.locationNetworkList).flatMap((location) =>
       objArray(location.operatorList).map((operator) => str(operator.networkType)).filter(Boolean),
     ))],
@@ -466,7 +466,8 @@ export function mapPlan(row: JsonObject, names: Map<string, string>): ProviderPl
           supported: false, type: null, mode: "none", stackTarget: null, window: null,
           coverage: null, profileRetentionDays: null,
         },
-    cost: { currency: currency(row.currencyCode, "USD"), amountMinor: cents(row.price), billingUnit: "plan" },
+    // A daily plan's price is its price per day.
+    cost: { currency: currency(row.currencyCode, "USD"), amountMinor: cents(row.price), billingUnit: daily ? "day" : "plan" },
     bundles: [],
     extras: { voiceMinutes: 0, smsCount, refundable: false, phoneNumberIncluded: false },
     // `description` only repeats the plan name; the speed policy is the useful note.

@@ -2,8 +2,9 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { describe, it } from "node:test";
 import { countryCodeFromName } from "../countries";
-import { RoamWifiAdapter, breakoutOf, dayPassOrder, dayPassTopups, packagesOf, parseDayPassTopupId, externalId, fairUseOf, mapEsimDetail, mapSkuPlans, sign } from "../roamwifi";
+import { RoamWifiAdapter, breakoutOf, dayPassOrder, dayPassTopup, packagesOf, parseDayPassTopupId, externalId, fairUseOf, mapEsimDetail, mapSkuPlans, sign } from "../roamwifi";
 import { fakeFetch } from "./helpers";
+import { topupPlanIdForDays } from "../types";
 
 describe("RoamWifi external ids", () => {
   it("keeps short keys and hashes long ones under 32 characters, stably", () => {
@@ -242,11 +243,14 @@ describe("RoamWifi day-pass renewals", () => {
     assert.equal(packagesOf({ esimPackageVoList: [dayPassPkg] }).length, 1);
     assert.equal(packagesOf({ esimPackageDtoList: [dayPassPkg] }).length, 1);
   });
-  it("offers the usual day counts within minDay–maxDay, priced per day, with what renewCard needs", () => {
-    const offers = dayPassTopups({ skuid: 191 }, dayPassPkg, "Asia", "USD");
-    assert.deepEqual(offers.map((offer) => offer.validityDays), [1, 3, 5, 7, 10]);
-    assert.equal(offers[2].cost.amountMinor, 690);
-    assert.deepEqual(parseDayPassTopupId(offers[2].topupPlanId), { skuId: "191", priceId: "15794", days: 5 });
+  it("offers one renewal for the days chosen within minDay–maxDay, priced per day, with what renewCard needs", () => {
+    const offer = dayPassTopup({ skuid: 191 }, dayPassPkg, "Asia", "USD")!;
+    assert.deepEqual(offer.perDay, { minDays: 1, maxDays: 10, defaultDays: 1 });
+    assert.equal(offer.cost.amountMinor, 138);
+    assert.deepEqual(parseDayPassTopupId(topupPlanIdForDays(offer.topupPlanId, 5)), { skuId: "191", priceId: "15794", days: 5 });
+    // A quote written before the stepper.
+    assert.deepEqual(parseDayPassTopupId("daypass:191:15794:5"), { skuId: "191", priceId: "15794", days: 5 });
+    assert.equal(parseDayPassTopupId(offer.topupPlanId), null);
     assert.equal(parseDayPassTopupId("99902-0-3-1-G"), null);
   });
 });

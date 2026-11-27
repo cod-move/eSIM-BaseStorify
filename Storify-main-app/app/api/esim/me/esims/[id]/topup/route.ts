@@ -6,7 +6,8 @@ import { validateBody } from "@/lib/api/validate";
 import { ProviderError } from "@/lib/esim/providers/types";
 import { TopupError, createTopupQuote, topupOffers } from "@/lib/esim/topup/offers";
 
-const QuoteSchema = z.object({ topupPlanId: z.string().min(1).max(200) });
+/** `days`: what a day pass (an offer with `perDay`) is taken for; its default days when left out. */
+const QuoteSchema = z.object({ topupPlanId: z.string().min(1).max(200), days: z.number().int().min(1).max(365).optional() });
 
 /**
  * The top-ups the shopper's eSIM can take now, priced (TOP-01/02): renewals
@@ -33,7 +34,7 @@ export const POST = withApi<{ id: string }>(
   async ({ request, params, session }) => {
     const body = await validateBody(request, QuoteSchema);
     try {
-      const quote = await createTopupQuote(session.user.id, params.id, body.topupPlanId);
+      const quote = await createTopupQuote(session.user.id, params.id, body.topupPlanId, body.days);
       if (!quote) throw new NotFoundError("eSIM not found");
       return successResponse(quote);
     } catch (error) {

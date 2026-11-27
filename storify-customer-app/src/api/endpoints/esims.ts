@@ -124,15 +124,15 @@ export function getEsimTopups(locale: string, id: string, signal: AbortSignal, a
   );
 }
 
-/** Fixes one top-up for the cart: the answer is the cart line to send as it is. */
-export function quoteEsimTopup(locale: string, id: string, topupPlanId: string) {
+/** Fixes one top-up for the cart (a day pass for `days`): the answer is the cart line to send as it is. */
+export function quoteEsimTopup(locale: string, id: string, topupPlanId: string, days?: number) {
   return api.data(
     {
       locale,
       path: `/me/esims/${encodeURIComponent(id)}/topups/quote`,
       method: 'POST',
       auth: 'user',
-      body: { topupPlanId },
+      body: { topupPlanId, ...(days ? { days } : {}) },
     },
     EsimTopupQuote
   );

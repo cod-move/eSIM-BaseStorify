@@ -84,8 +84,8 @@ export function useBuyEsimTopup(id: string) {
   const setLine = useSetCartLine();
 
   return useMutation({
-    mutationFn: async (topupPlanId: string) => {
-      const quote = await quoteEsimTopup(locale, id, topupPlanId);
+    mutationFn: async ({ topupPlanId, days }: { topupPlanId: string; days?: number }) => {
+      const quote = await quoteEsimTopup(locale, id, topupPlanId, days);
       await setLine.mutateAsync({
         productId: quote.productId,
         variantId: quote.variantId,

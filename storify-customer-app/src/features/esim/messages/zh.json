@@ -469,6 +469,7 @@
     "topupNoneHere": "原套餐暂无续费，可以看看其他地区。",
     "topupAreaSearch": "搜索国家或地区",
     "topupAreaCount": "{count} 个套餐",
+    "topupPerDay": "每天 {perDay} · 可选 {min}–{max} 天，购物车会显示准确总价。",
     "topupFrom": "{price} 起",
     "topupAreaMore": "还有 {count} 个，请搜索查找。",
     "topupAllAreas": "全部地区",
@@ -577,6 +578,11 @@
     "menuWallet": "钱包与福利",
     "menuAccount": "账户与安全",
     "menuApp": "App 设置",
-    "menuPolicies": "条款与政策"
+    "menuPolicies": "条款与政策",
+    "countryPicker": {
+      "choose": "选择国家/地区",
+      "search": "搜索国家/地区",
+      "none": "没有找到这个国家/地区"
+    }
   }
 }

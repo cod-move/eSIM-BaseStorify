@@ -469,6 +469,7 @@
     "topupNoneHere": "No renewal for this plan. Try another region.",
     "topupAreaSearch": "Search a country or region",
     "topupAreaCount": "{count, plural, one {# plan} other {# plans}}",
+    "topupPerDay": "{perDay} per day · {min}–{max} days. The cart shows the exact total.",
     "topupFrom": "from {price}",
     "topupAreaMore": "{count} more: search to find them.",
     "topupAllAreas": "All regions",
@@ -577,6 +578,11 @@
     "menuWallet": "Wallet & rewards",
     "menuAccount": "Account & security",
     "menuApp": "App",
-    "menuPolicies": "Policies"
+    "menuPolicies": "Policies",
+    "countryPicker": {
+      "choose": "Choose a country or region",
+      "search": "Search countries",
+      "none": "No country matches"
+    }
   }
 }

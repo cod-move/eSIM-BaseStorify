@@ -199,12 +199,11 @@ export class RoamWifiAdapter implements EsimProviderAdapter {
       const area = { name: display, countryCodes: countriesOf(packageData).map((country) => country.code), key: str(packageData.skuid) || str(packageData.skuId) || null };
       for (const pkg of packagesOf(packageData)) {
         if (pkg.flowType !== undefined && int(pkg.flowType) === 1) continue; // not renewable
-        // A day-pass renews for days of the buyer's choosing (doc §2.12): one
-        // offer per usual day count, priced per day.
+        // A day-pass renews for days of the buyer's choosing (doc §2.12),
+        // priced per day.
         if ((int(pkg.supportDaypass) ?? 0) > 0) {
-          for (const offer of dayPassTopups(packageData, pkg, display, this.currency)) {
-            if (!plans.has(offer.topupPlanId)) plans.set(offer.topupPlanId, { ...offer, area });
-          }
+          const offer = dayPassTopup(packageData, pkg, display, this.currency);
+          if (offer && !plans.has(offer.topupPlanId)) plans.set(offer.topupPlanId, { ...offer, area });
           continue;
         }
         const apiCode = str(pkg.apiCode) || str(pkg.apicode) || str(pkg.apiCpde);
@@ -822,36 +821,33 @@ export function packagesOf(packageData: JsonObject): JsonObject[] {
   return key ? objArray(packageData[key]) : [];
 }
 
-/** The day counts a day-pass renewal is offered for, within its minDay–maxDay. */
-export const DAY_PASS_TOPUP_DAYS = [1, 3, 5, 7, 10, 15, 30] as const;
-
 /**
- * A day-pass renewal's offers: one per usual day count the package allows,
- * at its price per day (`price` covers `days`, usually one). The offer id
- * carries what §2.12 needs: `daypass:<skuId>:<priceId>:<days>`.
+ * A day-pass renewal: one offer, taken for the days the shopper picks within
+ * the package's minDay–maxDay, at its price per day (`price` covers `days`,
+ * usually one). The offer id is `daypass:<skuId>:<priceId>`; taken for some
+ * days it becomes `daypass:<skuId>:<priceId>|<days>` (topupPlanIdForDays),
+ * which carries what §2.12 needs.
  */
-export function dayPassTopups(packageData: JsonObject, pkg: JsonObject, display: string, currency: string): ProviderTopupPlan[] {
+export function dayPassTopup(packageData: JsonObject, pkg: JsonObject, display: string, currency: string): ProviderTopupPlan | null {
   const skuId = str(packageData.skuid) || str(packageData.skuId);
   const priceId = str(pkg.priceid) || str(pkg.priceId);
-  if (!skuId || !priceId) return [];
+  if (!skuId || !priceId) return null;
   const minDays = Math.max(1, int(pkg.minDay) ?? 1);
   const maxDays = Math.max(minDays, int(pkg.maxDay) ?? minDays);
-  const perDayMinor = cents(pkg.price) / Math.max(1, int(pkg.days) ?? 1);
-  const megabytes = Math.round((bytes(pkg.flows, str(pkg.unit) || "GB") ?? 0) / BYTES.MB);
-  const counts = [...new Set([minDays, ...DAY_PASS_TOPUP_DAYS.filter((days) => days >= minDays && days <= maxDays)])];
-  return counts.map((days) => ({
-    topupPlanId: `daypass:${skuId}:${priceId}:${days}`,
-    name: `${renewalName(display, pkg)} × ${days} ${days === 1 ? "day" : "days"}`,
-    dayGroup: `daypass:${skuId}:${priceId}`,
-    megabytes,
-    validityDays: days,
-    cost: { currency, amountMinor: Math.round(perDayMinor * days) },
-    raw: { ...pkg, daypassDays: days },
-  }));
+  return {
+    topupPlanId: `daypass:${skuId}:${priceId}`,
+    name: renewalName(display, pkg),
+    megabytes: Math.round((bytes(pkg.flows, str(pkg.unit) || "GB") ?? 0) / BYTES.MB),
+    validityDays: minDays,
+    cost: { currency, amountMinor: Math.round(cents(pkg.price) / Math.max(1, int(pkg.days) ?? 1)) },
+    perDay: { minDays, maxDays, defaultDays: minDays },
+    raw: pkg,
+  };
 }
 
+/** A day-pass renewal taken for some days; the older `daypass:<sku>:<price>:<days>` of quotes already written too. */
 export function parseDayPassTopupId(id: string): { skuId: string; priceId: string; days: number } | null {
-  const match = /^daypass:([^:]+):([^:]+):(\d+)$/.exec(id);
+  const match = /^daypass:([^:|]+):([^:|]+)[:|](\d+)$/.exec(id);
   return match ? { skuId: match[1], priceId: match[2], days: Number(match[3]) } : null;
 }
 

@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Price } from '@/components/ui/price';
 import { SearchField } from '@/components/ui/search-field';
 import { EmptyState } from '@/components/ui/state-view';
+import { Stepper } from '@/components/ui/stepper';
 import { Text } from '@/components/ui/text';
 import { useToast } from '@/components/ui/toast';
 import {
@@ -43,7 +44,9 @@ const AREAS_SHOWN = 30;
  * An eSIM that tops up any area has two tabs, as on the website: renewing
  * its own plan, and buying a plan for another area. The other areas come as
  * a list (a supplier may have thousands of top-ups); an area's top-ups are
- * fetched when it is picked. A day-pass is one card with its day counts.
+ * fetched when it is picked. A day-pass is one card with its day counts; one
+ * priced per day (`perDay`) takes the days from a stepper, as a day-priced
+ * plan does on its product page.
  */
 export function TopupPicker({
   esimId,
@@ -72,6 +75,10 @@ export function TopupPicker({
   const [selected, setSelected] = useState<string | null>(topups.offers[0]?.topupPlanId ?? null);
   const [query, setQuery] = useState('');
   const [page, setPage] = useState(0);
+  // The days picked for each day pass, by offer; its default days until then.
+  const [dayChoice, setDayChoice] = useState<Record<string, number>>({});
+  const daysOf = (offer: EsimTopupOffer) =>
+    offer.perDay ? (dayChoice[offer.topupPlanId] ?? offer.perDay.defaultDays) : offer.validityDays;
   const cards = topupCards(matchTopups(onTab, query));
   const shown = pageOf(cards, page);
   const areasMatching = matchAreas(otherAreas, areaQuery);
@@ -107,10 +114,13 @@ export function TopupPicker({
   const chosen = onTab.find((offer) => offer.topupPlanId === selected) ?? null;
   const add = () => {
     if (!chosen) return;
-    buy.mutate(chosen.topupPlanId, {
-      onSuccess: () => router.push('/cart'),
-      onError: (error: unknown) => toast.show({ message: describe(error) }),
-    });
+    buy.mutate(
+      { topupPlanId: chosen.topupPlanId, ...(chosen.perDay ? { days: daysOf(chosen) } : {}) },
+      {
+        onSuccess: () => router.push('/cart'),
+        onError: (error: unknown) => toast.show({ message: describe(error) }),
+      }
+    );
   };
   const switchTab = (next: 'own' | 'other') => {
     setTab(next);
@@ -234,12 +244,13 @@ export function TopupPicker({
             const offer = picked ?? first;
             const grouped = card.options.length > 1;
             const name = cardName(offer.name, grouped);
+            const days = daysOf(offer);
             return (
               <Pressable
                 key={card.key}
                 accessibilityRole="radio"
                 accessibilityState={{ selected: Boolean(picked) }}
-                accessibilityLabel={`${name}, ${offer.data}, ${t('days', { count: offer.validityDays })}, ${offer.price.formatted}`}
+                accessibilityLabel={`${name}, ${offer.data}, ${t('days', { count: days })}, ${offer.perDay ? t('topupPerDay', { perDay: offer.perDay.pricePerDay.formatted, min: offer.perDay.minDays, max: offer.perDay.maxDays }) : offer.price.formatted}`}
                 onPress={() => !picked && setSelected(first.topupPlanId)}
                 className={cn(
                   'gap-2 rounded-xl border-[1.5px] bg-surface px-4 py-3 active:opacity-80',
@@ -253,12 +264,35 @@ export function TopupPicker({
                       </Text>
                     ) : null}
                     <Text variant="subheading">{offer.data}</Text>
-                    {!grouped ? (
+                    {!grouped && !offer.perDay ? (
                       <Text variant="caption">{t('days', { count: offer.validityDays })}</Text>
                     ) : null}
                   </View>
-                  <Price price={offer.price} size="md" />
+                  <Price price={offer.perDay ? offer.perDay.pricePerDay : offer.price} size="md" />
                 </View>
+                {offer.perDay ? (
+                  <View className="gap-1">
+                    <View className="flex-row items-center justify-between gap-3">
+                      <Text>{t('days', { count: days })}</Text>
+                      <Stepper
+                        value={days}
+                        min={offer.perDay.minDays}
+                        max={offer.perDay.maxDays}
+                        onChange={(next) => {
+                          setDayChoice((current) => ({ ...current, [offer.topupPlanId]: next }));
+                          setSelected(offer.topupPlanId);
+                        }}
+                      />
+                    </View>
+                    <Text variant="caption">
+                      {t('topupPerDay', {
+                        perDay: offer.perDay.pricePerDay.formatted,
+                        min: offer.perDay.minDays,
+                        max: offer.perDay.maxDays,
+                      })}
+                    </Text>
+                  </View>
+                ) : null}
                 {grouped ? (
                   <View className="flex-row flex-wrap gap-2">
                     {card.options.map((option) => {

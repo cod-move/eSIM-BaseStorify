@@ -469,6 +469,7 @@
     "topupNoneHere": "原方案暫無續費，可以看看其他地區。",
     "topupAreaSearch": "搜尋國家或地區",
     "topupAreaCount": "{count} 個方案",
+    "topupPerDay": "每天 {perDay} · 可選 {min}–{max} 天，購物車會顯示準確總價。",
     "topupFrom": "{price} 起",
     "topupAreaMore": "還有 {count} 個，請搜尋查找。",
     "topupAllAreas": "全部地區",
@@ -577,6 +578,11 @@
     "menuWallet": "錢包與福利",
     "menuAccount": "帳戶與安全",
     "menuApp": "App 設定",
-    "menuPolicies": "條款與政策"
+    "menuPolicies": "條款與政策",
+    "countryPicker": {
+      "choose": "選擇國家/地區",
+      "search": "搜尋國家/地區",
+      "none": "找不到這個國家/地區"
+    }
   }
 }

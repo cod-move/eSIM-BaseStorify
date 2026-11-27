@@ -41,6 +41,16 @@ export const esimTopupsRoute = defineRoute({
         price: toMoney(offer.priceMinor / 100, currency),
         ...(offer.area ? { area: offer.area } : {}),
         ...(offer.dayGroup ? { dayGroup: offer.dayGroup } : {}),
+        ...(offer.perDay
+          ? {
+              perDay: {
+                pricePerDay: toMoney(offer.perDay.priceMinor / 100, currency),
+                minDays: offer.perDay.minDays,
+                maxDays: offer.perDay.maxDays,
+                defaultDays: offer.perDay.defaultDays,
+              },
+            }
+          : {}),
       })),
       ...(offers.otherAreas.length
         ? { otherAreas: offers.otherAreas.map((area) => ({ id: area.id, name: area.name, count: area.count, from: toMoney(area.fromPriceMinor / 100, currency) })) }
@@ -64,7 +74,7 @@ export const esimTopupQuoteRoute = defineRoute({
   handler: async ({ session, params, input }) => {
     await connectDB();
     try {
-      const [quote, currency] = await Promise.all([createTopupQuote(session.user.id, params.id, input.topupPlanId), getStoreCurrency()]);
+      const [quote, currency] = await Promise.all([createTopupQuote(session.user.id, params.id, input.topupPlanId, input.days), getStoreCurrency()]);
       if (!quote) throw notFound();
       return {
         productId: quote.product.productId,

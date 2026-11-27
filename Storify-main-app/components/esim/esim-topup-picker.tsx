@@ -10,6 +10,7 @@ import { useCart } from "@/hooks/use-cart";
 import { useRouter } from "@/hooks/use-locale-navigation";
 import { useFallbackTranslator } from "@/hooks/use-fallback-translator";
 import { useCurrency } from "@/providers/currency-provider";
+import { DayStepper } from "./day-stepper";
 
 export interface TopupPickerOffer {
   topupPlanId: string;
@@ -20,6 +21,8 @@ export interface TopupPickerOffer {
   area?: string | null;
   sameArea?: boolean;
   dayGroup?: string | null;
+  /** A day pass taken for the days the shopper picks: `priceMinor` here is per day. */
+  perDay?: { priceMinor: number; minDays: number; maxDays: number; defaultDays: number } | null;
 }
 
 /** One card: an offer, or a day-pass with the day counts it is sold for. */
@@ -87,6 +90,10 @@ export function EsimTopupPicker({ esimId, offers, otherAreas = [] }: { esimId: s
   const areaWords = areaQuery.toLowerCase().split(/\s+/).filter(Boolean);
   const areasMatching = otherAreas.filter((entry) => areaWords.every((word) => entry.name.toLowerCase().includes(word)));
   const [busy, setBusy] = useState(false);
+  // The days picked for each day pass, by offer; its default days until then.
+  const [dayChoice, setDayChoice] = useState<Record<string, number>>({});
+  const daysOf = (offer: TopupPickerOffer) => (offer.perDay ? (dayChoice[offer.topupPlanId] ?? offer.perDay.defaultDays) : offer.validityDays);
+  const priceOf = (offer: TopupPickerOffer) => (offer.perDay ? offer.perDay.priceMinor * daysOf(offer) : offer.priceMinor);
   // A supplier like BNESIM offers top-ups for other regions too: many of them, so in pages.
   const [page, setPage] = useState(0);
   // Search by name, data ("5 GB", "500MB") or days ("7"), every word must match.
@@ -132,7 +139,7 @@ export function EsimTopupPicker({ esimId, offers, otherAreas = [] }: { esimId: s
       const response = await fetch(`/api/esim/me/esims/${esimId}/topup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ topupPlanId: offer.topupPlanId }),
+        body: JSON.stringify({ topupPlanId: offer.topupPlanId, ...(offer.perDay ? { days: daysOf(offer) } : {}) }),
       });
       const body = (await response.json().catch(() => ({}))) as {
         data?: { quoteId: string; product: { productId: string; variantId: string }; priceMinor: number; label: string };
@@ -265,9 +272,26 @@ export function EsimTopupPicker({ esimId, offers, otherAreas = [] }: { esimId: s
               </div>
               <div className="mt-1 flex items-baseline justify-between gap-3">
                 <span className="text-lg font-semibold">{offer.megabytes ? dataLabel(offer.megabytes) : null}</span>
-                <span className="font-semibold">{formatPrice(offer.priceMinor / 100)}</span>
+                <span className="font-semibold">{formatPrice(priceOf(offer) / 100)}</span>
               </div>
-              {card.options.length > 1 ? (
+              {offer.perDay ? (
+                // The days of a day pass, as a day-priced plan's on the product page.
+                <div className="mt-3 cursor-default" onClick={(event) => event.stopPropagation()} onKeyDown={(event) => event.stopPropagation()}>
+                  <DayStepper
+                    days={daysOf(offer)}
+                    minDays={offer.perDay.minDays}
+                    maxDays={offer.perDay.maxDays}
+                    defaultDays={offer.perDay.defaultDays}
+                    pricePerDay={formatPrice(offer.perDay.priceMinor / 100)}
+                    onChange={(value) => {
+                      setDayChoice((current) => ({ ...current, [offer.topupPlanId]: value }));
+                      setSelected(offer.topupPlanId);
+                    }}
+                    t={t}
+                    idKey={offer.topupPlanId}
+                  />
+                </div>
+              ) : card.options.length > 1 ? (
                 <label className="mt-2 flex items-center gap-2 text-sm text-muted-foreground" onClick={(event) => event.stopPropagation()}>
                   {t("esim.topup.days", "Days")}
                   <select

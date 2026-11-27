@@ -219,6 +219,16 @@ export interface ProviderTopupPlan {
   area?: { name: string; countryCodes: string[]; key?: string | null } | null;
   /** Offers sharing it are one package sold for different day counts. */
   dayGroup?: string | null;
+  /**
+   * A day pass the shopper tops up for a number of days they choose: `cost` is
+   * per day, and the offer taken for `days` is `topupPlanIdForDays(topupPlanId, days)`.
+   */
+  perDay?: { minDays: number; maxDays: number; defaultDays: number } | null;
+}
+
+/** The offer id of a per-day top-up taken for a number of days: `<id>|<days>`. */
+export function topupPlanIdForDays(topupPlanId: string, days: number): string {
+  return `${topupPlanId}|${days}`;
 }
 
 export interface TopupInput {

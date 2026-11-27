@@ -331,6 +331,14 @@ export const EsimTopupOffer = z.object({
   area: z.string().optional(),
   /** Offers sharing it are one package for different day counts: show them as one, with a day choice. */
   dayGroup: z.string().optional(),
+  /**
+   * A day pass the shopper takes for the days they pick (a stepper, as a
+   * day-priced plan): its price per day and the range. `price` and
+   * `validityDays` are for `defaultDays`; the quote asks with `days`.
+   */
+  perDay: z
+    .object({ pricePerDay: Money, minDays: z.number().int(), maxDays: z.number().int(), defaultDays: z.number().int() })
+    .optional(),
 });
 export type EsimTopupOffer = z.infer<typeof EsimTopupOffer>;
 
@@ -366,7 +374,11 @@ export const EsimTopups = z.object({
 export type EsimTopups = z.infer<typeof EsimTopups>;
 
 /** POST /me/esims/{id}/topups/quote */
-export const EsimTopupQuoteRequest = z.object({ topupPlanId: z.string().min(1).max(200) });
+export const EsimTopupQuoteRequest = z.object({
+  topupPlanId: z.string().min(1).max(200),
+  /** The days a day pass (`perDay`) is taken for; its default days when left out. */
+  days: z.number().int().min(1).max(365).optional(),
+});
 export type EsimTopupQuoteRequest = z.infer<typeof EsimTopupQuoteRequest>;
 
 export const EsimTopupQuote = z.object({
@@ -1211,5 +1223,13 @@ export const EsimAddressFields = z.object({
     z.string(),
     z.object({ visibility: z.enum(["required", "optional", "hidden"]), label: z.string().optional() }),
   ),
+  /**
+   * The countries the store delivers to, for the country picker: `value` is
+   * what the address stores (the store's English name, as the website saves
+   * it), `name` the country in the shopper's language, `code` its ISO code.
+   */
+  countries: z.array(z.object({ value: z.string(), name: z.string(), code: z.string() })).optional(),
+  /** The `value` a new address opens on: the store's shipping origin, else the United States, else the first. */
+  defaultCountry: z.string().optional(),
 });
 export type EsimAddressFields = z.infer<typeof EsimAddressFields>;

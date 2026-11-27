@@ -12,6 +12,7 @@ import { loadPricing } from "@/lib/esim/pricing/reprice";
 import { currentRates } from "@/lib/esim/pricing/fx-service";
 import { priceOf } from "@/lib/esim/pricing/price";
 import { ProviderError, type Money, type ProviderTopupPlan } from "@/lib/esim/providers/types";
+import { TopupError, forDays } from "@/lib/esim/topup/days";
 import { topupEligibility, type Eligibility } from "@/lib/esim/topup/eligibility";
 import { findTopupProduct, type TopupProductRef } from "@/lib/esim/topup/product";
 import { topupLineLabel } from "@/lib/esim/topup/label";
@@ -29,7 +30,7 @@ import { bnesimAreaKey, topupArea, areaIndex } from "@/lib/esim/providers/bnesim
  * a top-up the supplier still offers for that eSIM.
  */
 
-export class TopupError extends Error {}
+export { TopupError };
 
 export interface TopupOffer {
   topupPlanId: string;
@@ -45,6 +46,11 @@ export interface TopupOffer {
   dayGroup: string | null;
   /** Its area's id in `otherAreas` (null when it renews the own plan). */
   areaId: string | null;
+  /**
+   * A day pass taken for the days the shopper picks: `priceMinor` here is its
+   * price per day; the offer's own price and days are for `defaultDays`.
+   */
+  perDay: { priceMinor: number; minDays: number; maxDays: number; defaultDays: number } | null;
 }
 
 /** An area with top-ups other than renewing the own plan: its offers are fetched when chosen. */
@@ -198,12 +204,15 @@ export async function topupOffers(userId: string, esimId: string, options: { are
   const all = plans
     .map((plan, index) => {
       const sameArea = !anyArea || renewsOwnPlan(plan.area, own);
+      const price = prices[index];
+      const perDay = plan.perDay && price !== null ? { priceMinor: price, ...plan.perDay } : null;
       return {
         topupPlanId: plan.topupPlanId,
         name: plan.name,
         megabytes: plan.megabytes,
-        validityDays: plan.validityDays,
-        priceMinor: prices[index],
+        validityDays: perDay ? perDay.defaultDays : plan.validityDays,
+        priceMinor: perDay ? perDay.priceMinor * perDay.defaultDays : price,
+        perDay,
         area: anyArea ? (plan.area?.name ?? null) : null,
         sameArea,
         dayGroup: plan.dayGroup ?? null,
@@ -249,18 +258,26 @@ export interface CreatedQuote {
   label: string;
 }
 
-/** Writes the quote for one offered top-up and returns what the cart line needs. */
-export async function createTopupQuote(userId: string, esimId: string, topupPlanId: string): Promise<CreatedQuote | null> {
+/**
+ * Writes the quote for one offered top-up and returns what the cart line
+ * needs. A day pass is quoted for `days` (its default days when none is
+ * given, as an app from before the day stepper asks): the supplier's id for
+ * those days, at its price per day times them.
+ */
+export async function createTopupQuote(userId: string, esimId: string, topupPlanId: string, days?: number | null): Promise<CreatedQuote | null> {
   const found = await owned(userId, esimId);
   if (!found) return null;
   const eligibility = eligibilityOf(found);
   if (!eligibility.ok) throw new TopupError("This eSIM cannot be topped up now");
   const product = await findTopupProduct();
   if (!product) throw new TopupError("Top-ups are not available yet");
-  const offered = (await supplierTopups(found, true)).find((plan) => plan.topupPlanId === topupPlanId);
-  if (!offered) throw new TopupError("This top-up is no longer offered for your eSIM");
-  const [priceMinor] = await priceTopupCosts([offered.cost], found.plan);
-  if (!priceMinor) throw new TopupError("This top-up cannot be priced right now");
+  const listed = (await supplierTopups(found, true)).find((plan) => plan.topupPlanId === topupPlanId);
+  if (!listed) throw new TopupError("This top-up is no longer offered for your eSIM");
+  const offered = forDays(listed, days);
+  const [unitMinor] = await priceTopupCosts([listed.cost], found.plan);
+  if (!unitMinor) throw new TopupError("This top-up cannot be priced right now");
+  // A day pass is priced per day, as the list showed it, so the cart charges what the stepper said.
+  const priceMinor = listed.perDay ? unitMinor * offered.validityDays : unitMinor;
   const quote = await EsimTopupQuote.create({
     customer: new mongoose.Types.ObjectId(userId),
     esim: found.profile._id,
