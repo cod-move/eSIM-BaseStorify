@@ -1,6 +1,6 @@
 import { EsimAddressFields } from "@/contracts/mobile/shop/v1/esim";
 import { defineRoute } from "@/lib/api-core/registry";
-import { storeAddressFields } from "@/lib/esim/checkout/address-fields";
+import { storeAddressFields, storeCountries } from "@/lib/esim/checkout/address-fields";
 
 /** GET /esim/address-fields: the address fields as the store's checkout asks for them (the app's address book). */
 export const esimAddressFieldsRoute = defineRoute({
@@ -10,5 +10,5 @@ export const esimAddressFieldsRoute = defineRoute({
   auth: "none",
   cache: { kind: "static", revalidate: 60 },
   output: EsimAddressFields,
-  handler: async () => ({ fields: await storeAddressFields() }),
+  handler: async ({ locale }) => ({ fields: await storeAddressFields(), ...(await storeCountries(locale)) }),
 });

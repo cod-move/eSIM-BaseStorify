@@ -2,7 +2,29 @@ import "server-only";
 
 import { CONFIGURABLE_ADDRESS_FIELDS, normalizeCheckoutSettings } from "@/lib/checkout/checkout-config";
 import { connectDB } from "@/lib/db";
+import { defaultCountryForAddressForms, getAllowedCountryOptions } from "@/lib/intl/country-availability";
 import { getSettings } from "@/models/settings.model";
+
+/**
+ * The countries the store delivers to (Settings → General), each with its name
+ * in the shopper's language, sorted by it; and the one a new address opens on.
+ */
+export async function storeCountries(locale: string): Promise<{ countries: { value: string; name: string; code: string }[]; defaultCountry: string }> {
+  await connectDB();
+  const settings = await getSettings();
+  const availability = settings.general?.countryAvailability;
+  let names: Intl.DisplayNames | null = null;
+  try {
+    names = new Intl.DisplayNames([locale], { type: "region", fallback: "none" });
+  } catch {
+    names = null;
+  }
+  const countries = getAllowedCountryOptions(availability)
+    .map(({ value, label }) => ({ value: label, code: value, name: names?.of(value) || label }))
+    .sort((a, b) => a.name.localeCompare(b.name, locale));
+  const origin = (settings as { shipping?: { origin?: { country?: string } } }).shipping?.origin?.country;
+  return { countries, defaultCountry: defaultCountryForAddressForms(availability, origin) };
+}
 
 export type AddressFieldVisibility = "required" | "optional" | "hidden";
 

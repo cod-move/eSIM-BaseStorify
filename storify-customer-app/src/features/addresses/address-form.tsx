@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import { useTranslations } from 'use-intl';
 
@@ -21,7 +21,8 @@ import {
   type AddressForm as FormValues,
   type AddressFormField,
 } from './use-addresses';
-import { useStoreAddressFields } from '@/features/esim/address-fields'; // [esim-patch] P86
+import { useStoreAddressFields, useStoreCountries } from '@/features/esim/address-fields'; // [esim-patch] P86
+import { CountryPicker } from '@/features/esim/country-picker'; // [esim-patch] P86
 
 const FIELDS: { field: AddressFormField; required?: boolean; keyboard?: 'phone-pad' }[] = [
   { field: 'firstName', required: true },
@@ -63,6 +64,13 @@ export function AddressForm({ address, onSaved }: AddressFormProps) {
       : entry
   );
   const alsoRequired = fields.filter((entry) => entry.required).map((entry) => entry.field);
+  // [esim-patch] P86 the country is chosen from the ones the store delivers to; a new address opens on the store's default.
+  const storeCountries = useStoreCountries();
+  const defaultCountry = storeCountries?.defaultCountry;
+  useEffect(() => {
+    if (address || !defaultCountry) return;
+    setForm((current) => (current.country ? current : { ...current, country: defaultCountry }));
+  }, [address, defaultCountry]);
 
   const problems = tried ? checkForm(form, alsoRequired) : {};
   const refused = isApiError(change.error) ? change.error.errors : undefined;
@@ -74,7 +82,9 @@ export function AddressForm({ address, onSaved }: AddressFormProps) {
   };
   // [esim-patch] P86 a refusal no field on screen can show (a hidden field, a key the form does not know) shows above Save, not nowhere.
   const placed = new Set(fields.flatMap(({ field }) => [field, `address.${field}`]));
-  const unplaced = refused ? Object.entries(refused).find(([key]) => !placed.has(key))?.[1]?.[0] : undefined;
+  const unplaced = refused
+    ? Object.entries(refused).find(([key]) => !placed.has(key))?.[1]?.[0]
+    : undefined;
 
   const save = () => {
     setTried(true);
@@ -109,19 +119,31 @@ export function AddressForm({ address, onSaved }: AddressFormProps) {
           ))}
         </View>
       </View>
-      {fields.map(({ field, required, keyboard }) => (
-        <TextField
-          key={field}
-          label={t(`fields.${field}`)}
-          required={required}
-          optional={!required}
-          value={form[field]}
-          onChangeText={(value) => setForm({ ...form, [field]: value })}
-          error={fieldError(field)}
-          keyboardType={keyboard}
-          autoComplete={field === 'phone' ? 'tel' : undefined}
-        />
-      ))}
+      {fields.map(({ field, required, keyboard }) =>
+        field === 'country' && storeCountries ? ( // [esim-patch] P86
+          <CountryPicker
+            key={field}
+            label={t(`fields.${field}`)}
+            countries={storeCountries.countries}
+            value={form.country}
+            onChange={(value) => setForm({ ...form, country: value })}
+            required={required}
+            error={fieldError(field)}
+          />
+        ) : (
+          <TextField
+            key={field}
+            label={t(`fields.${field}`)}
+            required={required}
+            optional={!required}
+            value={form[field]}
+            onChangeText={(value) => setForm({ ...form, [field]: value })}
+            error={fieldError(field)}
+            keyboardType={keyboard}
+            autoComplete={field === 'phone' ? 'tel' : undefined}
+          />
+        )
+      )}
       {address?.isDefault ? null : (
         <SwitchRow title={t('makeDefault')} value={isDefault} onValueChange={setIsDefault} />
       )}
