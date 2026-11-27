@@ -196,8 +196,11 @@ export class BnesimAdapter implements EsimProviderAdapter {
       if (!id || seen.has(id)) return [];
       seen.add(id);
       return [{
-        // Its key is the product: the same product as the eSIM's plan renews that plan.
-        area: { ...topupArea(product, index), key: id },
+        // Its key is its area (ISO2 code or region): the same area as the eSIM's plan renews that plan.
+        area: (() => {
+          const area = topupArea(product, index);
+          return { ...area, key: bnesimAreaKey(area) };
+        })(),
         topupPlanId: licenseCli ? `${id}|${licenseCli}` : id,
         name: str(product.name) || id,
         megabytes: Math.round(num(product.volume) ?? 0),
@@ -551,4 +554,18 @@ export function topupArea(product: JsonObject, index: AreaIndex): { name: string
       ? countryNameFromCode(coverage.countries[0])
       : coverage.regions[0] || str(product.region_names) || "";
   return { name, countryCodes: coverage.countries };
+}
+
+/**
+ * The area a BNESIM product or plan is for, as one id: a single country's ISO2
+ * code, "global", else its region ("region:europe"). A recharge with the same
+ * id as the eSIM's plan renews it (as the old store listed them).
+ */
+export function bnesimAreaKey(area: { scope?: string; countryCodes: string[]; name: string }): string {
+  const name = area.name.trim().toLowerCase();
+  if (area.scope === "global" || name === "global") return "global";
+  if (area.scope === "local" || (area.scope === undefined && area.countryCodes.length === 1 && name === countryNameFromCode(area.countryCodes[0]!).toLowerCase())) {
+    return (area.countryCodes[0] ?? name).toUpperCase();
+  }
+  return `region:${name}`;
 }

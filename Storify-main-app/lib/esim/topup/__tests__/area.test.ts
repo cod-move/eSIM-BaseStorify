@@ -21,3 +21,11 @@ describe("renewing the own plan or buying another area's", () => {
     assert.equal(renewsOwnPlan(null, asia), true);
   });
 });
+
+describe("BNESIM renewals by area id", () => {
+  it("renews when the recharge is for the same ISO2 country or the same region, whatever the product", () => {
+    assert.equal(renewsOwnPlan({ name: "Japan", countryCodes: ["JP"], key: "JP" }, { countries: ["JP"], areaKey: "JP" }), true);
+    assert.equal(renewsOwnPlan({ name: "Korea", countryCodes: ["KR"], key: "KR" }, { countries: ["JP"], areaKey: "JP" }), false);
+    assert.equal(renewsOwnPlan({ name: "Europe", countryCodes: ["FR", "DE"], key: "region:europe" }, { countries: ["FR", "DE", "IT"], areaKey: "region:europe" }), true);
+  });
+});

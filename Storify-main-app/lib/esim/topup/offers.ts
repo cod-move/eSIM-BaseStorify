@@ -16,6 +16,7 @@ import { topupEligibility, type Eligibility } from "@/lib/esim/topup/eligibility
 import { findTopupProduct, type TopupProductRef } from "@/lib/esim/topup/product";
 import { topupLineLabel } from "@/lib/esim/topup/label";
 import { renewsOwnPlan } from "@/lib/esim/topup/area";
+import { bnesimAreaKey, topupArea, areaIndex } from "@/lib/esim/providers/bnesim";
 
 /**
  * What a shopper can top up an eSIM with (TOP-01/02), and the quote a chosen
@@ -181,9 +182,19 @@ export async function topupOffers(userId: string, esimId: string, options: { are
     return { eligibility, mode, offers: [], otherAreas: [], error: message };
   }
   const prices = await priceTopupCosts(plans.map((plan) => plan.cost), found.plan);
-  const anyArea = found.plan.topup.coverage === "any_area";
+  // eSIM Access: the list as the supplier gives it for this ICCID, every one a renewal, nothing set aside.
+  const anyArea = found.plan.topup.coverage === "any_area" && found.plan.providerCode !== "esimaccess";
   const planCountries = found.plan.coverage.countries.map((country) => country.code);
-  const own = { sku: found.plan.sku, providerPlanId: found.plan.providerPlanId, countries: planCountries, destination: found.plan.destination };
+  const own = {
+    sku: found.plan.sku,
+    providerPlanId: found.plan.providerPlanId,
+    countries: planCountries,
+    destination: found.plan.destination,
+    areaKey:
+      found.plan.providerCode === "bnesim"
+        ? bnesimAreaKey({ scope: found.plan.coverage.scope, countryCodes: planCountries, name: await bnesimPlanAreaName(found.plan._id) })
+        : null,
+  };
   const all = plans
     .map((plan, index) => {
       const sameArea = !anyArea || renewsOwnPlan(plan.area, own);
@@ -203,6 +214,13 @@ export async function topupOffers(userId: string, esimId: string, options: { are
     .sort((a, b) => a.priceMinor - b.priceMinor || a.megabytes - b.megabytes);
   if (options.area) return { eligibility, mode, offers: all.filter((offer) => offer.areaId === options.area), otherAreas: [] };
   return { eligibility, mode, offers: all.filter((offer) => offer.sameArea), otherAreas: areasOf(all.filter((offer) => !offer.sameArea)) };
+}
+
+/** A BNESIM plan's region name, from the product it was made from (as its recharges name theirs). */
+async function bnesimPlanAreaName(planId: unknown): Promise<string> {
+  const row = await EsimPlan.findById(planId).select("+raw destination").lean<{ raw?: unknown; destination?: string } | null>();
+  const raw = row?.raw && typeof row.raw === "object" ? (row.raw as Record<string, unknown>) : null;
+  return (raw ? topupArea(raw as never, areaIndex([])).name : "") || row?.destination || "";
 }
 
 /** An area's id: the supplier's key for it, else its name. */

@@ -9,9 +9,11 @@ import type { ProviderTopupPlan } from "@/lib/esim/providers/types";
  */
 export function renewsOwnPlan(
   area: ProviderTopupPlan["area"],
-  plan: { sku?: string | null; providerPlanId?: string | null; countries: string[]; destination?: string | null },
+  plan: { sku?: string | null; providerPlanId?: string | null; countries: string[]; destination?: string | null; areaKey?: string | null },
 ): boolean {
   if (!area) return true;
+  // BNESIM: the same ISO2 country code or region as the plan.
+  if (area.key && plan.areaKey) return area.key === plan.areaKey;
   if (area.key && (plan.sku || plan.providerPlanId)) return area.key === plan.sku || area.key === plan.providerPlanId;
   if (area.countryCodes.length && plan.countries.length) {
     const own = new Set(plan.countries);
