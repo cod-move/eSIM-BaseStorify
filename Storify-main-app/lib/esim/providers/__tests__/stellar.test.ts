@@ -272,4 +272,14 @@ describe("Stellar purchase", () => {
       /16-digit sim_id/,
     );
   });
+
+  it("offers no top-ups, without an error, when Stellar has none for the eSIM yet", async () => {
+    const ref = { providerEsimId: null, simId: "1234567890123456", iccid: null };
+    const none = { status: 422, body: { error: { code: "no_topup_packages", message: "No compatible top-up packages." } } };
+    const empty = new StellarAdapter({ apiKey: "test-key", fetch: fakeFetch({ "GET /api/v1/esims/1234567890123456/topup-plans": () => none }).fetch });
+    assert.deepEqual(await empty.listTopupPlans(ref), []);
+    const other = { status: 422, body: { error: { code: "invalid_esim" } } };
+    const failing = new StellarAdapter({ apiKey: "test-key", fetch: fakeFetch({ "GET /api/v1/esims/1234567890123456/topup-plans": () => other }).fetch });
+    await assert.rejects(() => failing.listTopupPlans(ref), /invalid_esim/);
+  });
 });

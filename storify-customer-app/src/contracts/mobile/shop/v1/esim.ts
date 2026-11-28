@@ -366,6 +366,8 @@ export const EsimTopups = z.object({
   refusal: z.string().optional(),
   /** stack: added to the current plan; addon: a separate package beside it. */
   mode: z.enum(["stack", "addon"]).optional(),
+  /** For a stack top-up: data, days (a daily plan extended) or both. Left out when not known. */
+  stackTarget: z.enum(["data", "days", "data_and_days"]).optional(),
   offers: z.array(EsimTopupOffer),
   otherAreas: z.array(EsimTopupArea).optional(),
   /** The supplier could not be asked just now: try again shortly. */

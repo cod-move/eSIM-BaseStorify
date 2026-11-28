@@ -36,7 +36,13 @@ export default async function AccountEsimTopupPage({ params }: PageProps) {
   const howItAdds =
     result.mode === "addon"
       ? tr("esim.topup.addon", "The top-up is a plan of its own: its data and days count separately from your current plan.")
-      : tr("esim.topup.stack", "The top-up adds to your current plan: more data, and for some plans more days.");
+      : result.stackTarget === "days"
+        ? tr("esim.topup.stackDays", "The top-up adds days to your current plan, with the same data allowance.")
+        : result.stackTarget === "data"
+          ? tr("esim.topup.stackData", "The top-up adds data to your current plan.")
+          : result.stackTarget === "data_and_days"
+            ? tr("esim.topup.stackBoth", "The top-up adds data and days to your current plan.")
+            : tr("esim.topup.stack", "The top-up adds to your current plan: more data, and for some plans more days.");
 
   return (
     <div className="space-y-6">

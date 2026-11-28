@@ -69,6 +69,8 @@
     "topupUnavailable": "暫時無法連接運營商，請稍後再試。",
     "tryAgain": "重試",
     "topupStackNote": "流量和天數會加到當前套餐上。",
+    "topupStackDaysNote": "會延長目前方案的天數，流量額度不變。",
+    "topupStackDataNote": "流量會加到目前方案上。",
     "topupAddonNote": "儲值包是一個獨立方案：它的流量和天數與目前方案分開計算。",
     "topupRefusal": {
       "not_supported": "該套餐不支持充值。",

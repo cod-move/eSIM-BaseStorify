@@ -235,7 +235,14 @@ export class StellarAdapter implements EsimProviderAdapter {
    * for several periods, and the pair is what `topup` must send back.
    */
   async listTopupPlans(ref: EsimRef): Promise<ProviderTopupPlan[]> {
-    const rows = await this.callList("GET", `/esims/${simIdOf(ref)}/topup-plans`);
+    let rows: JsonObject[];
+    try {
+      rows = await this.callList("GET", `/esims/${simIdOf(ref)}/topup-plans`);
+    } catch (error) {
+      // HTTP 422 no_topup_packages: nothing to offer this eSIM now (e.g. not installed yet), not a failure.
+      if (error instanceof ProviderError && error.providerCode === "no_topup_packages") return [];
+      throw error;
+    }
     return rows.map((row) => {
       const period = obj(row.period);
       const days = int(period.default) ?? int(row.validity_days) ?? 1;

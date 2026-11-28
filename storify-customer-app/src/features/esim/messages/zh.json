@@ -69,6 +69,8 @@
     "topupUnavailable": "暂时无法连接运营商，请稍后再试。",
     "tryAgain": "重试",
     "topupStackNote": "流量和天数会加到当前套餐上。",
+    "topupStackDaysNote": "会延长当前套餐的天数，流量额度不变。",
+    "topupStackDataNote": "流量会加到当前套餐上。",
     "topupAddonNote": "充值包是一个独立套餐：它的流量和天数与当前套餐分开计算。",
     "topupRefusal": {
       "not_supported": "该套餐不支持充值。",

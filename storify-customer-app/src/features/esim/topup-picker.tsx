@@ -142,7 +142,13 @@ export function TopupPicker({
         contentContainerClassName="gap-3 px-4 pt-3"
         contentContainerStyle={{ paddingBottom: tabBar + 96 }}>
         <Text variant="caption">
-          {topups.mode === 'addon' ? t('topupAddonNote') : t('topupStackNote')}
+          {topups.mode === 'addon'
+            ? t('topupAddonNote')
+            : topups.stackTarget === 'days'
+              ? t('topupStackDaysNote')
+              : topups.stackTarget === 'data'
+                ? t('topupStackDataNote')
+                : t('topupStackNote')}
         </Text>
         {topups.mode === 'addon' ? <Text variant="caption">{t('topupAutoActivate')}</Text> : null}
 

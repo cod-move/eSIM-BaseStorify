@@ -33,6 +33,7 @@ export const esimTopupsRoute = defineRoute({
     return {
       ...(offers.eligibility.ok ? {} : { refusal: offers.eligibility.reason }),
       ...(offers.mode ? { mode: offers.mode } : {}),
+      ...(offers.stackTarget ? { stackTarget: offers.stackTarget } : {}),
       offers: offers.offers.map((offer) => ({
         topupPlanId: offer.topupPlanId,
         name: offer.name,

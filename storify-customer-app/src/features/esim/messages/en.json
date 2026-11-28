@@ -69,6 +69,8 @@
     "topupUnavailable": "The network could not be reached. Try again in a moment.",
     "tryAgain": "Try again",
     "topupStackNote": "The data and days are added to your current plan.",
+    "topupStackDaysNote": "The days are added to your current plan; the data allowance stays the same.",
+    "topupStackDataNote": "The data is added to your current plan.",
     "topupAddonNote": "The top-up is a plan of its own: its data and days count separately from your current plan.",
     "topupRefusal": {
       "not_supported": "This plan cannot be topped up.",

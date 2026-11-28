@@ -65,6 +65,8 @@ export interface TopupArea {
 export interface TopupOffers {
   eligibility: Eligibility;
   mode: "stack" | "addon" | null;
+  /** For a stack top-up, what it adds to the plan: data, days (a daily plan extended), or both; null when not known. */
+  stackTarget: "data" | "days" | "data_and_days" | null;
   /**
    * Renewals of the own plan; or, when an area was asked for, that area's
    * top-ups. Plans for other areas are not listed (RoamWifi has thousands):
@@ -179,13 +181,14 @@ export async function topupOffers(userId: string, esimId: string, options: { are
   if (!found) return null;
   const eligibility = eligibilityOf(found);
   const mode = found.plan.topup.mode === "none" ? null : found.plan.topup.mode;
-  if (!eligibility.ok) return { eligibility, mode, offers: [], otherAreas: [] };
+  const stackTarget = mode === "stack" ? (found.plan.topup.stackTarget ?? null) : null;
+  if (!eligibility.ok) return { eligibility, mode, stackTarget, offers: [], otherAreas: [] };
   let plans: ProviderTopupPlan[];
   try {
     plans = await supplierTopups(found);
   } catch (error) {
     const message = error instanceof ProviderError || error instanceof TopupError ? error.message : "The supplier could not be reached";
-    return { eligibility, mode, offers: [], otherAreas: [], error: message };
+    return { eligibility, mode, stackTarget, offers: [], otherAreas: [], error: message };
   }
   const prices = await priceTopupCosts(plans.map((plan) => plan.cost), found.plan);
   // eSIM Access: the list as the supplier gives it for this ICCID, every one a renewal, nothing set aside.
@@ -221,8 +224,8 @@ export async function topupOffers(userId: string, esimId: string, options: { are
     })
     .filter((offer): offer is TopupOffer => offer.priceMinor !== null && offer.priceMinor > 0)
     .sort((a, b) => a.priceMinor - b.priceMinor || a.megabytes - b.megabytes);
-  if (options.area) return { eligibility, mode, offers: all.filter((offer) => offer.areaId === options.area), otherAreas: [] };
-  return { eligibility, mode, offers: all.filter((offer) => offer.sameArea), otherAreas: areasOf(all.filter((offer) => !offer.sameArea)) };
+  if (options.area) return { eligibility, mode, stackTarget, offers: all.filter((offer) => offer.areaId === options.area), otherAreas: [] };
+  return { eligibility, mode, stackTarget, offers: all.filter((offer) => offer.sameArea), otherAreas: areasOf(all.filter((offer) => !offer.sameArea)) };
 }
 
 /** A BNESIM plan's region name, from the product it was made from (as its recharges name theirs). */
