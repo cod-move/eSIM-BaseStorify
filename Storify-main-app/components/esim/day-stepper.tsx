@@ -3,11 +3,13 @@
 import { Minus, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { dayPayBp, percentOff, shownDiscounts, type DayDiscount } from "@/lib/esim/pricing/day-discount";
 
 /**
  * The number of days of a day-priced plan or top-up: a stepper that also
  * takes a typed number, quick picks of the usual trip lengths, and the price
- * per day with the range. The product page's buy box (EsimDayPicker) and the
+ * per day with the range, and the multi-day discounts (the one the chosen
+ * days get stands out). The product page's buy box (EsimDayPicker) and the
  * top-up picker draw the same one.
  */
 
@@ -24,6 +26,7 @@ export function DayStepper({
   onChange,
   t,
   idKey,
+  discounts,
 }: {
   days: number;
   minDays: number;
@@ -35,9 +38,13 @@ export function DayStepper({
   t: Translate;
   /** Redraws the typed field when what it counts for changes (a variant, an offer). */
   idKey?: string;
+  /** Multi-day discount tiers; none shown when empty. */
+  discounts?: DayDiscount[];
 }) {
   const choose = (value: number) => onChange(Math.min(maxDays, Math.max(minDays, Math.round(value))));
   const quick = QUICK_DAYS.filter((value) => value >= minDays && value <= maxDays);
+  const tiers = shownDiscounts(discounts, minDays, maxDays);
+  const paying = dayPayBp(discounts, days);
 
   return (
     <div className="space-y-2.5">
@@ -102,6 +109,34 @@ export function DayStepper({
       <p className="text-xs text-muted-foreground">
         {t("esim.product.perDay", "{price} per day · {min}–{max} days", { price: pricePerDay, min: minDays, max: maxDays })}
       </p>
+      {tiers.length ? (
+        <div className="space-y-1.5">
+          <p className="text-xs font-medium text-foreground">
+            {paying < 10_000
+              ? t("esim.product.dayDiscountNow", "{days} days: {off}% off the daily price", { days, off: percentOff(paying) })
+              : t("esim.product.dayDiscounts", "Longer stays cost less per day")}
+          </p>
+          <div className="flex flex-wrap gap-1.5">
+            {tiers.map((tier) => {
+              const active = days >= tier.minDays && days <= tier.maxDays;
+              return (
+                <span
+                  key={`${tier.minDays}-${tier.maxDays}`}
+                  className={`rounded-md border px-2 py-0.5 text-[11px] ${
+                    active ? "border-emerald-600 bg-emerald-50 font-semibold text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300" : "text-muted-foreground"
+                  }`}
+                >
+                  {tier.minDays === tier.maxDays
+                    ? t("esim.product.dayTierOne", "{min} days −{off}%", { min: tier.minDays, off: percentOff(tier.payBp) })
+                    : tier.maxDays >= maxDays
+                      ? t("esim.product.dayTierFrom", "{min}+ days −{off}%", { min: tier.minDays, off: percentOff(tier.payBp) })
+                      : t("esim.product.dayTier", "{min}–{max} days −{off}%", { min: tier.minDays, max: tier.maxDays, off: percentOff(tier.payBp) })}
+                </span>
+              );
+            })}
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

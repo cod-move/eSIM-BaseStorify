@@ -146,7 +146,12 @@
       "nDays": "Ọjọ́ {days}",
       "fewerDays": "Dín ọjọ́ kan kù",
       "moreDays": "Fi ọjọ́ kan kún un",
-      "perDay": "{price} lójoojúmọ́ · ọjọ́ {min}–{max}"
+      "perDay": "{price} lójoojúmọ́ · ọjọ́ {min}–{max}",
+      "dayDiscounts": "Bí o bá ṣe pẹ́ tó, bẹ́ẹ̀ ni owó ọjọ́ kan ṣe dínkù",
+      "dayDiscountNow": "Ọjọ́ {days}: àdínkù {off}% lórí owó ọjọ́ kan",
+      "dayTier": "Ọjọ́ {min}–{max} −{off}%",
+      "dayTierFrom": "Ọjọ́ {min}+ −{off}%",
+      "dayTierOne": "Ọjọ́ {min} −{off}%"
     },
     "devices": {
       "search": "Tẹ àwòṣe fóònù rẹ, àpẹẹrẹ iPhone 15",

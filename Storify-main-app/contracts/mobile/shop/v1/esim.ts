@@ -219,6 +219,8 @@ export const EsimPlanOption = z.object({
       maxDays: z.number().int(),
       /** What one day adds, for "+ … a day". */
       pricePerDay: Money,
+      /** Multi-day discounts: N days within a tier cost `percentOff` % less per day. Left out when there are none. */
+      discounts: z.array(z.object({ minDays: z.number().int(), maxDays: z.number().int(), percentOff: z.number().int() })).optional(),
     })
     .optional(),
   /** stack: a top-up adds to it; addon: a separate package; none: no top-ups. */
@@ -337,7 +339,14 @@ export const EsimTopupOffer = z.object({
    * `validityDays` are for `defaultDays`; the quote asks with `days`.
    */
   perDay: z
-    .object({ pricePerDay: Money, minDays: z.number().int(), maxDays: z.number().int(), defaultDays: z.number().int() })
+    .object({
+      pricePerDay: Money,
+      minDays: z.number().int(),
+      maxDays: z.number().int(),
+      defaultDays: z.number().int(),
+      /** Multi-day discounts: N days within a tier cost `percentOff` % less per day. Left out when there are none. */
+      discounts: z.array(z.object({ minDays: z.number().int(), maxDays: z.number().int(), percentOff: z.number().int() })).optional(),
+    })
     .optional(),
 });
 export type EsimTopupOffer = z.infer<typeof EsimTopupOffer>;

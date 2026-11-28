@@ -4,6 +4,7 @@ import { defineRoute } from "@/lib/api-core/registry";
 import { toMoney } from "@/lib/api-core/shop/money";
 import { connectDB } from "@/lib/db";
 import { formatBytes } from "@/lib/esim/account/display";
+import { discountTiers } from "@/lib/esim/pricing/day-discount";
 import { ProviderError } from "@/lib/esim/providers/types";
 import { TopupError, createTopupQuote, topupOffers } from "@/lib/esim/topup/offers";
 import { getStoreCurrency } from "@/lib/intl/server-currency";
@@ -49,6 +50,7 @@ export const esimTopupsRoute = defineRoute({
                 minDays: offer.perDay.minDays,
                 maxDays: offer.perDay.maxDays,
                 defaultDays: offer.perDay.defaultDays,
+                ...discountTiers(offer.perDay.discounts, offer.perDay.minDays, offer.perDay.maxDays),
               },
             }
           : {}),

@@ -10,6 +10,7 @@ import { useCart } from "@/hooks/use-cart";
 import { useRouter } from "@/hooks/use-locale-navigation";
 import { useFallbackTranslator } from "@/hooks/use-fallback-translator";
 import { useCurrency } from "@/providers/currency-provider";
+import { daysPriceMinor, type DayDiscount } from "@/lib/esim/pricing/day-discount";
 import { DayStepper } from "./day-stepper";
 
 export interface TopupPickerOffer {
@@ -22,7 +23,7 @@ export interface TopupPickerOffer {
   sameArea?: boolean;
   dayGroup?: string | null;
   /** A day pass taken for the days the shopper picks: `priceMinor` here is per day. */
-  perDay?: { priceMinor: number; minDays: number; maxDays: number; defaultDays: number } | null;
+  perDay?: { priceMinor: number; minDays: number; maxDays: number; defaultDays: number; discounts?: DayDiscount[] } | null;
 }
 
 /** One card: an offer, or a day-pass with the day counts it is sold for. */
@@ -93,7 +94,7 @@ export function EsimTopupPicker({ esimId, offers, otherAreas = [] }: { esimId: s
   // The days picked for each day pass, by offer; its default days until then.
   const [dayChoice, setDayChoice] = useState<Record<string, number>>({});
   const daysOf = (offer: TopupPickerOffer) => (offer.perDay ? (dayChoice[offer.topupPlanId] ?? offer.perDay.defaultDays) : offer.validityDays);
-  const priceOf = (offer: TopupPickerOffer) => (offer.perDay ? offer.perDay.priceMinor * daysOf(offer) : offer.priceMinor);
+  const priceOf = (offer: TopupPickerOffer) => (offer.perDay ? daysPriceMinor(offer.perDay.priceMinor, daysOf(offer), offer.perDay.discounts) : offer.priceMinor);
   // A supplier like BNESIM offers top-ups for other regions too: many of them, so in pages.
   const [page, setPage] = useState(0);
   // Search by name, data ("5 GB", "500MB") or days ("7"), every word must match.
@@ -289,6 +290,7 @@ export function EsimTopupPicker({ esimId, offers, otherAreas = [] }: { esimId: s
                     }}
                     t={t}
                     idKey={offer.topupPlanId}
+                    discounts={offer.perDay.discounts}
                   />
                 </div>
               ) : card.options.length > 1 ? (

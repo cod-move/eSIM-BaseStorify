@@ -100,6 +100,15 @@ describe("eSIM Access plan mapping", () => {
     assert.equal(mapPlan(JAPAN_3GB, names).cost.billingUnit, "plan");
   });
 
+  it("carries the multi-day discount of a daily package and its top-ups", () => {
+    const rules = new Map([["UNLIMITED_PLAN_DISC", [{ minDays: 5, maxDays: 9, payBp: 9200 }]]]);
+    const daily = { ...JAPAN_3GB, slug: "JP_1_Daily", duration: 1, dataType: 2, discountRuleCode: "UNLIMITED_PLAN_DISC" };
+    assert.deepEqual(mapPlan(daily, names, rules).cost.dayDiscounts, [{ minDays: 5, maxDays: 9, payBp: 9200 }]);
+    assert.equal(mapPlan({ ...daily, discountRuleCode: "OTHER" }, names, rules).cost.dayDiscounts, undefined);
+    assert.equal(mapPlan({ ...JAPAN_3GB, discountRuleCode: "UNLIMITED_PLAN_DISC" }, names, rules).cost.dayDiscounts, undefined);
+    assert.deepEqual(topupPlanOf({ ...daily, packageCode: "TOPUP_D1" }, rules).perDay?.discounts, [{ minDays: 5, maxDays: 9, payBp: 9200 }]);
+  });
+
   it("groups multi-country packages under their region", () => {
     const plan = mapPlan(
       {
@@ -176,5 +185,53 @@ describe("eSIM Access calls", () => {
       (error: Error & { code?: string; providerCode?: string }) =>
         error.code === "rejected" && error.providerCode === "310241",
     );
+  });
+});
+
+describe("eSIM Access discounts and cancelling", () => {
+  it("reads the percentage discount rules in force, and lists plans without them when they cannot be read", async () => {
+    const rules = {
+      success: true,
+      obj: {
+        list: [
+          { discountRuleCode: "UNLIMITED_PLAN_DISC", rewardType: 20, periodRuleList: [{ minDays: 1, maxDays: 4, payRatio: 0.96 }, { minDays: 30, maxDays: 365, payRatio: 0.82 }], validPeriod: { startTime: "2024-12-27T00:00:00+0000", endTime: "2124-12-27T00:00:00+0000" } },
+          { discountRuleCode: "FIXED", rewardType: 10, periodRuleList: [{ minDays: 1, maxDays: 4, discountAmount: {} }], validPeriod: { startTime: "2024-12-27T00:00:00+0000", endTime: "2124-12-27T00:00:00+0000" } },
+          { discountRuleCode: "OVER", rewardType: 20, periodRuleList: [{ minDays: 1, maxDays: 4, payRatio: 0.5 }], validPeriod: { startTime: "2020-01-01T00:00:00+0000", endTime: "2021-01-01T00:00:00+0000" } },
+        ],
+      },
+    };
+    const daily = { ...JAPAN_3GB, packageCode: "TOPUP_D1", slug: "JP_1_Daily", duration: 1, dataType: 2 };
+    const list = (code: string) => ({ success: true, obj: { packageList: [{ ...daily, discountRuleCode: code }] } });
+    const { fetch } = fakeFetch({
+      "POST /discounts-ok/discountRule/list": () => ({ body: rules }),
+      "POST /discounts-ok/package/list": (request) => ({ body: list(JSON.parse(request.body ?? "{}").iccid === "1" ? "UNLIMITED_PLAN_DISC" : "FIXED") }),
+    });
+    const adapter = new EsimAccessAdapter({ accessCode: "code", fetch, baseUrl: "https://api.example.com/discounts-ok" });
+    const ref = { providerEsimId: "T1", simId: null, iccid: "1" };
+    assert.deepEqual((await adapter.listTopupPlans(ref))[0].perDay?.discounts, [{ minDays: 1, maxDays: 4, payBp: 9600 }, { minDays: 30, maxDays: 365, payBp: 8200 }]);
+    assert.equal((await adapter.listTopupPlans({ ...ref, iccid: "2" }))[0].perDay?.discounts, undefined);
+
+    const down = fakeFetch({
+      "POST /discounts-down/discountRule/list": () => ({ status: 503, body: {} }),
+      "POST /discounts-down/package/list": () => ({ body: list("UNLIMITED_PLAN_DISC") }),
+    });
+    const plain = new EsimAccessAdapter({ accessCode: "code", fetch: down.fetch, baseUrl: "https://api.example.com/discounts-down" });
+    assert.equal((await plain.listTopupPlans(ref))[0].perDay?.discounts, undefined);
+  });
+
+  it("cancels by esimTranNo, else the ICCID, and reports a refusal as unconfirmed", async () => {
+    const { fetch, sent } = fakeFetch({
+      "POST /api/v1/open/esim/cancel": (request) =>
+        JSON.parse(request.body ?? "{}").esimTranNo === "T1"
+          ? { body: { success: true, errorCode: "0", obj: {} } }
+          : { body: { success: false, errorCode: "310404", errorMsg: "the merchant has not the iccid." } },
+    });
+    const adapter = new EsimAccessAdapter({ accessCode: "code", fetch });
+    assert.equal(adapter.capabilities.cancel, true);
+    assert.equal((await adapter.cancel({ providerEsimId: "T1", simId: null, iccid: "8901" })).status, "cancelled");
+    assert.deepEqual(JSON.parse(sent[0].body ?? "{}"), { esimTranNo: "T1" });
+    assert.equal((await adapter.cancel({ providerEsimId: null, simId: null, iccid: "8901" })).status, "unconfirmed");
+    assert.deepEqual(JSON.parse(sent[1].body ?? "{}"), { iccid: "8901" });
+    await assert.rejects(() => adapter.cancel({ providerEsimId: null, simId: null, iccid: null }), /esimTranNo or ICCID/);
   });
 });

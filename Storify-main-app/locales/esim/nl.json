@@ -146,7 +146,12 @@
       "nDays": "{days} dagen",
       "fewerDays": "Een dag minder",
       "moreDays": "Een dag meer",
-      "perDay": "{price} per dag · {min}–{max} dagen"
+      "perDay": "{price} per dag · {min}–{max} dagen",
+      "dayDiscounts": "Langer verblijf kost minder per dag",
+      "dayDiscountNow": "{days} dagen: {off}% korting op de dagprijs",
+      "dayTier": "{min}–{max} dagen −{off}%",
+      "dayTierFrom": "{min}+ dagen −{off}%",
+      "dayTierOne": "{min} dagen −{off}%"
     },
     "devices": {
       "search": "Typ je model, bijv. iPhone 15",

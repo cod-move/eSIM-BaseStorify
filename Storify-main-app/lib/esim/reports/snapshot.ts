@@ -6,6 +6,8 @@
  * tax are spread the same way refunds spread them (fulfillment/refund-amount).
  */
 
+import { daysPriceMinor, type DayDiscount } from "@/lib/esim/pricing/day-discount";
+
 export interface OrderMoney {
   total: number;
   items: Array<{ price: number; quantity: number }>;
@@ -19,12 +21,12 @@ export function unitSaleMinor(order: OrderMoney, lineIndex: number): number {
   return Math.floor(price * (order.total / lineSum) * 100 + 1e-6);
 }
 
-/** What the supplier charges for one purchase: a per-day cost times the days bought. */
+/** What the supplier charges for one purchase: a per-day cost times the days bought, less its multi-day discount. */
 export function purchaseCostMinor(
-  cost: { amountMinor: number; billingUnit?: "plan" | "day" },
+  cost: { amountMinor: number; billingUnit?: "plan" | "day"; dayDiscounts?: DayDiscount[] | null },
   days: number | null,
 ): number {
-  if (cost.billingUnit === "day") return cost.amountMinor * Math.max(1, days ?? 1);
+  if (cost.billingUnit === "day") return daysPriceMinor(cost.amountMinor, Math.max(1, days ?? 1), cost.dayDiscounts);
   return cost.amountMinor;
 }
 

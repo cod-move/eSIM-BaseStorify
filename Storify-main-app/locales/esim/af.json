@@ -146,7 +146,12 @@
       "nDays": "{days} dae",
       "fewerDays": "Een dag minder",
       "moreDays": "Een dag meer",
-      "perDay": "{price} per dag · {min}–{max} dae"
+      "perDay": "{price} per dag · {min}–{max} dae",
+      "dayDiscounts": "Langer verblyf kos minder per dag",
+      "dayDiscountNow": "{days} dae: {off}% af die dagprys",
+      "dayTier": "{min}–{max} dae −{off}%",
+      "dayTierFrom": "{min}+ dae −{off}%",
+      "dayTierOne": "{min} dae −{off}%"
     },
     "devices": {
       "search": "Tik jou model, bv. iPhone 15",

@@ -146,7 +146,12 @@
       "nDays": "{days} দিন",
       "fewerDays": "এক দিন কম",
       "moreDays": "এক দিন বেশি",
-      "perDay": "প্রতিদিন {price} · {min}–{max} দিন"
+      "perDay": "প্রতিদিন {price} · {min}–{max} দিন",
+      "dayDiscounts": "বেশি দিনে প্রতিদিনের দাম কম",
+      "dayDiscountNow": "{days} দিন: দৈনিক দামে {off}% ছাড়",
+      "dayTier": "{min}–{max} দিন −{off}%",
+      "dayTierFrom": "{min}+ দিন −{off}%",
+      "dayTierOne": "{min} দিন −{off}%"
     },
     "devices": {
       "search": "আপনার মডেল লিখুন, যেমন iPhone 15",

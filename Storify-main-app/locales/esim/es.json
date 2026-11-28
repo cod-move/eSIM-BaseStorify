@@ -146,7 +146,12 @@
       "nDays": "{days} días",
       "fewerDays": "Un día menos",
       "moreDays": "Un día más",
-      "perDay": "{price} por día · {min}–{max} días"
+      "perDay": "{price} por día · {min}–{max} días",
+      "dayDiscounts": "Las estancias largas cuestan menos por día",
+      "dayDiscountNow": "{days} días: {off} % menos en el precio diario",
+      "dayTier": "{min}–{max} días −{off} %",
+      "dayTierFrom": "{min}+ días −{off} %",
+      "dayTierOne": "{min} días −{off} %"
     },
     "devices": {
       "search": "Escribe tu modelo, p. ej. iPhone 15",

@@ -146,7 +146,12 @@
       "nDays": "{days} يوم",
       "fewerDays": "يوم أقل",
       "moreDays": "يوم أكثر",
-      "perDay": "{price} لليوم · {min}–{max} يوم"
+      "perDay": "{price} لليوم · {min}–{max} يوم",
+      "dayDiscounts": "كلما طالت المدة قلّ السعر اليومي",
+      "dayDiscountNow": "{days} يوم: خصم {off}% على السعر اليومي",
+      "dayTier": "{min}–{max} يوم −{off}%",
+      "dayTierFrom": "{min}+ يوم −{off}%",
+      "dayTierOne": "{min} يوم −{off}%"
     },
     "devices": {
       "search": "اكتب طراز هاتفك، مثل iPhone 15",

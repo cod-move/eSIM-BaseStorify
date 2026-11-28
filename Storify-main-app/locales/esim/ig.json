@@ -146,7 +146,12 @@
       "nDays": "Ụbọchị {days}",
       "fewerDays": "Otu ụbọchị belatara",
       "moreDays": "Otu ụbọchị gbakwunyere",
-      "perDay": "{price} kwa ụbọchị · ụbọchị {min}–{max}"
+      "perDay": "{price} kwa ụbọchị · ụbọchị {min}–{max}",
+      "dayDiscounts": "Ụbọchị ka ukwuu na-ebelata ọnụ ahịa kwa ụbọchị",
+      "dayDiscountNow": "Ụbọchị {days}: {off}% mbelata na ọnụ ahịa ụbọchị",
+      "dayTier": "Ụbọchị {min}–{max} −{off}%",
+      "dayTierFrom": "Ụbọchị {min}+ −{off}%",
+      "dayTierOne": "Ụbọchị {min} −{off}%"
     },
     "devices": {
       "search": "Dee ụdị ekwentị gị, dịka iPhone 15",

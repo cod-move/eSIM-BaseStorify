@@ -1,4 +1,5 @@
 import { clampDays, validityValue, type PerDayPricing } from "@/lib/esim/catalog/variants";
+import { daysPriceMinor } from "@/lib/esim/pricing/day-discount";
 import { parseNumberChoice, type NumberLineChoice, type NumberLineSnapshot } from "@/lib/esim/numbers/line";
 import type { NumberTopupChoice, NumberTopupSnapshot } from "@/lib/esim/numbers/topup-choice";
 import { parseNumberTopupChoice } from "@/lib/esim/numbers/topup-choice";
@@ -157,8 +158,9 @@ export function lineDays(attributes: unknown, perDay: PerDayPricing): number {
   return clampDays(days, perDay);
 }
 
+/** The per-day price times the days, less the multi-day discount. */
 export function linePriceMinor(perDay: PerDayPricing, days: number): number {
-  return perDay.priceMinor * days;
+  return daysPriceMinor(perDay.priceMinor, days, perDay.discounts);
 }
 
 /**

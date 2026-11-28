@@ -29,6 +29,7 @@ import {
   topupCards,
 } from './topup-filter';
 import { useBuyEsimTopup, useEsimTopupArea } from './use-esims';
+import { DayDiscounts } from '@/features/esim/day-discounts';
 
 type Refusal = (typeof ESIM_TOPUP_REFUSALS)[number];
 const isKnownRefusal = (reason: string): reason is Refusal =>
@@ -297,6 +298,11 @@ export function TopupPicker({
                         max: offer.perDay.maxDays,
                       })}
                     </Text>
+                    <DayDiscounts
+                      tiers={offer.perDay.discounts}
+                      days={days}
+                      maxDays={offer.perDay.maxDays}
+                    />
                   </View>
                 ) : null}
                 {grouped ? (

@@ -21,6 +21,7 @@ import { PlanDetailsSheet } from '@/features/esim/plan-details-sheet';
 import { useLocale } from '@/i18n/locale-store';
 import { useErrorMessage } from '@/i18n/use-error-message';
 import { cn } from '@/lib/cn';
+import { DayDiscounts } from '@/features/esim/day-discounts';
 
 /** A filter shows this many values until opened. */
 const COLLAPSED = 6;
@@ -264,12 +265,15 @@ export function DestinationPlans({ destination }: { destination: EsimDestination
               />
             </View>
             <Text variant="caption">
-              {t('perDayNote', {
-                days: plan.perDay.minDays,
-                price: plan.price.formatted,
-                perDay: plan.perDay.pricePerDay.formatted,
-              })}
+              {plan.perDay.discounts?.length
+                ? t('perDayNoteDiscounted', { perDay: plan.perDay.pricePerDay.formatted })
+                : t('perDayNote', {
+                    days: plan.perDay.minDays,
+                    price: plan.price.formatted,
+                    perDay: plan.perDay.pricePerDay.formatted,
+                  })}
             </Text>
+            <DayDiscounts tiers={plan.perDay.discounts} days={days} maxDays={plan.perDay.maxDays} />
           </View>
         ) : null}
 

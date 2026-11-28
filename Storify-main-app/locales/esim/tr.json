@@ -146,7 +146,12 @@
       "nDays": "{days} gün",
       "fewerDays": "Bir gün az",
       "moreDays": "Bir gün fazla",
-      "perDay": "Günlük {price} · {min}–{max} gün"
+      "perDay": "Günlük {price} · {min}–{max} gün",
+      "dayDiscounts": "Uzun kalışlarda gün başı fiyat düşer",
+      "dayDiscountNow": "{days} gün: günlük fiyatta %{off} indirim",
+      "dayTier": "{min}–{max} gün −%{off}",
+      "dayTierFrom": "{min}+ gün −%{off}",
+      "dayTierOne": "{min} gün −%{off}"
     },
     "devices": {
       "search": "Modelinizi yazın, ör. iPhone 15",

@@ -45,7 +45,8 @@ export interface IEsimPlan extends mongoose.Document {
   tethering: boolean | null;
   activation: { billingStarts: BillingStart | null; preInstallDays: number | null };
   topup: TopupRule;
-  cost: { currency: string; amountMinor: number; billingUnit: "plan" | "day" };
+  /** `dayDiscounts`: a day-priced plan's multi-day tiers (share paid in ten-thousandths). */
+  cost: { currency: string; amountMinor: number; billingUnit: "plan" | "day"; dayDiscounts?: Array<{ minDays: number; maxDays: number; payBp: number }> };
   bundles: Array<{ type: "vpn"; validityDays: number | null }>;
   extras: { voiceMinutes: number; smsCount: number; refundable: boolean; phoneNumberIncluded: boolean };
   additionalInfo: string | null;
@@ -158,6 +159,10 @@ const EsimPlanSchema = new Schema<IEsimPlan>(
       currency: { type: String, required: true, uppercase: true },
       amountMinor: { type: Number, required: true, min: 0 },
       billingUnit: { type: String, enum: ["plan", "day"], default: "plan" },
+      dayDiscounts: {
+        type: [new Schema({ minDays: { type: Number, min: 1 }, maxDays: { type: Number, min: 1 }, payBp: { type: Number, min: 1, max: 10000 } }, { _id: false })],
+        default: undefined,
+      },
     },
     bundles: {
       type: [new Schema({ type: { type: String, enum: ["vpn"] }, validityDays: nullableNumber }, { _id: false })],

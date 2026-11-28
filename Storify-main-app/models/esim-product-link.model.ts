@@ -20,7 +20,14 @@ export interface IEsimProductLink extends mongoose.Document {
      * Set on a day-priced variant: the buyer picks the days within the range
      * and the line costs `priceMinor` per day (patch point P10).
      */
-    perDay: { priceMinor: number; minDays: number; maxDays: number; defaultDays: number } | null;
+    perDay: {
+      priceMinor: number;
+      minDays: number;
+      maxDays: number;
+      defaultDays: number;
+      /** Multi-day discount tiers (share paid in ten-thousandths). */
+      discounts?: Array<{ minDays: number; maxDays: number; payBp: number }>;
+    } | null;
     candidates: mongoose.Types.ObjectId[];
   }>;
   publishedAt: Date;
@@ -47,6 +54,10 @@ const EsimProductLinkSchema = new Schema<IEsimProductLink>(
                   minDays: { type: Number, required: true, min: 1 },
                   maxDays: { type: Number, required: true, min: 1 },
                   defaultDays: { type: Number, required: true, min: 1 },
+                  discounts: {
+                    type: [new Schema({ minDays: Number, maxDays: Number, payBp: Number }, { _id: false })],
+                    default: undefined,
+                  },
                 },
                 { _id: false },
               ),

@@ -6,6 +6,7 @@ import { formatBytes, remainingPercent } from "@/lib/esim/account/display";
 import type { EsimView } from "@/lib/esim/account/esims";
 import { installLinks } from "@/lib/esim/fulfillment/install-links";
 import { activationDateBounds } from "@/lib/esim/cart/line-attributes";
+import { discountTiers } from "@/lib/esim/pricing/day-discount";
 import { planFacets, type PlanFilterView } from "./plan-filters";
 
 /** The website's eSIM view (lib/esim/account/esims.ts) in the mobile contract's shape (APP-03/04). */
@@ -122,6 +123,7 @@ export function toEsimDestinationDetail(destination: DestinationDetail, currency
               minDays: variant.perDay.minDays,
               maxDays: variant.perDay.maxDays,
               pricePerDay: toMoney(variant.perDay.priceMinor / 100, currency),
+              ...discountTiers(variant.perDay.discounts, variant.perDay.minDays, variant.perDay.maxDays),
             },
           }
         : {}),

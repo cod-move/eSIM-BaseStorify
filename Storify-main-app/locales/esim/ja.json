@@ -146,7 +146,12 @@
       "nDays": "{days}日",
       "fewerDays": "1日減らす",
       "moreDays": "1日増やす",
-      "perDay": "1日あたり{price} · {min}〜{max}日"
+      "perDay": "1日あたり{price} · {min}〜{max}日",
+      "dayDiscounts": "長く使うほど1日あたりが安くなります",
+      "dayDiscountNow": "{days}日：1日料金から{off}%オフ",
+      "dayTier": "{min}〜{max}日 −{off}%",
+      "dayTierFrom": "{min}日以上 −{off}%",
+      "dayTierOne": "{min}日 −{off}%"
     },
     "devices": {
       "search": "機種名を入力（例：iPhone 15）",

@@ -11,6 +11,7 @@ import { getLocaleRouting } from "@/lib/i18n/locale-routing";
 import { getStorefrontMetadataSettings } from "@/lib/storefront/storefront-metadata";
 import { DestinationIcon } from "@/components/esim/flag";
 import { refreshMissingNetworks, regionNamesFor, type DestinationDetail } from "@/lib/esim/storefront/catalog";
+import { daysPriceMinor } from "@/lib/esim/pricing/day-discount";
 
 /**
  * A destination's page (WEB-31..33): its plans as filters over cards (each
@@ -62,7 +63,7 @@ export async function DestinationPage({
   const local = destination.scope === "local";
   // The page's own plans: a region's plans shown here are offered under the region.
   const ownVariants = destination.variants.filter((variant) => variant.coverageScope !== "multi");
-  const prices = ownVariants.map((variant) => variant.perDay ? variant.perDay.priceMinor * variant.perDay.minDays : variant.priceMinor);
+  const prices = ownVariants.map((variant) => variant.perDay ? daysPriceMinor(variant.perDay.priceMinor, variant.perDay.minDays, variant.perDay.discounts) : variant.priceMinor);
   const faq = [
     {
       q: tr("esim.faq.compatibleQ", "Will it work on my phone?"),

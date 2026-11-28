@@ -1,4 +1,5 @@
 import type { StorefrontVariant } from "@/lib/esim/storefront/selector";
+import { daysPriceMinor } from "@/lib/esim/pricing/day-discount";
 
 /**
  * A destination's plans side by side (WEB-14) and the countries a regional or
@@ -21,7 +22,7 @@ export interface ComparisonRow {
 export function comparisonRows(variants: StorefrontVariant[]): ComparisonRow[] {
   const rows = variants.map((variant): ComparisonRow => {
     const days = variant.perDay ? variant.perDay.minDays : variant.days;
-    const priceMinor = variant.perDay ? variant.perDay.priceMinor * variant.perDay.minDays : variant.priceMinor;
+    const priceMinor = variant.perDay ? daysPriceMinor(variant.perDay.priceMinor, variant.perDay.minDays, variant.perDay.discounts) : variant.priceMinor;
     const perGbMinor = (variant.dataType === "total" || variant.dataType === "lifetime") && variant.megabytes > 0
       ? Math.round((priceMinor * 1024) / variant.megabytes)
       : null;

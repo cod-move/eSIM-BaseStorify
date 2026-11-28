@@ -146,7 +146,12 @@
       "nDays": "Izinsuku ezingu-{days}",
       "fewerDays": "Usuku olulodwa ngaphansi",
       "moreDays": "Usuku olulodwa ngaphezulu",
-      "perDay": "{price} ngosuku · izinsuku ezingu-{min}–{max}"
+      "perDay": "{price} ngosuku · izinsuku ezingu-{min}–{max}",
+      "dayDiscounts": "Isikhathi eside sibiza kancane ngosuku",
+      "dayDiscountNow": "Izinsuku ezingu-{days}: {off}% isaphulelo entengweni yosuku",
+      "dayTier": "Izinsuku {min}–{max} −{off}%",
+      "dayTierFrom": "Izinsuku {min}+ −{off}%",
+      "dayTierOne": "Izinsuku {min} −{off}%"
     },
     "devices": {
       "search": "Bhala imodeli yakho, isb. iPhone 15",

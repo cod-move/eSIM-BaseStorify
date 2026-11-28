@@ -146,7 +146,12 @@
       "nDays": "Iintsuku ezi-{days}",
       "fewerDays": "Usuku olunye ngaphantsi",
       "moreDays": "Usuku olunye ngaphezulu",
-      "perDay": "{price} ngosuku · iintsuku ezi-{min}–{max}"
+      "perDay": "{price} ngosuku · iintsuku ezi-{min}–{max}",
+      "dayDiscounts": "Ixesha elide lixabisa kancinci ngosuku",
+      "dayDiscountNow": "Iintsuku ezi-{days}: {off}% isaphulelo kwixabiso losuku",
+      "dayTier": "Iintsuku {min}–{max} −{off}%",
+      "dayTierFrom": "Iintsuku {min}+ −{off}%",
+      "dayTierOne": "Iintsuku {min} −{off}%"
     },
     "devices": {
       "search": "Chwetheza imodeli yakho, umz. iPhone 15",

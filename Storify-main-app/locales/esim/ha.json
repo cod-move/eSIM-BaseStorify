@@ -146,7 +146,12 @@
       "nDays": "Kwanaki {days}",
       "fewerDays": "Rage kwana ɗaya",
       "moreDays": "Ƙara kwana ɗaya",
-      "perDay": "{price} a kowace rana · kwanaki {min}–{max}"
+      "perDay": "{price} a kowace rana · kwanaki {min}–{max}",
+      "dayDiscounts": "Dogon zama yana rage farashin kowace rana",
+      "dayDiscountNow": "Kwanaki {days}: ragi {off}% a farashin rana",
+      "dayTier": "Kwanaki {min}–{max} −{off}%",
+      "dayTierFrom": "Kwanaki {min}+ −{off}%",
+      "dayTierOne": "Kwanaki {min} −{off}%"
     },
     "devices": {
       "search": "Rubuta samfurin wayarka, misali iPhone 15",

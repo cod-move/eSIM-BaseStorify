@@ -146,7 +146,12 @@
       "nDays": "Siku {days}",
       "fewerDays": "Siku moja pungufu",
       "moreDays": "Siku moja zaidi",
-      "perDay": "{price} kwa siku · siku {min}–{max}"
+      "perDay": "{price} kwa siku · siku {min}–{max}",
+      "dayDiscounts": "Siku nyingi zaidi, bei ya kila siku inapungua",
+      "dayDiscountNow": "Siku {days}: punguzo la {off}% kwa bei ya siku",
+      "dayTier": "Siku {min}–{max} −{off}%",
+      "dayTierFrom": "Siku {min}+ −{off}%",
+      "dayTierOne": "Siku {min} −{off}%"
     },
     "devices": {
       "search": "Andika muundo wa simu yako, k.m. iPhone 15",

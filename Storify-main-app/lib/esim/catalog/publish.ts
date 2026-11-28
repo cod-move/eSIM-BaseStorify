@@ -93,6 +93,7 @@ async function eligiblePlans(productSlugs?: string[]): Promise<VariantPlan[]> {
     minDays: plan.duration.minDays,
     maxDays: plan.duration.maxDays,
     defaultDays: plan.duration.defaultDays,
+    dayDiscounts: plan.cost.dayDiscounts ?? [],
     retailPriceMinor: plan.retailPriceMinor ?? 0,
     costUsdMinor: plan.pricing?.costUsdMinor ?? 0,
     highSpeedGbPerDay: plan.fairUse?.highSpeedGbPerDay ?? null,

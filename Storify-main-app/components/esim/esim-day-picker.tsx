@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { useProductPurchase } from "@/components/products/product-purchase";
 import { activationDateBounds } from "@/lib/esim/cart/line-attributes";
+import { daysPriceMinor, type DayDiscount } from "@/lib/esim/pricing/day-discount";
 import { DayStepper } from "./day-stepper";
 
 /**
@@ -16,7 +17,7 @@ import { DayStepper } from "./day-stepper";
  * they give; the cart re-prices the line on the server either way.
  */
 
-type PerDay = { priceMinor: number; minDays: number; maxDays: number; defaultDays: number };
+type PerDay = { priceMinor: number; minDays: number; maxDays: number; defaultDays: number; discounts?: DayDiscount[] };
 
 const pricingCache = new Map<string, Promise<Record<string, PerDay>>>();
 
@@ -75,7 +76,7 @@ export function EsimDayPicker() {
       ...(scheduled && nextDate ? { activateOn: nextDate } : {}),
     };
     if (!Object.keys(attributes).length) return setLineOptions(null);
-    const price = perDay && nextDays !== undefined ? (perDay.priceMinor * nextDays) / 100 : Number(selectedVariant?.price ?? 0);
+    const price = perDay && nextDays !== undefined ? daysPriceMinor(perDay.priceMinor, nextDays, perDay.discounts) / 100 : Number(selectedVariant?.price ?? 0);
     setLineOptions({ variantId, attributes, price });
   };
 
@@ -86,7 +87,7 @@ export function EsimDayPicker() {
       setLineOptions({
         variantId,
         attributes: { days: perDay.defaultDays },
-        price: (perDay.priceMinor * perDay.defaultDays) / 100,
+        price: daysPriceMinor(perDay.priceMinor, perDay.defaultDays, perDay.discounts) / 100,
       });
     }
   }, [perDay, variantId, lineOptions?.variantId, setLineOptions]);
@@ -106,6 +107,7 @@ export function EsimDayPicker() {
           onChange={(value) => commit(value, activateOn)}
           t={tf}
           idKey={variantId}
+          discounts={perDay.discounts}
         />
       ) : null}
       {scheduled ? (

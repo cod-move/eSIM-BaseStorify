@@ -34,6 +34,7 @@ import {
   type TopupInput,
   type TopupResult,
 } from "./types";
+import { cleanDayDiscounts, type DayDiscount } from "@/lib/esim/pricing/day-discount";
 
 /**
  * eSIM Access open API (https://api.esimaccess.com/api/v1/open).
@@ -55,6 +56,8 @@ const BYTES_PER_MB = 1024 * 1024;
 // `periodNum` (1–365); their top-ups likewise (decided 2026-11-28, replacing
 // the fixed one-day sale of 2026-10-25).
 const DAILY_MAX_DAYS = 365;
+const DISCOUNT_TTL_MS = 60 * 60 * 1000;
+const discountCache = new Map<string, { at: number; rules: Map<string, DayDiscount[]> }>();
 
 export interface EsimAccessOptions {
   accessCode: string;
@@ -70,8 +73,8 @@ export class EsimAccessAdapter implements EsimProviderAdapter {
     purchase: true,
     usage: true,
     topup: true,
-    // The API refunds only unused profiles and only on request to support.
-    cancel: false,
+    // Only a profile not installed yet (GOT_RESOURCE + RELEASED); its price goes back to the balance.
+    cancel: true,
     planLookup: true,
   } as const;
 
@@ -97,9 +100,9 @@ export class EsimAccessAdapter implements EsimProviderAdapter {
   }
 
   async *listPlans(): AsyncIterable<ProviderPlan> {
-    const names = await this.locationNames();
+    const [names, discounts] = await Promise.all([this.locationNames(), this.dayDiscounts()]);
     for (const row of await this.packages({ type: "BASE" })) {
-      yield mapPlan(row, names);
+      yield mapPlan(row, names, discounts);
     }
   }
 
@@ -107,7 +110,9 @@ export class EsimAccessAdapter implements EsimProviderAdapter {
     const row = (await this.packages({ packageCode: providerPlanId })).find(
       (candidate) => str(candidate.packageCode) === providerPlanId,
     );
-    return row ? mapPlan(row, await this.locationNames()) : null;
+    if (!row) return null;
+    const [names, discounts] = await Promise.all([this.locationNames(), this.dayDiscounts()]);
+    return mapPlan(row, names, discounts);
   }
 
   async purchase(input: PurchaseInput): Promise<PurchaseResult> {
@@ -176,7 +181,8 @@ export class EsimAccessAdapter implements EsimProviderAdapter {
 
   async listTopupPlans(ref: EsimRef): Promise<ProviderTopupPlan[]> {
     if (!ref.iccid) throw new ProviderError("not_found", "eSIM Access lists top-ups by ICCID");
-    return (await this.packages({ type: "TOPUP", iccid: ref.iccid })).map(topupPlanOf);
+    const [rows, discounts] = await Promise.all([this.packages({ type: "TOPUP", iccid: ref.iccid }), this.dayDiscounts()]);
+    return rows.map((row) => topupPlanOf(row, discounts));
   }
 
   async topup(input: TopupInput): Promise<TopupResult> {
@@ -193,8 +199,53 @@ export class EsimAccessAdapter implements EsimProviderAdapter {
     };
   }
 
-  async cancel(): Promise<CancelResult> {
-    return { status: "not_supported", raw: {} };
+  /**
+   * Cancels a profile that was issued but never installed; eSIM Access refunds
+   * its price to the balance. By esimTranNo where known (as it recommends),
+   * else the ICCID. A plain refusal (installed, used, already cancelled)
+   * comes back unconfirmed, so nothing is refunded to the shopper.
+   */
+  async cancel(ref: EsimRef): Promise<CancelResult> {
+    const esimTranNo = ref.providerEsimId?.trim();
+    const iccid = ref.iccid?.trim();
+    if (!esimTranNo && !iccid) throw new ProviderError("not_found", "eSIM Access cancels by esimTranNo or ICCID");
+    const { body } = await this.post("/esim/cancel", esimTranNo ? { esimTranNo } : { iccid: iccid ?? "" });
+    return { status: bool(body.success) ? "cancelled" : "unconfirmed", raw: body };
+  }
+
+  /**
+   * The multi-day discount rules of daily packages, by rule code
+   * (`discountRuleCode` on a package). Percentage rules in force only; a
+   * fixed-amount rule is left out (its amount's shape is not documented), so
+   * those days are priced in full. Kept an hour.
+   */
+  private async dayDiscounts(): Promise<Map<string, DayDiscount[]>> {
+    const cached = discountCache.get(this.baseUrl);
+    if (cached && Date.now() - cached.at < DISCOUNT_TTL_MS) return cached.rules;
+    // Without the rules every day is priced in full, which never undercharges: a failed read only skips the discount.
+    const result = await this.call("/discountRule/list", {}).catch(() => null);
+    if (!result) return new Map();
+    const now = Date.now();
+    const rules = new Map<string, DayDiscount[]>();
+    for (const rule of objArray(result.list)) {
+      const code = str(rule.discountRuleCode);
+      const period = obj(rule.validPeriod);
+      const starts = Date.parse(str(period.startTime));
+      const ends = Date.parse(str(period.endTime));
+      if (!code || int(rule.rewardType) !== 20 || starts > now || ends < now) continue;
+      rules.set(
+        code,
+        cleanDayDiscounts(
+          objArray(rule.periodRuleList).map((tier) => ({
+            minDays: int(tier.minDays) ?? undefined,
+            maxDays: int(tier.maxDays) ?? undefined,
+            payBp: num(tier.payRatio) === null ? undefined : Math.round((num(tier.payRatio) as number) * 10_000),
+          })),
+        ),
+      );
+    }
+    discountCache.set(this.baseUrl, { at: Date.now(), rules });
+    return rules;
   }
 
   private async locationNames(): Promise<Map<string, string>> {
@@ -386,7 +437,7 @@ export function isDailyPackage(row: JsonObject) {
  * the shopper picks (`perDay`): its cost is per day, and the days go back as
  * `periodNum` (topupPlanIdForDays → topupOrderOf).
  */
-export function topupPlanOf(row: JsonObject): ProviderTopupPlan {
+export function topupPlanOf(row: JsonObject, discounts: ReadonlyMap<string, DayDiscount[]> = new Map()): ProviderTopupPlan {
   const plan = {
     topupPlanId: topupPlanIdOf(row),
     name: str(row.name),
@@ -396,7 +447,11 @@ export function topupPlanOf(row: JsonObject): ProviderTopupPlan {
     raw: row,
   };
   return isDailyPackage(row)
-    ? { ...plan, topupPlanId: str(row.packageCode), perDay: { minDays: 1, maxDays: DAILY_MAX_DAYS, defaultDays: 1 } }
+    ? {
+        ...plan,
+        topupPlanId: str(row.packageCode),
+        perDay: { minDays: 1, maxDays: DAILY_MAX_DAYS, defaultDays: 1, ...withDiscounts(row, discounts, "discounts") },
+      }
     : plan;
 }
 
@@ -406,7 +461,13 @@ export function topupOrderOf(topupPlanId: string): { packageCode: string; period
   return days ? { packageCode, periodNum: days } : { packageCode };
 }
 
-export function mapPlan(row: JsonObject, names: Map<string, string>): ProviderPlan {
+/** A daily package's discount tiers under `key`, when its rule is known and gives some. */
+function withDiscounts<K extends string>(row: JsonObject, discounts: ReadonlyMap<string, DayDiscount[]>, key: K): { [P in K]?: DayDiscount[] } {
+  const tiers = discounts.get(str(row.discountRuleCode));
+  return tiers?.length ? ({ [key]: tiers } as { [P in K]?: DayDiscount[] }) : {};
+}
+
+export function mapPlan(row: JsonObject, names: Map<string, string>, discounts: ReadonlyMap<string, DayDiscount[]> = new Map()): ProviderPlan {
   const id = str(row.packageCode);
   const coverage = coverageOf(row, names);
   const days = validityDays(row);
@@ -466,10 +527,16 @@ export function mapPlan(row: JsonObject, names: Map<string, string>): ProviderPl
           supported: false, type: null, mode: "none", stackTarget: null, window: null,
           coverage: null, profileRetentionDays: null,
         },
-    // A daily plan's price is its price per day.
-    cost: { currency: currency(row.currencyCode, "USD"), amountMinor: cents(row.price), billingUnit: daily ? "day" : "plan" },
+    // A daily plan's price is its price per day, less its multi-day discount.
+    cost: {
+      currency: currency(row.currencyCode, "USD"),
+      amountMinor: cents(row.price),
+      billingUnit: daily ? "day" : "plan",
+      ...(daily ? withDiscounts(row, discounts, "dayDiscounts") : {}),
+    },
     bundles: [],
-    extras: { voiceMinutes: 0, smsCount, refundable: false, phoneNumberIncluded: false },
+    // Any profile can be cancelled (refunded) until it is installed.
+    extras: { voiceMinutes: 0, smsCount, refundable: true, phoneNumberIncluded: false },
     // `description` only repeats the plan name; the speed policy is the useful note.
     additionalInfo: strOrNull(row.fupPolicy),
     available: true,

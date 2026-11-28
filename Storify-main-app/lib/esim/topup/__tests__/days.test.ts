@@ -23,6 +23,12 @@ describe("a top-up taken for some days", () => {
     assert.equal(week.perDay, null);
   });
 
+  it("takes the multi-day discount off the cost for those days", () => {
+    const discounted = { ...dayPass, perDay: { ...dayPass.perDay!, discounts: [{ minDays: 5, maxDays: 9, payBp: 9200 }] } };
+    assert.equal(forDays(discounted, 7).cost.amountMinor, 618); // 6.72 × 92% = 6.1824
+    assert.equal(forDays(discounted, 4).cost.amountMinor, 384);
+  });
+
   it("takes the default days when none is asked (an app from before the stepper)", () => {
     assert.equal(forDays(dayPass).topupPlanId, "TOPUP_P9LD7ZDVR|1");
   });

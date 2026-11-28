@@ -146,7 +146,12 @@
       "nDays": "{days} दिन",
       "fewerDays": "एक दिन कम",
       "moreDays": "एक दिन ज़्यादा",
-      "perDay": "{price} प्रति दिन · {min}–{max} दिन"
+      "perDay": "{price} प्रति दिन · {min}–{max} दिन",
+      "dayDiscounts": "ज़्यादा दिनों पर हर दिन सस्ता",
+      "dayDiscountNow": "{days} दिन: रोज़ाना कीमत पर {off}% छूट",
+      "dayTier": "{min}–{max} दिन −{off}%",
+      "dayTierFrom": "{min}+ दिन −{off}%",
+      "dayTierOne": "{min} दिन −{off}%"
     },
     "devices": {
       "search": "अपना मॉडल लिखें, जैसे iPhone 15",

@@ -9,6 +9,8 @@
  * in `raw` for audit and troubleshooting.
  */
 
+import type { DayDiscount } from "@/lib/esim/pricing/day-discount";
+
 export type JsonValue =
   | null
   | boolean
@@ -85,7 +87,8 @@ export interface ProviderPlan {
   tethering: boolean | null;
   activation: { billingStarts: BillingStart | null; preInstallDays: number | null };
   topup: TopupRule;
-  cost: Money & { billingUnit: "plan" | "day" };
+  /** `dayDiscounts`: for a day-priced plan, the supplier's multi-day tiers (its cost for N days is discounted by them). */
+  cost: Money & { billingUnit: "plan" | "day"; dayDiscounts?: DayDiscount[] };
   bundles: Array<{ type: "vpn"; validityDays: number | null }>;
   /** Fields Stellar lacks but other providers carry. */
   extras: {
@@ -223,7 +226,7 @@ export interface ProviderTopupPlan {
    * A day pass the shopper tops up for a number of days they choose: `cost` is
    * per day, and the offer taken for `days` is `topupPlanIdForDays(topupPlanId, days)`.
    */
-  perDay?: { minDays: number; maxDays: number; defaultDays: number } | null;
+  perDay?: { minDays: number; maxDays: number; defaultDays: number; discounts?: DayDiscount[] } | null;
 }
 
 /** The offer id of a per-day top-up taken for a number of days: `<id>|<days>`. */

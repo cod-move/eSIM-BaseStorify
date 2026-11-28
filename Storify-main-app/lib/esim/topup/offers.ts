@@ -2,6 +2,7 @@ import "server-only";
 
 import { mongoose } from "@/lib/db";
 import { EsimPlan, type IEsimPlan } from "@/models/esim-plan.model";
+import { daysPriceMinor, type DayDiscount } from "@/lib/esim/pricing/day-discount";
 import { EsimProvider } from "@/models/esim-provider.model";
 import { EsimTopupQuote, type IEsimTopupQuote } from "@/models/esim-topup-quote.model";
 import type { IEsimProfile } from "@/models/esim-profile.model";
@@ -50,7 +51,7 @@ export interface TopupOffer {
    * A day pass taken for the days the shopper picks: `priceMinor` here is its
    * price per day; the offer's own price and days are for `defaultDays`.
    */
-  perDay: { priceMinor: number; minDays: number; maxDays: number; defaultDays: number } | null;
+  perDay: { priceMinor: number; minDays: number; maxDays: number; defaultDays: number; discounts?: DayDiscount[] } | null;
 }
 
 /** An area with top-ups other than renewing the own plan: its offers are fetched when chosen. */
@@ -214,7 +215,7 @@ export async function topupOffers(userId: string, esimId: string, options: { are
         name: plan.name,
         megabytes: plan.megabytes,
         validityDays: perDay ? perDay.defaultDays : plan.validityDays,
-        priceMinor: perDay ? perDay.priceMinor * perDay.defaultDays : price,
+        priceMinor: perDay ? daysPriceMinor(perDay.priceMinor, perDay.defaultDays, perDay.discounts) : price,
         perDay,
         area: anyArea ? (plan.area?.name ?? null) : null,
         sameArea,
@@ -265,7 +266,7 @@ export interface CreatedQuote {
  * Writes the quote for one offered top-up and returns what the cart line
  * needs. A day pass is quoted for `days` (its default days when none is
  * given, as an app from before the day stepper asks): the supplier's id for
- * those days, at its price per day times them.
+ * those days, at its price per day times them less its multi-day discount.
  */
 export async function createTopupQuote(userId: string, esimId: string, topupPlanId: string, days?: number | null): Promise<CreatedQuote | null> {
   const found = await owned(userId, esimId);
@@ -280,7 +281,7 @@ export async function createTopupQuote(userId: string, esimId: string, topupPlan
   const [unitMinor] = await priceTopupCosts([listed.cost], found.plan);
   if (!unitMinor) throw new TopupError("This top-up cannot be priced right now");
   // A day pass is priced per day, as the list showed it, so the cart charges what the stepper said.
-  const priceMinor = listed.perDay ? unitMinor * offered.validityDays : unitMinor;
+  const priceMinor = listed.perDay ? daysPriceMinor(unitMinor, offered.validityDays, listed.perDay.discounts) : unitMinor;
   const quote = await EsimTopupQuote.create({
     customer: new mongoose.Types.ObjectId(userId),
     esim: found.profile._id,

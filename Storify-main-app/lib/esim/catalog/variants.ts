@@ -1,3 +1,4 @@
+import { daysPriceMinor, type DayDiscount } from "@/lib/esim/pricing/day-discount";
 import type { DataType } from "@/lib/esim/providers/types";
 
 /**
@@ -34,6 +35,8 @@ export interface VariantPlan {
   minDays: number;
   maxDays: number;
   defaultDays: number;
+  /** A day-priced plan's multi-day discount tiers; empty when it has none. */
+  dayDiscounts?: DayDiscount[];
   retailPriceMinor: number;
   costUsdMinor: number;
   highSpeedGbPerDay: number | null;
@@ -68,6 +71,8 @@ export interface PerDayPricing {
   minDays: number;
   maxDays: number;
   defaultDays: number;
+  /** Multi-day discount tiers: N days cost `daysPriceMinor(priceMinor, N, discounts)`. */
+  discounts?: DayDiscount[];
 }
 
 export interface PlannedProduct {
@@ -186,6 +191,7 @@ export function planProducts(plans: VariantPlan[], pins: ReadonlyMap<string, Rea
               minDays: primary.minDays,
               maxDays: primary.maxDays,
               defaultDays: clampDays(primary.defaultDays, { ...primary, defaultDays: primary.minDays }),
+              ...(primary.dayDiscounts?.length ? { discounts: primary.dayDiscounts } : {}),
             }
           : null;
         const validity = perDay ? dayRangeValue(perDay.minDays, perDay.maxDays) : validityValue(primary.validityDays);
@@ -194,8 +200,8 @@ export function planProducts(plans: VariantPlan[], pins: ReadonlyMap<string, Rea
           name: `${data} / ${validity}`,
           dataValue: data,
           validityValue: validity,
-          priceMinor: perDay ? perDay.priceMinor * perDay.minDays : primary.retailPriceMinor,
-          costUsdMinor: perDay ? primary.costUsdMinor * perDay.minDays : primary.costUsdMinor,
+          priceMinor: perDay ? daysPriceMinor(perDay.priceMinor, perDay.minDays, perDay.discounts) : primary.retailPriceMinor,
+          costUsdMinor: perDay ? daysPriceMinor(primary.costUsdMinor, perDay.minDays, perDay.discounts) : primary.costUsdMinor,
           perDay,
           candidates: ordered.map((plan) => plan.id),
           distinction: null,

@@ -1,5 +1,6 @@
 import type { BillingStart, DataType, TopupMode, TopupStackTarget, TopupWindow } from "@/lib/esim/providers/types";
 import type { PerDayPricing } from "@/lib/esim/catalog/variants";
+import { daysPriceMinor } from "@/lib/esim/pricing/day-discount";
 
 /**
  * The plan selector's steps (WEB-13), pure so the page and the client agree:
@@ -145,7 +146,7 @@ export function resolveSelection(variants: StorefrontVariant[], choice: Selector
 /** The lowest price a destination sells from: a day-priced variant counts at its fewest days. */
 export function fromPriceMinor(variants: StorefrontVariant[]): number | null {
   const prices = variants.map((variant) =>
-    variant.perDay ? variant.perDay.priceMinor * variant.perDay.minDays : variant.priceMinor,
+    variant.perDay ? daysPriceMinor(variant.perDay.priceMinor, variant.perDay.minDays, variant.perDay.discounts) : variant.priceMinor,
   );
   return prices.length ? Math.min(...prices) : null;
 }

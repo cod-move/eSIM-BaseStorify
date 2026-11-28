@@ -150,7 +150,12 @@
       "nDays": "{days} 天",
       "fewerDays": "減少一天",
       "moreDays": "增加一天",
-      "perDay": "每天 {price} · 可選 {min}–{max} 天"
+      "perDay": "每天 {price} · 可選 {min}–{max} 天",
+      "dayDiscounts": "買得越久，每天越便宜",
+      "dayDiscountNow": "{days} 天：日價優惠 {off}%",
+      "dayTier": "{min}–{max} 天 −{off}%",
+      "dayTierFrom": "{min} 天以上 −{off}%",
+      "dayTierOne": "{min} 天 −{off}%"
     },
     "devices": {
       "search": "輸入機型，例如 iPhone 15",

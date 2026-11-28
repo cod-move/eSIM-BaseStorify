@@ -6,6 +6,7 @@ import {
   type SelectorOption,
   type StorefrontVariant,
 } from "@/lib/esim/storefront/selector";
+import { daysPriceMinor } from "@/lib/esim/pricing/day-discount";
 
 /**
  * A destination's plans as filters and a paged list of cards (WEB-13/14):
@@ -44,7 +45,7 @@ const valuesOf: Record<PlanFilterKey, (variant: StorefrontVariant) => string[]> 
 
 /** What a plan costs at the least: a day-priced plan at its fewest days. */
 export const lowestPriceMinor = (variant: StorefrontVariant) =>
-  variant.perDay ? variant.perDay.priceMinor * variant.perDay.minDays : variant.priceMinor;
+  variant.perDay ? daysPriceMinor(variant.perDay.priceMinor, variant.perDay.minDays, variant.perDay.discounts) : variant.priceMinor;
 
 function matches(variant: StorefrontVariant, filters: PlanFilters, except?: PlanFilterKey): boolean {
   return PLAN_FILTERS.every((key) => key === except || filters[key] === undefined || valuesOf[key](variant).includes(filters[key]!));
