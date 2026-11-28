@@ -591,6 +591,12 @@
       "choose": "Choose a country or region",
       "search": "Search countries",
       "none": "No country matches"
+    },
+    "update": {
+      "title": "A new version is available",
+      "body": "Version {latest} is out (you have {current}). Update for the latest features and fixes.",
+      "action": "Update",
+      "later": "Later"
     }
   }
 }

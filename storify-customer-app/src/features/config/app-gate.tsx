@@ -8,6 +8,7 @@ import type { Config } from '@/contracts/mobile/shop/v1';
 import { appInfo } from '@/lib/device';
 import { compareVersions } from '@/lib/version';
 import { useThemeSync } from '@/theme/use-theme';
+import { NewVersionPrompt } from '@/features/esim/new-version-prompt'; // [esim-patch] P89 offer the latest version
 
 import { GateScreen, UpdatePrompt } from './gate-screen';
 import { useConfig } from './use-config';
@@ -88,6 +89,8 @@ export function AppGate({ children }: PropsWithChildren) {
         storeUrl={release?.storeUrl}
         onDismiss={dismissUpdate}
       />
+      {/* [esim-patch] P89 offer the latest version */}
+      <NewVersionPrompt release={release} />
     </>
   );
 }

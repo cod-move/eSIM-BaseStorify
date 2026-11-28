@@ -85,6 +85,11 @@ export function DestinationPlans({ destination }: { destination: EsimDestination
   const locale = useLocale();
   // Days after the earliest start the store allows; null = starts as usual.
   const [startOffset, setStartOffset] = useState<number | null>(null);
+  // The fixed bar's height, so the list scrolls clear of it (taller with the day stepper).
+  const [barHeight, setBarHeight] = useState(84);
+  const dayTier = plan?.perDay?.discounts?.find(
+    (tier) => days >= tier.minDays && days <= tier.maxDays
+  );
   const startDate =
     plan?.startDate && startOffset !== null ? addDays(plan.startDate.min, startOffset) : null;
 
@@ -132,7 +137,7 @@ export function DestinationPlans({ destination }: { destination: EsimDestination
       <ScrollView
         className="flex-1"
         contentContainerClassName="gap-4 px-4 pt-3"
-        contentContainerStyle={{ paddingBottom: tabBar + 96 }}>
+        contentContainerStyle={{ paddingBottom: tabBar + barHeight + 12 }}>
         <View className="flex-row items-center gap-3">
           <DestinationFlag destination={destination} size={52} />
           <View className="flex-1 gap-0.5">
@@ -253,17 +258,8 @@ export function DestinationPlans({ destination }: { destination: EsimDestination
         )}
 
         {plan?.perDay ? (
+          // The days are picked in the fixed bar above "Add to cart"; here, how they are priced.
           <View className="gap-2 rounded-xl bg-surface p-4">
-            <Text variant="subheading">{t('howManyDays')}</Text>
-            <View className="flex-row items-center justify-between gap-3">
-              <Text>{t('days', { count: days })}</Text>
-              <Stepper
-                value={days}
-                min={plan.perDay.minDays}
-                max={plan.perDay.maxDays}
-                onChange={setDays}
-              />
-            </View>
             <Text variant="caption">
               {plan.perDay.discounts?.length
                 ? t('perDayNoteDiscounted', { perDay: plan.perDay.pricePerDay.formatted })
@@ -326,8 +322,30 @@ export function DestinationPlans({ destination }: { destination: EsimDestination
 
       {plan ? (
         <View
-          className="absolute inset-x-0 border-t border-border bg-background px-4 pt-3"
-          style={{ bottom: tabBar, paddingBottom: 12 }}>
+          className="absolute inset-x-0 gap-3 border-t border-border bg-background px-4 pt-3"
+          style={{ bottom: tabBar, paddingBottom: 12 }}
+          onLayout={(event) => setBarHeight(event.nativeEvent.layout.height)}>
+          {plan.perDay ? (
+            <View className="flex-row items-center justify-between gap-3">
+              <View className="flex-1 gap-0.5">
+                <Text variant="subheading">{t('howManyDays')}</Text>
+                <Text
+                  variant="caption"
+                  className={dayTier ? 'font-semibold text-success' : undefined}>
+                  {dayTier
+                    ? t('dayDiscountNow', { days, off: dayTier.percentOff })
+                    : t('days', { count: days })}
+                </Text>
+              </View>
+              <Stepper
+                variant="product"
+                value={days}
+                min={plan.perDay.minDays}
+                max={plan.perDay.maxDays}
+                onChange={setDays}
+              />
+            </View>
+          ) : null}
           <Button
             label={t('addToCart')}
             trailing={plan.perDay ? undefined : plan.price.formatted}
