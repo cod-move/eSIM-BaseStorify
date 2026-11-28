@@ -203,7 +203,7 @@
       "buy": "Ödemeye geç",
       "quoteFailed": "Yükleme başlatılamadı",
       "stack": "Yükleme mevcut paketinize eklenir: daha fazla veri ve bazı paketlerde daha fazla gün.",
-      "stackDays": "Yükleme mevcut paketinize gün ekler, veri hakkı aynı kalır.",
+      "stackDays": "Yükleme, mevcut paketiniz için her biri aynı günlük veriyle ek gün satın alır.",
       "stackData": "Yükleme mevcut paketinize veri ekler.",
       "stackBoth": "Yükleme mevcut paketinize veri ve gün ekler.",
       "addon": "Yükleme ayrı bir pakettir: verisi ve günleri mevcut paketinizle birlikte başlar.",

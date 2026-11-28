@@ -203,7 +203,7 @@
       "buy": "Continuar al pago",
       "quoteFailed": "No se pudo iniciar la recarga",
       "stack": "La recarga se suma a tu plan actual: más datos y, en algunos planes, más días.",
-      "stackDays": "La recarga añade días a tu plan actual, con el mismo volumen de datos.",
+      "stackDays": "La recarga compra más días para tu plan actual, cada uno con los mismos datos diarios.",
       "stackData": "La recarga añade datos a tu plan actual.",
       "stackBoth": "La recarga añade datos y días a tu plan actual.",
       "addon": "La recarga es un paquete independiente: sus datos y días corren junto a tu plan actual.",

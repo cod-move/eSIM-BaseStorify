@@ -203,7 +203,7 @@
       "buy": "Endelea kulipa",
       "quoteFailed": "Haikuweza kuanza kuongeza salio",
       "stack": "Salio linaongezwa kwenye kifurushi chako cha sasa: data zaidi, na kwa baadhi ya vifurushi siku zaidi.",
-      "stackDays": "Salio linaongeza siku kwenye kifurushi chako cha sasa, kiasi cha data kikiwa kilekile.",
+      "stackDays": "Salio linanunua siku zaidi kwa kifurushi chako cha sasa, kila siku ikiwa na data ileile ya kila siku.",
       "stackData": "Salio linaongeza data kwenye kifurushi chako cha sasa.",
       "stackBoth": "Salio linaongeza data na siku kwenye kifurushi chako cha sasa.",
       "addon": "Salio hili ni kifurushi chake chenyewe: data na siku zake zinaenda sambamba na kifurushi chako cha sasa.",

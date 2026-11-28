@@ -203,7 +203,7 @@
       "buy": "Doorgaan naar afrekenen",
       "quoteFailed": "Kon de opwaardering niet starten",
       "stack": "De opwaardering komt bij je huidige bundel: meer data, en bij sommige bundels meer dagen.",
-      "stackDays": "De opwaardering voegt dagen toe aan je huidige bundel, met dezelfde databundel.",
+      "stackDays": "Met de opwaardering koop je extra dagen voor je huidige bundel, elk met dezelfde dagelijkse data.",
       "stackData": "De opwaardering voegt data toe aan je huidige bundel.",
       "stackBoth": "De opwaardering voegt data en dagen toe aan je huidige bundel.",
       "addon": "De opwaardering is een eigen pakket: de data en dagen lopen naast je huidige bundel.",

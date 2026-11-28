@@ -207,7 +207,7 @@
       "buy": "Continue to checkout",
       "quoteFailed": "Could not start the top-up",
       "stack": "The top-up adds to your current plan: more data, and for some plans more days.",
-      "stackDays": "The top-up adds days to your current plan, with the same data allowance.",
+      "stackDays": "The top-up buys more days for your current plan, each with the same daily data.",
       "stackData": "The top-up adds data to your current plan.",
       "stackBoth": "The top-up adds data and days to your current plan.",
       "addon": "The top-up is a plan of its own: its data and days count separately from your current plan.",

@@ -117,7 +117,7 @@
       "numberQ": "我原來的手機號還能用嗎？",
       "numberA": "可以。eSIM 只用來上網，原來的 SIM 卡繼續留在手機裏接打電話、收短信。",
       "topupQ": "流量不夠可以加嗎？",
-      "topupA": "標有「可疊加充值」或「可加購套餐」的套餐，可以在「我的 eSIM」裏充值。"
+      "topupA": "標有「疊加充值」或「加購套餐」的套餐，可以在「我的 eSIM」裏充值。"
     },
     "selector": {
       "days": "旅行多少天？",
@@ -129,8 +129,8 @@
       "nDays": "{days} 天",
       "numberOfDays": "天數",
       "from": "{price} 起",
-      "topupStack": "可疊加充值",
-      "topupAddon": "可加購套餐",
+      "topupStack": "疊加充值",
+      "topupAddon": "加購套餐",
       "topupNone": "不可充值",
       "ipLocal": "本地 IP",
       "ipUnknown": "未指定",
@@ -207,7 +207,7 @@
       "buy": "去結賬",
       "quoteFailed": "無法發起充值",
       "stack": "充值包會疊加到當前套餐：增加流量，部分套餐還會延長天數。",
-      "stackDays": "儲值會延長目前方案的天數，流量額度不變。",
+      "stackDays": "儲值是為目前方案加買天數，每多一天都有同樣的日流量。",
       "stackData": "儲值會為目前方案增加流量。",
       "stackBoth": "儲值會為目前方案增加流量和天數。",
       "addon": "儲值包是一個獨立方案：它的流量和天數與目前方案分開計算。",

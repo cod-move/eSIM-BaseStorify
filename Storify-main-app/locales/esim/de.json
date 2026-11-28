@@ -203,7 +203,7 @@
       "buy": "Weiter zur Kasse",
       "quoteFailed": "Aufladung konnte nicht gestartet werden",
       "stack": "Die Aufladung wird deinem aktuellen Tarif hinzugefügt: mehr Daten und bei manchen Tarifen mehr Tage.",
-      "stackDays": "Die Aufladung verlängert deinen aktuellen Tarif um Tage, das Datenvolumen bleibt gleich.",
+      "stackDays": "Mit der Aufladung kaufst du weitere Tage für deinen aktuellen Tarif, jeder mit demselben Tagesdatenvolumen.",
       "stackData": "Die Aufladung fügt deinem aktuellen Tarif Daten hinzu.",
       "stackBoth": "Die Aufladung fügt deinem aktuellen Tarif Daten und Tage hinzu.",
       "addon": "Die Aufladung ist ein eigenes Paket: Daten und Tage laufen parallel zu deinem aktuellen Tarif.",

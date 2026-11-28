@@ -203,7 +203,7 @@
       "buy": "Passer au paiement",
       "quoteFailed": "Impossible de lancer la recharge",
       "stack": "La recharge s'ajoute à votre forfait actuel : plus de données et, pour certains forfaits, plus de jours.",
-      "stackDays": "La recharge ajoute des jours à votre forfait actuel, avec le même volume de données.",
+      "stackDays": "La recharge achète des jours supplémentaires pour votre forfait actuel, chacun avec les mêmes données quotidiennes.",
       "stackData": "La recharge ajoute des données à votre forfait actuel.",
       "stackBoth": "La recharge ajoute des données et des jours à votre forfait actuel.",
       "addon": "La recharge est un forfait à part : ses données et ses jours courent en parallèle de votre forfait actuel.",
